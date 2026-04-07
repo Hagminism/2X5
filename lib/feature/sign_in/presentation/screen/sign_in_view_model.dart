@@ -6,8 +6,6 @@ import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_event.
 import 'package:flutter/material.dart';
 
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_state.dart';
-import 'package:flutter/services.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
 class SignInViewModel extends ChangeNotifier {
   final AuthRepository _authRepository;
