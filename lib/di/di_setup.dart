@@ -10,7 +10,6 @@ import 'package:capstone_2026/feature/sign_up/presentation/sign_up_view_model.da
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
 GetIt getIt = GetIt.instance;
 
@@ -43,7 +42,6 @@ void diSetup() {
     () => AuthRepositoryImpl(
       firebaseAuth: getIt<FirebaseAuth>(),
       googleSignIn: getIt<GoogleSignIn>(),
-      userApi: getIt<UserApi>(),
     ),
   );
 
@@ -53,8 +51,5 @@ void diSetup() {
   );
   getIt.registerLazySingleton<FirebaseAuth>(
     () => FirebaseAuth.instance,
-  );
-  getIt.registerLazySingleton<UserApi>(
-    () => UserApi.instance,
   );
 }
