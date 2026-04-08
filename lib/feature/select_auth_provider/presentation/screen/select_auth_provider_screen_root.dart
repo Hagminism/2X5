@@ -61,7 +61,7 @@ class _SelectAuthProviderScreenRootState
                 break;
               case TapSignUpWithEmailButton():
                 // 화면 연결 보기 위해 임시로 연결.
-                context.push(
+                context.go(
                   '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
                 );
                 break;
