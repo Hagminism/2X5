@@ -56,6 +56,7 @@ class _SelectAuthProviderScreenRootState
           onAction: (action) {
             switch (action) {
               case TapBackButton():
+              case TapSignIn():
                 context.pop();
                 break;
               case TapSignUpWithEmailButton():
@@ -65,20 +66,14 @@ class _SelectAuthProviderScreenRootState
                 );
                 break;
               case TapSignUpWithGoogleButton():
+              case TapSignUpWithKakaoButton():
                 widget.viewModel.onAction(action);
                 break;
               // TODO: 각 플랫폼에 맞게 라우팅 연결할 것
-              case TapSignUpWithKakaoButton():
-              // context.push(
-              //     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.}');
-              // break;
               case TapSignUpWithNaverButton():
               // context.push(
               //     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.}');
               // break;
-              case TapSignIn():
-                context.pop();
-                break;
             }
           },
         );

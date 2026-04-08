@@ -32,6 +32,8 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
         _signUpWithGoogle();
         break;
       case TapSignUpWithKakaoButton():
+        _signUpWithKakao();
+        break;
       case TapSignUpWithNaverButton():
         // TODO: 각 플랫폼에 맞게 회원가입 로직 연결할 것
         break;
@@ -53,6 +55,21 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
       _eventController.add(
         SelectAuthProviderEvent.showGoogleSignInError(e.toString()),
       );
+    } finally {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+  }
+
+  Future<void> _signUpWithKakao() async {
+    // 중복 실행 방지
+    if (state.isLoading) return;
+
+    _state = state.copyWith(isLoading: true);
+    notifyListeners();
+
+    try {
+      await _authRepository.signInWithKakao();
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
