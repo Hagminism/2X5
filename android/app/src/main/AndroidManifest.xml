@@ -43,17 +43,25 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
+            <!-- Flutter 기본 deep linking 전달 off
+                 /link를 go_router가 해석하는 앱 route로 받지 말고,
+                 플랫폼 레벨에서 OAuth 복귀는 처리하되 Flutter Router에는 전달하지 않도록 처리 -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
 
                 <!-- 카카오톡 공유, 카카오톡 메시지 -->
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <!-- "kakao${YOUR_NATIVE_APP_KEY}://${PRODUCT_NAME}" 형식의 앱 실행 스킴 설정 -->
-                <data android:host="kakaolink"
+                <data
+                    android:host="kakaolink"
                     android:scheme="kakao${kakaoNativeAppKey}" />
             </intent-filter>
         </activity>

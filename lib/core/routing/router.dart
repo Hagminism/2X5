@@ -223,33 +223,20 @@ final router = GoRouter(
 // 리다이렉트 로직
 // TODO: 회원 탈퇴(deleteAccount) 후 리다이렉션 문제 있는지 추가 확인해야함
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
-  final User? currentUser = getIt<AuthRepository>().getCurrentUser();
+  final currentUser = getIt<AuthRepository>().getCurrentUser();
 
-  // 회원 탈퇴 진행 후 정의되어있지 않은 딥링크 이동 방지
-  final currentFullUrl = state.uri.toString();
-  if (currentFullUrl.contains('com.googleusercontent.apps') ||
-      currentFullUrl.contains('firebaseauth/link')) {
-    return Routes.signIn;
-  }
-
-  // 현재 인증 상태를 확인
-  final isLoggedIn = (currentUser != null);
-
-  // 현재 위치를 확인
+  final isLoggedIn = currentUser != null;
   final location = state.matchedLocation;
-  final isSignIn = (location == Routes.signIn);
   final isInAuthFlow =
-      (location == Routes.signIn) || location.startsWith('${Routes.signIn}/');
+      location == Routes.signIn || location.startsWith('${Routes.signIn}/');
 
-  // 비로그인 상태일 때,
-  // 인증 플로우 내 위치하면 아무 것도 하지 않고,
-  // 아닐 경우 로그인 화면으로 이동
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
   }
 
-  // 로그인 상태라면 signIn 루트만 메인 화면으로 이동
-  if (isSignIn) return Routes.home;
+  if (isInAuthFlow) {
+    return Routes.home;
+  }
 
   return null;
 }
