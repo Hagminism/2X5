@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'sign_up_customer_state.freezed.dart';
 
 @freezed
-abstract class SignUpCustomerState with _$SignUpState {
+abstract class SignUpCustomerState with _$SignUpCustomerState {
   const SignUpCustomerState._();
 
   const factory SignUpCustomerState({
@@ -14,7 +14,7 @@ abstract class SignUpCustomerState with _$SignUpState {
     @Default(false) bool agreeTerms,
     @Default(false) bool isSubmitting,
     String? errorMessage,
-  }) = _SignUpState;
+  }) = _SignUpCustomerState;
 
   bool get isPasswordMatched => password == passwordConfirm;
 
