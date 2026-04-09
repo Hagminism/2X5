@@ -64,13 +64,13 @@ class _SignInScreenRootState extends State<SignInScreenRoot> {
                 widget.viewModel.onAction(action);
                 break;
               case TapSignInButton():
-                // 임시로 홈 화면으로 보내도록 함
-                context.go(Routes.home);
+                // 이메일 로그인 구현 시 연결
+                break;
               case MoveToSignUpScreen():
-                context.push('${Routes.signIn}/${Routes.selectAuthProvider}');
+                context.go('${Routes.signIn}/${Routes.selectAuthProvider}');
                 break;
               case MoveToFindPasswordScreen():
-                context.push('${Routes.signIn}/${Routes.findPassword}');
+                context.go('${Routes.signIn}/${Routes.findPassword}');
                 break;
             }
           },
