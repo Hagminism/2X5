@@ -34,7 +34,7 @@ void diSetup() {
     () => AccountSettingViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<MyPageViewModel>(
-        () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
+    () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
 
   // Repository
