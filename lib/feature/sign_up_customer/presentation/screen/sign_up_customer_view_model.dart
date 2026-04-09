@@ -1,11 +1,10 @@
+import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_state.dart';
 import 'package:flutter/foundation.dart';
 
-import 'sign_up_state.dart';
+class SignUpCustomerViewModel extends ChangeNotifier {
+  SignUpCustomerState _state = const SignUpCustomerState();
 
-class SignUpViewModel extends ChangeNotifier {
-  SignUpState _state = const SignUpState();
-
-  SignUpState get state => _state;
+  SignUpCustomerState get state => _state;
 
   void onNameChanged(String value) {
     _state = _state.copyWith(name: value, errorMessage: null);

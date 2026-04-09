@@ -5,8 +5,8 @@ import 'package:capstone_2026/feature/my_page/account_settings/presentation/scre
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
-import 'package:capstone_2026/feature/sign_up/presentation/sign_up_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -21,8 +21,8 @@ void diSetup() {
   getIt.registerFactory<FindPasswordViewModel>(
     () => FindPasswordViewModel(),
   );
-  getIt.registerFactory<SignUpViewModel>(
-    () => SignUpViewModel(),
+  getIt.registerFactory<SignUpCustomerViewModel>(
+    () => SignUpCustomerViewModel(),
   );
   getIt.registerFactory<SignUpPartnerViewModel>(
     () => SignUpPartnerViewModel(),
