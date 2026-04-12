@@ -1,16 +1,20 @@
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final FirebaseFunctions _firebaseFunctions;
 
   const AuthRepositoryImpl({
     required FirebaseAuth firebaseAuth,
     required GoogleSignIn googleSignIn,
+    required FirebaseFunctions firebaseFunctions,
   }) : _firebaseAuth = firebaseAuth,
-       _googleSignIn = googleSignIn;
+       _googleSignIn = googleSignIn,
+       _firebaseFunctions = firebaseFunctions;
 
   @override
   Future<void> signInWithGoogle() async {
@@ -32,6 +36,14 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> signInWithKakao() async {
     final provider = OAuthProvider("oidc.kakao");
     await _firebaseAuth.signInWithProvider(provider);
+  }
+
+  @override
+  Future<void> signInWithNaver(String accessToken) async {
+    final callable = _firebaseFunctions.httpsCallable('signInWithNaver');
+    final result = await callable.call({'accessToken': accessToken});
+    final customToken = result.data['customToken'] as String;
+    await _firebaseAuth.signInWithCustomToken(customToken);
   }
 
   @override

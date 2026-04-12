@@ -32,6 +32,7 @@ class _SelectAuthProviderScreenRootState
       if (mounted) {
         switch (event) {
           case ShowGoogleSignInError():
+          case ShowNaverSignInError():
             // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -69,11 +70,9 @@ class _SelectAuthProviderScreenRootState
               case TapSignUpWithKakaoButton():
                 widget.viewModel.onAction(action);
                 break;
-              // TODO: 각 플랫폼에 맞게 라우팅 연결할 것
               case TapSignUpWithNaverButton():
-              // context.push(
-              //     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.}');
-              // break;
+                widget.viewModel.onAction(action);
+                break;
             }
           },
         );

@@ -33,6 +33,7 @@ class _SignInScreenRootState extends State<SignInScreenRoot> {
         if (mounted) {
           switch (event) {
             case ShowGoogleSignInError():
+            case ShowNaverSignInError():
               // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

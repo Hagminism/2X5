@@ -5,6 +5,8 @@ import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/s
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_event.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 
 class SelectAuthProviderViewModel extends ChangeNotifier {
   final AuthRepository _authRepository;
@@ -35,7 +37,7 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
         _signUpWithKakao();
         break;
       case TapSignUpWithNaverButton():
-        // TODO: 각 플랫폼에 맞게 회원가입 로직 연결할 것
+        _signUpWithNaver();
         break;
     }
   }
@@ -70,6 +72,39 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
 
     try {
       await _authRepository.signInWithKakao();
+    } finally {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+  }
+
+  Future<void> _signUpWithNaver() async {
+    if (state.isLoading) return;
+
+    _state = state.copyWith(isLoading: true);
+    notifyListeners();
+
+    try {
+      await FlutterNaverLogin.logOutAndDeleteToken();
+      final result = await FlutterNaverLogin.logIn();
+
+      if (result.status == NaverLoginStatus.loggedOut) return;
+
+      if (result.status == NaverLoginStatus.error) {
+        _eventController.add(
+          SelectAuthProviderEvent.showNaverSignInError(
+            result.errorMessage ?? '네이버 로그인에 실패했습니다.',
+          ),
+        );
+        return;
+      }
+
+      final token = await FlutterNaverLogin.getCurrentAccessToken();
+      await _authRepository.signInWithNaver(token.accessToken);
+    } catch (e) {
+      _eventController.add(
+        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+      );
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();

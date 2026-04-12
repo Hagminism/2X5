@@ -6,6 +6,8 @@ import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_event.
 import 'package:flutter/material.dart';
 
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_state.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 
 class SignInViewModel extends ChangeNotifier {
   final AuthRepository _authRepository;
@@ -36,6 +38,8 @@ class SignInViewModel extends ChangeNotifier {
         break;
       case TapSignInButton():
       case TapNaverSignInButton():
+        _signInWithNaver();
+        break;
       case MoveToSignUpScreen():
       case MoveToFindPasswordScreen():
         break;
@@ -76,6 +80,39 @@ class SignInViewModel extends ChangeNotifier {
 
     try {
       await _authRepository.signInWithKakao();
+    } finally {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+  }
+
+  Future<void> _signInWithNaver() async {
+    if (state.isLoading) return;
+
+    _state = state.copyWith(isLoading: true);
+    notifyListeners();
+
+    try {
+      // 기존 세션 초기화 후 로그인
+      await FlutterNaverLogin.logOutAndDeleteToken();
+      // 1. 네이버 로그인 → access token 획득
+      final result = await FlutterNaverLogin.logIn();
+
+      if (result.status == NaverLoginStatus.loggedOut) {
+        _eventController.add(SignInEvent.showNaverSignInError('loggedOut: ${result.errorMessage}'));
+        return;
+      }
+
+      if (result.status == NaverLoginStatus.error) {
+        _eventController.add(SignInEvent.showNaverSignInError(result.errorMessage ?? '네이버 로그인에 실패했습니다.'));
+        return;
+      }
+
+      // 2. access token → Cloud Function → Firebase Custom Token → Firebase 로그인
+      final token = await FlutterNaverLogin.getCurrentAccessToken();
+      await _authRepository.signInWithNaver(token.accessToken);
+    } catch (e) {
+      _eventController.add(SignInEvent.showNaverSignInError(e.toString()));
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
