@@ -177,7 +177,9 @@ class SignInScreen extends StatelessWidget {
                           ),
                           SocialSignInButton(
                             authProvider: AuthProvider.naver,
-                            onTap: () {},
+                            onTap: () {
+                              onAction(SignInAction.tapNaverSignInButton());
+                            },
                           ),
                           SocialSignInButton(
                             authProvider: AuthProvider.kakao,

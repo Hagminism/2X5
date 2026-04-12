@@ -9,6 +9,17 @@
             android:name="com.kakao.sdk.AppKey"
             android:value="${kakaoNativeAppKey}" />
 
+        <!-- 네이버 로그인 SDK 초기화 -->
+        <meta-data
+            android:name="com.naver.sdk.clientId"
+            android:value="${naverClientId}" />
+        <meta-data
+            android:name="com.naver.sdk.clientSecret"
+            android:value="${naverClientSecret}" />
+        <meta-data
+            android:name="com.naver.sdk.clientName"
+            android:value="capstone_2026" />
+
         <!-- 카카오 로그인 커스텀 URL 스킴 설정 -->
         <activity
             android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
@@ -33,8 +44,7 @@
             android:exported="true"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
-            android:taskAffinity=""
-            android:theme="@style/LaunchTheme"
+        android:theme="@style/LaunchTheme"
             android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
@@ -80,6 +90,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
+        </intent>
+        <!-- 네이버 앱 로그인 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="naversearchapp" />
         </intent>
     </queries>
 </manifest>
