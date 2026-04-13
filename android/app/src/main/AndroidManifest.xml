@@ -43,8 +43,8 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:exported="true"
             android:hardwareAccelerated="true"
-            android:launchMode="singleTop"
-        android:theme="@style/LaunchTheme"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
             android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
@@ -59,10 +59,13 @@
             <meta-data
                 android:name="flutter_deeplinking_enabled"
                 android:value="false" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
+            <intent-filter>
                 <!-- 카카오톡 공유, 카카오톡 메시지 -->
                 <action android:name="android.intent.action.VIEW" />
 
@@ -73,6 +76,15 @@
                 <data
                     android:host="kakaolink"
                     android:scheme="kakao${kakaoNativeAppKey}" />
+            </intent-filter>
+
+            <intent-filter android:label="naver_login_callback">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="team2x5" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
