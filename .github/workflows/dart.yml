@@ -51,7 +51,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # pubspec.yaml에서 .env를 asset으로 사용하므로 CI에서 파일 생성 필요
+      # firebase_options.dart 복원
+      - name: Restore firebase_options.dart
+        run: |
+          mkdir -p lib
+          echo "${{ secrets.FIREBASE_OPTIONS_DART_B64 }}" | base64 --decode > lib/firebase_options.dart
+
+      # Android Firebase 설정 파일 복원
+      - name: Restore android google-services.json
+        run: |
+          mkdir -p android/app
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 --decode > android/app/google-services.json
+
+      # iOS Firebase 설정 파일 복원 (iOS job에서도 다시 생성하지만, 공통 복원 유지 가능)
+      - name: Restore iOS GoogleService-Info.plist
+        run: |
+          mkdir -p ios/Runner
+          echo "${{ secrets.GOOGLE_SERVICE_INFO_PLIST_B64 }}" | base64 --decode > ios/Runner/GoogleService-Info.plist
+
+      # pubspec.yaml asset 대응
       - name: Create .env
         run: |
           cat > .env << 'EOF'
@@ -60,7 +78,6 @@ jobs:
           REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }}
           EOF
 
-      # Android local.properties에 필요한 값 추가
       - name: Setup Android local.properties
         run: |
           echo "naverClientId=${{ secrets.NAVER_CLIENT_ID }}" >> android/local.properties
@@ -68,7 +85,6 @@ jobs:
           echo "redirectUri=${{ secrets.NAVER_REDIRECT_URI }}" >> android/local.properties
           echo "kakaoNativeAppKey=${{ secrets.KAKAO_NATIVE_APP_KEY }}" >> android/local.properties
 
-      # 현재 build.gradle.kts에서 release는 debug signing 사용 중이므로 keystore 단계 생략
       - name: Install dependencies
         run: flutter pub get
 
@@ -115,6 +131,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
 
+      # firebase_options.dart 복원
+      - name: Restore firebase_options.dart
+        run: |
+          mkdir -p lib
+          echo "${{ secrets.FIREBASE_OPTIONS_DART_B64 }}" | base64 --decode > lib/firebase_options.dart
+
+      # Android 파일도 공통 복원 (필수는 아니지만 파일 셋 동기화 목적)
+      - name: Restore android google-services.json
+        run: |
+          mkdir -p android/app
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 --decode > android/app/google-services.json
+
+      # iOS Firebase 설정 파일 복원
+      - name: Restore iOS GoogleService-Info.plist
+        run: |
+          mkdir -p ios/Runner
+          echo "${{ secrets.GOOGLE_SERVICE_INFO_PLIST_B64 }}" | base64 --decode > ios/Runner/GoogleService-Info.plist
+
       # pubspec.yaml asset 대응
       - name: Create .env
         run: |
@@ -124,7 +158,7 @@ jobs:
           REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }}
           EOF
 
-      # iOS 프로젝트에서 참조하는 Secrets.xcconfig 생성
+      # iOS base configuration 파일 생성
       - name: Create iOS Secrets.xcconfig
         run: |
           cat > ios/Runner/Secrets.xcconfig << 'EOF'
