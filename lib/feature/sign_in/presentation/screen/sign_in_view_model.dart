@@ -36,10 +36,10 @@ class SignInViewModel extends ChangeNotifier {
       case TapKakaoSignInButton():
         _signInWithKakao();
         break;
-      case TapSignInButton():
       case TapNaverSignInButton():
         _signInWithNaver();
         break;
+      case TapSignInButton():
       case MoveToSignUpScreen():
       case MoveToFindPasswordScreen():
         break;
