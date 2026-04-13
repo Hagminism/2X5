@@ -1,20 +1,21 @@
+import 'dart:convert';
+
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
-  final FirebaseFunctions _firebaseFunctions;
 
   const AuthRepositoryImpl({
     required FirebaseAuth firebaseAuth,
     required GoogleSignIn googleSignIn,
-    required FirebaseFunctions firebaseFunctions,
   }) : _firebaseAuth = firebaseAuth,
-       _googleSignIn = googleSignIn,
-       _firebaseFunctions = firebaseFunctions;
+       _googleSignIn = googleSignIn;
 
   @override
   Future<void> signInWithGoogle() async {
@@ -39,11 +40,85 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithNaver(String accessToken) async {
-    final callable = _firebaseFunctions.httpsCallable('signInWithNaver');
-    final result = await callable.call({'accessToken': accessToken});
-    final customToken = result.data['customToken'] as String;
-    await _firebaseAuth.signInWithCustomToken(customToken);
+  Future<void> requestNaverAuthorization(String state) async {
+    final authUrl = Uri.parse(
+      "https://nid.naver.com/oauth2/authorize"
+      "?response_type=code"
+      "&client_id=${dotenv.env['NAVER_CLIENT_ID']}"
+      "&redirect_uri=${Uri.encodeComponent(dotenv.env['REDIRECT_URI']!)}"
+      "&state=$state" // 랜덤 생성한 암호문
+      "&scope=openid profile",
+    );
+
+    await launchUrl(authUrl, mode: LaunchMode.externalApplication);
+  }
+
+  @override
+  Future<Map<String, dynamic>> exchangeNaverAccessToken(
+    String code,
+    String state,
+  ) async {
+    final response = await http.post(
+      Uri.parse('https://nid.naver.com/oauth2/token'),
+      body: {
+        'grant_type': 'authorization_code',
+        'client_id': dotenv.env['NAVER_CLIENT_ID'],
+        'client_secret': dotenv.env['NAVER_CLIENT_SECRET'],
+        'code': code,
+        'state': state,
+        'redirect_uri': dotenv.env['REDIRECT_URI'],
+      },
+    );
+
+    final data = jsonDecode(response.body);
+    final tokenMap = {
+      'id_token': data['id_token'],
+      'access_token': data['access_token'],
+    };
+
+    return tokenMap;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getNaverProfile(String accessToken) async {
+    final profileResponse = await http.get(
+      Uri.parse('https://openapi.naver.com/v1/nid/me'),
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
+
+    final result =
+        (jsonDecode(profileResponse.body) as Map<String, dynamic>)['response']
+            as Map<String, dynamic>;
+
+    return result;
+  }
+
+  @override
+  Future<void> signInWithNaver(String idToken, String accessToken) async {
+    final credential = OAuthProvider("oidc.naver").credential(
+      idToken: idToken,
+      accessToken: accessToken,
+    );
+
+    final naverProfile = await getNaverProfile(accessToken);
+
+    final userCredential = await _firebaseAuth.signInWithCredential(credential);
+    final user = userCredential.user;
+
+    // 정보 업데이트 (동기화)
+    if (user != null) {
+      await Future.wait([
+        user.verifyBeforeUpdateEmail(
+          naverProfile['email'],
+          ActionCodeSettings(url: 'https://capstone-2026-2x5.web.app'),
+        ),
+        user.updateDisplayName(naverProfile['name']),
+        user.updatePhotoURL(naverProfile['profile_image']),
+        // user.updatePhoneNumber(naverProfile['mobile_e164']),
+      ]);
+
+      await user.reload(); // 변경사항 확정
+    }
   }
 
   @override
