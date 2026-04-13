@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryString = urlParams.toString();
+            // 네이버가 준 code와 state를 우리 앱 스킴으로 토스!
+            if (queryString) {
+                window.location.href = "team2x5://?" + queryString;
+            }
+        };
+    </script>
+</head>
+<body>
+<p>로그인 인증 정보를 앱으로 전달 중입니다...</p>
+</body>
+</html>
