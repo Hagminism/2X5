@@ -127,6 +127,7 @@ class _SelectAuthProviderScreenRootState
   @override
   void dispose() {
     _eventSubscription?.cancel();
+    _linkSubscription?.cancel();
     super.dispose();
   }
 }
