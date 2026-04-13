@@ -1,3 +1,4 @@
+import 'package:app_links/app_links.dart';
 import 'package:capstone_2026/core/data/repository/auth_repository_impl.dart';
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
@@ -7,7 +8,6 @@ import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/s
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -43,7 +43,6 @@ void diSetup() {
     () => AuthRepositoryImpl(
       firebaseAuth: getIt<FirebaseAuth>(),
       googleSignIn: getIt<GoogleSignIn>(),
-      firebaseFunctions: getIt<FirebaseFunctions>(),
     ),
   );
 
@@ -54,7 +53,7 @@ void diSetup() {
   getIt.registerLazySingleton<FirebaseAuth>(
     () => FirebaseAuth.instance,
   );
-  getIt.registerLazySingleton<FirebaseFunctions>(
-    () => FirebaseFunctions.instance,
+  getIt.registerLazySingleton<AppLinks>(
+    () => AppLinks(),
   );
 }
