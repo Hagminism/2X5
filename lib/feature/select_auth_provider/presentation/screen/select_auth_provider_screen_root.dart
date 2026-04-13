@@ -83,7 +83,7 @@ class _SelectAuthProviderScreenRootState
           returnedState!,
         );
 
-        widget.viewModel.linkNaverWithFirebase(
+        await widget.viewModel.linkNaverWithFirebase(
           tokenMap['id_token'],
           tokenMap['access_token'],
         );
