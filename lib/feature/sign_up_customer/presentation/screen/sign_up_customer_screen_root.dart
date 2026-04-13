@@ -1,29 +1,29 @@
 import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'sign_up_screen.dart';
-import 'sign_up_view_model.dart';
+import 'sign_up_customer_screen.dart';
 
-class SignUpScreenRoot extends StatefulWidget {
-  final SignUpViewModel viewModel;
+class SignUpCustomerScreenRoot extends StatefulWidget {
+  final SignUpCustomerViewModel viewModel;
 
-  const SignUpScreenRoot({
+  const SignUpCustomerScreenRoot({
     super.key,
     required this.viewModel,
   });
 
   @override
-  State<SignUpScreenRoot> createState() => _SignUpScreenRootState();
+  State<SignUpCustomerScreenRoot> createState() => _SignUpCustomerScreenRootState();
 }
 
-class _SignUpScreenRootState extends State<SignUpScreenRoot> {
+class _SignUpCustomerScreenRootState extends State<SignUpCustomerScreenRoot> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, child) {
-        return SignUpScreen(
+        return SignUpCustomerScreen(
           state: widget.viewModel.state,
           onNameChanged: widget.viewModel.onNameChanged,
           onEmailChanged: widget.viewModel.onEmailChanged,

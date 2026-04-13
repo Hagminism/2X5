@@ -1,3 +1,4 @@
+import 'package:app_links/app_links.dart';
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
@@ -20,8 +21,8 @@ import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_m
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_screen.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_screen_root.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
-import 'package:capstone_2026/feature/sign_up/presentation/sign_up_screen_root.dart';
-import 'package:capstone_2026/feature/sign_up/presentation/sign_up_view_model.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_screen_root.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,7 @@ final router = GoRouter(
       path: Routes.signIn,
       builder: (context, state) => SignInScope(
         viewModel: getIt<SignInViewModel>(),
+        appLinks: getIt<AppLinks>(),
       ),
       routes: [
         GoRoute(
@@ -49,6 +51,7 @@ final router = GoRouter(
           path: Routes.selectAuthProvider,
           builder: (context, state) => SelectAuthProviderScope(
             viewModel: getIt<SelectAuthProviderViewModel>(),
+            appLinks: getIt<AppLinks>(),
           ),
           routes: [
             // TODO: 소셜 로그인 인증 붙으면 중첩 -> 단일 라우트 분리할 것.
@@ -58,8 +61,8 @@ final router = GoRouter(
               routes: [
                 GoRoute(
                   path: Routes.signUpUser,
-                  builder: (context, state) => SignUpScreenRoot(
-                    viewModel: getIt<SignUpViewModel>(),
+                  builder: (context, state) => SignUpCustomerScreenRoot(
+                    viewModel: getIt<SignUpCustomerViewModel>(),
                   ),
                 ),
                 GoRoute(

@@ -1,11 +1,11 @@
+import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_state.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-import '../../../ui/app_colors.dart';
-import '../../../ui/app_text_styles.dart';
-import 'sign_up_state.dart';
 
-class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({
+class SignUpCustomerScreen extends StatelessWidget {
+  const SignUpCustomerScreen({
     required this.state,
     required this.onNameChanged,
     required this.onEmailChanged,
@@ -17,7 +17,7 @@ class SignUpScreen extends StatelessWidget {
     super.key,
   });
 
-  final SignUpState state;
+  final SignUpCustomerState state;
   final ValueChanged<String> onNameChanged;
   final ValueChanged<String> onEmailChanged;
   final ValueChanged<String> onPasswordChanged;

@@ -40,6 +40,9 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["kakaoNativeAppKey"] = localProperties.getProperty("kakaoNativeAppKey") ?: ""
+        manifestPlaceholders["naverClientId"] = localProperties.getProperty("naverClientId") ?: ""
+        manifestPlaceholders["naverClientSecret"] = localProperties.getProperty("naverClientSecret") ?: ""
+        manifestPlaceholders["redirectUri"] = localProperties.getProperty("redirectUri") ?: ""
     }
 
     buildTypes {
@@ -49,6 +52,11 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("com.navercorp.nid:oauth:5.11.2") // jdk 11
 }
 
 flutter {

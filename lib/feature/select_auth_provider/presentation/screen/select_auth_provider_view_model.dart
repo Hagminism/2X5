@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_action.dart';
@@ -35,7 +37,7 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
         _signUpWithKakao();
         break;
       case TapSignUpWithNaverButton():
-        // TODO: 각 플랫폼에 맞게 회원가입 로직 연결할 것
+        _signUpWithNaver();
         break;
     }
   }
@@ -74,6 +76,65 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
     }
+  }
+
+  Future<void> _signUpWithNaver() async {
+    if (state.isLoading) return;
+
+    final naverState = _generateState();
+    _state = state.copyWith(isLoading: true, naverState: naverState);
+    notifyListeners();
+
+    try {
+      await _authRepository.requestNaverAuthorization(state.naverState);
+    } catch (e) {
+      _eventController.add(
+        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+      );
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>> exchangeNaverToken(
+    String code,
+    String naverState,
+  ) async {
+    Map<String, dynamic> result = {};
+
+    try {
+      result = await _authRepository.exchangeNaverAccessToken(
+        code,
+        naverState,
+      );
+    } catch (e) {
+      _eventController.add(
+        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+      );
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+
+    return result;
+  }
+
+  Future<void> linkNaverWithFirebase(String idToken, String accessToken) async {
+    try {
+      await _authRepository.signInWithNaver(idToken, accessToken);
+    } catch (e) {
+      _eventController.add(
+        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+      );
+    } finally {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+  }
+
+  String _generateState() {
+    final random = Random.secure();
+    final values = List<int>.generate(16, (i) => random.nextInt(256));
+    return base64Url.encode(values).replaceAll('=', ''); // URL 안전한 문자열로 변환
   }
 
   @override

@@ -53,6 +53,7 @@ app.*.map.json
 # Firebase configuration files (개별 설정 및 API 키 포함)
 /lib/firebase_options.dart
 /ios/Runner/GoogleService-Info.plist
+android/google-services.json
 /android/app/google-services.json
 
 # Firebase CLI 로그 및 임시 폴더 (시스템 정보 및 상세 에러 기록)
@@ -66,6 +67,10 @@ firebase-debug.log*
 firebase.json
 firestore.rules
 storage.rules
+
+# Local properties (contains API keys - do not commit)
+android/local.properties
+.dart_defines
 
 # Environment variables
 .env
