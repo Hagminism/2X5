@@ -2,6 +2,7 @@ import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk_common.dart';
 
@@ -26,7 +27,10 @@ Future<void> main() async {
     nativeAppKey: kakaoNativeAppKey,
   );
 
+  await dotenv.load(fileName: '.env');
+
   diSetup();
+
   runApp(const App());
 }
 
