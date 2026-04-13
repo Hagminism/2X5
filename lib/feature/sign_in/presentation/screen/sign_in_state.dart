@@ -9,5 +9,6 @@ abstract class SignInState with _$SignInState {
     @Default(true) bool isObscureText,
     @Default('') String email,
     @Default('') String password,
+    @Default('') String naverState,
   }) = _SignInState;
 }
