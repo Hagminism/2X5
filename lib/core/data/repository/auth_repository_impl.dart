@@ -70,6 +70,10 @@ class AuthRepositoryImpl implements AuthRepository {
       },
     );
 
+    if (response.statusCode != 200) {
+      throw Exception('네이버 토큰 교환 실패: ${response.body}');
+    }
+
     final data = jsonDecode(response.body);
     final tokenMap = {
       'id_token': data['id_token'],
@@ -85,6 +89,10 @@ class AuthRepositoryImpl implements AuthRepository {
       Uri.parse('https://openapi.naver.com/v1/nid/me'),
       headers: {'Authorization': 'Bearer $accessToken'},
     );
+
+    if (profileResponse.statusCode != 200) {
+      throw Exception('네이버 프로필 조회 실패: ${profileResponse.body}');
+    }
 
     final result =
         (jsonDecode(profileResponse.body) as Map<String, dynamic>)['response']
