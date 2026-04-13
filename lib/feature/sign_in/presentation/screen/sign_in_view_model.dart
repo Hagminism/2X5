@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_action.dart';
@@ -6,8 +8,6 @@ import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_event.
 import 'package:flutter/material.dart';
 
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_state.dart';
-import 'package:flutter_naver_login/flutter_naver_login.dart';
-import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 
 class SignInViewModel extends ChangeNotifier {
   final AuthRepository _authRepository;
@@ -89,34 +89,54 @@ class SignInViewModel extends ChangeNotifier {
   Future<void> _signInWithNaver() async {
     if (state.isLoading) return;
 
-    _state = state.copyWith(isLoading: true);
+    final naverState = _generateState();
+    _state = state.copyWith(isLoading: true, naverState: naverState);
     notifyListeners();
 
     try {
-      // 기존 세션 초기화 후 로그인
-      await FlutterNaverLogin.logOutAndDeleteToken();
-      // 1. 네이버 로그인 → access token 획득
-      final result = await FlutterNaverLogin.logIn();
-
-      if (result.status == NaverLoginStatus.loggedOut) {
-        _eventController.add(SignInEvent.showNaverSignInError('loggedOut: ${result.errorMessage}'));
-        return;
-      }
-
-      if (result.status == NaverLoginStatus.error) {
-        _eventController.add(SignInEvent.showNaverSignInError(result.errorMessage ?? '네이버 로그인에 실패했습니다.'));
-        return;
-      }
-
-      // 2. access token → Cloud Function → Firebase Custom Token → Firebase 로그인
-      final token = await FlutterNaverLogin.getCurrentAccessToken();
-      await _authRepository.signInWithNaver(token.accessToken);
+      await _authRepository.requestNaverAuthorization(state.naverState);
     } catch (e) {
+      _eventController.add(SignInEvent.showNaverSignInError(e.toString()));
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>> exchangeNaverToken(
+    String code,
+    String naverState,
+  ) async {
+    Map<String, dynamic> result = {};
+
+    try {
+      result = await _authRepository.exchangeNaverAccessToken(
+        code,
+        naverState,
+      );
+    } catch (e) {
+      _eventController.add(SignInEvent.showNaverSignInError(e.toString()));
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+
+    return result;
+  }
+
+  Future<void> linkNaverWithFirebase(String idToken, String accessToken) async {
+    try {
+      await _authRepository.signInWithNaver(idToken, accessToken);
+    } catch(e) {
       _eventController.add(SignInEvent.showNaverSignInError(e.toString()));
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
     }
+  }
+
+  String _generateState() {
+    final random = Random.secure();
+    final values = List<int>.generate(16, (i) => random.nextInt(256));
+    return base64Url.encode(values).replaceAll('=', ''); // URL 안전한 문자열로 변환
   }
 
   @override

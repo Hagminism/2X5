@@ -1,12 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_action.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_event.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_state.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_naver_login/flutter_naver_login.dart';
-import 'package:flutter_naver_login/interface/types/naver_login_status.dart';
 
 class SelectAuthProviderViewModel extends ChangeNotifier {
   final AuthRepository _authRepository;
@@ -81,26 +81,46 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
   Future<void> _signUpWithNaver() async {
     if (state.isLoading) return;
 
-    _state = state.copyWith(isLoading: true);
+    final naverState = _generateState();
+    _state = state.copyWith(isLoading: true, naverState: naverState);
     notifyListeners();
 
     try {
-      await FlutterNaverLogin.logOutAndDeleteToken();
-      final result = await FlutterNaverLogin.logIn();
+      await _authRepository.requestNaverAuthorization(state.naverState);
+    } catch (e) {
+      _eventController.add(
+        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+      );
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
+  }
 
-      if (result.status == NaverLoginStatus.loggedOut) return;
+  Future<Map<String, dynamic>> exchangeNaverToken(
+    String code,
+    String naverState,
+  ) async {
+    Map<String, dynamic> result = {};
 
-      if (result.status == NaverLoginStatus.error) {
-        _eventController.add(
-          SelectAuthProviderEvent.showNaverSignInError(
-            result.errorMessage ?? '네이버 로그인에 실패했습니다.',
-          ),
-        );
-        return;
-      }
+    try {
+      result = await _authRepository.exchangeNaverAccessToken(
+        code,
+        naverState,
+      );
+    } catch (e) {
+      _eventController.add(
+        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+      );
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
 
-      final token = await FlutterNaverLogin.getCurrentAccessToken();
-      await _authRepository.signInWithNaver(token.accessToken);
+    return result;
+  }
+
+  Future<void> linkNaverWithFirebase(String idToken, String accessToken) async {
+    try {
+      await _authRepository.signInWithNaver(idToken, accessToken);
     } catch (e) {
       _eventController.add(
         SelectAuthProviderEvent.showNaverSignInError(e.toString()),
@@ -109,6 +129,12 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
     }
+  }
+
+  String _generateState() {
+    final random = Random.secure();
+    final values = List<int>.generate(16, (i) => random.nextInt(256));
+    return base64Url.encode(values).replaceAll('=', ''); // URL 안전한 문자열로 변환
   }
 
   @override
