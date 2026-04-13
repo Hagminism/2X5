@@ -1,3 +1,4 @@
+import 'package:app_links/app_links.dart';
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
@@ -37,6 +38,7 @@ final router = GoRouter(
       path: Routes.signIn,
       builder: (context, state) => SignInScope(
         viewModel: getIt<SignInViewModel>(),
+        appLinks: getIt<AppLinks>(),
       ),
       routes: [
         GoRoute(
@@ -49,6 +51,7 @@ final router = GoRouter(
           path: Routes.selectAuthProvider,
           builder: (context, state) => SelectAuthProviderScope(
             viewModel: getIt<SelectAuthProviderViewModel>(),
+            appLinks: getIt<AppLinks>(),
           ),
           routes: [
             // TODO: 소셜 로그인 인증 붙으면 중첩 -> 단일 라우트 분리할 것.
