@@ -83,3 +83,54 @@ Android Studio를 사용하는 경우 매번 터미널 명령을 입력하지 �
 ```
 
 4. Apply -> OK 후 실행
+
+### 7) Naver 로그인 설정
+
+네이버 로그인은 **`.env` + `android/local.properties` + iOS 설정**이 모두 맞아야 동작합니다.
+
+#### 1. 네이버 개발자센터에서 값 준비
+- `NAVER_CLIENT_ID`
+- `NAVER_CLIENT_SECRET`
+- `REDIRECT_URI` (팀 공통값으로 고정)
+
+> `REDIRECT_URI`는 네이버 콘솔 등록값과 앱 설정값이 **완전히 동일**해야 합니다.
+
+#### 2. 프로젝트 루트 `.env` 생성
+
+```env
+NAVER_CLIENT_ID=YOUR_NAVER_CLIENT_ID
+NAVER_CLIENT_SECRET=YOUR_NAVER_CLIENT_SECRET
+REDIRECT_URI=YOUR_REDIRECT_URI
+```
+
+#### 3. `android/local.properties` 값 추가
+
+```properties
+naverClientId=YOUR_NAVER_CLIENT_ID
+naverClientSecret=YOUR_NAVER_CLIENT_SECRET
+redirectUri=YOUR_REDIRECT_URI
+```
+
+#### 4. iOS 설정 (`ios/Runner/Secrets.xcconfig`)
+
+```xcconfig
+URL_SCHEME=YOUR_URL_SCHEME
+NAVER_CLIENT_ID=YOUR_NAVER_CLIENT_ID
+NAVER_CLIENT_SECRET=YOUR_NAVER_CLIENT_SECRET
+SERVICE_APP_NAME=team2x5
+```
+
+> 기존 값도 함께 필요합니다.
+
+```xcconfig
+GOOGLE_REVERSE_CLIENT_ID=YOUR_GOOGLE_REVERSE_CLIENT_ID
+KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
+```
+
+#### 5. 실행
+
+```bash
+flutter pub get
+cd ios && pod install && cd ..
+flutter run --dart-define=KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
+```
