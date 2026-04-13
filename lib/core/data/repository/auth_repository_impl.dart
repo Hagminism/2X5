@@ -116,12 +116,13 @@ class AuthRepositoryImpl implements AuthRepository {
     // 정보 업데이트 (동기화)
     if (user != null) {
       await Future.wait([
-        user.verifyBeforeUpdateEmail(
-          naverProfile['email'],
-          ActionCodeSettings(url: 'https://capstone-2026-2x5.web.app'),
-        ),
         user.updateDisplayName(naverProfile['name']),
         user.updatePhotoURL(naverProfile['profile_image']),
+        // TODO: 이메일과 전화번호는 추후 수정할 것
+        // user.verifyBeforeUpdateEmail(
+        //   naverProfile['email'],
+        //   ActionCodeSettings(url: 'https://capstone-2026-2x5.web.app'),
+        // ),
         // user.updatePhoneNumber(naverProfile['mobile_e164']),
       ]);
 
