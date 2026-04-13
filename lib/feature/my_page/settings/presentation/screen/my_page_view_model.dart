@@ -20,7 +20,7 @@ class MyPageViewModel extends ChangeNotifier {
     _state = state.copyWith(isLoading: true);
     notifyListeners();
 
-    final user = await _authRepository.getCurrentUser();
+    final user = _authRepository.getCurrentUser();
 
     _state = state.copyWith(
       isLoading: false,
