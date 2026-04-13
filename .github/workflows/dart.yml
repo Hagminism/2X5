@@ -1,0 +1,150 @@
+name: PR Build Check for Android, iOS
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build_android:
+    name: Flutter Android Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Cache build_runner
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.dart_tool/build
+          key: ${{ runner.os }}-build_runner-${{ hashFiles('**/*.dart', '**/*.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build_runner-
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # pubspec.yaml에서 .env를 asset으로 사용하므로 CI에서 파일 생성 필요
+      - name: Create .env
+        run: |
+          cat > .env << 'EOF'
+          NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+          REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }}
+          EOF
+
+      # Android local.properties에 필요한 값 추가
+      - name: Setup Android local.properties
+        run: |
+          echo "naverClientId=${{ secrets.NAVER_CLIENT_ID }}" >> android/local.properties
+          echo "naverClientSecret=${{ secrets.NAVER_CLIENT_SECRET }}" >> android/local.properties
+          echo "redirectUri=${{ secrets.NAVER_REDIRECT_URI }}" >> android/local.properties
+          echo "kakaoNativeAppKey=${{ secrets.KAKAO_NATIVE_APP_KEY }}" >> android/local.properties
+
+      # 현재 build.gradle.kts에서 release는 debug signing 사용 중이므로 keystore 단계 생략
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build Android release APK
+        run: flutter build apk --release --dart-define=KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}
+
+  build_ios:
+    name: Flutter iOS Build Check
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Cache build_runner
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.dart_tool/build
+          key: ${{ runner.os }}-build_runner-${{ hashFiles('**/*.dart', '**/*.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build_runner-
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      # pubspec.yaml asset 대응
+      - name: Create .env
+        run: |
+          cat > .env << 'EOF'
+          NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+          REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }}
+          EOF
+
+      # iOS 프로젝트에서 참조하는 Secrets.xcconfig 생성
+      - name: Create iOS Secrets.xcconfig
+        run: |
+          cat > ios/Runner/Secrets.xcconfig << 'EOF'
+          GOOGLE_REVERSE_CLIENT_ID=${{ secrets.GOOGLE_REVERSE_CLIENT_ID }}
+          KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}
+          URL_SCHEME=team2x5
+          NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+          SERVICE_APP_NAME=team2x5
+          EOF
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: pod install
+
+      - name: Run code generation
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build iOS release IPA (no codesign)
+        run: flutter build ipa --release --no-codesign --dart-define=KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}
