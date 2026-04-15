@@ -1,11 +1,18 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_action.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_event.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_state.dart';
 import 'package:flutter/foundation.dart';
 
 class SignUpCustomerViewModel extends ChangeNotifier {
+  final AuthRepository _authRepository;
+
+  SignUpCustomerViewModel({
+    required AuthRepository authRepository,
+  }) : _authRepository = authRepository;
+
   SignUpCustomerState _state = const SignUpCustomerState();
 
   SignUpCustomerState get state => _state;
@@ -17,6 +24,8 @@ class SignUpCustomerViewModel extends ChangeNotifier {
 
   Future<void> onAction(SignUpCustomerAction action) async {
     switch (action) {
+      case TapBackButton():
+        break;
       case ToggleTermsAgreement():
         _toggleTermsAgreement();
         break;
@@ -26,11 +35,42 @@ class SignUpCustomerViewModel extends ChangeNotifier {
       case ChangePasswordConfirmObscureText():
         _changePasswordConfirmObscureText();
         break;
-      case TapBackButton():
       case TapSubmit():
-        // TODO: 회원가입 제출 로직 추가할 것
+        _submit();
+        break;
+      case ChangeName():
+        _changeName(action.name);
+        break;
+      case ChangeEmail():
+        _changeEmail(action.email);
+        break;
+      case ChangePassword():
+        _changePassword(action.password);
+        break;
+      case ChangePasswordConfirm():
+        _changePasswordConfirm(action.passwordConfirm);
         break;
     }
+  }
+
+  void _changeName(String name) {
+    _state = state.copyWith(name: name);
+    notifyListeners();
+  }
+
+  void _changeEmail(String email) {
+    _state = state.copyWith(email: email);
+    notifyListeners();
+  }
+
+  void _changePassword(String password) {
+    _state = state.copyWith(password: password);
+    notifyListeners();
+  }
+
+  void _changePasswordConfirm(String passwordConfirm) {
+    _state = state.copyWith(passwordConfirm: passwordConfirm);
+    notifyListeners();
   }
 
   void _changePasswordObscureText() {
@@ -53,6 +93,29 @@ class SignUpCustomerViewModel extends ChangeNotifier {
       errorMessage: null,
     );
     notifyListeners();
+  }
+
+  Future<void> _submit() async {
+    // 중복 실행 방지
+    if (state.isLoading) return;
+
+    _state = state.copyWith(isLoading: true);
+    notifyListeners();
+
+    try {
+      await _authRepository.signInWithEmail(
+        state.email,
+        state.password,
+        state.name,
+      );
+    } catch (e) {
+      _eventController.add(
+        SignUpCustomerEvent.showGoogleSignUpError(e.toString()),
+      );
+    } finally {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
   }
 
   @override
