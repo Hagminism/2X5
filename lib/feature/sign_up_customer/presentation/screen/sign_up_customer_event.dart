@@ -4,6 +4,6 @@ part 'sign_up_customer_event.freezed.dart';
 
 @freezed
 sealed class SignUpCustomerEvent with _$SignUpCustomerEvent {
-  const factory SignUpCustomerEvent.showErrorMessage(String message) =
-      ShowErrorMessage;
+  const factory SignUpCustomerEvent.showGoogleSignUpError(String message) =
+      ShowGoogleSignUpError;
 }
