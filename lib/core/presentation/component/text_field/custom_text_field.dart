@@ -7,12 +7,14 @@ class CustomTextField extends StatelessWidget {
   final TextFieldContentType textFieldContentType;
   final bool? isObscureText;
   final void Function()? onTap;
+  final void Function(String)? onChanged;
 
   const CustomTextField({
     super.key,
     required this.textFieldContentType,
     this.isObscureText,
     this.onTap,
+    this.onChanged,
   });
 
   @override
@@ -30,9 +32,10 @@ class CustomTextField extends StatelessWidget {
           const SizedBox(width: 16.0),
           Expanded(
             child: TextFormField(
+              onChanged: onChanged,
               obscureText:
-                  (textFieldContentType != TextFieldContentType.email &&
-                      isObscureText == true)
+              (textFieldContentType != TextFieldContentType.email &&
+                  isObscureText == true)
                   ? true
                   : false,
               decoration: buildInputDecoration(textFieldContentType),
@@ -40,7 +43,7 @@ class CustomTextField extends StatelessWidget {
           ),
           if ((textFieldContentType == TextFieldContentType.password ||
               textFieldContentType == TextFieldContentType.passwordConfirm) &&
-                  isObscureText != null)
+              isObscureText != null)
             Row(
               children: [
                 const SizedBox(width: 16.0),
@@ -94,8 +97,7 @@ class CustomTextField extends StatelessWidget {
   }
 
   InputDecoration buildInputDecoration(
-    TextFieldContentType textFieldContentType,
-  ) {
+      TextFieldContentType textFieldContentType,) {
     final String hintText;
 
     switch (textFieldContentType) {
