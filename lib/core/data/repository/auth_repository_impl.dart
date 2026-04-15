@@ -34,6 +34,25 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> signInWithEmail(
+    String email,
+    String password,
+    String name,
+  ) async {
+    final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    final user = userCredential.user;
+
+    // 정보 업데이트 (동기화)
+    if (user != null) {
+      await user.updateDisplayName(name);
+      await user.reload(); // 변경사항 확정
+    }
+  }
+
+  @override
   Future<void> signInWithKakao() async {
     final provider = OAuthProvider("oidc.kakao");
     await _firebaseAuth.signInWithProvider(provider);
