@@ -63,13 +63,11 @@ class SignInViewModel extends ChangeNotifier {
 
   void _changeEmail(String email) {
     _state = state.copyWith(email: email);
-    print('email: ${state.email}');
     notifyListeners();
   }
 
   void _changePassword(String password) {
     _state = state.copyWith(password: password);
-    print('password: ${state.password}');
     notifyListeners();
   }
 
