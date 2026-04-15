@@ -35,20 +35,12 @@ class CustomTextField extends StatelessWidget {
                       isObscureText == true)
                   ? true
                   : false,
-              decoration: InputDecoration(
-                hintText: (textFieldContentType == TextFieldContentType.email)
-                    ? '이메일 주소를 입력하세요'
-                    : '비밀번호를 입력하세요',
-                hintStyle: AppTextStyles.body.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                ),
-                border: InputBorder.none,
-              ),
+              decoration: buildInputDecoration(textFieldContentType),
             ),
           ),
-          if (textFieldContentType == TextFieldContentType.password &&
-              isObscureText != null)
+          if ((textFieldContentType == TextFieldContentType.password ||
+              textFieldContentType == TextFieldContentType.passwordConfirm) &&
+                  isObscureText != null)
             Row(
               children: [
                 const SizedBox(width: 16.0),
@@ -79,10 +71,14 @@ class CustomTextField extends StatelessWidget {
     final IconData iconData;
 
     switch (textFieldContentType) {
+      case TextFieldContentType.name:
+        iconData = Icons.person_outline;
+        break;
       case TextFieldContentType.email:
         iconData = Icons.email_outlined;
         break;
       case TextFieldContentType.password:
+      case TextFieldContentType.passwordConfirm:
         iconData = Icons.lock_outline;
         break;
     }
@@ -94,6 +90,36 @@ class CustomTextField extends StatelessWidget {
         size: 24,
         color: AppColors.textSecondary,
       ),
+    );
+  }
+
+  InputDecoration buildInputDecoration(
+    TextFieldContentType textFieldContentType,
+  ) {
+    final String hintText;
+
+    switch (textFieldContentType) {
+      case TextFieldContentType.name:
+        hintText = '이름을 입력하세요';
+        break;
+      case TextFieldContentType.email:
+        hintText = '이메일 주소를 입력하세요';
+        break;
+      case TextFieldContentType.password:
+        hintText = '비밀번호를 입력하세요';
+        break;
+      case TextFieldContentType.passwordConfirm:
+        hintText = '비밀번호를 다시 한 번 입력하세요';
+        break;
+    }
+
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: AppTextStyles.body.copyWith(
+        fontWeight: FontWeight.w500,
+        color: AppColors.textSecondary,
+      ),
+      border: InputBorder.none,
     );
   }
 }
