@@ -32,7 +32,7 @@ class _SignUpCustomerScreenRootState extends State<SignUpCustomerScreenRoot> {
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (mounted) {
         switch (event) {
-          case ShowErrorMessage():
+          case SignUpCustomerEvent():
             // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -57,6 +57,10 @@ class _SignUpCustomerScreenRootState extends State<SignUpCustomerScreenRoot> {
           state: widget.viewModel.state,
           onAction: (action) {
             switch (action) {
+              case ChangeName():
+              case ChangeEmail():
+              case ChangePassword():
+              case ChangePasswordConfirm():
               case ToggleTermsAgreement():
               case TapSubmit():
               case ChangePasswordObscureText():
