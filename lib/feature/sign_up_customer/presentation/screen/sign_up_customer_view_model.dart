@@ -103,7 +103,7 @@ class SignUpCustomerViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _authRepository.signInWithEmail(
+      await _authRepository.signUpWithEmail(
         state.email,
         state.password,
         state.name,
