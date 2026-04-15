@@ -110,7 +110,7 @@ class SignUpCustomerViewModel extends ChangeNotifier {
       );
     } catch (e) {
       _eventController.add(
-        SignUpCustomerEvent.showGoogleSignUpError(e.toString()),
+        SignUpCustomerEvent.showSignUpError(e.toString()),
       );
     } finally {
       _state = state.copyWith(isLoading: false);
