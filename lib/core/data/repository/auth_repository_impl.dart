@@ -34,7 +34,15 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithEmail(
+  Future<void> signInWithEmail(String email, String password) async {
+    await _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  @override
+  Future<void> signUpWithEmail(
     String email,
     String password,
     String name,
@@ -47,9 +55,18 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // 정보 업데이트 (동기화)
     if (user != null) {
+      print('-----------------before-----------------');
+      print('name: ${user.displayName}');
+      print('email: ${user.email}');
+      print('uid: ${user.uid}');
       await user.updateDisplayName(name);
       await user.reload(); // 변경사항 확정
     }
+
+    print('-----------------after-----------------');
+    print('name: ${user?.displayName}');
+    print('email: ${user?.email}');
+    print('uid: ${user?.uid}');
   }
 
   @override
