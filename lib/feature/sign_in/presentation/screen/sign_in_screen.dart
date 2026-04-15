@@ -53,6 +53,9 @@ class SignInScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       CustomTextField(
                         textFieldContentType: TextFieldContentType.email,
+                        onChanged: (email) {
+                          onAction(SignInAction.changeEmail(email));
+                        },
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -68,6 +71,9 @@ class SignInScreen extends StatelessWidget {
                         isObscureText: state.isObscureText,
                         onTap: () {
                           onAction(SignInAction.changeObscureText());
+                        },
+                        onChanged: (password) {
+                          onAction(SignInAction.changePassword(password));
                         },
                       ),
                       const SizedBox(height: 32),

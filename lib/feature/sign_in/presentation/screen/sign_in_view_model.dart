@@ -30,6 +30,12 @@ class SignInViewModel extends ChangeNotifier {
       case ChangeObscureText():
         _changeObscureText();
         break;
+      case ChangeEmail():
+        _changeEmail(action.email);
+        break;
+      case ChangePassword():
+        _changePassword(action.password);
+        break;
       case TapGoogleSignInButton():
         _signInWithGoogle();
         break;
@@ -40,6 +46,8 @@ class SignInViewModel extends ChangeNotifier {
         _signInWithNaver();
         break;
       case TapSignInButton():
+        _signInWithEmail();
+        break;
       case MoveToSignUpScreen():
       case MoveToFindPasswordScreen():
         break;
@@ -51,6 +59,35 @@ class SignInViewModel extends ChangeNotifier {
       isObscureText: !state.isObscureText,
     );
     notifyListeners();
+  }
+
+  void _changeEmail(String email) {
+    _state = state.copyWith(email: email);
+    print('email: ${state.email}');
+    notifyListeners();
+  }
+
+  void _changePassword(String password) {
+    _state = state.copyWith(password: password);
+    print('password: ${state.password}');
+    notifyListeners();
+  }
+
+  Future<void> _signInWithEmail() async {
+    // 중복 실행 방지
+    if (state.isLoading) return;
+
+    _state = state.copyWith(isLoading: true);
+    notifyListeners();
+
+    try {
+      await _authRepository.signInWithEmail(state.email, state.password);
+    } catch (e) {
+      _eventController.add(SignInEvent.showGoogleSignInError(e.toString()));
+    } finally {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
   }
 
   Future<void> _signInWithGoogle() async {
@@ -125,7 +162,7 @@ class SignInViewModel extends ChangeNotifier {
   Future<void> linkNaverWithFirebase(String idToken, String accessToken) async {
     try {
       await _authRepository.signInWithNaver(idToken, accessToken);
-    } catch(e) {
+    } catch (e) {
       _eventController.add(SignInEvent.showNaverSignInError(e.toString()));
     } finally {
       _state = state.copyWith(isLoading: false);

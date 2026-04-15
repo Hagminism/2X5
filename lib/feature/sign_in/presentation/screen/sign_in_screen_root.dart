@@ -100,13 +100,13 @@ class _SignInScreenRootState extends State<SignInScreenRoot> {
           onAction: (action) {
             switch (action) {
               case ChangeObscureText():
+              case ChangeEmail():
+              case ChangePassword():
               case TapGoogleSignInButton():
               case TapNaverSignInButton():
               case TapKakaoSignInButton():
-                widget.viewModel.onAction(action);
-                break;
               case TapSignInButton():
-                // 이메일 로그인 구현 시 연결
+                widget.viewModel.onAction(action);
                 break;
               case MoveToSignUpScreen():
                 context.go('${Routes.signIn}/${Routes.selectAuthProvider}');
