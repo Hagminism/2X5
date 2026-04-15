@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_action.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_event.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_state.dart';
 import 'package:flutter/foundation.dart';
 
@@ -6,71 +10,54 @@ class SignUpCustomerViewModel extends ChangeNotifier {
 
   SignUpCustomerState get state => _state;
 
-  void onNameChanged(String value) {
-    _state = _state.copyWith(name: value, errorMessage: null);
-    notifyListeners();
-  }
+  final StreamController<SignUpCustomerEvent> _eventController =
+      StreamController<SignUpCustomerEvent>();
 
-  void onEmailChanged(String value) {
-    _state = _state.copyWith(email: value, errorMessage: null);
-    notifyListeners();
-  }
+  Stream<SignUpCustomerEvent> get eventStream => _eventController.stream;
 
-  void onPasswordChanged(String value) {
-    _state = _state.copyWith(password: value, errorMessage: null);
-    notifyListeners();
-  }
-
-  void onPasswordConfirmChanged(String value) {
-    _state = _state.copyWith(passwordConfirm: value, errorMessage: null);
-    notifyListeners();
-  }
-
-  void onTermsChanged(bool value) {
-    _state = _state.copyWith(agreeTerms: value, errorMessage: null);
-    notifyListeners();
-  }
-
-  Future<void> submitSignUp() async {
-    if (!_state.canSubmit) {
-      return;
+  Future<void> onAction(SignUpCustomerAction action) async {
+    switch (action) {
+      case ToggleTermsAgreement():
+        _toggleTermsAgreement();
+        break;
+      case ChangePasswordObscureText():
+        _changePasswordObscureText();
+        break;
+      case ChangePasswordConfirmObscureText():
+        _changePasswordConfirmObscureText();
+        break;
+      case TapBackButton():
+      case TapSubmit():
+        // TODO: 회원가입 제출 로직 추가할 것
+        break;
     }
+  }
 
-    if (_state.name.trim().length < 2) {
-      _state = _state.copyWith(errorMessage: '이름은 2자 이상 입력해 주세요.');
-      notifyListeners();
-      return;
-    }
-
-    if (!_isValidEmail(_state.email)) {
-      _state = _state.copyWith(errorMessage: '올바른 이메일 형식을 입력해 주세요.');
-      notifyListeners();
-      return;
-    }
-
-    if (_state.password.length < 6) {
-      _state = _state.copyWith(errorMessage: '비밀번호는 6자 이상이어야 합니다.');
-      notifyListeners();
-      return;
-    }
-
-    if (!_state.isPasswordMatched) {
-      _state = _state.copyWith(errorMessage: '비밀번호 확인이 일치하지 않습니다.');
-      notifyListeners();
-      return;
-    }
-
-    _state = _state.copyWith(isSubmitting: true, errorMessage: null);
-    notifyListeners();
-
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-
-    _state = _state.copyWith(isSubmitting: false, errorMessage: null);
+  void _changePasswordObscureText() {
+    _state = state.copyWith(
+      passwordObscureText: !state.passwordObscureText,
+    );
     notifyListeners();
   }
 
-  bool _isValidEmail(String value) {
-    final pattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    return pattern.hasMatch(value.trim());
+  void _changePasswordConfirmObscureText() {
+    _state = state.copyWith(
+      passwordConfirmObscureText: !state.passwordConfirmObscureText,
+    );
+    notifyListeners();
+  }
+
+  void _toggleTermsAgreement() {
+    _state = state.copyWith(
+      agreeTerms: !state.agreeTerms,
+      errorMessage: null,
+    );
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _eventController.close();
+    super.dispose();
   }
 }
