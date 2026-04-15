@@ -22,16 +22,16 @@ class SignUpCustomerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: CustomAppBar(
-        title: '',
-        showBackButton: true,
-        onTap: () => onAction(SignUpCustomerAction.tapBackButton()),
-      ),
-      body: Stack(
-        children: [
-          SafeArea(
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.white,
+          appBar: CustomAppBar(
+            title: '',
+            showBackButton: true,
+            onTap: () => onAction(SignUpCustomerAction.tapBackButton()),
+          ),
+          body: SafeArea(
             child: Center(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -43,11 +43,17 @@ class SignUpCustomerScreen extends StatelessWidget {
                     buildLabel('이름'),
                     CustomTextField(
                       textFieldContentType: TextFieldContentType.name,
+                      onChanged: (name) {
+                        onAction(SignUpCustomerAction.changeName(name));
+                      },
                     ),
                     const SizedBox(height: 28),
                     buildLabel('이메일'),
                     CustomTextField(
                       textFieldContentType: TextFieldContentType.email,
+                      onChanged: (email) {
+                        onAction(SignUpCustomerAction.changeEmail(email));
+                      },
                     ),
                     const SizedBox(height: 28),
                     buildLabel('비밀번호'),
@@ -57,6 +63,11 @@ class SignUpCustomerScreen extends StatelessWidget {
                       onTap: () {
                         onAction(
                           const SignUpCustomerAction.changePasswordObscureText(),
+                        );
+                      },
+                      onChanged: (password) {
+                        onAction(
+                          SignUpCustomerAction.changePassword(password),
                         );
                       },
                     ),
@@ -71,6 +82,13 @@ class SignUpCustomerScreen extends StatelessWidget {
                           const SignUpCustomerAction.changePasswordConfirmObscureText(),
                         );
                       },
+                      onChanged: (passwordConfirm) {
+                        onAction(
+                          SignUpCustomerAction.changePasswordConfirm(
+                            passwordConfirm,
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 36),
                     SignUpCustomerTermsRow(
@@ -80,26 +98,31 @@ class SignUpCustomerScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 36),
-                    PrimaryButton(text: '가입하기', onTap: () {}),
+                    PrimaryButton(
+                      text: '가입하기',
+                      onTap: () {
+                        onAction(const SignUpCustomerAction.tapSubmit());
+                      },
+                    ),
                     const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
           ),
-          if (state.isLoading)
-            ModalBarrier(
-              dismissible: false,
-              color: AppColors.black.withValues(alpha: 0.2588),
+        ),
+        if (state.isLoading)
+          ModalBarrier(
+            dismissible: false,
+            color: AppColors.black.withValues(alpha: 0.2588),
+          ),
+        if (state.isLoading)
+          const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
             ),
-          if (state.isLoading)
-            const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
