@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/presentation/component/dialog/text_field_dialog.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_event.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -55,6 +56,7 @@ class _AccountSettingScreenRootState extends State<AccountSettingScreenRoot> {
                   );
                 },
               );
+              break;
             case ShowDeleteAccountDialog():
               showDialog(
                 context: context,
@@ -69,6 +71,38 @@ class _AccountSettingScreenRootState extends State<AccountSettingScreenRoot> {
                   );
                 },
               );
+              break;
+            case ShowEnterPasswordDialog():
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return TextFieldDialog(
+                    title: '탈퇴를 원하시면 비밀번호를 재입력해주세요.',
+                    onPressed: () {
+                      widget.viewModel.onAction(
+                        AccountSettingAction.tapSubmitPasswordButton(),
+                      );
+                    },
+                    onChanged: (password) {
+                      widget.viewModel.onAction(
+                        AccountSettingAction.typePassword(password),
+                      );
+                    },
+                  );
+                },
+              );
+              break;
+            case ShowshowErrorMessage():
+              // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(event.error),
+                  duration: Duration(milliseconds: 1500),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              break;
           }
         }
       },
@@ -92,6 +126,8 @@ class _AccountSettingScreenRootState extends State<AccountSettingScreenRoot> {
               case TapSignOutConfirmButton():
               case TapDeleteAccountButton():
               case TapDeleteAccountConfirmButton():
+              case TapSubmitPasswordButton():
+              case TypePassword():
                 widget.viewModel.onAction(action);
                 break;
             }
