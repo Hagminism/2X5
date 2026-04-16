@@ -34,15 +34,14 @@ class CustomTextField extends StatelessWidget {
             child: TextFormField(
               onChanged: onChanged,
               obscureText:
-              (textFieldContentType != TextFieldContentType.email &&
-                  isObscureText == true)
-                  ? true
-                  : false,
+                  (textFieldContentType != TextFieldContentType.email &&
+                  isObscureText == true),
               decoration: buildInputDecoration(textFieldContentType),
             ),
           ),
           if ((textFieldContentType == TextFieldContentType.password ||
-              textFieldContentType == TextFieldContentType.passwordConfirm) &&
+                  textFieldContentType ==
+                      TextFieldContentType.passwordConfirm) &&
               isObscureText != null)
             Row(
               children: [
@@ -97,7 +96,8 @@ class CustomTextField extends StatelessWidget {
   }
 
   InputDecoration buildInputDecoration(
-      TextFieldContentType textFieldContentType,) {
+    TextFieldContentType textFieldContentType,
+  ) {
     final String hintText;
 
     switch (textFieldContentType) {
