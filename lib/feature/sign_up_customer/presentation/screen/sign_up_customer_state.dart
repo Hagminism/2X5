@@ -9,6 +9,7 @@ abstract class SignUpCustomerState with _$SignUpCustomerState {
   const factory SignUpCustomerState({
     @Default(false) bool isLoading,
     @Default('') String name,
+    @Default('') String phone,
     @Default('') String email,
     @Default('') String password,
     @Default('') String passwordConfirm,
