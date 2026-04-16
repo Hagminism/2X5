@@ -42,6 +42,9 @@ class SignUpCustomerViewModel extends ChangeNotifier {
       case ChangeName():
         _changeName(action.name);
         break;
+      case ChangePhone():
+        _changePhone(action.phone);
+        break;
       case ChangeEmail():
         _changeEmail(action.email);
         break;
@@ -56,6 +59,11 @@ class SignUpCustomerViewModel extends ChangeNotifier {
 
   void _changeName(String name) {
     _state = state.copyWith(name: name);
+    notifyListeners();
+  }
+
+  void _changePhone(String phone) {
+    _state = state.copyWith(phone: phone);
     notifyListeners();
   }
 
