@@ -143,6 +143,13 @@ class SignUpCustomerViewModel extends ChangeNotifier {
     if (state.name.trim().isEmpty) {
       return '이름을 입력해 주세요.';
     }
+    final phone = state.phone.trim();
+    if (phone.isEmpty) {
+      return '전화번호를 입력해 주세요.';
+    }
+    if (!RegExp(r'^010\d{8}$').hasMatch(phone)) {
+      return '전화번호는 010으로 시작하는 숫자 11자리로 입력해 주세요.';
+    }
     if (state.email.trim().isEmpty) {
       return '이메일을 입력해 주세요.';
     }
