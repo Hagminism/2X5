@@ -42,11 +42,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signUpWithEmail(
-    String email,
-    String password,
-    String name,
-  ) async {
+  Future<void> signUpWithEmail({
+    required String email,
+    required String password,
+    required String name,
+    required String phone, // TODO: Supabase 연동 시 필요
+  }) async {
     final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
