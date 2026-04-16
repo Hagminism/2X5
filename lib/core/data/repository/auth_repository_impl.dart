@@ -34,6 +34,34 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> signInWithEmail(String email, String password) async {
+    await _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  @override
+  Future<void> signUpWithEmail(
+    String email,
+    String password,
+    String name,
+  ) async {
+    final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    final user = userCredential.user;
+
+    // 정보 업데이트 (동기화)
+    if (user != null) {
+      // TODO: 수정 내역 반영되는데 시간이 좀 걸리는 것 같음. 확인할 것.
+      await user.updateDisplayName(name);
+      await user.reload(); // 변경사항 확정
+    }
+  }
+
+  @override
   Future<void> signInWithKakao() async {
     final provider = OAuthProvider("oidc.kakao");
     await _firebaseAuth.signInWithProvider(provider);
@@ -137,7 +165,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> deleteAccount() async {
+  Future<void> deleteAccount({String? password}) async {
     // 1. 유저 로그인 상태 확인
     final currentUser = _firebaseAuth.currentUser;
 
@@ -176,6 +204,29 @@ class AuthRepositoryImpl implements AuthRepository {
       final provider = OAuthProvider("oidc.kakao");
 
       await currentUser.reauthenticateWithProvider(provider);
+    } else if (providerId == 'password') {
+      final email = currentUser.email;
+
+      if (email == null || email.isEmpty) {
+        throw FirebaseAuthException(
+          code: 'missing-email',
+          message: '이메일 계정 정보가 없습니다.',
+        );
+      }
+
+      if (password == null || password.isEmpty) {
+        throw FirebaseAuthException(
+          code: 'requires-password-for-delete',
+          message: '이메일 계정 탈퇴는 비밀번호 입력이 필요합니다.',
+        );
+      }
+
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+
+      await currentUser.reauthenticateWithCredential(credential);
     } else {
       // 이메일 로그인 등 다른 수단이 있다면 여기에 추가
       throw Exception('지원하지 않는 인증 수단입니다.');

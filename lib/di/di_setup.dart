@@ -23,7 +23,7 @@ void diSetup() {
     () => FindPasswordViewModel(),
   );
   getIt.registerFactory<SignUpCustomerViewModel>(
-    () => SignUpCustomerViewModel(),
+    () => SignUpCustomerViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<SignUpPartnerViewModel>(
     () => SignUpPartnerViewModel(),

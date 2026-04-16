@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_action.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_event.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_state.dart';
@@ -37,10 +36,14 @@ class AccountSettingViewModel extends ChangeNotifier {
         _signOut();
         break;
       case TapDeleteAccountButton():
-        _eventController.add(AccountSettingEvent.showDeleteAccountDialog());
+        _selectDialogType();
         break;
       case TapDeleteAccountConfirmButton():
+      case TapSubmitPasswordButton():
         _deleteAccount();
+        break;
+      case TypePassword():
+        _typePassword(action.password);
         break;
     }
   }
@@ -55,25 +58,48 @@ class AccountSettingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _selectDialogType() {
+    final providerId = _authRepository
+        .getCurrentUser()!
+        .providerData
+        .first
+        .providerId;
+
+    if (providerId == 'password') {
+      _eventController.add(AccountSettingEvent.showEnterPasswordDialog());
+    } else {
+      _eventController.add(AccountSettingEvent.showDeleteAccountDialog());
+    }
+  }
+
   Future<void> _deleteAccount() async {
+    if (state.isLoading) return;
+
     _state = state.copyWith(isLoading: true);
     notifyListeners();
 
     try {
-      await _authRepository.deleteAccount();
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'requires-recent-login') {
-        // 보안상 중요한 작업은 최근 로그인 기록이 필요
-        // 여기서 사용자에게 재로그인을 요청하는 알림을 생성
-        // TODO: 스낵바 등으로 사용자에게 고지하면 될 듯?
-        print('재로그인이 필요합니다.');
+      final providerId = _authRepository
+          .getCurrentUser()!
+          .providerData
+          .first
+          .providerId;
+
+      if (providerId == 'password') {
+        await _authRepository.deleteAccount(password: state.password);
+      } else {
+        await _authRepository.deleteAccount();
       }
     } catch (e) {
-      // TODO: 스낵바 등으로 사용자에게 고지하면 될 듯?
-      print('회원 탈퇴 실패: $e');
+      _eventController.add(AccountSettingEvent.showErrorMessage(e.toString()));
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
     }
+  }
+
+  void _typePassword(String password) {
+    _state = state.copyWith(password: password);
+    notifyListeners();
   }
 }

@@ -19,4 +19,10 @@ sealed class AccountSettingAction with _$AccountSettingAction {
 
   const factory AccountSettingAction.tapDeleteAccountConfirmButton() =
       TapDeleteAccountConfirmButton;
+
+  const factory AccountSettingAction.tapSubmitPasswordButton() =
+      TapSubmitPasswordButton;
+
+  const factory AccountSettingAction.typePassword(String password) =
+      TypePassword;
 }

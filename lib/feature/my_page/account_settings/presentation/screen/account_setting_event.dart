@@ -9,6 +9,12 @@ sealed class AccountSettingEvent with _$AccountSettingEvent {
 
   const factory AccountSettingEvent.showSignOutDialog() = ShowSignOutDialog;
 
+  const factory AccountSettingEvent.showEnterPasswordDialog() =
+      ShowEnterPasswordDialog;
+
   const factory AccountSettingEvent.showDeleteAccountDialog() =
       ShowDeleteAccountDialog;
+
+  const factory AccountSettingEvent.showErrorMessage(String error) =
+      ShowshowErrorMessage;
 }

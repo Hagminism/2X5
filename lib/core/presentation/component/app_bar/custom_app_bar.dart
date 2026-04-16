@@ -19,6 +19,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: AppColors.white,
       automaticallyImplyLeading: false,
+      surfaceTintColor: Colors.transparent,
       title: Row(
         mainAxisAlignment: (showBackButton != null && showBackButton == true)
             ? MainAxisAlignment.spaceBetween
