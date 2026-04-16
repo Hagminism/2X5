@@ -121,9 +121,10 @@ class SignUpCustomerViewModel extends ChangeNotifier {
 
     try {
       await _authRepository.signUpWithEmail(
-        state.email.trim(),
-        state.password,
-        state.name.trim(),
+        email: state.email.trim(),
+        password: state.password,
+        name: state.name.trim(),
+        phone: state.phone.trim(),
       );
     } on FirebaseAuthException catch (e) {
       _eventController.add(
