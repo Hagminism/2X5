@@ -17,7 +17,7 @@ abstract interface class AuthRepository {
 
   // 공통
   Future<void> signOut();
-  Future<void> deleteAccount();
+  Future<void> deleteAccount({String? password});
   User? getCurrentUser();
   Stream<User?> authStateChanges();
 }
