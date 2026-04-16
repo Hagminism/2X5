@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
 part 'account_setting_event.freezed.dart';
 
