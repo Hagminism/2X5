@@ -9,6 +9,8 @@ sealed class SignUpCustomerAction with _$SignUpCustomerAction {
 
   const factory SignUpCustomerAction.changeName(String name) = ChangeName;
 
+  const factory SignUpCustomerAction.changePhone(String phone) = ChangePhone;
+
   const factory SignUpCustomerAction.changeEmail(String email) = ChangeEmail;
 
   const factory SignUpCustomerAction.changePassword(String password) =
