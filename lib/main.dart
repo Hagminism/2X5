@@ -12,26 +12,30 @@ import 'ui/app_colors.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // GoogleSignIn 객체는 전역 싱글톤이므로, getIt에서 가리키는 대상과 같음
-  await GoogleSignIn.instance.initialize(
-    serverClientId: DefaultFirebaseOptions.currentPlatform.androidClientId,
-  );
+    // GoogleSignIn 객체는 전역 싱글톤이므로, getIt에서 가리키는 대상과 같음
+    await GoogleSignIn.instance.initialize(
+      serverClientId: DefaultFirebaseOptions.currentPlatform.androidClientId,
+    );
 
-  // 'String.fromEnvironment'를 사용해 빌드 타임 변수를 읽어옵니다.
-  // const를 사용해야 컴파일 시점에 최적화되어 보안에 더 유리합니다.
-  const kakaoNativeAppKey = String.fromEnvironment('KAKAO_NATIVE_APP_KEY');
+    // 'String.fromEnvironment'를 사용해 빌드 타임 변수를 읽어옵니다.
+    // const를 사용해야 컴파일 시점에 최적화되어 보안에 더 유리합니다.
+    const kakaoNativeAppKey = String.fromEnvironment('KAKAO_NATIVE_APP_KEY');
 
-  KakaoSdk.init(
-    nativeAppKey: kakaoNativeAppKey,
-  );
+    KakaoSdk.init(
+      nativeAppKey: kakaoNativeAppKey,
+    );
 
-  await dotenv.load(fileName: '.env');
+    await dotenv.load(fileName: '.env');
 
-  diSetup();
+    diSetup();
 
-  runApp(const App());
+    runApp(const App());
+  } catch (e, stack) {
+    debugPrint('❌ [ERROR] 초기화 중 오류 발생: $e');
+  }
 }
 
 class App extends StatelessWidget {

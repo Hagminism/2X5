@@ -71,12 +71,3 @@ storage.rules
 # Local properties (contains API keys - do not commit)
 android/local.properties
 .dart_defines
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-.env.development
-.env.production
-.env.staging
-.env.test
