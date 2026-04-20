@@ -80,16 +80,3 @@ android/local.properties
 .env.production
 .env.staging
 .env.test
-
-# API Keys & Secrets
-*naver_keys*
-*google_keys*
-*api_key*
-secrets.xml
-local.properties
-android/local.properties
-ios/Runner/Secrets.xcconfig
-*.env*
-
-# Git 관리에서 제외할 기타 파일
-시나리오.png
