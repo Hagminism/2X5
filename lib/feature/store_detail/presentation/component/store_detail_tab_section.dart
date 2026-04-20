@@ -6,11 +6,19 @@ class StoreDetailTabSection extends StatelessWidget {
   const StoreDetailTabSection({
     required this.selectedTab,
     required this.onTabSelected,
+    required this.storeName,
+    required this.location,
+    this.naverPlaceId,
+    required this.googleSearchQuery,
     super.key,
   });
 
   final int selectedTab;
   final ValueChanged<int> onTabSelected;
+  final String storeName;
+  final String location;
+  final String? naverPlaceId;
+  final String googleSearchQuery;
 
   static const List<String> _tabs = ['홈', '메뉴', '사진', '리뷰', '매장정보'];
 
@@ -74,9 +82,11 @@ class StoreDetailTabSection extends StatelessWidget {
   Widget _tabView(int tabIndex) {
     switch (tabIndex) {
       case 3:
-        return const StoreDetailReviewSection(
-          naverPlaceId: '11591675', // 테스트용 한성대학교 ID
-          googleSearchQuery: '한성대학교', // 테스트용 검색어
+        return StoreDetailReviewSection(
+          storeName: storeName,
+          location: location,
+          naverPlaceId: naverPlaceId,
+          googleSearchQuery: googleSearchQuery,
         );
       case 1:
         return const Text('대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.', style: _contentStyle);

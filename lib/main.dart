@@ -33,7 +33,6 @@ Future<void> main() async {
     debugPrint('❌ [FATAL ERROR] 앱 초기화 실패: $e');
     debugPrint('❌ [STACK TRACE] $stack');
     
-    // 초기화 실패 시 에러 화면을 표시하는 앱 실행
     runApp(MaterialApp(
       home: Scaffold(
         body: Center(
@@ -46,7 +45,7 @@ Future<void> main() async {
                 const SizedBox(height: 16),
                 const Text('앱 초기화 중 오류가 발생했습니다.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Text(e.toString(), textAlign: Center, style: const TextStyle(color: Colors.grey)),
+                Text(e.toString(), textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
               ],
             ),
           ),

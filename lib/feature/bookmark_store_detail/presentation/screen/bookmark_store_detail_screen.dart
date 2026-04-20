@@ -89,6 +89,10 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
               SliverToBoxAdapter(
                 child: BookmarkStoreDetailTabSection(
                   selectedTab: _selectedTab,
+                  storeName: data.name,
+                  location: data.location,
+                  naverPlaceId: data.naverPlaceId,
+                  googleSearchQuery: data.googleSearchQuery,
                   onTabSelected: (index) {
                     setState(() {
                       _selectedTab = index;
@@ -154,6 +158,8 @@ class _StoreDetailData {
     required this.priceRange,
     required this.openHours,
     required this.tags,
+    this.naverPlaceId,
+    required this.googleSearchQuery,
   });
 
   final String name;
@@ -165,6 +171,8 @@ class _StoreDetailData {
   final String priceRange;
   final String openHours;
   final List<String> tags;
+  final String? naverPlaceId;
+  final String googleSearchQuery;
 }
 
 const _defaultStoreData = _StoreDetailData(
@@ -177,22 +185,24 @@ const _defaultStoreData = _StoreDetailData(
   priceRange: '가격 정보',
   openHours: '운영시간 정보',
   tags: ['주차', '단체', '룸'],
+  googleSearchQuery: '한성대학교',
 );
 
 const Map<String, _StoreDetailData> _storeData = {
   's1': _StoreDetailData(
-    name: '라운지 파스타',
+    name: '세상의 모든 아침',
     category: '이탈리안',
     rating: 4.8,
     reviewCount: 156,
-    description: '룸 분위기에서 즐길 수 있는 파스타 전문점입니다.',
+    description: '고층 뷰가 아름다운 라운지 파스타 전문점입니다.',
     location: '여의도역에서 254m',
     priceRange: '2.5 - 5만원',
     openHours: '오늘 11:10 - 21:10',
     tags: ['최대 16명 예약', '주차', '콜키지', '단체', '룸', '대관'],
+    googleSearchQuery: '세상의 모든 아침 여의도',
   ),
   's2': _StoreDetailData(
-    name: '블루보틀 타입 카페',
+    name: '블루보틀 여의도 카페',
     category: '카페',
     rating: 4.7,
     reviewCount: 96,
@@ -201,9 +211,10 @@ const Map<String, _StoreDetailData> _storeData = {
     priceRange: '0.8 - 2만원',
     openHours: '오늘 09:00 - 22:00',
     tags: ['콘센트', '와이파이', '단체석'],
+    googleSearchQuery: '블루보틀 여의도',
   ),
   's3': _StoreDetailData(
-    name: '모던 헤어 스튜디오',
+    name: '아이디헤어 여의도점',
     category: '미용실',
     rating: 4.6,
     reviewCount: 83,
@@ -212,5 +223,6 @@ const Map<String, _StoreDetailData> _storeData = {
     priceRange: '2 - 10만원',
     openHours: '오늘 10:00 - 20:00',
     tags: ['남/여 커트', '두피케어', '예약제'],
+    googleSearchQuery: '아이디헤어 여의도점',
   ),
 };

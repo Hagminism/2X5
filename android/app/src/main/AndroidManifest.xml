@@ -103,6 +103,16 @@
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
         </intent>
+        <!-- 네이버 지도 딥링크 실행을 위한 설정 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="nmap" />
+        </intent>
+        <!-- 구글 지도 및 웹 리뷰 실행을 위한 설정 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
         <!-- 네이버 앱 로그인 -->
         <intent>
             <action android:name="android.intent.action.VIEW" />

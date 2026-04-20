@@ -92,7 +92,6 @@ jobs:
         run: flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Build Android release APK
-<<<<<<< HEAD
         run: flutter build apk --release --dart-define=KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}
 
   build_ios:
@@ -183,6 +182,3 @@ jobs:
 
       - name: Build iOS release IPA (no codesign)
         run: flutter build ipa --release --no-codesign --dart-define=KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}
-=======
-        run: flutter build apk --release --dart-define=KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}
->>>>>>> 530d80c45c05c28ddad956974b7fdf12011574bd
