@@ -42,6 +42,9 @@ class SignUpCustomerViewModel extends ChangeNotifier {
       case ChangeName():
         _changeName(action.name);
         break;
+      case ChangePhone():
+        _changePhone(action.phone);
+        break;
       case ChangeEmail():
         _changeEmail(action.email);
         break;
@@ -56,6 +59,11 @@ class SignUpCustomerViewModel extends ChangeNotifier {
 
   void _changeName(String name) {
     _state = state.copyWith(name: name);
+    notifyListeners();
+  }
+
+  void _changePhone(String phone) {
+    _state = state.copyWith(phone: phone);
     notifyListeners();
   }
 
@@ -113,9 +121,10 @@ class SignUpCustomerViewModel extends ChangeNotifier {
 
     try {
       await _authRepository.signUpWithEmail(
-        state.email.trim(),
-        state.password,
-        state.name.trim(),
+        email: state.email.trim(),
+        password: state.password,
+        name: state.name.trim(),
+        phone: state.phone.trim(),
       );
     } on FirebaseAuthException catch (e) {
       _eventController.add(
@@ -134,6 +143,13 @@ class SignUpCustomerViewModel extends ChangeNotifier {
   String? _validateSignUpInput() {
     if (state.name.trim().isEmpty) {
       return '이름을 입력해 주세요.';
+    }
+    final phone = state.phone.trim();
+    if (phone.isEmpty) {
+      return '전화번호를 입력해 주세요.';
+    }
+    if (!RegExp(r'^010\d{8}$').hasMatch(phone)) {
+      return '전화번호는 010으로 시작하는 숫자 11자리로 입력해 주세요.';
     }
     if (state.email.trim().isEmpty) {
       return '이메일을 입력해 주세요.';
