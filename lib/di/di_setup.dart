@@ -11,10 +11,35 @@ import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partn
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 GetIt getIt = GetIt.instance;
 
 void diSetup() {
+  // Auth
+  getIt.registerLazySingleton<GoogleSignIn>(
+    () => GoogleSignIn.instance,
+  );
+  getIt.registerLazySingleton<FirebaseAuth>(
+    () => FirebaseAuth.instance,
+  );
+  getIt.registerLazySingleton<AppLinks>(
+    () => AppLinks(),
+  );
+
+  // DB
+  getIt.registerLazySingleton<Supabase>(
+    () => Supabase.instance,
+  );
+
+  // Repository
+  getIt.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
+      firebaseAuth: getIt<FirebaseAuth>(),
+      googleSignIn: getIt<GoogleSignIn>(),
+    ),
+  );
+
   // ViewModel
   getIt.registerFactory<SignInViewModel>(
     () => SignInViewModel(authRepository: getIt<AuthRepository>()),
@@ -36,24 +61,5 @@ void diSetup() {
   );
   getIt.registerFactory<MyPageViewModel>(
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
-  );
-
-  // Repository
-  getIt.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
-      firebaseAuth: getIt<FirebaseAuth>(),
-      googleSignIn: getIt<GoogleSignIn>(),
-    ),
-  );
-
-  // Auth
-  getIt.registerLazySingleton<GoogleSignIn>(
-    () => GoogleSignIn.instance,
-  );
-  getIt.registerLazySingleton<FirebaseAuth>(
-    () => FirebaseAuth.instance,
-  );
-  getIt.registerLazySingleton<AppLinks>(
-    () => AppLinks(),
   );
 }
