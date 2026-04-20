@@ -2,28 +2,22 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/store_
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_image_carousel.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_info_section.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_tab_section.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_action.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_state.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-class StoreDetailScreen extends StatefulWidget {
+class StoreDetailScreen extends StatelessWidget {
+  final StoreDetailState state;
+  final void Function(StoreDetailAction) onAction;
+
   const StoreDetailScreen({
-    required this.storeId,
+    required this.state,
+    required this.onAction,
     super.key,
   });
 
-  final String storeId;
-
-  @override
-  State<StoreDetailScreen> createState() => _StoreDetailScreenState();
-}
-
-class _StoreDetailScreenState extends State<StoreDetailScreen> {
-  int _selectedTab = 0;
-
   @override
   Widget build(BuildContext context) {
-    final data = _storeData[widget.storeId] ?? _defaultStoreData;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -42,27 +36,33 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
                         children: [
                           _CircleIconButton(
                             icon: Icons.arrow_back_rounded,
-                            onTap: () => context.pop(),
+                            onTap: () =>
+                                onAction(const StoreDetailAction.tapBack()),
                           ),
                           const SizedBox(width: 8),
                           _CircleIconButton(
                             icon: Icons.home_outlined,
-                            onTap: () => context.go('/home'),
+                            onTap: () =>
+                                onAction(const StoreDetailAction.tapHome()),
                           ),
                           const Spacer(),
                           _CircleIconButton(
                             icon: Icons.search_rounded,
-                            onTap: () => _showSoonMessage('검색 기능은 준비 중입니다.'),
+                            onTap: () =>
+                                onAction(const StoreDetailAction.tapSearch()),
                           ),
                           const SizedBox(width: 8),
                           _CircleIconButton(
                             icon: Icons.bookmark_border_rounded,
-                            onTap: () => _showSoonMessage('저장 기능은 준비 중입니다.'),
+                            onTap: () => onAction(
+                              const StoreDetailAction.tapTopBookmark(),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           _CircleIconButton(
                             icon: Icons.share_outlined,
-                            onTap: () => _showSoonMessage('공유 기능은 준비 중입니다.'),
+                            onTap: () =>
+                                onAction(const StoreDetailAction.tapShare()),
                           ),
                         ],
                       ),
@@ -72,29 +72,28 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
               ),
               SliverToBoxAdapter(
                 child: StoreDetailInfoSection(
-                  storeName: data.name,
-                  category: data.category,
-                  rating: data.rating,
-                  reviewCount: data.reviewCount,
-                  description: data.description,
-                  locationText: data.location,
-                  priceText: data.priceRange,
-                  timeText: data.openHours,
-                  tags: data.tags,
-                  onCallTap: () => _showSoonMessage('전화 연결 기능은 준비 중입니다.'),
+                  storeName: state.data.name,
+                  category: state.data.category,
+                  rating: state.data.rating,
+                  reviewCount: state.data.reviewCount,
+                  description: state.data.description,
+                  locationText: state.data.location,
+                  priceText: state.data.priceRange,
+                  timeText: state.data.openHours,
+                  tags: state.data.tags,
+                  onCallTap: () =>
+                      onAction(const StoreDetailAction.tapInfoCall()),
                 ),
               ),
               SliverToBoxAdapter(
                 child: StoreDetailTabSection(
-                  selectedTab: _selectedTab,
-                  storeName: data.name,
-                  location: data.location,
-                  naverPlaceId: data.naverPlaceId,
-                  googleSearchQuery: data.googleSearchQuery,
+                  selectedTab: state.selectedTab,
+                  storeName: state.data.name,
+                  location: state.data.location,
+                  naverPlaceId: state.data.naverPlaceId,
+                  googleSearchQuery: state.data.googleSearchQuery,
                   onTabSelected: (index) {
-                    setState(() {
-                      _selectedTab = index;
-                    });
+                    onAction(StoreDetailAction.tapTab(index));
                   },
                 ),
               ),
@@ -104,17 +103,12 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
         ],
       ),
       bottomNavigationBar: StoreDetailBottomBar(
-        onBookmarkTap: () => _showSoonMessage('저장 기능은 준비 중입니다.'),
-        onCallTap: () => _showSoonMessage('전화 연결 기능은 준비 중입니다.'),
-        onReserveTap: () => _showSoonMessage('예약 바텀시트는 다음 단계에서 연결됩니다.'),
+        onBookmarkTap: () =>
+            onAction(const StoreDetailAction.tapBottomBookmark()),
+        onCallTap: () => onAction(const StoreDetailAction.tapBottomCall()),
+        onReserveTap: () => onAction(const StoreDetailAction.tapReserve()),
       ),
     );
-  }
-
-  void _showSoonMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -144,87 +138,3 @@ class _CircleIconButton extends StatelessWidget {
     );
   }
 }
-
-class _StoreDetailData {
-  const _StoreDetailData({
-    required this.name,
-    required this.category,
-    required this.rating,
-    required this.reviewCount,
-    required this.description,
-    required this.location,
-    required this.priceRange,
-    required this.openHours,
-    required this.tags,
-    required this.naverPlaceId,
-    required this.googleSearchQuery,
-  });
-
-  final String name;
-  final String category;
-  final double rating;
-  final int reviewCount;
-  final String description;
-  final String location;
-  final String priceRange;
-  final String openHours;
-  final List<String> tags;
-  final String naverPlaceId;
-  final String googleSearchQuery;
-}
-
-const _defaultStoreData = _StoreDetailData(
-  name: '업장 상세',
-  category: '카테고리',
-  rating: 4.5,
-  reviewCount: 120,
-  description: '업장 소개 텍스트입니다.',
-  location: '위치 정보',
-  priceRange: '가격 정보',
-  openHours: '운영시간 정보',
-  tags: ['주차', '단체', '룸'],
-  naverPlaceId: '11591675',
-  googleSearchQuery: '한성대학교',
-);
-
-const Map<String, _StoreDetailData> _storeData = {
-  's1': _StoreDetailData(
-    name: '돈블랑 여의도점',
-    category: '고깃집',
-    rating: 4.47,
-    reviewCount: 280,
-    description: '저온 숙성된 생한돈만을 엄선하여 제공하는 고기 맛집',
-    location: '샛강역 2번 출구에서 353m',
-    priceRange: '2.5 - 3.5만원',
-    openHours: '오늘 11:00 - 22:00',
-    tags: ['단체 이용 가능', '무선 인터넷', '콜키지'],
-    naverPlaceId: '1605601457',
-    googleSearchQuery: '돈블랑 여의도점',
-  ),
-  's2': _StoreDetailData(
-    name: '블루보틀 여의도 카페',
-    category: '카페',
-    rating: 4.7,
-    reviewCount: 96,
-    description: '핸드드립 원두가 유명한 조용한 스페셜티 카페입니다.',
-    location: '여의도역에서 180m',
-    priceRange: '0.8 - 2만원',
-    openHours: '오늘 09:00 - 22:00',
-    tags: ['콘센트', '와이파이', '단체석'],
-    naverPlaceId: '1656542083',
-    googleSearchQuery: '블루보틀 여의도 카페',
-  ),
-  's3': _StoreDetailData(
-    name: '아이디헤어 브라이튼여의도점',
-    category: '미용실',
-    rating: 4.6,
-    reviewCount: 83,
-    description: '디자이너 맞춤 상담 기반 헤어/메이크업 서비스입니다.',
-    location: '여의도역에서 420m',
-    priceRange: '2 - 10만원',
-    openHours: '오늘 10:00 - 20:00',
-    tags: ['남/여 커트', '두피케어', '예약제'],
-    naverPlaceId: '1056586321',
-    googleSearchQuery: '아이디헤어 여의도점',
-  ),
-};
