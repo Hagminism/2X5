@@ -58,6 +58,7 @@ class _SignUpCustomerScreenRootState extends State<SignUpCustomerScreenRoot> {
           onAction: (action) {
             switch (action) {
               case ChangeName():
+              case ChangePhone():
               case ChangeEmail():
               case ChangePassword():
               case ChangePasswordConfirm():

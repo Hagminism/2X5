@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_action.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_event.dart';
 import 'package:flutter/material.dart';

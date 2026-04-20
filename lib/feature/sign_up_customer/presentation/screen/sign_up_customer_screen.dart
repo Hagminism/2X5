@@ -48,6 +48,14 @@ class SignUpCustomerScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 28),
+                    buildLabel('전화번호'),
+                    CustomTextField(
+                      textFieldContentType: TextFieldContentType.phone,
+                      onChanged: (phone) {
+                        onAction(SignUpCustomerAction.changePhone(phone));
+                      },
+                    ),
+                    const SizedBox(height: 28),
                     buildLabel('이메일'),
                     CustomTextField(
                       textFieldContentType: TextFieldContentType.email,
