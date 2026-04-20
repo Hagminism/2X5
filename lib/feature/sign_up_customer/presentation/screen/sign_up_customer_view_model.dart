@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_action.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_event.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_state.dart';
