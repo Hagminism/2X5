@@ -13,47 +13,6 @@ import 'ui/app_colors.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-<<<<<<< HEAD
-  try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-    await GoogleSignIn.instance.initialize(
-      serverClientId: DefaultFirebaseOptions.currentPlatform.androidClientId,
-    );
-
-    const kakaoNativeAppKey = String.fromEnvironment('KAKAO_NATIVE_APP_KEY');
-    KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
-
-    await dotenv.load(fileName: '.env');
-
-    diSetup();
-
-    runApp(const App());
-  } catch (e, stack) {
-    debugPrint('❌ [FATAL ERROR] 앱 초기화 실패: $e');
-    debugPrint('❌ [STACK TRACE] $stack');
-    
-    runApp(MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                const SizedBox(height: 16),
-                const Text('앱 초기화 중 오류가 발생했습니다.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(e.toString(), textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    ));
-  }
-=======
   await dotenv.load(fileName: '.env');
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -76,7 +35,6 @@ Future<void> main() async {
   diSetup();
 
   runApp(const App());
->>>>>>> 530d80c45c05c28ddad956974b7fdf12011574bd
 }
 
 class App extends StatelessWidget {
