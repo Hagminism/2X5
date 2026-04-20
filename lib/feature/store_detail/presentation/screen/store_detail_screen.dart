@@ -1,5 +1,5 @@
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_bottom_bar.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_image_carousel.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_header_section.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_info_section.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_tab_section.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_action.dart';
@@ -22,115 +22,72 @@ class StoreDetailScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Stack(
-                  children: [
-                    const StoreDetailImageCarousel(),
-                    Positioned(
-                      left: 12,
-                      right: 12,
-                      top: 48,
-                      child: Row(
-                        children: [
-                          _CircleIconButton(
-                            icon: Icons.arrow_back_rounded,
-                            onTap: () =>
-                                onAction(const StoreDetailAction.tapBack()),
-                          ),
-                          const SizedBox(width: 8),
-                          _CircleIconButton(
-                            icon: Icons.home_outlined,
-                            onTap: () =>
-                                onAction(const StoreDetailAction.tapHome()),
-                          ),
-                          const Spacer(),
-                          _CircleIconButton(
-                            icon: Icons.search_rounded,
-                            onTap: () =>
-                                onAction(const StoreDetailAction.tapSearch()),
-                          ),
-                          const SizedBox(width: 8),
-                          _CircleIconButton(
-                            icon: Icons.bookmark_border_rounded,
-                            onTap: () =>
-                                onAction(const StoreDetailAction.tapBookmark()),
-                          ),
-                          const SizedBox(width: 8),
-                          _CircleIconButton(
-                            icon: Icons.share_outlined,
-                            onTap: () =>
-                                onAction(const StoreDetailAction.tapShare()),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+          SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: StoreDetailHeaderSection(
+                    onBackTap: () {
+                      onAction(const StoreDetailAction.tapBack());
+                    },
+                    onHomeTap: () {
+                      onAction(const StoreDetailAction.tapHome());
+                    },
+                    onSearchTap: () {
+                      onAction(const StoreDetailAction.tapSearch());
+                    },
+                    onBookmarkTap: () {
+                      onAction(const StoreDetailAction.tapBookmark());
+                    },
+                    onShareTap: () {
+                      onAction(const StoreDetailAction.tapShare());
+                    },
+                  ),
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: StoreDetailInfoSection(
-                  storeName: state.data.name,
-                  category: state.data.category,
-                  rating: state.data.rating,
-                  reviewCount: state.data.reviewCount,
-                  description: state.data.description,
-                  locationText: state.data.location,
-                  priceText: state.data.priceRange,
-                  timeText: state.data.openHours,
-                  tags: state.data.tags,
-                  onCallTap: () => onAction(const StoreDetailAction.tapCall()),
+                SliverToBoxAdapter(
+                  child: StoreDetailInfoSection(
+                    storeName: state.data.name,
+                    category: state.data.category,
+                    rating: state.data.rating,
+                    reviewCount: state.data.reviewCount,
+                    description: state.data.description,
+                    locationText: state.data.location,
+                    priceText: state.data.priceRange,
+                    timeText: state.data.openHours,
+                    tags: state.data.tags,
+                    onCallTap: () {
+                      onAction(const StoreDetailAction.tapCall());
+                    },
+                  ),
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: StoreDetailTabSection(
-                  selectedTab: state.selectedTab,
-                  storeName: state.data.name,
-                  location: state.data.location,
-                  naverPlaceId: state.data.naverPlaceId,
-                  googleSearchQuery: state.data.googleSearchQuery,
-                  onTabSelected: (index) {
-                    onAction(StoreDetailAction.moveTab(index));
-                  },
+                SliverToBoxAdapter(
+                  child: StoreDetailTabSection(
+                    selectedTab: state.selectedTab,
+                    storeName: state.data.name,
+                    location: state.data.location,
+                    naverPlaceId: state.data.naverPlaceId,
+                    googleSearchQuery: state.data.googleSearchQuery,
+                    onTabSelected: (index) {
+                      onAction(StoreDetailAction.moveTab(index));
+                    },
+                  ),
                 ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              ],
+            ),
           ),
         ],
       ),
       bottomNavigationBar: StoreDetailBottomBar(
-        onBookmarkTap: () => onAction(const StoreDetailAction.tapBookmark()),
-        onCallTap: () => onAction(const StoreDetailAction.tapCall()),
-        onReserveTap: () => onAction(const StoreDetailAction.tapReserve()),
-      ),
-    );
-  }
-}
-
-class _CircleIconButton extends StatelessWidget {
-  const _CircleIconButton({
-    required this.icon,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.9),
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: SizedBox(
-          width: 38,
-          height: 38,
-          child: Icon(icon, size: 20),
-        ),
+        onBookmarkTap: () {
+          onAction(const StoreDetailAction.tapBookmark());
+        },
+        onCallTap: () {
+          onAction(const StoreDetailAction.tapCall());
+        },
+        onReserveTap: () {
+          onAction(const StoreDetailAction.tapReserve());
+        },
       ),
     );
   }
