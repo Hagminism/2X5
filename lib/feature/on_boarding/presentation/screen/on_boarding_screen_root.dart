@@ -16,14 +16,12 @@ class OnBoardingScreenRoot extends StatelessWidget {
         switch (action) {
           case TapCustomer():
             context.go(
-              '${Routes.onBoarding}/${Routes.onBoardingCustomer.replaceAll(
-                  ':userType', UserType.customer.name)}',
+              '${Routes.onBoarding}/${Routes.onBoardingCustomer}',
             );
             break;
           case TapPartner():
             context.go(
-              '${Routes.onBoarding}/${Routes.onBoardingCustomer.replaceAll(
-                  ':userType', UserType.partner.name)}',
+              '${Routes.onBoarding}/${Routes.onBoardingPartner}',
             );
             break;
         }
