@@ -33,7 +33,12 @@ class CustomTextField extends StatelessWidget {
           const SizedBox(width: 16.0),
           Expanded(
             child: TextFormField(
-              keyboardType: TextInputType.phone,
+              keyboardType: switch (textFieldContentType) {
+                TextFieldContentType.phone => TextInputType.phone,
+                TextFieldContentType.email => TextInputType.emailAddress,
+                TextFieldContentType.name => TextInputType.name,
+                _ => TextInputType.text,
+              },
               inputFormatters:
                   (textFieldContentType == TextFieldContentType.phone)
                   ? [FilteringTextInputFormatter.digitsOnly]
