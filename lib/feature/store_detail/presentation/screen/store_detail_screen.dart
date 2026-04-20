@@ -54,9 +54,8 @@ class StoreDetailScreen extends StatelessWidget {
                           const SizedBox(width: 8),
                           _CircleIconButton(
                             icon: Icons.bookmark_border_rounded,
-                            onTap: () => onAction(
-                              const StoreDetailAction.tapTopBookmark(),
-                            ),
+                            onTap: () =>
+                                onAction(const StoreDetailAction.tapBookmark()),
                           ),
                           const SizedBox(width: 8),
                           _CircleIconButton(
@@ -81,8 +80,7 @@ class StoreDetailScreen extends StatelessWidget {
                   priceText: state.data.priceRange,
                   timeText: state.data.openHours,
                   tags: state.data.tags,
-                  onCallTap: () =>
-                      onAction(const StoreDetailAction.tapInfoCall()),
+                  onCallTap: () => onAction(const StoreDetailAction.tapCall()),
                 ),
               ),
               SliverToBoxAdapter(
@@ -93,7 +91,7 @@ class StoreDetailScreen extends StatelessWidget {
                   naverPlaceId: state.data.naverPlaceId,
                   googleSearchQuery: state.data.googleSearchQuery,
                   onTabSelected: (index) {
-                    onAction(StoreDetailAction.tapTab(index));
+                    onAction(StoreDetailAction.moveTab(index));
                   },
                 ),
               ),
@@ -103,9 +101,8 @@ class StoreDetailScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: StoreDetailBottomBar(
-        onBookmarkTap: () =>
-            onAction(const StoreDetailAction.tapBottomBookmark()),
-        onCallTap: () => onAction(const StoreDetailAction.tapBottomCall()),
+        onBookmarkTap: () => onAction(const StoreDetailAction.tapBookmark()),
+        onCallTap: () => onAction(const StoreDetailAction.tapCall()),
         onReserveTap: () => onAction(const StoreDetailAction.tapReserve()),
       ),
     );
