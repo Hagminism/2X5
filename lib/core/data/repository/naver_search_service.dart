@@ -25,29 +25,21 @@ class NaverStoreInfo {
 }
 
 class NaverSearchService {
-  static String get _clientId {
-    final dotenvValue = dotenv.env['NAVER_CLIENT_ID']?.trim();
+  static String _getEnv(String key) {
+    final dotenvValue = dotenv.env[key]?.trim();
     if (dotenvValue != null && dotenvValue.isNotEmpty) {
       return dotenvValue;
     }
 
-    return const String.fromEnvironment(
-      'NAVER_CLIENT_ID',
+    return String.fromEnvironment(
+      key,
       defaultValue: 'NOT_FOUND',
     );
   }
 
-  static String get _clientSecret {
-    final dotenvValue = dotenv.env['NAVER_CLIENT_SECRET']?.trim();
-    if (dotenvValue != null && dotenvValue.isNotEmpty) {
-      return dotenvValue;
-    }
+  static String get _clientId => _getEnv('NAVER_CLIENT_ID');
 
-    return const String.fromEnvironment(
-      'NAVER_CLIENT_SECRET',
-      defaultValue: 'NOT_FOUND',
-    );
-  }
+  static String get _clientSecret => _getEnv('NAVER_CLIENT_SECRET');
 
   static Future<NaverStoreInfo?> fetchExactStoreInfo(
     String storeName,
@@ -65,9 +57,10 @@ class NaverSearchService {
         ? location.split(' ').first
         : location;
     final query = '$storeName $cleanLocation';
-    final url = Uri.parse(
-      'https://openapi.naver.com/v1/search/local.json?query=${Uri.encodeComponent(query)}&display=1',
-    );
+    final url = Uri.https('openapi.naver.com', '/v1/search/local.json', {
+      'query': query,
+      'display': '1',
+    });
 
     try {
       final response = await http.get(
@@ -76,7 +69,7 @@ class NaverSearchService {
           'X-Naver-Client-Id': _clientId,
           'X-Naver-Client-Secret': _clientSecret,
         },
-      );
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;

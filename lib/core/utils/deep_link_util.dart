@@ -35,7 +35,10 @@ class DeepLinkUtil {
     String? placeId,
   }) async {
     if (placeId != null && placeId.isNotEmpty) {
-      final appUri = Uri.parse('nmap://place?id=$placeId&appname=$_packageName');
+      final appUri = Uri.parse(
+        'nmap://place?id=${Uri.encodeComponent(placeId)}'
+        '&appname=${Uri.encodeComponent(_packageName)}',
+      );
       final webUri = Uri.parse(
         'https://m.place.naver.com/place/$placeId/review/visitor',
       );
@@ -60,7 +63,8 @@ class DeepLinkUtil {
     }
 
     final appUri = Uri.parse(
-      'nmap://search?query=${Uri.encodeComponent(info.roadAddress)}&appname=$_packageName',
+      'nmap://search?query=${Uri.encodeComponent(info.roadAddress)}'
+      '&appname=${Uri.encodeComponent(_packageName)}',
     );
     final fallbackQuery = Uri.encodeComponent('$storeName $location');
     final webUri = Uri.parse(
