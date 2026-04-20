@@ -54,8 +54,9 @@ class AccountActivitySection extends StatelessWidget {
                   leading: _buildListLeading(AccountActivity.values[index]),
                   title: AccountActivity.values[index].toDisplayName(),
                   borderRadius: _buildListBorderRadius(index),
-                  titleColor:
-                      _buildListTitleColor(AccountActivity.values[index]),
+                  titleColor: _buildListTitleColor(
+                    AccountActivity.values[index],
+                  ),
                   showArrow: true,
                   arrowColor: _buildArrowColor(AccountActivity.values[index]),
                 );
@@ -116,10 +117,14 @@ class AccountActivitySection extends StatelessWidget {
   BorderRadius _buildListBorderRadius(int index) {
     if (index == 0) {
       return BorderRadius.only(
-          topLeft: Radius.circular(16), topRight: Radius.circular(16));
+        topLeft: Radius.circular(16),
+        topRight: Radius.circular(16),
+      );
     } else if (index == AccountActivity.values.length - 1) {
       return BorderRadius.only(
-          bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16));
+        bottomLeft: Radius.circular(16),
+        bottomRight: Radius.circular(16),
+      );
     } else {
       return BorderRadius.zero;
     }

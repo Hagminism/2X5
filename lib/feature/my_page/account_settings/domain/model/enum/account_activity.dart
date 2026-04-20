@@ -1,9 +1,10 @@
 enum AccountActivity {
   signOut,
-  deleteAccount;
+  deleteAccount
+  ;
 
   String toDisplayName() => switch (this) {
-        AccountActivity.signOut => '로그아웃',
-        AccountActivity.deleteAccount => '회원 탈퇴',
-      };
+    AccountActivity.signOut => '로그아웃',
+    AccountActivity.deleteAccount => '회원 탈퇴',
+  };
 }

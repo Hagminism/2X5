@@ -43,26 +43,40 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
             break;
           case OpenNaverReview():
             try {
-              if (event.appUri != null && await canLaunchUrl(Uri.parse('nmap://'))) {
-                await launchUrl(event.appUri!, mode: LaunchMode.externalApplication);
+              if (event.appUri != null &&
+                  await canLaunchUrl(Uri.parse('nmap://'))) {
+                await launchUrl(
+                  event.appUri!,
+                  mode: LaunchMode.externalApplication,
+                );
               } else {
-                await launchUrl(event.webUri, mode: LaunchMode.externalApplication);
+                await launchUrl(
+                  event.webUri,
+                  mode: LaunchMode.externalApplication,
+                );
               }
             } catch (_) {
               if (!mounted) return;
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
-                ..showSnackBar(const SnackBar(content: Text('외부 링크를 열 수 없습니다.')));
+                ..showSnackBar(
+                  const SnackBar(content: Text('외부 링크를 열 수 없습니다.')),
+                );
             }
             break;
           case OpenGoogleMap():
             try {
-              await launchUrl(event.webUri, mode: LaunchMode.externalApplication);
+              await launchUrl(
+                event.webUri,
+                mode: LaunchMode.externalApplication,
+              );
             } catch (_) {
               if (!mounted) return;
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
-                ..showSnackBar(const SnackBar(content: Text('외부 링크를 열 수 없습니다.')));
+                ..showSnackBar(
+                  const SnackBar(content: Text('외부 링크를 열 수 없습니다.')),
+                );
             }
             break;
         }

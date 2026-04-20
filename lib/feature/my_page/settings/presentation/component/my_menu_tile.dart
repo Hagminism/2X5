@@ -34,7 +34,7 @@ class MyMenuTile extends StatelessWidget {
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: AppColors.textPrimary,
-                  ) ,
+                  ),
                 ),
               ),
               const Icon(

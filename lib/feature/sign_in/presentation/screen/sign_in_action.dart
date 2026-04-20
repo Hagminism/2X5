@@ -8,8 +8,7 @@ sealed class SignInAction with _$SignInAction {
 
   const factory SignInAction.changeEmail(String email) = ChangeEmail;
 
-  const factory SignInAction.changePassword(String password) =
-  ChangePassword;
+  const factory SignInAction.changePassword(String password) = ChangePassword;
 
   const factory SignInAction.tapSignInButton() = TapSignInButton;
 

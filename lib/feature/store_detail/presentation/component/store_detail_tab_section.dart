@@ -95,14 +95,23 @@ class StoreDetailTabSection extends StatelessWidget {
           onTapGoogleReview: onTapGoogleReview,
         );
       case 1:
-        return const Text('대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.', style: _contentStyle);
+        return const Text(
+          '대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.',
+          style: _contentStyle,
+        );
       case 2:
         return const Text('업장/메뉴 사진 목록을 갤러리 형태로 표시합니다.', style: _contentStyle);
       case 4:
-        return const Text('매장 주소, 운영시간, 주차/편의 정보 등 상세 정보를 표시합니다.', style: _contentStyle);
+        return const Text(
+          '매장 주소, 운영시간, 주차/편의 정보 등 상세 정보를 표시합니다.',
+          style: _contentStyle,
+        );
       case 0:
       default:
-        return const Text('업장 소개, 추천 포인트, 공지사항 등 핵심 정보를 우선 제공합니다.', style: _contentStyle);
+        return const Text(
+          '업장 소개, 추천 포인트, 공지사항 등 핵심 정보를 우선 제공합니다.',
+          style: _contentStyle,
+        );
     }
   }
 

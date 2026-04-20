@@ -17,11 +17,16 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
           'nmap://place?id=${Uri.encodeComponent(placeId)}'
           '&appname=${Uri.encodeComponent(_packageName)}',
         ),
-        webUri: Uri.parse('https://m.place.naver.com/place/$placeId/review/visitor'),
+        webUri: Uri.parse(
+          'https://m.place.naver.com/place/$placeId/review/visitor',
+        ),
       );
     }
 
-    final info = await NaverSearchService.fetchExactStoreInfo(storeName, location);
+    final info = await NaverSearchService.fetchExactStoreInfo(
+      storeName,
+      location,
+    );
     final fallbackQuery = Uri.encodeComponent('$storeName $location');
     final fallbackWebUri = Uri.parse(
       'https://m.map.naver.com/search2/search.naver?query=$fallbackQuery',
@@ -36,7 +41,9 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
         'nmap://search?query=${Uri.encodeComponent(info.roadAddress)}'
         '&appname=${Uri.encodeComponent(_packageName)}',
       ),
-      webUri: Uri.parse(info.link.isNotEmpty ? info.link : fallbackWebUri.toString()),
+      webUri: Uri.parse(
+        info.link.isNotEmpty ? info.link : fallbackWebUri.toString(),
+      ),
     );
   }
 

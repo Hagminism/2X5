@@ -200,7 +200,7 @@ const Map<String, _StoreDetailData> _storeData = {
     openHours: '오늘 11:00 - 22:00',
     tags: ['단체 이용 가능', '무선 인터넷', '콜키지'],
     googleSearchQuery: '세상의 모든 아침 여의도',
-    naverPlaceId: '1605601457'
+    naverPlaceId: '1605601457',
   ),
   's2': _StoreDetailData(
     name: '블루보틀 여의도 카페',
@@ -213,7 +213,7 @@ const Map<String, _StoreDetailData> _storeData = {
     openHours: '오늘 09:00 - 22:00',
     tags: ['콘센트', '와이파이', '단체석'],
     googleSearchQuery: '블루보틀 여의도',
-    naverPlaceId: '1656542083'
+    naverPlaceId: '1656542083',
   ),
   's3': _StoreDetailData(
     name: '아이디헤어 브라이튼여의도점',
@@ -226,6 +226,6 @@ const Map<String, _StoreDetailData> _storeData = {
     openHours: '오늘 10:00 - 20:00',
     tags: ['남/여 커트', '두피케어', '예약제'],
     googleSearchQuery: '아이디헤어 여의도점',
-    naverPlaceId: '1600258358'
+    naverPlaceId: '1600258358',
   ),
 };

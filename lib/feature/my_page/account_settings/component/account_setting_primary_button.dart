@@ -28,8 +28,9 @@ class AccountSettingPrimaryButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius:
-            (borderRadius != null) ? borderRadius : BorderRadius.circular(16),
+        borderRadius: (borderRadius != null)
+            ? borderRadius
+            : BorderRadius.circular(16),
         child: Ink(
           decoration: BoxDecoration(
             color: AppColors.white,

@@ -49,7 +49,9 @@ class NaverSearchService {
         _clientId.isEmpty ||
         _clientSecret == 'NOT_FOUND' ||
         _clientSecret.isEmpty) {
-      debugPrint('[Naver API] Missing credentials. Check .env or --dart-define values.');
+      debugPrint(
+        '[Naver API] Missing credentials. Check .env or --dart-define values.',
+      );
       return null;
     }
 
@@ -63,13 +65,15 @@ class NaverSearchService {
     });
 
     try {
-      final response = await http.get(
-        url,
-        headers: {
-          'X-Naver-Client-Id': _clientId,
-          'X-Naver-Client-Secret': _clientSecret,
-        },
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'X-Naver-Client-Id': _clientId,
+              'X-Naver-Client-Secret': _clientSecret,
+            },
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -80,7 +84,9 @@ class NaverSearchService {
           );
         }
       } else {
-        debugPrint('[Naver API] Request failed: ${response.statusCode} ${response.body}');
+        debugPrint(
+          '[Naver API] Request failed: ${response.statusCode} ${response.body}',
+        );
       }
     } catch (e) {
       debugPrint('[Naver API] Request exception: $e');

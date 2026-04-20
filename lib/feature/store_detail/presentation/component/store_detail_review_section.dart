@@ -26,11 +26,13 @@ class StoreDetailReviewSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 임시 데이터
-    final summary = aiSummary ?? const AiReviewSummary(
-      oneLine: '조용한 분위기에서 즐기는 고퀄리티 파스타, 기념일에 방문하기 좋아요',
-      keywords: ['분위기 맛집', '친절한 서비스', '재방문 의사 높음'],
-      positiveRatio: 0.92,
-    );
+    final summary =
+        aiSummary ??
+        const AiReviewSummary(
+          oneLine: '조용한 분위기에서 즐기는 고퀄리티 파스타, 기념일에 방문하기 좋아요',
+          keywords: ['분위기 맛집', '친절한 서비스', '재방문 의사 높음'],
+          positiveRatio: 0.92,
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +44,11 @@ class StoreDetailReviewSection extends StatelessWidget {
         // 2. 외부 리뷰 확인 섹션
         const Text(
           '외부 리뷰 확인',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 12),
         Row(
@@ -76,7 +82,11 @@ class StoreDetailReviewSection extends StatelessWidget {
           children: [
             const Text(
               '방문자 리뷰',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
             ),
             TextButton.icon(
               onPressed: () {},
@@ -105,7 +115,12 @@ class StoreDetailReviewSection extends StatelessWidget {
             return Column(
               children: [
                 const _InternalReviewItem(),
-                if (!isLast) const Divider(height: 32, color: AppColors.border, thickness: 1),
+                if (!isLast)
+                  const Divider(
+                    height: 32,
+                    color: AppColors.border,
+                    thickness: 1,
+                  ),
               ],
             );
           }),
@@ -188,7 +203,11 @@ class AiReviewSummary {
   final String oneLine;
   final List<String> keywords;
   final double positiveRatio;
-  const AiReviewSummary({required this.oneLine, required this.keywords, required this.positiveRatio});
+  const AiReviewSummary({
+    required this.oneLine,
+    required this.keywords,
+    required this.positiveRatio,
+  });
 }
 
 /*
@@ -245,16 +264,33 @@ class _AiSummaryBox extends StatelessWidget {
             children: [
               Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
               SizedBox(width: 8),
-              Text('AI 리뷰 요약', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.primary)),
+              Text(
+                'AI 리뷰 요약',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          Text('"${summary.oneLine}"', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.5, color: AppColors.textPrimary)),
+          Text(
+            '"${summary.oneLine}"',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              height: 1.5,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: summary.keywords.map((kw) => _AiKeywordTag(label: kw)).toList(),
+            children: summary.keywords
+                .map((kw) => _AiKeywordTag(label: kw))
+                .toList(),
           ),
           const SizedBox(height: 16),
           _AiSentimentBar(positiveRatio: summary.positiveRatio),
@@ -276,7 +312,14 @@ class _AiKeywordTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
-      child: Text('# $label', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.primary)),
+      child: Text(
+        '# $label',
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: AppColors.primary,
+        ),
+      ),
     );
   }
 }
@@ -291,14 +334,29 @@ class _AiSentimentBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('긍정 후기', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            Text('${(positiveRatio * 100).toInt()}%', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primary)),
+            const Text(
+              '긍정 후기',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
+            Text(
+              '${(positiveRatio * 100).toInt()}%',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(value: positiveRatio, minHeight: 6, backgroundColor: AppColors.border, color: AppColors.primary),
+          child: LinearProgressIndicator(
+            value: positiveRatio,
+            minHeight: 6,
+            backgroundColor: AppColors.border,
+            color: AppColors.primary,
+          ),
         ),
       ],
     );
@@ -312,7 +370,14 @@ class _ExternalReviewButton extends StatelessWidget {
   final Color backgroundColor;
   final Color textColor;
   final bool showBorder;
-  const _ExternalReviewButton({required this.title, required this.logoPath, required this.onTap, required this.backgroundColor, this.textColor = Colors.white, this.showBorder = false});
+  const _ExternalReviewButton({
+    required this.title,
+    required this.logoPath,
+    required this.onTap,
+    required this.backgroundColor,
+    this.textColor = Colors.white,
+    this.showBorder = false,
+  });
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -320,8 +385,38 @@ class _ExternalReviewButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         height: 48,
-        decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(8), border: showBorder ? Border.all(color: AppColors.border) : null, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))]),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Image.asset(logoPath, width: 20, height: 20, errorBuilder: (_, __, ___) => const Icon(Icons.link, size: 20)), const SizedBox(width: 8), Text(title, style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w600))]),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(8),
+          border: showBorder ? Border.all(color: AppColors.border) : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              logoPath,
+              width: 20,
+              height: 20,
+              errorBuilder: (_, __, ___) => const Icon(Icons.link, size: 20),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -336,16 +431,62 @@ class _InternalReviewItem extends StatelessWidget {
       children: [
         Row(
           children: [
-            CircleAvatar(radius: 18, backgroundColor: AppColors.border, child: const Icon(Icons.person, color: Colors.white, size: 20)),
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: AppColors.border,
+              child: const Icon(Icons.person, color: Colors.white, size: 20),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('예약자 닉네임', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)), Row(children: List.generate(5, (index) => Icon(Icons.star_rounded, color: index < 4 ? Colors.amber : AppColors.border, size: 14)))])),
-            Text('2024.04.19', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '예약자 닉네임',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Row(
+                    children: List.generate(
+                      5,
+                      (index) => Icon(
+                        Icons.star_rounded,
+                        color: index < 4 ? Colors.amber : AppColors.border,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              '2024.04.19',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
           ],
         ),
         const SizedBox(height: 12),
-        const Text('매장 분위기가 너무 좋고 파스타가 정말 맛있었습니다! 다음에도 꼭 다시 방문하고 싶네요. 직원분들도 친절하셔서 기분 좋게 식사했습니다.', style: TextStyle(fontSize: 14, height: 1.5, color: AppColors.textPrimary)),
+        const Text(
+          '매장 분위기가 너무 좋고 파스타가 정말 맛있었습니다! 다음에도 꼭 다시 방문하고 싶네요. 직원분들도 친절하셔서 기분 좋게 식사했습니다.',
+          style: TextStyle(
+            fontSize: 14,
+            height: 1.5,
+            color: AppColors.textPrimary,
+          ),
+        ),
         const SizedBox(height: 12),
-        Container(width: 80, height: 80, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.image_outlined, color: Colors.white)),
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: AppColors.border,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.image_outlined, color: Colors.white),
+        ),
       ],
     );
   }
