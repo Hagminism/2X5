@@ -19,7 +19,8 @@ import 'package:capstone_2026/feature/select_auth_provider/core/presentation/com
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/core/presentation/component/scope/sign_in_scope.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_screen.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_screen_root.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_screen_root.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_screen_root.dart';
@@ -29,7 +30,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _myPageShellNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   initialLocation: Routes.signIn,
@@ -90,8 +90,10 @@ final router = GoRouter(
               builder: (context, state) => const HomeScreen(),
               routes: [
                 GoRoute(
+                  parentNavigatorKey: _rootNavigatorKey,
                   path: Routes.homeStoreDetail,
-                  builder: (context, state) => StoreDetailScreen(
+                  builder: (context, state) => StoreDetailScreenRoot(
+                    viewModel: getIt<StoreDetailViewModel>(),
                     storeId: state.pathParameters['storeId'] ?? '',
                   ),
                 ),
@@ -125,7 +127,6 @@ final router = GoRouter(
           ],
         ),
         StatefulShellBranch(
-          navigatorKey: _myPageShellNavigatorKey,
           routes: [
             GoRoute(
               path: Routes.myPage,
