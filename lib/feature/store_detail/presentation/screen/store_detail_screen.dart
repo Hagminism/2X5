@@ -87,8 +87,8 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
               SliverToBoxAdapter(
                 child: StoreDetailTabSection(
                   selectedTab: _selectedTab,
-                  storeName: data.name, // 추가
-                  location: data.location, // 추가
+                  storeName: data.name,
+                  location: data.location,
                   naverPlaceId: data.naverPlaceId,
                   googleSearchQuery: data.googleSearchQuery,
                   onTabSelected: (index) {
@@ -106,7 +106,7 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
       bottomNavigationBar: StoreDetailBottomBar(
         onBookmarkTap: () => _showSoonMessage('저장 기능은 준비 중입니다.'),
         onCallTap: () => _showSoonMessage('전화 연결 기능은 준비 중입니다.'),
-        onReserveTap: () => _showSoonMessage('예약 바텀시트는 다음 스텝에서 연결됩니다.'),
+        onReserveTap: () => _showSoonMessage('예약 바텀시트는 다음 단계에서 연결됩니다.'),
       ),
     );
   }
@@ -144,48 +144,6 @@ class _CircleIconButton extends StatelessWidget {
     );
   }
 }
-
-/* 
-// [DB 연동용 주석] 실제 DB(Firestore)에서 데이터를 가져올 때 사용할 예시 모델 및 로직
-class StoreModel {
-  final String id;
-  final String name;
-  final String category;
-  final double rating;
-  final int reviewCount;
-  final String description;
-  final String address;
-  final String naverPlaceId;
-  final String googleSearchQuery;
-
-  StoreModel({
-    required this.id,
-    required this.name,
-    required this.category,
-    required this.rating,
-    required this.reviewCount,
-    required this.description,
-    required this.address,
-    required this.naverPlaceId,
-    required this.googleSearchQuery,
-  });
-
-  // Firestore JSON 데이터를 객체로 변환
-  factory StoreModel.fromJson(Map<String, dynamic> json, String documentId) {
-    return StoreModel(
-      id: documentId,
-      name: json['store_name'] ?? '',
-      category: json['category'] ?? '',
-      rating: (json['rating'] ?? 0.0).toDouble(),
-      reviewCount: json['review_count'] ?? 0,
-      description: json['description'] ?? '',
-      address: json['address'] ?? '',
-      naverPlaceId: json['naver_place_id'] ?? '',
-      googleSearchQuery: json['google_search_query'] ?? '',
-    );
-  }
-}
-*/
 
 class _StoreDetailData {
   const _StoreDetailData({
@@ -231,24 +189,24 @@ const _defaultStoreData = _StoreDetailData(
 
 const Map<String, _StoreDetailData> _storeData = {
   's1': _StoreDetailData(
-    name: '세상의 모든 아침',
-    category: '이탈리안',
-    rating: 4.8,
-    reviewCount: 156,
-    description: '고층 뷰가 아름다운 라운지 파스타 전문점입니다.',
-    location: '여의도역에서 254m',
-    priceRange: '2.5 - 5만원',
-    openHours: '오늘 11:10 - 21:10',
-    tags: ['최대 16명 예약', '주차', '콜키지', '단체', '룸', '대관'],
-    naverPlaceId: '37156328',
-    googleSearchQuery: '세상의 모든 아침 여의도',
+    name: '돈블랑 여의도점',
+    category: '고깃집',
+    rating: 4.47,
+    reviewCount: 280,
+    description: '저온 숙성된 생한돈만을 엄선하여 제공하는 고기 맛집',
+    location: '샛강역 2번 출구에서 353m',
+    priceRange: '2.5 - 3.5만원',
+    openHours: '오늘 11:00 - 22:00',
+    tags: ['단체 이용 가능', '무선 인터넷', '콜키지'],
+    naverPlaceId: '1605601457',
+    googleSearchQuery: '돈블랑 여의도점',
   ),
   's2': _StoreDetailData(
     name: '블루보틀 여의도 카페',
     category: '카페',
     rating: 4.7,
     reviewCount: 96,
-    description: '핸드드립 원두와 디저트가 유명한 스페셜티 카페입니다.',
+    description: '핸드드립 원두가 유명한 조용한 스페셜티 카페입니다.',
     location: '여의도역에서 180m',
     priceRange: '0.8 - 2만원',
     openHours: '오늘 09:00 - 22:00',
@@ -257,7 +215,7 @@ const Map<String, _StoreDetailData> _storeData = {
     googleSearchQuery: '블루보틀 여의도 카페',
   ),
   's3': _StoreDetailData(
-    name: '아이디헤어 여의도점',
+    name: '아이디헤어 브라이튼여의도점',
     category: '미용실',
     rating: 4.6,
     reviewCount: 83,

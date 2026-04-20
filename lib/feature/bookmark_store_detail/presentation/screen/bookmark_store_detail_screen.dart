@@ -190,16 +190,17 @@ const _defaultStoreData = _StoreDetailData(
 
 const Map<String, _StoreDetailData> _storeData = {
   's1': _StoreDetailData(
-    name: '세상의 모든 아침',
-    category: '이탈리안',
-    rating: 4.8,
-    reviewCount: 156,
-    description: '고층 뷰가 아름다운 라운지 파스타 전문점입니다.',
-    location: '여의도역에서 254m',
-    priceRange: '2.5 - 5만원',
-    openHours: '오늘 11:10 - 21:10',
-    tags: ['최대 16명 예약', '주차', '콜키지', '단체', '룸', '대관'],
+    name: '돈블랑 여의도점',
+    category: '고깃집',
+    rating: 4.47,
+    reviewCount: 280,
+    description: '저온 숙성된 생한돈만을 엄선하여 제공하는 고기 맛집',
+    location: '샛강역 2번 출구에서 353m',
+    priceRange: '2.5 - 3.5만원',
+    openHours: '오늘 11:00 - 22:00',
+    tags: ['단체 이용 가능', '무선 인터넷', '콜키지'],
     googleSearchQuery: '세상의 모든 아침 여의도',
+    naverPlaceId: '1605601457'
   ),
   's2': _StoreDetailData(
     name: '블루보틀 여의도 카페',
@@ -212,9 +213,10 @@ const Map<String, _StoreDetailData> _storeData = {
     openHours: '오늘 09:00 - 22:00',
     tags: ['콘센트', '와이파이', '단체석'],
     googleSearchQuery: '블루보틀 여의도',
+    naverPlaceId: '1656542083'
   ),
   's3': _StoreDetailData(
-    name: '아이디헤어 여의도점',
+    name: '아이디헤어 브라이튼여의도점',
     category: '미용실',
     rating: 4.6,
     reviewCount: 83,
@@ -224,5 +226,6 @@ const Map<String, _StoreDetailData> _storeData = {
     openHours: '오늘 10:00 - 20:00',
     tags: ['남/여 커트', '두피케어', '예약제'],
     googleSearchQuery: '아이디헤어 여의도점',
+    naverPlaceId: '1600258358'
   ),
 };

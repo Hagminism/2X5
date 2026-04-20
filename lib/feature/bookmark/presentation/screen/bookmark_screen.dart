@@ -20,25 +20,25 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
   final List<_BookmarkStoreItem> _bookmarkStores = [
     _BookmarkStoreItem(
       id: 's1',
-      name: '라운지 파스타',
+      name: '돈블랑 여의도점',
       category: '식당',
-      subtitle: '도보 8분 · 영업중',
-      rating: 4.8,
-      reviewCount: 128,
+      subtitle: '도보 5분 · 영업 중',
+      rating: 4.47,
+      reviewCount: 280,
     ),
     _BookmarkStoreItem(
       id: 's2',
-      name: '블루보틀 타입 카페',
+      name: '블루보틀 여의도 카페',
       category: '카페',
-      subtitle: '도보 5분 · 영업중',
+      subtitle: '도보 5분 · 영업 중',
       rating: 4.7,
       reviewCount: 96,
     ),
     _BookmarkStoreItem(
       id: 's3',
-      name: '모던 헤어 스튜디오',
+      name: '아이디헤어 여의도점',
       category: '미용실',
-      subtitle: '도보 11분 · 영업종료',
+      subtitle: '도보 11분 · 영업 종료',
       rating: 4.6,
       reviewCount: 83,
     ),
@@ -46,7 +46,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
       id: 's4',
       name: '다온 스터디 라운지',
       category: '스터디카페',
-      subtitle: '도보 13분 · 영업중',
+      subtitle: '도보 13분 · 영업 중',
       rating: 4.5,
       reviewCount: 57,
     ),
@@ -68,7 +68,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(content: Text('저장 목록에서 제거되었습니다.')),
+        const SnackBar(content: Text('저장 목록에서 제거했습니다.')),
       );
   }
 

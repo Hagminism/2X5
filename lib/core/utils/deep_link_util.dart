@@ -5,6 +5,30 @@ import 'package:url_launcher/url_launcher.dart';
 class DeepLinkUtil {
   static const String _packageName = 'com.example.capstone_2026';
 
+  /*
+  // [DB integration guide] Expected store fields for external review links.
+  //
+  // stores/{storeId}
+  // {
+  //   "store_name": "Store name",
+  //   "address_summary": "Yeouido Station 420m",
+  //   "naver_place_id": "1600258358",
+  //   "naver_map_url": "https://naver.me/xxxx",
+  //   "google_search_query": "Store name district"
+  // }
+  //
+  // Recommended priority:
+  // 1. naver_map_url
+  // 2. naver_place_id
+  // 3. Naver local search API fallback with store_name + address_summary
+  //
+  // Example mapping:
+  // final storeName = data['store_name'] as String? ?? '';
+  // final location = data['address_summary'] as String? ?? '';
+  // final placeId = data['naver_place_id'] as String?;
+  // final googleQuery = data['google_search_query'] as String? ?? storeName;
+  */
+
   static Future<bool> launchNaverMapReview({
     required String storeName,
     required String location,

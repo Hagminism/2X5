@@ -116,6 +116,75 @@ class StoreDetailReviewSection extends StatelessWidget {
 }
 
 // --- 데이터 모델 및 내부 위젯 (기존과 동일) ---
+/*
+// [DB integration guide] Firestore example for review feature.
+//
+// Suggested collections:
+// - stores/{storeId}
+// - stores/{storeId}/reviews/{reviewId}
+// - stores/{storeId}/review_summary/ai
+//
+// Example documents:
+// stores/{storeId}/reviews/{reviewId}
+// {
+//   "user_id": "uid_123",
+//   "user_name": "hong",
+//   "rating": 4.5,
+//   "content": "Great service and clean place.",
+//   "image_urls": ["https://..."],
+//   "visited_at": Timestamp,
+//   "created_at": Timestamp,
+//   "reservation_id": "reservation_123",
+//   "is_visible": true
+// }
+//
+// stores/{storeId}/review_summary/ai
+// {
+//   "one_line": "Good for quiet meetings.",
+//   "keywords": ["quiet", "friendly", "clean"],
+//   "positive_ratio": 0.92,
+//   "updated_at": Timestamp
+// }
+//
+// Example repository:
+// class StoreReviewRepository {
+//   final FirebaseFirestore _firestore;
+//
+//   StoreReviewRepository(this._firestore);
+//
+//   Future<AiReviewSummary?> fetchAiSummary(String storeId) async {
+//     final doc = await _firestore
+//         .collection('stores')
+//         .doc(storeId)
+//         .collection('review_summary')
+//         .doc('ai')
+//         .get();
+//
+//     if (!doc.exists) return null;
+//     final data = doc.data()!;
+//     return AiReviewSummary(
+//       oneLine: data['one_line'] as String? ?? '',
+//       keywords: List<String>.from(data['keywords'] as List? ?? const []),
+//       positiveRatio: (data['positive_ratio'] as num?)?.toDouble() ?? 0,
+//     );
+//   }
+//
+//   Future<List<ReviewItem>> fetchReviews(String storeId) async {
+//     final snapshot = await _firestore
+//         .collection('stores')
+//         .doc(storeId)
+//         .collection('reviews')
+//         .where('is_visible', isEqualTo: true)
+//         .orderBy('created_at', descending: true)
+//         .limit(20)
+//         .get();
+//
+//     return snapshot.docs
+//         .map((doc) => ReviewItem.fromJson(doc.id, doc.data()))
+//         .toList();
+//   }
+// }
+*/
 class AiReviewSummary {
   final String oneLine;
   final List<String> keywords;
@@ -123,6 +192,39 @@ class AiReviewSummary {
   const AiReviewSummary({required this.oneLine, required this.keywords, required this.positiveRatio});
 }
 
+/*
+// [DB integration guide] Replace the placeholder with a real review model when
+// Firestore is connected.
+//
+// class ReviewItem {
+//   final String id;
+//   final String userName;
+//   final double rating;
+//   final String content;
+//   final List<String> imageUrls;
+//   final DateTime createdAt;
+//
+//   const ReviewItem({
+//     required this.id,
+//     required this.userName,
+//     required this.rating,
+//     required this.content,
+//     required this.imageUrls,
+//     required this.createdAt,
+//   });
+//
+//   factory ReviewItem.fromJson(String id, Map<String, dynamic> json) {
+//     return ReviewItem(
+//       id: id,
+//       userName: json['user_name'] as String? ?? '',
+//       rating: (json['rating'] as num?)?.toDouble() ?? 0,
+//       content: json['content'] as String? ?? '',
+//       imageUrls: List<String>.from(json['image_urls'] as List? ?? const []),
+//       createdAt: (json['created_at'] as Timestamp).toDate(),
+//     );
+//   }
+// }
+*/
 class ReviewItem {}
 
 class _AiSummaryBox extends StatelessWidget {
