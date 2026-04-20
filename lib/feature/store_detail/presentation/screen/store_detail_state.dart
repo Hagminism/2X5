@@ -6,7 +6,6 @@ part 'store_detail_state.freezed.dart';
 @freezed
 abstract class StoreDetailState with _$StoreDetailState {
   const factory StoreDetailState({
-    @Default('') String storeId,
     @Default(0) int selectedTab,
     @Default(defaultStoreData) StoreDetailData data,
   }) = _StoreDetailState;
