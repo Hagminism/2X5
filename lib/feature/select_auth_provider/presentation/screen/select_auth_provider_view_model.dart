@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_action.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_event.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_state.dart';

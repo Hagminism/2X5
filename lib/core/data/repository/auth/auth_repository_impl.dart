@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
