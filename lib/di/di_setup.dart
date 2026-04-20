@@ -8,6 +8,8 @@ import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/s
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
+import 'package:capstone_2026/feature/store_detail/data/repository/mocks/mock_store_detail_repository_impl.dart';
+import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -40,6 +42,9 @@ void diSetup() {
       googleSignIn: getIt<GoogleSignIn>(),
     ),
   );
+  getIt.registerLazySingleton<StoreDetailRepository>(
+    () => MockStoreDetailRepositoryImpl(),
+  );
 
   // ViewModel
   getIt.registerFactory<SignInViewModel>(
@@ -64,6 +69,8 @@ void diSetup() {
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<StoreDetailViewModel>(
-    () => StoreDetailViewModel(),
+    () => StoreDetailViewModel(
+      storeDetailRepository: getIt<StoreDetailRepository>(),
+    ),
   );
 }
