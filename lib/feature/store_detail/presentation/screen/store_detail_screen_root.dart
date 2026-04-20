@@ -28,25 +28,29 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
   @override
   void initState() {
     super.initState();
-    widget.viewModel.onAction(StoreDetailAction.initialize(widget.storeId));
+    if (_eventSubscription != null) _eventSubscription?.cancel();
+
+    widget.viewModel.initialize(widget.storeId);
 
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
-      if (!mounted) return;
-
-      switch (event) {
-        case MoveBack():
-          context.pop();
-          break;
-        case MoveHome():
-          context.go(Routes.home);
-          break;
-        case ShowMessage():
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(event.message)));
-          break;
+      if (mounted) {
+        switch (event) {
+          case ShowMessage():
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(event.message)));
+            break;
+        }
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant StoreDetailScreenRoot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.storeId != widget.storeId) {
+      widget.viewModel.initialize(widget.storeId);
+    }
   }
 
   @override
@@ -56,7 +60,24 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
       builder: (context, child) {
         return StoreDetailScreen(
           state: widget.viewModel.state,
-          onAction: widget.viewModel.onAction,
+          onAction: (action) {
+            switch (action) {
+              case TapBack():
+                context.pop();
+                break;
+              case TapHome():
+                context.go(Routes.home);
+                break;
+              case TapSearch():
+              case TapBookmark():
+              case TapShare():
+              case TapCall():
+              case TapReserve():
+              case MoveTab():
+                widget.viewModel.onAction(action);
+                break;
+            }
+          },
         );
       },
     );
