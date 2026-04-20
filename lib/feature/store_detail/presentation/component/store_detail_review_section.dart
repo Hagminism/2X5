@@ -1,4 +1,3 @@
-import 'package:capstone_2026/core/utils/deep_link_util.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +6,8 @@ class StoreDetailReviewSection extends StatelessWidget {
   final String location;
   final String? naverPlaceId;
   final String googleSearchQuery;
+  final void Function() onTapNaverReview;
+  final void Function() onTapGoogleReview;
   final AiReviewSummary? aiSummary;
   final List<ReviewItem>? reviews;
 
@@ -16,6 +17,8 @@ class StoreDetailReviewSection extends StatelessWidget {
     required this.location,
     this.naverPlaceId,
     required this.googleSearchQuery,
+    required this.onTapNaverReview,
+    required this.onTapGoogleReview,
     this.aiSummary,
     this.reviews,
   });
@@ -48,11 +51,7 @@ class StoreDetailReviewSection extends StatelessWidget {
               child: _ExternalReviewButton(
                 title: '네이버 지도',
                 logoPath: 'assets/icons/naver.png',
-                onTap: () => DeepLinkUtil.launchNaverMapReview(
-                  storeName: storeName,
-                  location: location,
-                  placeId: naverPlaceId,
-                ),
+                onTap: onTapNaverReview,
                 backgroundColor: const Color(0xFF03C75A),
               ),
             ),
@@ -61,7 +60,7 @@ class StoreDetailReviewSection extends StatelessWidget {
               child: _ExternalReviewButton(
                 title: '구글 지도',
                 logoPath: 'assets/icons/google.png',
-                onTap: () => DeepLinkUtil.launchGoogleMapSearch(googleSearchQuery),
+                onTap: onTapGoogleReview,
                 backgroundColor: Colors.white,
                 textColor: AppColors.textPrimary,
                 showBorder: true,

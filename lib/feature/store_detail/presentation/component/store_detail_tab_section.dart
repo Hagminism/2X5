@@ -10,6 +10,8 @@ class StoreDetailTabSection extends StatelessWidget {
     required this.location,
     this.naverPlaceId,
     required this.googleSearchQuery,
+    required this.onTapNaverReview,
+    required this.onTapGoogleReview,
     super.key,
   });
 
@@ -19,6 +21,8 @@ class StoreDetailTabSection extends StatelessWidget {
   final String location;
   final String? naverPlaceId;
   final String googleSearchQuery;
+  final void Function() onTapNaverReview;
+  final void Function() onTapGoogleReview;
 
   static const List<String> _tabs = ['홈', '메뉴', '사진', '리뷰', '매장정보'];
 
@@ -87,6 +91,8 @@ class StoreDetailTabSection extends StatelessWidget {
           location: location,
           naverPlaceId: naverPlaceId,
           googleSearchQuery: googleSearchQuery,
+          onTapNaverReview: onTapNaverReview,
+          onTapGoogleReview: onTapGoogleReview,
         );
       case 1:
         return const Text('대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.', style: _contentStyle);

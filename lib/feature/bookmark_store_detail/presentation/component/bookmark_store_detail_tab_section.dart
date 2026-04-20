@@ -86,7 +86,7 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
           storeName: storeName,
           location: location,
           naverPlaceId: naverPlaceId,
-          googleSearchQuery: googleSearchQuery,
+          googleSearchQuery: googleSearchQuery, onTapNaverReview: () {  }, onTapGoogleReview: () {  },
         );
       case 1:
         return const Text('대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.', style: _contentStyle);
