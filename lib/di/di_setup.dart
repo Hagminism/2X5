@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/s
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -61,5 +62,8 @@ void diSetup() {
   );
   getIt.registerFactory<MyPageViewModel>(
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
+  );
+  getIt.registerFactory<StoreDetailViewModel>(
+    () => StoreDetailViewModel(),
   );
 }
