@@ -18,5 +18,9 @@ sealed class StoreDetailAction with _$StoreDetailAction {
 
   const factory StoreDetailAction.tapReserve() = TapReserve;
 
+  const factory StoreDetailAction.tapNaverReviewButton() = TapNaverReviewButton;
+
+  const factory StoreDetailAction.tapGoogleReviewButton() = TapGoogleReviewButton;
+
   const factory StoreDetailAction.moveTab(int index) = MoveTab;
 }
