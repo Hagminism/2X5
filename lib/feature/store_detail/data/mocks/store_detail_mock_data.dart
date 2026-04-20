@@ -1,32 +1,6 @@
-class StoreDetailData {
-  const StoreDetailData({
-    required this.name,
-    required this.category,
-    required this.rating,
-    required this.reviewCount,
-    required this.description,
-    required this.location,
-    required this.priceRange,
-    required this.openHours,
-    required this.tags,
-    required this.naverPlaceId,
-    required this.googleSearchQuery,
-  });
+import 'package:capstone_2026/feature/store_detail/domain/model/store_detail.dart';
 
-  final String name;
-  final String category;
-  final double rating;
-  final int reviewCount;
-  final String description;
-  final String location;
-  final String priceRange;
-  final String openHours;
-  final List<String> tags;
-  final String naverPlaceId;
-  final String googleSearchQuery;
-}
-
-const defaultStoreData = StoreDetailData(
+const defaultStoreDetail = StoreDetail(
   name: '업장 상세',
   category: '카테고리',
   rating: 4.5,
@@ -40,8 +14,8 @@ const defaultStoreData = StoreDetailData(
   googleSearchQuery: '한성대학교',
 );
 
-const Map<String, StoreDetailData> storeData = {
-  's1': StoreDetailData(
+const Map<String, StoreDetail> storeDetailMockMap = {
+  's1': StoreDetail(
     name: '돈블랑 여의도점',
     category: '고깃집',
     rating: 4.47,
@@ -54,7 +28,7 @@ const Map<String, StoreDetailData> storeData = {
     naverPlaceId: '1605601457',
     googleSearchQuery: '돈블랑 여의도점',
   ),
-  's2': StoreDetailData(
+  's2': StoreDetail(
     name: '블루보틀 여의도 카페',
     category: '카페',
     rating: 4.7,
@@ -67,7 +41,7 @@ const Map<String, StoreDetailData> storeData = {
     naverPlaceId: '1656542083',
     googleSearchQuery: '블루보틀 여의도 카페',
   ),
-  's3': StoreDetailData(
+  's3': StoreDetail(
     name: '아이디헤어 브라이튼여의도점',
     category: '미용실',
     rating: 4.6,
