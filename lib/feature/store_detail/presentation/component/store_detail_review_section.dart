@@ -309,7 +309,7 @@ class _AiSentimentBar extends StatelessWidget {
 class _ExternalReviewButton extends StatelessWidget {
   final String title;
   final String logoPath;
-  final VoidCallback onTap;
+  final void Function() onTap;
   final Color backgroundColor;
   final Color textColor;
   final bool showBorder;

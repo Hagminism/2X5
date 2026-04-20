@@ -3,6 +3,17 @@ import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class StoreDetailInfoSection extends StatelessWidget {
+  final String storeName;
+  final String category;
+  final double rating;
+  final int reviewCount;
+  final String description;
+  final String locationText;
+  final String priceText;
+  final String timeText;
+  final List<String> tags;
+  final void Function() onCallTap;
+
   const StoreDetailInfoSection({
     required this.storeName,
     required this.category,
@@ -16,17 +27,6 @@ class StoreDetailInfoSection extends StatelessWidget {
     required this.onCallTap,
     super.key,
   });
-
-  final String storeName;
-  final String category;
-  final double rating;
-  final int reviewCount;
-  final String description;
-  final String locationText;
-  final String priceText;
-  final String timeText;
-  final List<String> tags;
-  final VoidCallback onCallTap;
 
   @override
   Widget build(BuildContext context) {
@@ -124,13 +124,13 @@ class StoreDetailInfoSection extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
   const _InfoRow({
     required this.icon,
     required this.text,
   });
-
-  final IconData icon;
-  final String text;
 
   @override
   Widget build(BuildContext context) {
