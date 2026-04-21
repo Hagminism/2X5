@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(firebase --version)",
-      "Bash(echo \"EXIT: $?\")",
-      "Bash(flutter analyze:*)"
-    ]
-  }
-}
