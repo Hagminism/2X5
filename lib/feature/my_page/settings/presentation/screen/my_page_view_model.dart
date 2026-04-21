@@ -1,4 +1,4 @@
-import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_state.dart';
 import 'package:flutter/material.dart';
 

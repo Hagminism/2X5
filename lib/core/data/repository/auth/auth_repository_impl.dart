@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -42,11 +42,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signUpWithEmail(
-    String email,
-    String password,
-    String name,
-  ) async {
+  Future<void> signUpWithEmail({
+    required String email,
+    required String password,
+    required String name,
+    required String phone, // TODO: Supabase 연동 시 필요
+  }) async {
     final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,

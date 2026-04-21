@@ -31,7 +31,7 @@ flutterfire configure
 
 ### 3) Kakao 키 설정
 
-본 프로젝트는 Android/iOS/Dart 세 곳에서 Kakao 키를 사용합니다.
+본 프로젝트는 Android/iOS/main.dart 세 곳에서 Kakao 키를 사용합니다.
 
 #### Android
 
@@ -43,7 +43,7 @@ kakaoNativeAppKey=YOUR_KAKAO_NATIVE_APP_KEY
 
 #### iOS
 
-`ios/Runner/Secrets.xcconfig` 파일을 생성하고 아래 값을 넣어주세요.
+`ios/Runner/Secrets.xcconfig`에 아래 값을 추가하세요.
 
 ```xcconfig
 GOOGLE_REVERSE_CLIENT_ID=YOUR_GOOGLE_REVERSE_CLIENT_ID
@@ -52,39 +52,15 @@ KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
 
 > `Secrets.xcconfig`는 iOS 프로젝트의 base configuration으로 연결되어 있으므로 파일이 없으면 iOS 빌드가 실패할 수 있습니다.
 
-#### Dart 런타임
+#### main.dart Initializing
 
-`main.dart`에서 `String.fromEnvironment('KAKAO_NATIVE_APP_KEY')`를 사용하므로, 실행 시 `--dart-define` 전달이 필요합니다.
+루트의 `.env`에 아래 값을 추가하세요.
 
-### 4) iOS Pod 설치 (iOS 개발 시)
-
-```bash
-cd ios
-pod install
-cd ..
+```properties
+kakaoNativeAppKey=YOUR_KAKAO_NATIVE_APP_KEY
 ```
 
-### 5) 실행
-
-```bash
-flutter run --dart-define=KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
-```
-
-### 6) Android Studio Run Configuration에서 dart-define 설정
-
-Android Studio를 사용하는 경우 매번 터미널 명령을 입력하지 않고 Run Configuration에 `dart-define`을 고정할 수 있습니다.
-
-1. 상단 실행 구성 드롭다운에서 **Edit Configurations...** 선택
-2. Flutter 실행 구성(예: `main.dart`) 선택
-3. **Additional run args**(또는 Extra arguments) 항목에 아래 값 입력
-
-```text
---dart-define=KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
-```
-
-4. Apply -> OK 후 실행
-
-### 7) Naver 로그인 설정
+### 4) Naver 로그인 설정
 
 네이버 로그인은 **`.env` + `android/local.properties` + iOS 설정**이 모두 맞아야 동작합니다.
 
@@ -93,17 +69,17 @@ Android Studio를 사용하는 경우 매번 터미널 명령을 입력하지 �
 - `NAVER_CLIENT_SECRET`
 - `REDIRECT_URI` (팀 공통값으로 고정)
 
-> `REDIRECT_URI`는 네이버 콘솔 등록값과 앱 설정값이 **완전히 동일**해야 합니다.
+> `REDIRECT_URI`는 네이버 콘솔 등록값과 앱 설정값이 **완전히 동일**해야 합니다. 슬래시(/) 하나도 허용되지 않으니 유의합니다.
 
-#### 2. 프로젝트 루트 `.env` 생성
+#### 2. 루트의 `.env`에 아래 값을 추가
 
-```env
+```properties
 NAVER_CLIENT_ID=YOUR_NAVER_CLIENT_ID
 NAVER_CLIENT_SECRET=YOUR_NAVER_CLIENT_SECRET
 REDIRECT_URI=YOUR_REDIRECT_URI
 ```
 
-#### 3. `android/local.properties` 값 추가
+#### 3. (Android) `android/local.properties`에 값 추가
 
 ```properties
 naverClientId=YOUR_NAVER_CLIENT_ID
@@ -111,26 +87,34 @@ naverClientSecret=YOUR_NAVER_CLIENT_SECRET
 redirectUri=YOUR_REDIRECT_URI
 ```
 
-#### 4. iOS 설정 (`ios/Runner/Secrets.xcconfig`)
+#### 4. (iOS) `ios/Runner/Secrets.xcconfig`에 값 추가
 
-```xcconfig
+```properties
 URL_SCHEME=YOUR_URL_SCHEME
 NAVER_CLIENT_ID=YOUR_NAVER_CLIENT_ID
 NAVER_CLIENT_SECRET=YOUR_NAVER_CLIENT_SECRET
 SERVICE_APP_NAME=team2x5
 ```
 
-> 기존 값도 함께 필요합니다.
+### 5) Supabase 설정
 
-```xcconfig
-GOOGLE_REVERSE_CLIENT_ID=YOUR_GOOGLE_REVERSE_CLIENT_ID
-KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
+#### 루트의 `.env`에 아래 값을 추가하세요.
+
+```properties
+SUPABASE_URL=YOUR_SUPABASE_URL
+SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
 ```
 
-#### 5. 실행
+### 6) iOS Pod 설치 (iOS 개발 시)
 
 ```bash
-flutter pub get
-cd ios && pod install && cd ..
-flutter run --dart-define=KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
+cd ios
+pod install
+cd ..
+```
+
+### 7) 실행
+
+```bash
+flutter run
 ```

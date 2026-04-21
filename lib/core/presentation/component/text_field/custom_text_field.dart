@@ -2,6 +2,7 @@ import 'package:capstone_2026/core/domain/model/enum/text_field_content_type.dar
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextFieldContentType textFieldContentType;
@@ -32,6 +33,16 @@ class CustomTextField extends StatelessWidget {
           const SizedBox(width: 16.0),
           Expanded(
             child: TextFormField(
+              keyboardType: switch (textFieldContentType) {
+                TextFieldContentType.phone => TextInputType.phone,
+                TextFieldContentType.email => TextInputType.emailAddress,
+                TextFieldContentType.name => TextInputType.name,
+                _ => TextInputType.text,
+              },
+              inputFormatters:
+                  (textFieldContentType == TextFieldContentType.phone)
+                  ? [FilteringTextInputFormatter.digitsOnly]
+                  : null,
               onChanged: onChanged,
               obscureText:
                   (textFieldContentType != TextFieldContentType.email &&
@@ -76,6 +87,9 @@ class CustomTextField extends StatelessWidget {
       case TextFieldContentType.name:
         iconData = Icons.person_outline;
         break;
+      case TextFieldContentType.phone:
+        iconData = Icons.phone_android_outlined;
+        break;
       case TextFieldContentType.email:
         iconData = Icons.email_outlined;
         break;
@@ -103,6 +117,9 @@ class CustomTextField extends StatelessWidget {
     switch (textFieldContentType) {
       case TextFieldContentType.name:
         hintText = '이름을 입력하세요';
+        break;
+      case TextFieldContentType.phone:
+        hintText = '전화번호를 입력하세요';
         break;
       case TextFieldContentType.email:
         hintText = '이메일 주소를 입력하세요';

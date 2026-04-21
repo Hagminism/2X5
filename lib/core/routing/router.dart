@@ -1,5 +1,5 @@
 import 'package:app_links/app_links.dart';
-import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
@@ -14,6 +14,7 @@ import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_scre
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
+import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_screen_root.dart';
 import 'package:capstone_2026/feature/select_auth_provider/core/presentation/component/scope/select_auth_provider_scope.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/core/presentation/component/scope/sign_in_scope.dart';
@@ -61,7 +62,7 @@ final router = GoRouter(
               builder: (context, state) => SignUpTypeScreenRoot(),
               routes: [
                 GoRoute(
-                  path: Routes.signUpUser,
+                  path: Routes.signUpCustomer,
                   builder: (context, state) => SignUpCustomerScreenRoot(
                     viewModel: getIt<SignUpCustomerViewModel>(),
                   ),
@@ -214,6 +215,10 @@ final router = GoRouter(
           ],
         ),
       ],
+    ),
+    GoRoute(
+      path: Routes.onBoarding,
+      builder: (context, state) => const OnBoardingScreenRoot(),
     ),
   ],
   redirect: _redirect,

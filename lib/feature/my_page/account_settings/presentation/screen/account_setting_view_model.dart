@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:capstone_2026/core/domain/repository/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_action.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_event.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_state.dart';
