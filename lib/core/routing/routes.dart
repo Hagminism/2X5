@@ -9,8 +9,6 @@ class Routes {
   static const String findPassword = 'find-password';
 
   static const String onBoarding = '/on-boarding';
-  static const String onBoardingCustomer = 'on-boarding-customer';
-  static const String onBoardingPartner = 'on-boarding-partner';
 
   // Shell root
   static const String home = '/home';

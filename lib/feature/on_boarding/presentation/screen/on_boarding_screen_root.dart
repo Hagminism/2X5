@@ -1,9 +1,7 @@
-import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_action.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_screen.dart';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class OnBoardingScreenRoot extends StatelessWidget {
   const OnBoardingScreenRoot({super.key});
@@ -14,14 +12,8 @@ class OnBoardingScreenRoot extends StatelessWidget {
       onAction: (action) {
         switch (action) {
           case TapCustomer():
-            context.go(
-              '${Routes.onBoarding}/${Routes.onBoardingCustomer}',
-            );
-            break;
           case TapPartner():
-            context.go(
-              '${Routes.onBoarding}/${Routes.onBoardingPartner}',
-            );
+            // TODO: 버튼 누르면 Supabase에 사용자 정보를 저장하고, 홈으로 이동하도록 연결.
             break;
         }
       },
