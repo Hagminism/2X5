@@ -4,9 +4,11 @@ class Routes {
   static const String signUp = '/sign-up';
   static const String selectAuthProvider = 'select-auth-provider';
   static const String signUpType = 'type';
-  static const String signUpUser = 'user';
+  static const String signUpCustomer = 'customer';
   static const String signUpPartner = 'partner';
   static const String findPassword = 'find-password';
+
+  static const String onBoarding = '/on-boarding';
 
   // Shell root
   static const String home = '/home';
