@@ -1,8 +1,14 @@
-import 'package:capstone_2026/core/data/repository/naver_search_service.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/store_review_link_target.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
 
 class StoreReviewRepositoryImpl implements StoreReviewRepository {
+  final NaverStoreSearchDataSource _naverStoreSearchDataSource;
+
+  StoreReviewRepositoryImpl({
+    required NaverStoreSearchDataSource naverStoreSearchDataSource,
+  }) : _naverStoreSearchDataSource = naverStoreSearchDataSource;
+
   static const String _packageName = 'com.example.capstone_2026';
 
   @override
@@ -23,9 +29,9 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       );
     }
 
-    final info = await NaverSearchService.fetchExactStoreInfo(
-      storeName,
-      location,
+    final info = await _naverStoreSearchDataSource.fetchExactStoreInfo(
+      storeName: storeName,
+      location: location,
     );
     final fallbackQuery = Uri.encodeComponent('$storeName $location');
     final fallbackWebUri = Uri.parse(
