@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk_common.dart';
+import 'package:naver_maps_sdk_flutter/naver_maps_sdk_flutter.dart';
 
 import 'core/routing/router.dart';
 import 'ui/app_colors.dart';
@@ -28,6 +29,11 @@ Future<void> main() async {
   );
 
   await dotenv.load(fileName: '.env');
+
+  NaverMapSDK.initialize(
+    clientId: 'na6kk3s31d',
+    webServiceUrl: 'http://localhost',
+  );
 
   diSetup();
 

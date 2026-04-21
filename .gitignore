@@ -71,6 +71,7 @@ storage.rules
 # Local properties (contains API keys - do not commit)
 android/local.properties
 .dart_defines
+ios/Runner/Secrets.xcconfig
 
 # Environment variables
 .env

@@ -81,7 +81,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>KAKAO_APP_KEY</key>
+	<string>$(KAKAO_NATIVE_APP_KEY)</string>
 	<key>FlutterDeepLinkingEnabled</key>
     <false/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>주변 가게를 찾기 위해 현재 위치를 사용합니다.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>네이버 지도 서비스를 사용하기 위해 로컬 네트워크에 접근합니다.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
