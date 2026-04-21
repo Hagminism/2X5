@@ -14,14 +14,8 @@ class OnBoardingScreenRoot extends StatelessWidget {
       onAction: (action) {
         switch (action) {
           case TapCustomer():
-            context.go(
-              '${Routes.onBoarding}/${Routes.onBoardingCustomer}',
-            );
-            break;
           case TapPartner():
-            context.go(
-              '${Routes.onBoarding}/${Routes.onBoardingPartner}',
-            );
+            // TODO: 버튼 누르면 Supabase에 사용자 정보를 저장하고, 홈으로 이동하도록 연결.
             break;
         }
       },
