@@ -1,3 +1,4 @@
+import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -5,11 +6,19 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
   const BookmarkStoreDetailTabSection({
     required this.selectedTab,
     required this.onTabSelected,
+    required this.storeName,
+    required this.location,
+    this.naverPlaceId,
+    required this.googleSearchQuery,
     super.key,
   });
 
   final int selectedTab;
   final ValueChanged<int> onTabSelected;
+  final String storeName;
+  final String location;
+  final String? naverPlaceId;
+  final String googleSearchQuery;
 
   static const List<String> _tabs = ['홈', '메뉴', '사진', '리뷰', '매장정보'];
 
@@ -64,32 +73,47 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-          child: Text(
-            _tabContent(selectedTab),
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.5,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          child: _tabView(selectedTab),
         ),
       ],
     );
   }
 
-  String _tabContent(int tabIndex) {
+  Widget _tabView(int tabIndex) {
     switch (tabIndex) {
-      case 1:
-        return '대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.';
-      case 2:
-        return '업장/메뉴 사진 목록을 갤러리 형태로 표시합니다.';
       case 3:
-        return '방문자 리뷰와 평점 통계를 이 영역에 표시합니다.';
+        return StoreDetailReviewSection(
+          storeName: storeName,
+          location: location,
+          naverPlaceId: naverPlaceId,
+          googleSearchQuery: googleSearchQuery,
+          onTapNaverReview: () {},
+          onTapGoogleReview: () {},
+        );
+      case 1:
+        return const Text(
+          '대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.',
+          style: _contentStyle,
+        );
+      case 2:
+        return const Text('업장/메뉴 사진 목록을 갤러리 형태로 표시합니다.', style: _contentStyle);
       case 4:
-        return '매장 주소, 운영시간, 주차/편의 정보 등 상세 정보를 표시합니다.';
+        return const Text(
+          '매장 주소, 운영시간, 주차/편의 정보 등 상세 정보를 표시합니다.',
+          style: _contentStyle,
+        );
       case 0:
       default:
-        return '업장 소개, 추천 포인트, 공지사항 등 핵심 정보를 우선 제공합니다.';
+        return const Text(
+          '업장 소개, 추천 포인트, 공지사항 등 핵심 정보를 우선 제공합니다.',
+          style: _contentStyle,
+        );
     }
   }
+
+  static const _contentStyle = TextStyle(
+    fontSize: 14,
+    height: 1.5,
+    color: AppColors.textPrimary,
+  );
 }

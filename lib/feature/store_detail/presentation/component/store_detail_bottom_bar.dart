@@ -2,16 +2,16 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class StoreDetailBottomBar extends StatelessWidget {
+  final void Function() onBookmarkTap;
+  final void Function() onCallTap;
+  final void Function() onReserveTap;
+
   const StoreDetailBottomBar({
     required this.onBookmarkTap,
     required this.onCallTap,
     required this.onReserveTap,
     super.key,
   });
-
-  final VoidCallback onBookmarkTap;
-  final VoidCallback onCallTap;
-  final VoidCallback onReserveTap;
 
   @override
   Widget build(BuildContext context) {

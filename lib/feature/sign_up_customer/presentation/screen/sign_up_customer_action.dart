@@ -28,6 +28,5 @@ sealed class SignUpCustomerAction with _$SignUpCustomerAction {
 
   const factory SignUpCustomerAction.tapBackButton() = TapBackButton;
 
-  const factory SignUpCustomerAction.tapSubmit(
-  ) = TapSubmit;
+  const factory SignUpCustomerAction.tapSubmit() = TapSubmit;
 }

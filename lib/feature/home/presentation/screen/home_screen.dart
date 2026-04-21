@@ -20,9 +20,9 @@ class HomeScreen extends StatelessWidget {
   ];
 
   static const List<_StoreCardItem> _recommendedStores = [
-    _StoreCardItem('s1', '라운지 파스타', '이탈리안 · 도보 8분', 4.8),
-    _StoreCardItem('s2', '블루보틀 타입 카페', '스페셜티 커피 · 도보 5분', 4.7),
-    _StoreCardItem('s3', '모던 헤어 스튜디오', '헤어/메이크업 · 도보 11분', 4.6),
+    _StoreCardItem('s1', '돈블랑 여의도점', '고깃집 · 도보 5분', 4.47),
+    _StoreCardItem('s2', '블루보틀 여의도 카페', '스페셜티 커피 · 도보 5분', 4.7),
+    _StoreCardItem('s3', '아이디헤어 브라이튼여의도점', '헤어/메이크업 · 도보 11분', 4.6),
     _StoreCardItem('s4', '선셋 브런치 키친', '브런치 · 도보 6분', 4.9),
     _StoreCardItem('s5', '리프레시 네일 라운지', '네일아트 · 도보 9분', 4.7),
     _StoreCardItem('s6', '다온 스터디 라운지', '스터디카페 · 도보 13분', 4.5),
@@ -45,14 +45,14 @@ class HomeScreen extends StatelessWidget {
                     HomeHeader(
                       onNotificationTap: () => _showSoonMessage(
                         context,
-                        '알림 화면은 다음 스텝에서 연결할 예정입니다.',
+                        '알림 화면은 다음 단계에서 연결될 예정입니다.',
                       ),
                     ),
                     const SizedBox(height: 16),
                     HomeSearchBar(
                       onTap: () => _showSoonMessage(
                         context,
-                        '검색 화면은 다음 스텝에서 연결할 예정입니다.',
+                        '검색 화면은 다음 단계에서 연결될 예정입니다.',
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -76,7 +76,7 @@ class HomeScreen extends StatelessWidget {
                                   icon: item.icon,
                                   onTap: () => _showSoonMessage(
                                     context,
-                                    '${item.title} 카테고리 상세는 곧 연결됩니다.',
+                                    '${item.title} 카테고리 상세는 추후 연결됩니다.',
                                   ),
                                 );
                               },

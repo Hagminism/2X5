@@ -8,6 +8,13 @@ import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/s
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source_impl.dart';
+import 'package:capstone_2026/feature/store_detail/data/repository/mocks/mock_store_detail_repository_impl.dart';
+import 'package:capstone_2026/feature/store_detail/data/repository/store_review_repository_impl.dart';
+import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -32,11 +39,24 @@ void diSetup() {
     () => Supabase.instance,
   );
 
+  // DataSource
+  getIt.registerLazySingleton<NaverStoreSearchDataSource>(
+    () => NaverStoreSearchDataSourceImpl(),
+  );
+
   // Repository
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       firebaseAuth: getIt<FirebaseAuth>(),
       googleSignIn: getIt<GoogleSignIn>(),
+    ),
+  );
+  getIt.registerLazySingleton<StoreDetailRepository>(
+    () => MockStoreDetailRepositoryImpl(),
+  );
+  getIt.registerLazySingleton<StoreReviewRepository>(
+    () => StoreReviewRepositoryImpl(
+      naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
     ),
   );
 
@@ -61,5 +81,11 @@ void diSetup() {
   );
   getIt.registerFactory<MyPageViewModel>(
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
+  );
+  getIt.registerFactory<StoreDetailViewModel>(
+    () => StoreDetailViewModel(
+      storeDetailRepository: getIt<StoreDetailRepository>(),
+      storeReviewRepository: getIt<StoreReviewRepository>(),
+    ),
   );
 }
