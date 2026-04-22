@@ -19,6 +19,7 @@ import 'package:capstone_2026/feature/select_auth_provider/core/presentation/com
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/core/presentation/component/scope/sign_in_scope.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
+import 'package:capstone_2026/feature/map/presentation/screen/map_screen.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_screen_root.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_screen_root.dart';
@@ -105,8 +106,7 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.map,
-              builder: (context, state) =>
-                  const Placeholder(color: Colors.amberAccent),
+              builder: (context, state) => const MapScreen(),
             ),
           ],
         ),

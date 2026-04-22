@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk_common.dart';
+import 'package:naver_maps_sdk_flutter/naver_maps_sdk_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/routing/router.dart';
@@ -30,6 +31,11 @@ Future<void> main() async {
 
   KakaoSdk.init(
     nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '',
+  );
+
+  NaverMapSDK.initialize(
+    clientId: dotenv.env['NAVER_MAP_CLIENT_ID'] ?? '',
+    webServiceUrl: 'http://localhost',
   );
 
   diSetup();

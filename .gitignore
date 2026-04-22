@@ -70,6 +70,7 @@ storage.rules
 
 # Local properties (contains API keys - do not commit)
 android/local.properties
+ios/Runner/Secrets.xcconfig
 .dart_defines
 
 # Environment variables
@@ -80,3 +81,11 @@ android/local.properties
 .env.production
 .env.staging
 .env.test
+
+# Claude Code
+.claude/
+.agents/
+skills-lock.json
+
+# Node
+functions/node_modules/
