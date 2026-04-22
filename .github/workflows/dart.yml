@@ -19,7 +19,7 @@ jobs:
         run: |
           # 시뮬레이션용 파일이 아닌, 실제 커밋된 파일 중에 .env나 local.properties가 있는지 검사
           # CI에서 방금 생성한 파일들은 무시하고, 팀원이 push한 파일만 검사
-          FOUND_FILES=$(git ls-files | grep -E '\.env$|local\.properties$|google-services\.json$|GoogleService-Info\.plist$|firebase_options\.dart$')
+          FOUND_FILES=$(git ls-files | grep -E '\.env$|local\.properties$|google-services\.json$|GoogleService-Info\.plist$|firebase_options\.dart$' || true)
           
           if [ -n "$FOUND_FILES" ]; then
             echo "보안 경고: 민감한 파일이 커밋에 포함되어 푸시되었습니다."
