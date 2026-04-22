@@ -57,7 +57,7 @@ KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
 루트의 `.env`에 아래 값을 추가하세요.
 
 ```properties
-kakaoNativeAppKey=YOUR_KAKAO_NATIVE_APP_KEY
+KAKAO_NATIVE_APP_KEY=YOUR_KAKAO_NATIVE_APP_KEY
 ```
 
 ### 4) Naver 로그인 설정
@@ -96,7 +96,36 @@ NAVER_CLIENT_SECRET=YOUR_NAVER_CLIENT_SECRET
 SERVICE_APP_NAME=team2x5
 ```
 
-### 5) Supabase 설정
+### 5) Naver 지도 설정
+
+#### 1. 네이버 클라우드 플랫폼에서 값 준비
+- `NAVER_MAP_CLIENT_ID`
+- `NAVER_MAP_CLIENT_SECRET`
+
+> 네이버 클라우드 플랫폼 콘솔 → Maps → 애플리케이션 → **Web 서비스 URL**에 `http://localhost` 를 추가해야 지도가 정상 로드됩니다.
+
+#### 2. 루트의 `.env`에 아래 값을 추가
+
+```properties
+NAVER_MAP_CLIENT_ID=YOUR_NAVER_MAP_CLIENT_ID
+NAVER_MAP_CLIENT_SECRET=YOUR_NAVER_MAP_CLIENT_SECRET
+```
+
+#### 3. (Android) `android/local.properties`에 값 추가
+
+```properties
+naverMapClientId=YOUR_NAVER_MAP_CLIENT_ID
+naverMapClientSecret=YOUR_NAVER_MAP_CLIENT_SECRET
+```
+
+#### 4. (iOS) `ios/Runner/Secrets.xcconfig`에 값 추가
+
+```xcconfig
+NAVER_MAP_CLIENT_ID=YOUR_NAVER_MAP_CLIENT_ID
+NAVER_MAP_CLIENT_SECRET=YOUR_NAVER_MAP_CLIENT_SECRET
+```
+
+### 6) Supabase 설정
 
 #### 루트의 `.env`에 아래 값을 추가하세요.
 
@@ -105,7 +134,15 @@ SUPABASE_URL=YOUR_SUPABASE_URL
 SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
 ```
 
-### 6) iOS Pod 설치 (iOS 개발 시)
+### 7) Firebase Functions 의존성 설치
+
+```bash
+cd functions
+npm install
+cd ..
+```
+
+### 8) iOS Pod 설치 (iOS 개발 시)
 
 ```bash
 cd ios
@@ -113,7 +150,7 @@ pod install
 cd ..
 ```
 
-### 7) 실행
+### 9) 실행
 
 ```bash
 flutter run
