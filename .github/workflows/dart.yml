@@ -12,6 +12,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for unauthorized sensitive files
+        run: |
+          # 시뮬레이션용 파일이 아닌, 실제 커밋된 파일 중에 .env나 local.properties가 있는지 검사
+          # CI에서 방금 생성한 파일들은 무시하고, 팀원이 push한 파일만 검사
+          FOUND_FILES=$(git ls-files | grep -E '\.env$|local\.properties$|google-services\.json$|GoogleService-Info\.plist$|firebase_options\.dart$')
+          
+          if [ -n "$FOUND_FILES" ]; then
+            echo "보안 경고: 민감한 파일이 커밋에 포함되어 푸시되었습니다."
+            echo "발견된 파일들:"
+            echo "$FOUND_FILES"
+            echo ""
+            echo "위 파일들은 GitHub Secrets를 통해 관리되어야 하며, 레포지토리에 직접 올리면 안 됩니다."
+            echo ".gitignore에 등록되어 있는지 확인하고 'git rm --cached'로 삭제 후 다시 푸시하세요."
+            exit 1
+          else
+            echo "통과: 커밋된 민감 파일이 없습니다."
+          fi
 
       - uses: actions/setup-java@v4
         with:
