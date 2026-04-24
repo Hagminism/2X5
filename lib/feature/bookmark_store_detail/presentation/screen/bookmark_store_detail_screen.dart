@@ -5,9 +5,8 @@ import 'package:capstone_2026/feature/bookmark_store_detail/presentation/compone
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_info_section.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_tab_section.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
-import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -30,8 +29,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
   bool _isReviewLoading = true;
   List<InternalReview> _reviews = const [];
 
-  StoreReviewRepository get _storeReviewRepository =>
-      getIt<StoreReviewRepository>();
+  StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
 
   @override
   void initState() {
@@ -138,7 +136,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
       bottomNavigationBar: BookmarkStoreDetailBottomBar(
         onBookmarkTap: () => _showSoonMessage('북마크 기능은 준비 중입니다.'),
         onCallTap: () => _showSoonMessage('전화 연결 기능은 준비 중입니다.'),
-        onReserveTap: () => _showSoonMessage('예약 바텀시트는 다음 단계에서 연결합니다.'),
+        onReserveTap: () => _showSoonMessage('예약 바텀시트는 다음 단계에서 연결됩니다.'),
       ),
     );
   }
@@ -148,7 +146,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
       _isReviewLoading = true;
     });
 
-    final reviews = await _storeReviewRepository.fetchStoreReviews(
+    final reviews = await _storeReviewService.loadStoreReviews(
       storeId: widget.storeId,
     );
 
@@ -166,18 +164,9 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
     _StoreDetailData data,
     ReviewWriteResult result,
   ) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final userId = currentUser?.uid ?? 'mock-user';
-    final userName =
-        currentUser?.displayName?.trim().isNotEmpty == true
-        ? currentUser!.displayName!.trim()
-        : currentUser?.email?.split('@').first ?? '방문자';
-
-    final createdReview = await _storeReviewRepository.submitReview(
+    final createdReview = await _storeReviewService.submitReview(
       storeId: widget.storeId,
       storeName: data.name,
-      userId: userId,
-      userName: userName,
       review: result,
     );
 
@@ -199,7 +188,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
   }
 
   Future<void> _openNaverReview(_StoreDetailData data) async {
-    final target = await _storeReviewRepository.getNaverReviewLinkTarget(
+    final target = await _storeReviewService.getNaverReviewLinkTarget(
       storeName: data.name,
       location: data.location,
       placeId: data.naverPlaceId,
@@ -220,7 +209,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
   }
 
   Future<void> _openGoogleReview(_StoreDetailData data) async {
-    final uri = _storeReviewRepository.getGoogleMapSearchUri(
+    final uri = _storeReviewService.getGoogleMapSearchUri(
       data.googleSearchQuery,
     );
 
@@ -322,11 +311,11 @@ const Map<String, _StoreDetailData> _storeData = {
     category: '카페',
     rating: 4.7,
     reviewCount: 96,
-    description: '원두 향이 좋고 조용한 분위기의 스페셜티 카페입니다.',
+    description: '채광이 좋고 조용한 분위기의 스페셜티 카페입니다.',
     location: '여의도역에서 180m',
     priceRange: '0.8 - 2만원',
     openHours: '오늘 09:00 - 22:00',
-    tags: ['콘센트', '와이파이', '단체석'],
+    tags: ['콘센트', '와이파이', '좌석 여유'],
     googleSearchQuery: '블루보틀 여의도 카페',
     naverPlaceId: '1656542083',
   ),
@@ -339,7 +328,7 @@ const Map<String, _StoreDetailData> _storeData = {
     location: '여의도역에서 420m',
     priceRange: '2 - 10만원',
     openHours: '오늘 10:00 - 20:00',
-    tags: ['퍼스널 컨설팅', '헤어컷', '예약제'],
+    tags: ['1:1 스타일 컨설팅', '헤어컷', '예약제'],
     googleSearchQuery: '아이디헤어 브라이튼여의도점',
     naverPlaceId: '1600258358',
   ),

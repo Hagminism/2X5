@@ -20,7 +20,7 @@ class InternalReview {
   final double rating;
   final String content;
   final List<String> imageUrls;
-  final DateTime createdAt;
+  final DateTime? createdAt;
   final String? visitPurpose;
 
   factory InternalReview.fromSupabase(Map<String, dynamic> json) {
@@ -38,16 +38,16 @@ class InternalReview {
     );
   }
 
-  static DateTime _parseDateTime(dynamic value) {
+  static DateTime? _parseDateTime(dynamic value) {
     if (value is DateTime) {
       return value;
     }
 
     if (value is String) {
-      return DateTime.tryParse(value) ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return DateTime.tryParse(value);
     }
 
-    return DateTime.fromMillisecondsSinceEpoch(0);
+    return null;
   }
 
   static String? _parseVisitPurpose(dynamic value) {

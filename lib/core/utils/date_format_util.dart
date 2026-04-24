@@ -1,5 +1,5 @@
-String formatDotDate(DateTime date) {
-  if (date.millisecondsSinceEpoch == 0) {
+String formatDotDate(DateTime? date) {
+  if (date == null) {
     return '';
   }
 

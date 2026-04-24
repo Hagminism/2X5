@@ -1,23 +1,22 @@
 import 'dart:async';
 
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
-import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_action.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_event.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_state.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class StoreDetailViewModel extends ChangeNotifier {
-  final StoreDetailRepository _storeDetailRepository;
-  final StoreReviewRepository _storeReviewRepository;
-
   StoreDetailViewModel({
     required StoreDetailRepository storeDetailRepository,
-    required StoreReviewRepository storeReviewRepository,
+    required StoreReviewService storeReviewService,
   }) : _storeDetailRepository = storeDetailRepository,
-       _storeReviewRepository = storeReviewRepository;
+       _storeReviewService = storeReviewService;
+
+  final StoreDetailRepository _storeDetailRepository;
+  final StoreReviewService _storeReviewService;
 
   StoreDetailState _state = const StoreDetailState();
   String _currentStoreId = '';
@@ -39,9 +38,7 @@ class StoreDetailViewModel extends ChangeNotifier {
     );
     notifyListeners();
 
-    final reviews = await _storeReviewRepository.fetchStoreReviews(
-      storeId: storeId,
-    );
+    final reviews = await _storeReviewService.loadStoreReviews(storeId: storeId);
 
     _state = state.copyWith(
       isReviewLoading: false,
@@ -51,18 +48,9 @@ class StoreDetailViewModel extends ChangeNotifier {
   }
 
   Future<void> submitReview(ReviewWriteResult review) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    final userId = currentUser?.uid ?? 'mock-user';
-    final userName =
-        currentUser?.displayName?.trim().isNotEmpty == true
-        ? currentUser!.displayName!.trim()
-        : currentUser?.email?.split('@').first ?? '방문자';
-
-    final createdReview = await _storeReviewRepository.submitReview(
+    final createdReview = await _storeReviewService.submitReview(
       storeId: _currentStoreId,
       storeName: state.data.name,
-      userId: userId,
-      userName: userName,
       review: review,
     );
 
@@ -118,7 +106,7 @@ class StoreDetailViewModel extends ChangeNotifier {
   }
 
   Future<void> _openNaverReview() async {
-    final target = await _storeReviewRepository.getNaverReviewLinkTarget(
+    final target = await _storeReviewService.getNaverReviewLinkTarget(
       storeName: state.data.name,
       location: state.data.location,
       placeId: state.data.naverPlaceId,
@@ -133,7 +121,7 @@ class StoreDetailViewModel extends ChangeNotifier {
   }
 
   void _openGoogleReview() {
-    final webUri = _storeReviewRepository.getGoogleMapSearchUri(
+    final webUri = _storeReviewService.getGoogleMapSearchUri(
       state.data.googleSearchQuery,
     );
     _eventController.add(StoreDetailEvent.openGoogleMap(webUri));

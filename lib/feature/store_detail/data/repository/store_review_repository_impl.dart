@@ -176,9 +176,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       _mockReviewsByStoreId[storeId] ?? const [],
     );
 
-    final merged = [...mockReviews, ...supabaseReviews]..sort(
-      (a, b) => b.createdAt.compareTo(a.createdAt),
-    );
+    final merged = [...mockReviews, ...supabaseReviews]..sort(_compareByCreatedAtDesc);
 
     return merged.take(limit).toList();
   }
@@ -197,9 +195,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
         .where((review) => review.userId == userId)
         .toList();
 
-    final merged = [...mockReviews, ...supabaseReviews]..sort(
-      (a, b) => b.createdAt.compareTo(a.createdAt),
-    );
+    final merged = [...mockReviews, ...supabaseReviews]..sort(_compareByCreatedAtDesc);
 
     return merged.take(limit).toList();
   }
@@ -286,5 +282,11 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
         .whereType<Map>()
         .map((row) => InternalReview.fromSupabase(Map<String, dynamic>.from(row)))
         .toList();
+  }
+
+  int _compareByCreatedAtDesc(InternalReview a, InternalReview b) {
+    final aTime = a.createdAt?.millisecondsSinceEpoch ?? 0;
+    final bTime = b.createdAt?.millisecondsSinceEpoch ?? 0;
+    return bTime.compareTo(aTime);
   }
 }

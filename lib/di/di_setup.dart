@@ -15,6 +15,7 @@ import 'package:capstone_2026/feature/store_detail/data/repository/store_detail_
 import 'package:capstone_2026/feature/store_detail/data/repository/store_review_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -61,6 +62,12 @@ void diSetup() {
       supabase: getIt<Supabase>(),
     ),
   );
+  getIt.registerLazySingleton<StoreReviewService>(
+    () => StoreReviewService(
+      storeReviewRepository: getIt<StoreReviewRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
 
   // ViewModel
   getIt.registerFactory<SignInViewModel>(
@@ -93,7 +100,7 @@ void diSetup() {
   getIt.registerFactory<StoreDetailViewModel>(
     () => StoreDetailViewModel(
       storeDetailRepository: getIt<StoreDetailRepository>(),
-      storeReviewRepository: getIt<StoreReviewRepository>(),
+      storeReviewService: getIt<StoreReviewService>(),
     ),
   );
 }
