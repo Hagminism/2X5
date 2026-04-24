@@ -1,6 +1,18 @@
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
+class ReviewWriteResult {
+  const ReviewWriteResult({
+    required this.rating,
+    required this.content,
+    required this.visitTag,
+  });
+
+  final double rating;
+  final String content;
+  final String? visitTag;
+}
+
 class ReviewWriteBottomSheet extends StatefulWidget {
   const ReviewWriteBottomSheet({
     required this.storeName,
@@ -62,7 +74,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
               ),
               const SizedBox(height: 8),
               const Text(
-                '이용 완료된 예약 건에 한해 리뷰를 남길 수 있도록 추후 연결될 예정입니다.',
+                '시연용 mock 리뷰입니다. 작성하면 바로 화면에 반영되어 실제 등록된 것처럼 보입니다.',
                 style: TextStyle(
                   fontSize: 13,
                   height: 1.5,
@@ -132,7 +144,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                 minLines: 5,
                 maxLines: 7,
                 decoration: InputDecoration(
-                  hintText: '음식 맛, 서비스, 분위기, 재방문 의사 등을 자유롭게 적어주세요.',
+                  hintText: '음식 맛, 서비스, 분위기, 재방문 의사 등을 자연스럽게 남겨주세요.',
                   hintStyle: const TextStyle(color: AppColors.textSecondary),
                   filled: true,
                   fillColor: const Color(0xFFF7F8FA),
@@ -157,9 +169,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                       decoration: BoxDecoration(
                         color: isAddTile ? const Color(0xFFF7F8FA) : AppColors.border,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isAddTile ? AppColors.border : AppColors.border,
-                        ),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Icon(
                         isAddTile ? Icons.add_a_photo_outlined : Icons.image_outlined,
@@ -171,7 +181,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
               ),
               const SizedBox(height: 10),
               const Text(
-                '사진 업로드는 추후 Storage 연결 시 활성화됩니다.',
+                '사진 업로드는 발표 시연에서는 비활성화하고, 실제 연결 시 Storage와 연동합니다.',
                 style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
@@ -188,7 +198,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '리뷰 작성이 실제로 연결되면 스탬프 적립과 함께 마이페이지 리뷰 내역에서도 수정·삭제가 가능하도록 확장할 예정입니다.',
+                        '실제 서비스 단계에서는 리뷰 작성 후 스탬프 적립, 마이페이지 수정/삭제 흐름까지 확장할 예정입니다.',
                         style: TextStyle(
                           fontSize: 12,
                           height: 1.5,
@@ -203,15 +213,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context)
-                      ..hideCurrentSnackBar()
-                      ..showSnackBar(
-                        const SnackBar(
-                          content: Text('리뷰 저장 기능은 추후 Supabase 테이블 연결 후 활성화됩니다.'),
-                        ),
-                      );
-                  },
+                  onPressed: _submit,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
@@ -229,6 +231,26 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _submit() {
+    final content = _reviewController.text.trim();
+    if (content.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('리뷰 내용을 입력해 주세요.')),
+        );
+      return;
+    }
+
+    Navigator.of(context).pop(
+      ReviewWriteResult(
+        rating: _rating,
+        content: content,
+        visitTag: _selectedTag,
       ),
     );
   }

@@ -11,6 +11,7 @@ class StoreDetailReviewSection extends StatelessWidget {
     required this.googleSearchQuery,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
+    required this.onSubmitReview,
     this.isReviewLoading = false,
     this.aiSummary,
     this.reviews,
@@ -21,8 +22,9 @@ class StoreDetailReviewSection extends StatelessWidget {
   final String location;
   final String? naverPlaceId;
   final String googleSearchQuery;
-  final void Function() onTapNaverReview;
-  final void Function() onTapGoogleReview;
+  final VoidCallback onTapNaverReview;
+  final VoidCallback onTapGoogleReview;
+  final Future<void> Function(ReviewWriteResult result) onSubmitReview;
   final bool isReviewLoading;
   final AiReviewSummary? aiSummary;
   final List<InternalReview>? reviews;
@@ -125,8 +127,8 @@ class StoreDetailReviewSection extends StatelessWidget {
     );
   }
 
-  Future<void> _showWriteReviewBottomSheet(BuildContext context) {
-    return showModalBottomSheet<void>(
+  Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
+    final result = await showModalBottomSheet<ReviewWriteResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -135,6 +137,12 @@ class StoreDetailReviewSection extends StatelessWidget {
       ),
       builder: (context) => ReviewWriteBottomSheet(storeName: storeName),
     );
+
+    if (result == null || !context.mounted) {
+      return;
+    }
+
+    await onSubmitReview(result);
   }
 }
 
@@ -286,7 +294,7 @@ class _ExternalReviewButton extends StatelessWidget {
 
   final String title;
   final String logoPath;
-  final void Function() onTap;
+  final VoidCallback onTap;
   final Color backgroundColor;
   final Color textColor;
   final bool showBorder;
@@ -363,7 +371,7 @@ class _EmptyReviewState extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            '예약 완료 고객만 리뷰를 남길 수 있도록 추후 권한 제어와 함께 연결될 예정입니다.',
+            '발표 시연에서는 mock 저장소에 리뷰를 쌓아 자연스럽게 흐름을 보여주고, 실제 서비스 단계에서 작성 권한과 저장 로직을 연결할 예정입니다.',
             style: TextStyle(
               fontSize: 13,
               height: 1.5,
@@ -374,7 +382,7 @@ class _EmptyReviewState extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onTapWriteReview,
             icon: const Icon(Icons.rate_review_outlined, size: 16),
-            label: const Text('리뷰 작성 화면 보기'),
+            label: const Text('리뷰 작성하기'),
           ),
         ],
       ),
@@ -391,6 +399,7 @@ class _InternalReviewItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final displayName = review.userName.isEmpty ? '방문자' : review.userName;
     final reviewText = review.content.isEmpty ? '등록된 리뷰 내용이 없습니다.' : review.content;
+    final visitPurpose = review.visitPurpose?.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,13 +416,34 @@ class _InternalReviewItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    displayName,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          displayName,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (visitPurpose != null && visitPurpose.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            '[$visitPurpose]으로 방문함',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   Row(
                     children: List.generate(

@@ -9,6 +9,7 @@ class InternalReview {
     required this.content,
     required this.imageUrls,
     required this.createdAt,
+    this.visitPurpose,
   });
 
   final String id;
@@ -20,6 +21,7 @@ class InternalReview {
   final String content;
   final List<String> imageUrls;
   final DateTime createdAt;
+  final String? visitPurpose;
 
   factory InternalReview.fromSupabase(Map<String, dynamic> json) {
     return InternalReview(
@@ -32,6 +34,7 @@ class InternalReview {
       content: json['content']?.toString() ?? '',
       imageUrls: List<String>.from(json['image_urls'] as List? ?? const []),
       createdAt: _parseDateTime(json['created_at']),
+      visitPurpose: _parseVisitPurpose(json['visit_purpose']),
     );
   }
 
@@ -45,5 +48,13 @@ class InternalReview {
     }
 
     return DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
+  static String? _parseVisitPurpose(dynamic value) {
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty) {
+      return null;
+    }
+    return text;
   }
 }

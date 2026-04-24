@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_action.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_event.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class StoreDetailViewModel extends ChangeNotifier {
@@ -18,6 +20,7 @@ class StoreDetailViewModel extends ChangeNotifier {
        _storeReviewRepository = storeReviewRepository;
 
   StoreDetailState _state = const StoreDetailState();
+  String _currentStoreId = '';
 
   StoreDetailState get state => _state;
 
@@ -27,6 +30,7 @@ class StoreDetailViewModel extends ChangeNotifier {
   Stream<StoreDetailEvent> get eventStream => _eventController.stream;
 
   Future<void> initialize(String storeId) async {
+    _currentStoreId = storeId;
     _state = state.copyWith(
       selectedTab: 0,
       isReviewLoading: true,
@@ -44,6 +48,30 @@ class StoreDetailViewModel extends ChangeNotifier {
       reviews: reviews,
     );
     notifyListeners();
+  }
+
+  Future<void> submitReview(ReviewWriteResult review) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final userId = currentUser?.uid ?? 'mock-user';
+    final userName =
+        currentUser?.displayName?.trim().isNotEmpty == true
+        ? currentUser!.displayName!.trim()
+        : currentUser?.email?.split('@').first ?? '방문자';
+
+    final createdReview = await _storeReviewRepository.submitReview(
+      storeId: _currentStoreId,
+      storeName: state.data.name,
+      userId: userId,
+      userName: userName,
+      review: review,
+    );
+
+    _state = state.copyWith(
+      reviews: [createdReview, ...state.reviews],
+    );
+    notifyListeners();
+
+    _showSoonMessage('리뷰가 등록되었습니다.');
   }
 
   void onAction(StoreDetailAction action) {
