@@ -1,3 +1,4 @@
+import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,8 @@ class StoreDetailTabSection extends StatelessWidget {
     required this.location,
     this.naverPlaceId,
     required this.googleSearchQuery,
+    required this.reviews,
+    required this.isReviewLoading,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
     super.key,
@@ -21,6 +24,8 @@ class StoreDetailTabSection extends StatelessWidget {
   final String location;
   final String? naverPlaceId;
   final String googleSearchQuery;
+  final List<InternalReview> reviews;
+  final bool isReviewLoading;
   final void Function() onTapNaverReview;
   final void Function() onTapGoogleReview;
 
@@ -91,6 +96,8 @@ class StoreDetailTabSection extends StatelessWidget {
           location: location,
           naverPlaceId: naverPlaceId,
           googleSearchQuery: googleSearchQuery,
+          reviews: reviews,
+          isReviewLoading: isReviewLoading,
           onTapNaverReview: onTapNaverReview,
           onTapGoogleReview: onTapGoogleReview,
         );

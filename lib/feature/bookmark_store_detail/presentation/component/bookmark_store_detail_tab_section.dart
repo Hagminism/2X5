@@ -87,6 +87,8 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
           location: location,
           naverPlaceId: naverPlaceId,
           googleSearchQuery: googleSearchQuery,
+          reviews: const [],
+          isReviewLoading: false,
           onTapNaverReview: () {},
           onTapGoogleReview: () {},
         );

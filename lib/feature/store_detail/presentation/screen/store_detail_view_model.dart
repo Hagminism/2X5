@@ -26,10 +26,22 @@ class StoreDetailViewModel extends ChangeNotifier {
 
   Stream<StoreDetailEvent> get eventStream => _eventController.stream;
 
-  void initialize(String storeId) {
+  Future<void> initialize(String storeId) async {
     _state = state.copyWith(
       selectedTab: 0,
+      isReviewLoading: true,
+      reviews: const [],
       data: _storeDetailRepository.getStoreDetailById(storeId),
+    );
+    notifyListeners();
+
+    final reviews = await _storeReviewRepository.fetchStoreReviews(
+      storeId: storeId,
+    );
+
+    _state = state.copyWith(
+      isReviewLoading: false,
+      reviews: reviews,
     );
     notifyListeners();
   }

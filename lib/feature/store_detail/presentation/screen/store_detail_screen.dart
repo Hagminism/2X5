@@ -67,6 +67,8 @@ class StoreDetailScreen extends StatelessWidget {
                     location: state.data.location,
                     naverPlaceId: state.data.naverPlaceId,
                     googleSearchQuery: state.data.googleSearchQuery,
+                    reviews: state.reviews,
+                    isReviewLoading: state.isReviewLoading,
                     onTapNaverReview: () {
                       onAction(const StoreDetailAction.tapNaverReviewButton());
                     },
