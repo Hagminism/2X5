@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +77,7 @@ class ReviewHistoryScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        _formatReviewDate(review.createdAt),
+                        formatDotDate(review.createdAt),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
@@ -91,13 +92,3 @@ class ReviewHistoryScreen extends StatelessWidget {
   }
 }
 
-String _formatReviewDate(DateTime date) {
-  if (date.millisecondsSinceEpoch == 0) {
-    return '';
-  }
-
-  final year = date.year.toString().padLeft(4, '0');
-  final month = date.month.toString().padLeft(2, '0');
-  final day = date.day.toString().padLeft(2, '0');
-  return '$year.$month.$day';
-}

@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -461,7 +462,7 @@ class _InternalReviewItem extends StatelessWidget {
               ),
             ),
             Text(
-              _formatReviewDate(review.createdAt),
+              formatDotDate(review.createdAt),
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
@@ -512,15 +513,4 @@ class _InternalReviewItem extends StatelessWidget {
       ],
     );
   }
-}
-
-String _formatReviewDate(DateTime date) {
-  if (date.millisecondsSinceEpoch == 0) {
-    return '';
-  }
-
-  final year = date.year.toString().padLeft(4, '0');
-  final month = date.month.toString().padLeft(2, '0');
-  final day = date.day.toString().padLeft(2, '0');
-  return '$year.$month.$day';
 }

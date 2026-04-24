@@ -5,6 +5,7 @@ import 'package:capstone_2026/feature/store_detail/domain/repository/store_revie
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 class StoreReviewRepositoryImpl implements StoreReviewRepository {
   StoreReviewRepositoryImpl({
@@ -17,6 +18,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
   final Supabase _supabase;
 
   static const String _packageName = 'com.example.capstone_2026';
+  static const Uuid _uuid = Uuid();
 
   final Map<String, List<InternalReview>> _mockReviewsByStoreId = {
     's1': [
@@ -175,7 +177,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required ReviewWriteResult review,
   }) async {
     final mockReview = InternalReview(
-      id: 'mock-${DateTime.now().microsecondsSinceEpoch}',
+      id: 'mock-${_uuid.v4()}',
       storeId: storeId,
       userId: userId,
       userName: userName,
