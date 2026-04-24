@@ -1,10 +1,13 @@
+import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_bottom_bar.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_image_carousel.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_info_section.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_tab_section.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BookmarkStoreDetailScreen extends StatefulWidget {
   const BookmarkStoreDetailScreen({
@@ -93,6 +96,8 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
                   location: data.location,
                   naverPlaceId: data.naverPlaceId,
                   googleSearchQuery: data.googleSearchQuery,
+                  onTapNaverReview: () => _openNaverReview(data),
+                  onTapGoogleReview: () => _openGoogleReview(data),
                   onTabSelected: (index) {
                     setState(() {
                       _selectedTab = index;
@@ -117,6 +122,38 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _openNaverReview(_StoreDetailData data) async {
+    final repository = getIt<StoreReviewRepository>();
+    final target = await repository.getNaverReviewLinkTarget(
+      storeName: data.name,
+      location: data.location,
+      placeId: data.naverPlaceId,
+    );
+
+    try {
+      if (target.appUri != null && await canLaunchUrl(Uri.parse('nmap://'))) {
+        await launchUrl(target.appUri!, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(target.webUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      _showSoonMessage('외부 리뷰 페이지를 열 수 없습니다.');
+    }
+  }
+
+  Future<void> _openGoogleReview(_StoreDetailData data) async {
+    final repository = getIt<StoreReviewRepository>();
+    final uri = repository.getGoogleMapSearchUri(data.googleSearchQuery);
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!mounted) return;
+      _showSoonMessage('외부 리뷰 페이지를 열 수 없습니다.');
+    }
   }
 }
 

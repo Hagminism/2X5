@@ -10,6 +10,8 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
     required this.location,
     this.naverPlaceId,
     required this.googleSearchQuery,
+    required this.onTapNaverReview,
+    required this.onTapGoogleReview,
     super.key,
   });
 
@@ -19,6 +21,8 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
   final String location;
   final String? naverPlaceId;
   final String googleSearchQuery;
+  final VoidCallback onTapNaverReview;
+  final VoidCallback onTapGoogleReview;
 
   static const List<String> _tabs = ['홈', '메뉴', '사진', '리뷰', '매장정보'];
 
@@ -89,8 +93,8 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
           googleSearchQuery: googleSearchQuery,
           reviews: const [],
           isReviewLoading: false,
-          onTapNaverReview: () {},
-          onTapGoogleReview: () {},
+          onTapNaverReview: onTapNaverReview,
+          onTapGoogleReview: onTapGoogleReview,
         );
       case 1:
         return const Text(
