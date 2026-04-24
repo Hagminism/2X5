@@ -11,7 +11,7 @@ import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source_impl.dart';
-import 'package:capstone_2026/feature/store_detail/data/repository/mocks/mock_store_detail_repository_impl.dart';
+import 'package:capstone_2026/feature/store_detail/data/repository/store_detail_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/repository/store_review_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';

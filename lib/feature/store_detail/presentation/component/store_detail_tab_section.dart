@@ -1,4 +1,5 @@
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/review_ai_summary_generator.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -99,6 +100,10 @@ class StoreDetailTabSection extends StatelessWidget {
           location: location,
           naverPlaceId: naverPlaceId,
           googleSearchQuery: googleSearchQuery,
+          aiSummary: ReviewAiSummaryGenerator.generate(
+            storeName: storeName,
+            reviews: reviews,
+          ),
           reviews: reviews,
           isReviewLoading: isReviewLoading,
           onSubmitReview: onSubmitReview,

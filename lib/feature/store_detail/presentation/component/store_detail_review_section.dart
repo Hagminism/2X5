@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summary.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -27,14 +28,14 @@ class StoreDetailReviewSection extends StatelessWidget {
   final VoidCallback onTapGoogleReview;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
   final bool isReviewLoading;
-  final AiReviewSummary? aiSummary;
+  final ReviewAiSummary? aiSummary;
   final List<InternalReview>? reviews;
 
   @override
   Widget build(BuildContext context) {
     final summary =
         aiSummary ??
-        const AiReviewSummary(
+        const ReviewAiSummary(
           oneLine: '자체 리뷰가 쌓이면 매장의 강점과 방문 포인트를 AI가 짧게 요약해 보여줄 예정입니다.',
           keywords: ['자체 리뷰', '방문 후기', '스탬프 보상'],
           positiveRatio: 0.92,
@@ -147,22 +148,10 @@ class StoreDetailReviewSection extends StatelessWidget {
   }
 }
 
-class AiReviewSummary {
-  const AiReviewSummary({
-    required this.oneLine,
-    required this.keywords,
-    required this.positiveRatio,
-  });
-
-  final String oneLine;
-  final List<String> keywords;
-  final double positiveRatio;
-}
-
 class _AiSummaryBox extends StatelessWidget {
   const _AiSummaryBox({required this.summary});
 
-  final AiReviewSummary summary;
+  final ReviewAiSummary summary;
 
   @override
   Widget build(BuildContext context) {
