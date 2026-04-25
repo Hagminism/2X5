@@ -1,23 +1,25 @@
 import 'dart:async';
 
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
-import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_action.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_event.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_state.dart';
 import 'package:flutter/material.dart';
 
 class StoreDetailViewModel extends ChangeNotifier {
-  final StoreDetailRepository _storeDetailRepository;
-  final StoreReviewRepository _storeReviewRepository;
-
   StoreDetailViewModel({
     required StoreDetailRepository storeDetailRepository,
-    required StoreReviewRepository storeReviewRepository,
+    required StoreReviewService storeReviewService,
   }) : _storeDetailRepository = storeDetailRepository,
-       _storeReviewRepository = storeReviewRepository;
+       _storeReviewService = storeReviewService;
+
+  final StoreDetailRepository _storeDetailRepository;
+  final StoreReviewService _storeReviewService;
 
   StoreDetailState _state = const StoreDetailState();
+  String _currentStoreId = '';
 
   StoreDetailState get state => _state;
 
@@ -26,12 +28,38 @@ class StoreDetailViewModel extends ChangeNotifier {
 
   Stream<StoreDetailEvent> get eventStream => _eventController.stream;
 
-  void initialize(String storeId) {
+  Future<void> initialize(String storeId) async {
+    _currentStoreId = storeId;
     _state = state.copyWith(
       selectedTab: 0,
+      isReviewLoading: true,
+      reviews: const [],
       data: _storeDetailRepository.getStoreDetailById(storeId),
     );
     notifyListeners();
+
+    final reviews = await _storeReviewService.loadStoreReviews(storeId: storeId);
+
+    _state = state.copyWith(
+      isReviewLoading: false,
+      reviews: reviews,
+    );
+    notifyListeners();
+  }
+
+  Future<void> submitReview(ReviewWriteResult review) async {
+    final createdReview = await _storeReviewService.submitReview(
+      storeId: _currentStoreId,
+      storeName: state.data.name,
+      review: review,
+    );
+
+    _state = state.copyWith(
+      reviews: [createdReview, ...state.reviews],
+    );
+    notifyListeners();
+
+    _showSoonMessage('리뷰가 등록되었습니다.');
   }
 
   void onAction(StoreDetailAction action) {
@@ -78,7 +106,7 @@ class StoreDetailViewModel extends ChangeNotifier {
   }
 
   Future<void> _openNaverReview() async {
-    final target = await _storeReviewRepository.getNaverReviewLinkTarget(
+    final target = await _storeReviewService.getNaverReviewLinkTarget(
       storeName: state.data.name,
       location: state.data.location,
       placeId: state.data.naverPlaceId,
@@ -93,7 +121,7 @@ class StoreDetailViewModel extends ChangeNotifier {
   }
 
   void _openGoogleReview() {
-    final webUri = _storeReviewRepository.getGoogleMapSearchUri(
+    final webUri = _storeReviewService.getGoogleMapSearchUri(
       state.data.googleSearchQuery,
     );
     _eventController.add(StoreDetailEvent.openGoogleMap(webUri));

@@ -99,6 +99,7 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
       builder: (context, child) {
         return StoreDetailScreen(
           state: widget.viewModel.state,
+          onSubmitReview: widget.viewModel.submitReview,
           onAction: (action) {
             switch (action) {
               case TapBack():

@@ -243,6 +243,27 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  String getCurrentUserId({String fallback = 'mock-user'}) {
+    return _firebaseAuth.currentUser?.uid ?? fallback;
+  }
+
+  @override
+  String getCurrentUserDisplayName({String fallback = '방문자'}) {
+    final currentUser = _firebaseAuth.currentUser;
+    final displayName = currentUser?.displayName?.trim();
+    if (displayName != null && displayName.isNotEmpty) {
+      return displayName;
+    }
+
+    final emailPrefix = currentUser?.email?.split('@').first.trim();
+    if (emailPrefix != null && emailPrefix.isNotEmpty) {
+      return emailPrefix;
+    }
+
+    return fallback;
+  }
+
+  @override
   Stream<User?> authStateChanges() {
     return _firebaseAuth.authStateChanges();
   }
