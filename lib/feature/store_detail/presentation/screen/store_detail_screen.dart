@@ -5,6 +5,7 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/store_
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_action.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_state.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
 
 class StoreDetailScreen extends StatelessWidget {
   final StoreDetailState state;
@@ -84,6 +85,7 @@ class StoreDetailScreen extends StatelessWidget {
           ),
         ],
       ),
+
       bottomNavigationBar: StoreDetailBottomBar(
         onBookmarkTap: () {
           onAction(const StoreDetailAction.tapBookmark());
@@ -92,9 +94,16 @@ class StoreDetailScreen extends StatelessWidget {
           onAction(const StoreDetailAction.tapCall());
         },
         onReserveTap: () {
-          onAction(const StoreDetailAction.tapReserve());
+          //onAction(const StoreDetailAction.tapReserve());
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ReservationScreen()),
+          );//예약 누르면 예약 페이지로 넘어감
         },
       ),
+
+
+
     );
   }
 }
