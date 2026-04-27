@@ -4,6 +4,7 @@ import 'package:capstone_2026/core/presentation/component/button/primary_button.
 import 'package:capstone_2026/core/presentation/component/text_field/custom_text_field.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_header.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_terms_row.dart';
+import 'package:capstone_2026/feature/sign_up_partner/component/date_picker_button.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_action.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -107,16 +108,10 @@ class SignUpPartnerScreen extends StatelessWidget {
                     const SizedBox(height: 28),
                     buildLabel('개업 일자'),
                     // TODO: API 연동 부분 고려, 액션 연결 수정
-                    CustomTextField(
-                      textFieldContentType:
-                      TextFieldContentType.passwordConfirm,
-                      isObscureText: state.passwordConfirmObscureText,
-                      onChanged: (passwordConfirm) {
-                        onAction(
-                          SignUpPartnerAction.changePasswordConfirm(
-                            passwordConfirm,
-                          ),
-                        );
+                    DatePickerButton(
+                      labelText: '개업 일자를 선택하세요',
+                      onTap: () {
+                        onAction(SignUpPartnerAction.tapDatePickerButton());
                       },
                     ),
                     const SizedBox(height: 28),
