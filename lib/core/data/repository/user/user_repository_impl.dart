@@ -11,7 +11,16 @@ class UserRepositoryImpl implements UserRepository {
   }) : _userDataSource = userDataSource;
 
   @override
-  Future<void> createUser(User user) async {
-    await _userDataSource.createUser(user.toDto());
+  Future<User> createUser(User user) async {
+    final userDto = await _userDataSource.createUser(user.toDto());
+
+    return userDto.toModel();
+  }
+
+  @override
+  Future<User?> findUserById(String id) async {
+    final userDto = await _userDataSource.findUserById(id);
+
+    return userDto?.toModel();
   }
 }
