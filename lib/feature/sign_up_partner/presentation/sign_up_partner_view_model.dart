@@ -56,6 +56,9 @@ class SignUpPartnerViewModel extends ChangeNotifier {
       case ChangePasswordConfirm():
         _changePasswordConfirm(action.passwordConfirm);
         break;
+      case ChangeBusinessNumber():
+        _changeBusinessNumber(action.businessNumber);
+        break;
     }
   }
 
@@ -81,6 +84,11 @@ class SignUpPartnerViewModel extends ChangeNotifier {
 
   void _changePasswordConfirm(String passwordConfirm) {
     _state = state.copyWith(passwordConfirm: passwordConfirm);
+    notifyListeners();
+  }
+
+  void _changeBusinessNumber(String businessNumber) {
+    _state = state.copyWith(businessNumber: businessNumber);
     notifyListeners();
   }
 

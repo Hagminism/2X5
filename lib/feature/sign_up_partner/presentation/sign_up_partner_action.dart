@@ -20,6 +20,10 @@ sealed class SignUpPartnerAction with _$SignUpPartnerAction {
     String passwordConfirm,
   ) = ChangePasswordConfirm;
 
+  const factory SignUpPartnerAction.changeBusinessNumber(
+    String businessNumber,
+  ) = ChangeBusinessNumber;
+
   const factory SignUpPartnerAction.changePasswordObscureText() =
       ChangePasswordObscureText;
 
