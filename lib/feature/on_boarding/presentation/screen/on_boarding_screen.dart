@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_action.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/component/sign_up_type_card.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -41,7 +42,8 @@ class OnBoardingScreen extends StatelessWidget {
                   description: '최소한의 정보로 빠르게 가입하고\n예약 서비스를 바로 이용할 수 있어요.',
                   icon: Icons.person_outline_rounded,
                   accentColor: const Color(0xFF2563EB),
-                  onTap: () => onAction(OnBoardingAction.tapCustomer()),
+                  onTap: () =>
+                      onAction(OnBoardingAction.tapCustomer(UserType.customer)),
                 ),
                 const SizedBox(height: 14),
                 SignUpTypeCard(
@@ -49,7 +51,8 @@ class OnBoardingScreen extends StatelessWidget {
                   description: '업장 운영에 필요한 추가 정보를 입력하고\n매장 예약 관리를 시작해요.',
                   icon: Icons.storefront_outlined,
                   accentColor: const Color(0xFF4F46E5),
-                  onTap: () => onAction(OnBoardingAction.tapPartner()),
+                  onTap: () =>
+                      onAction(OnBoardingAction.tapPartner(UserType.partner)),
                 ),
               ],
             ),

@@ -1,11 +1,22 @@
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_action.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_screen.dart';
+import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_view_model.dart';
 
 import 'package:flutter/material.dart';
 
-class OnBoardingScreenRoot extends StatelessWidget {
-  const OnBoardingScreenRoot({super.key});
+class OnBoardingScreenRoot extends StatefulWidget {
+  final OnBoardingViewModel viewModel;
 
+  const OnBoardingScreenRoot({
+    super.key,
+    required this.viewModel,
+  });
+
+  @override
+  State<OnBoardingScreenRoot> createState() => _OnBoardingScreenRootState();
+}
+
+class _OnBoardingScreenRootState extends State<OnBoardingScreenRoot> {
   @override
   Widget build(BuildContext context) {
     return OnBoardingScreen(
@@ -13,7 +24,7 @@ class OnBoardingScreenRoot extends StatelessWidget {
         switch (action) {
           case TapCustomer():
           case TapPartner():
-            // TODO: 버튼 누르면 Supabase에 사용자 정보를 저장하고, 홈으로 이동하도록 연결.
+            widget.viewModel.onAction(action);
             break;
         }
       },
