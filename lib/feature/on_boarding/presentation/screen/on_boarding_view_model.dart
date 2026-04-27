@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/domain/model/enum/auth_provider.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/model/user/user.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
@@ -65,6 +66,9 @@ class OnBoardingViewModel extends ChangeNotifier {
       await _userRepository.createUser(
         User(
           id: firebaseUser.uid,
+          authProvider: _convertAuthProvider(
+            firebaseUser.providerData.first.providerId,
+          ),
           name: firebaseUser.displayName ?? '',
           userType: userType,
           email: firebaseUser.email ?? '',
@@ -80,6 +84,27 @@ class OnBoardingViewModel extends ChangeNotifier {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
     }
+  }
+
+  AuthProvider _convertAuthProvider(String authProvider) {
+    AuthProvider result = AuthProvider.email;
+
+    switch (authProvider) {
+      case 'password':
+        result = AuthProvider.email;
+        break;
+      case 'google.com':
+        result = AuthProvider.google;
+        break;
+      case 'oidc.naver':
+        result = AuthProvider.naver;
+        break;
+      case 'oidc.kakao':
+        result = AuthProvider.kakao;
+        break;
+    }
+
+    return result;
   }
 
   @override
