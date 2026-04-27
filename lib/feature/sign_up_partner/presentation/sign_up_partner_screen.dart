@@ -10,6 +10,8 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/domain/model/enum/user_type.dart';
+
 class SignUpPartnerScreen extends StatelessWidget {
   final SignUpPartnerState state;
   final void Function(SignUpPartnerAction action) onAction;
@@ -38,7 +40,11 @@ class SignUpPartnerScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Center(child: SignUpHeader()),
+                    const Center(
+                      child: SignUpHeader(
+                        userType: UserType.partner,
+                      ),
+                    ),
                     const SizedBox(height: 40),
                     buildLabel('이름'),
                     CustomTextField(
@@ -97,6 +103,34 @@ class SignUpPartnerScreen extends StatelessWidget {
                           ),
                         );
                       },
+                    ),
+                    const SizedBox(height: 28),
+                    buildLabel('사업자등록번호'),
+                    Row(
+                      children: [
+                        Flexible(
+                          flex: 4,
+                          child: CustomTextField(
+                            textFieldContentType:
+                                TextFieldContentType.businessNumber,
+                            onChanged: (passwordConfirm) {
+                              onAction(
+                                SignUpPartnerAction.changePasswordConfirm(
+                                  passwordConfirm,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Flexible(
+                          flex: 1,
+                          child: PrimaryButton(
+                            text: '제출',
+                            onTap: () {},
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 36),
                     SignUpTermsRow(
