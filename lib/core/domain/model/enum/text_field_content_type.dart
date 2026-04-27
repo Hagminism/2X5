@@ -4,4 +4,5 @@ enum TextFieldContentType {
   email,
   password,
   passwordConfirm,
+  businessNumber,
 }
