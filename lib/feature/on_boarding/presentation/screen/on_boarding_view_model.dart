@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/model/user/user.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_action.dart';
+import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_event.dart';
+import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_state.dart';
 import 'package:flutter/material.dart';
 
 class OnBoardingViewModel extends ChangeNotifier {
@@ -14,6 +18,15 @@ class OnBoardingViewModel extends ChangeNotifier {
     required UserRepository userRepository,
   }) : _authRepository = authRepository,
        _userRepository = userRepository;
+
+  OnBoardingState _state = OnBoardingState();
+
+  OnBoardingState get state => _state;
+
+  final StreamController<OnBoardingEvent> _eventController =
+      StreamController<OnBoardingEvent>();
+
+  Stream<OnBoardingEvent> get eventStream => _eventController.stream;
 
   Future<void> onAction(OnBoardingAction action) async {
     switch (action) {
@@ -35,21 +48,38 @@ class OnBoardingViewModel extends ChangeNotifier {
   }
 
   Future<void> _createUser(UserType userType) async {
-    final firebaseUser = _authRepository.getCurrentUser();
+    _state = state.copyWith(isLoading: true);
+    notifyListeners();
 
-    if (firebaseUser == null) {
-      throw Exception('로그인 정보가 없습니다.');
+    try {
+      final firebaseUser = _authRepository.getCurrentUser();
+
+      if (firebaseUser == null) {
+        throw Exception('로그인 정보가 없습니다.');
+      }
+
+      await _userRepository.createUser(
+        User(
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName ?? '',
+          userType: userType,
+          email: firebaseUser.email ?? '',
+          phone: firebaseUser.phoneNumber ?? '',
+          imageUrl: firebaseUser.photoURL ?? '',
+        ),
+      );
+    } catch (e) {
+      _eventController.add(OnBoardingEvent.showError(e.toString()));
+      rethrow;
+    } finally {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
     }
+  }
 
-    await _userRepository.createUser(
-      User(
-        id: firebaseUser.uid,
-        name: firebaseUser.displayName ?? '',
-        userType: userType,
-        email: firebaseUser.email ?? '',
-        phone: firebaseUser.phoneNumber ?? '',
-        imageUrl: firebaseUser.photoURL ?? '',
-      ),
-    );
+  @override
+  void dispose() {
+    _eventController.close();
+    super.dispose();
   }
 }
