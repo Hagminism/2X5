@@ -1,7 +1,8 @@
 import 'package:app_links/app_links.dart';
+import 'package:capstone_2026/core/domain/model/enum/user_registration_status.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
-import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
+import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
@@ -227,15 +228,17 @@ final router = GoRouter(
     ),
   ],
   redirect: _redirect,
-  refreshListenable: AuthRefreshNotifier(
-    getIt<AuthRepository>().authStateChanges(),
-  ),
+  refreshListenable: Listenable.merge([
+    AuthRefreshNotifier(getIt<AuthRepository>().authStateChanges()),
+    getIt<UserRegistrationStatusNotifier>(),
+  ]),
 );
 
 // 리다이렉트 로직
 // TODO: 회원 탈퇴(deleteAccount) 후 리다이렉션 문제 있는지 추가 확인해야함
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final currentUser = getIt<AuthRepository>().getCurrentUser();
+  final registrationStatus = getIt<UserRegistrationStatusNotifier>().status;
 
   final isLoggedIn = currentUser != null;
   final location = state.matchedLocation;
@@ -246,13 +249,17 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
     return isInAuthFlow ? null : Routes.signIn;
   }
 
-  final user = await getIt<UserRepository>().findUserById(currentUser.uid);
-
-  if (isInAuthFlow) {
-    return (user == null) ? Routes.onBoarding : Routes.home;
+  if (registrationStatus == UserRegistrationStatus.unknown ||
+      registrationStatus == UserRegistrationStatus.loading ||
+      registrationStatus == UserRegistrationStatus.error) {
+    return null;
   }
 
-  if (location == Routes.onBoarding && user != null) {
+  if (registrationStatus == UserRegistrationStatus.notExists) {
+    return location == Routes.onBoarding ? null : Routes.onBoarding;
+  }
+
+  if (isInAuthFlow || location == Routes.onBoarding) {
     return Routes.home;
   }
 
