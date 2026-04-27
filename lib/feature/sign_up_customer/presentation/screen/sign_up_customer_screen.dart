@@ -38,7 +38,7 @@ class SignUpCustomerScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Center(child: SignUpCustomerHeader()),
+                    const Center(child: SignUpHeader()),
                     const SizedBox(height: 40),
                     buildLabel('이름'),
                     CustomTextField(
@@ -99,7 +99,7 @@ class SignUpCustomerScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 36),
-                    SignUpCustomerTermsRow(
+                    SignUpTermsRow(
                       isChecked: state.agreeTerms,
                       onToggle: () => onAction(
                         const SignUpCustomerAction.toggleTermsAgreement(),
