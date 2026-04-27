@@ -46,7 +46,7 @@ class SignUpPartnerScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    buildLabel('이름'),
+                    buildLabel('대표자 성명'),
                     CustomTextField(
                       textFieldContentType: TextFieldContentType.name,
                       onChanged: (name) {
@@ -96,6 +96,21 @@ class SignUpPartnerScreen extends StatelessWidget {
                           const SignUpPartnerAction.changePasswordConfirmObscureText(),
                         );
                       },
+                      onChanged: (passwordConfirm) {
+                        onAction(
+                          SignUpPartnerAction.changePasswordConfirm(
+                            passwordConfirm,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 28),
+                    buildLabel('개업 일자'),
+                    // TODO: API 연동 부분 고려, 액션 연결 수정
+                    CustomTextField(
+                      textFieldContentType:
+                      TextFieldContentType.passwordConfirm,
+                      isObscureText: state.passwordConfirmObscureText,
                       onChanged: (passwordConfirm) {
                         onAction(
                           SignUpPartnerAction.changePasswordConfirm(
