@@ -62,6 +62,7 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
               case ChangeEmail():
               case ChangePassword():
               case ChangePasswordConfirm():
+              case ChangeBusinessNumber():
               case ToggleTermsAgreement():
               case TapSubmit():
               case ChangePasswordObscureText():
