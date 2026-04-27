@@ -5,6 +5,7 @@ import 'package:capstone_2026/core/data/repository/auth/auth_repository_impl.dar
 import 'package:capstone_2026/core/data/repository/user/user_repository_impl.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
+import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
@@ -40,6 +41,14 @@ void diSetup() {
   );
   getIt.registerLazySingleton<AppLinks>(
     () => AppLinks(),
+  );
+
+  // Redirect
+  getIt.registerLazySingleton<UserRegistrationStatusNotifier>(
+    () => UserRegistrationStatusNotifier(
+      authRepository: getIt<AuthRepository>(),
+      userRepository: getIt<UserRepository>(),
+    ),
   );
 
   // DB
@@ -98,6 +107,7 @@ void diSetup() {
     () => OnBoardingViewModel(
       authRepository: getIt<AuthRepository>(),
       userRepository: getIt<UserRepository>(),
+      userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
   );
   getIt.registerFactory<SignUpPartnerViewModel>(
