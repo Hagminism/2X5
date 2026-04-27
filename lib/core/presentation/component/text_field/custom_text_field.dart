@@ -37,10 +37,13 @@ class CustomTextField extends StatelessWidget {
                 TextFieldContentType.phone => TextInputType.phone,
                 TextFieldContentType.email => TextInputType.emailAddress,
                 TextFieldContentType.name => TextInputType.name,
+                TextFieldContentType.businessNumber => TextInputType.number,
                 _ => TextInputType.text,
               },
               inputFormatters:
-                  (textFieldContentType == TextFieldContentType.phone)
+                  (textFieldContentType == TextFieldContentType.phone ||
+                      textFieldContentType ==
+                          TextFieldContentType.businessNumber)
                   ? [FilteringTextInputFormatter.digitsOnly]
                   : null,
               onChanged: onChanged,
