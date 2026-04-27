@@ -10,8 +10,24 @@ class UserDataSourceImpl implements UserDataSource {
   }) : _supabaseClient = supabaseClient;
 
   @override
-  Future<void> createUser(UserDto userDto) async {
-    // TODO: 임시 구현, 에러 핸들링 등 추가해야됨.
-    await _supabaseClient.from('users').upsert(userDto.toJson());
+  Future<UserDto> createUser(UserDto userDto) async {
+    final json = await _supabaseClient.from('users').upsert(userDto.toJson());
+
+    return UserDto.fromJson(json);
+  }
+
+  @override
+  Future<UserDto?> findUserById(String id) async {
+    final json = await _supabaseClient
+        .from('users')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+
+    if (json == null) {
+      return null;
+    }
+
+    return UserDto.fromJson(json);
   }
 }
