@@ -59,6 +59,9 @@ class SignUpPartnerViewModel extends ChangeNotifier {
       case ChangeBusinessNumber():
         _changeBusinessNumber(action.businessNumber);
         break;
+      case TapDatePickerButton():
+        _eventController.add(SignUpPartnerEvent.showDatePicker());
+        break;
     }
   }
 

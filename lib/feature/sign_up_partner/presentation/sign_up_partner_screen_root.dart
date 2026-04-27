@@ -32,7 +32,7 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (mounted) {
         switch (event) {
-          case SignUpPartnerEvent():
+          case ShowGoogleSignUpError():
             // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -43,6 +43,12 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
               ),
             );
             break;
+          case ShowDatePicker():
+            showDatePicker(
+              context: context,
+              firstDate: DateTime.now(),
+              lastDate: DateTime(2100),
+            );
         }
       }
     });
@@ -65,6 +71,7 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
               case ChangeBusinessNumber():
               case ToggleTermsAgreement():
               case TapSubmit():
+              case TapDatePickerButton():
               case ChangePasswordObscureText():
               case ChangePasswordConfirmObscureText():
                 widget.viewModel.onAction(action);
