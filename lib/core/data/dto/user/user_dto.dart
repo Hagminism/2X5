@@ -19,7 +19,7 @@ class UserDto {
 
   UserDto.fromJson(dynamic json) {
     id = json['id'];
-    authProvider = json['authProvider'];
+    authProvider = json['auth_provider'];
     name = json['name'];
     userType = json['user_type'];
     email = json['email'];
