@@ -1,6 +1,8 @@
 import 'dart:async';
 
-import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/exception/sign_up_profile_creation_exception.dart';
+import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
+import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_action.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_event.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_state.dart';
@@ -8,11 +10,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 class SignUpCustomerViewModel extends ChangeNotifier {
-  final AuthRepository _authRepository;
+  final SignUpWithEmailService _signUpWithEmailService;
 
   SignUpCustomerViewModel({
-    required AuthRepository authRepository,
-  }) : _authRepository = authRepository;
+    required SignUpWithEmailService signUpWithEmailService,
+  }) : _signUpWithEmailService = signUpWithEmailService;
 
   SignUpCustomerState _state = const SignUpCustomerState();
 
@@ -120,16 +122,19 @@ class SignUpCustomerViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _authRepository.signUpWithEmail(
-        email: state.email.trim(),
+      await _signUpWithEmailService.signUpAndCreateProfile(
+        name: state.name,
+        phone: state.phone,
+        email: state.email,
         password: state.password,
-        name: state.name.trim(),
-        phone: state.phone.trim(),
+        userType: UserType.customer,
       );
     } on FirebaseAuthException catch (e) {
       _eventController.add(
         SignUpCustomerEvent.showSignUpError(_mapFirebaseAuthError(e.code)),
       );
+    } on SignUpProfileCreationException catch (e) {
+      _eventController.add(SignUpCustomerEvent.showSignUpError(e.message));
     } catch (e) {
       _eventController.add(
         const SignUpCustomerEvent.showSignUpError('회원가입 중 오류가 발생했습니다.'),
