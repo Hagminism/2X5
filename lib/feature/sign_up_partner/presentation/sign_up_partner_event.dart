@@ -6,4 +6,7 @@ part 'sign_up_partner_event.freezed.dart';
 sealed class SignUpPartnerEvent with _$SignUpPartnerEvent {
   const factory SignUpPartnerEvent.showSignUpError(String message) =
       ShowGoogleSignUpError;
+
+  const factory SignUpPartnerEvent.showDatePicker() =
+      ShowDatePicker;
 }

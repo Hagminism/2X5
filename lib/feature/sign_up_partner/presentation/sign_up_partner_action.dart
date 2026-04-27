@@ -32,5 +32,7 @@ sealed class SignUpPartnerAction with _$SignUpPartnerAction {
 
   const factory SignUpPartnerAction.tapBackButton() = TapBackButton;
 
+  const factory SignUpPartnerAction.tapDatePickerButton() = TapDatePickerButton;
+
   const factory SignUpPartnerAction.tapSubmit() = TapSubmit;
 }
