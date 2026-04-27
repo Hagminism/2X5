@@ -111,7 +111,7 @@ void diSetup() {
     ),
   );
   getIt.registerFactory<SignUpPartnerViewModel>(
-    () => SignUpPartnerViewModel(),
+    () => SignUpPartnerViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<SelectAuthProviderViewModel>(
     () => SelectAuthProviderViewModel(authRepository: getIt<AuthRepository>()),
