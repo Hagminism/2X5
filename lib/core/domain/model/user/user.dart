@@ -8,6 +8,7 @@ part 'user.g.dart';
 @freezed
 abstract class User with _$User {
   const factory User({
+    required String id, // Firebase Auth 문서 uuid와 같은 값
     required String name,
     required UserType userType,
     required String email,

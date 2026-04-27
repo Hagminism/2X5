@@ -1,4 +1,5 @@
 class UserDto {
+  String? id;
   String? name;
   String? userType;
   String? email;
@@ -6,6 +7,7 @@ class UserDto {
   String? imageUrl;
 
   UserDto({
+    this.id,
     this.name,
     this.userType,
     this.email,
@@ -14,6 +16,7 @@ class UserDto {
   });
 
   UserDto.fromJson(dynamic json) {
+    id = json['id'];
     name = json['name'];
     userType = json['user_type'];
     email = json['email'];
@@ -23,6 +26,7 @@ class UserDto {
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
+    map['id'] = id;
     map['name'] = name;
     map['user_type'] = userType;
     map['email'] = email;
