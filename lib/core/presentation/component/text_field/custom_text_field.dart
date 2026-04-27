@@ -97,6 +97,9 @@ class CustomTextField extends StatelessWidget {
       case TextFieldContentType.passwordConfirm:
         iconData = Icons.lock_outline;
         break;
+      case TextFieldContentType.businessNumber:
+        iconData = Icons.business_outlined;
+        break;
     }
 
     return Padding(
@@ -129,6 +132,9 @@ class CustomTextField extends StatelessWidget {
         break;
       case TextFieldContentType.passwordConfirm:
         hintText = '비밀번호를 다시 한 번 입력하세요';
+        break;
+      case TextFieldContentType.businessNumber:
+        hintText = '사업자등록번호를 입력하세요';
         break;
     }
 
