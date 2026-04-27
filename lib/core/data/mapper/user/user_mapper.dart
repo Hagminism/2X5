@@ -5,7 +5,7 @@ import 'package:capstone_2026/core/domain/model/user/user.dart';
 extension UserDtoMapper on UserDto {
   User toModel() {
     return User(
-      id: '',
+      id: id!,
       name: name!,
       userType: (userType == 'customer') ? UserType.customer : UserType.partner,
       email: email!,
