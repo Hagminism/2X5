@@ -4,6 +4,7 @@ import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/model/user/user.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
+import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_action.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_event.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_state.dart';
@@ -12,12 +13,15 @@ import 'package:flutter/material.dart';
 class OnBoardingViewModel extends ChangeNotifier {
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
+  final UserRegistrationStatusNotifier _userRegistrationStatusNotifier;
 
   OnBoardingViewModel({
     required AuthRepository authRepository,
     required UserRepository userRepository,
+    required UserRegistrationStatusNotifier userRegistrationStatusNotifier,
   }) : _authRepository = authRepository,
-       _userRepository = userRepository;
+       _userRepository = userRepository,
+       _userRegistrationStatusNotifier = userRegistrationStatusNotifier;
 
   OnBoardingState _state = OnBoardingState();
 
@@ -68,6 +72,7 @@ class OnBoardingViewModel extends ChangeNotifier {
           imageUrl: firebaseUser.photoURL ?? '',
         ),
       );
+      await _userRegistrationStatusNotifier.refresh(firebaseUser.uid);
     } catch (e) {
       _eventController.add(OnBoardingEvent.showError(e.toString()));
       rethrow;
