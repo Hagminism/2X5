@@ -1,47 +1,51 @@
+import 'package:capstone_2026/core/utils/date_format_util.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summary.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class StoreDetailReviewSection extends StatelessWidget {
-  final String storeName;
-  final String location;
-  final String? naverPlaceId;
-  final String googleSearchQuery;
-  final void Function() onTapNaverReview;
-  final void Function() onTapGoogleReview;
-  final AiReviewSummary? aiSummary;
-  final List<ReviewItem>? reviews;
-
   const StoreDetailReviewSection({
-    super.key,
     required this.storeName,
     required this.location,
     this.naverPlaceId,
     required this.googleSearchQuery,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
+    required this.onSubmitReview,
+    this.isReviewLoading = false,
     this.aiSummary,
     this.reviews,
+    super.key,
   });
+
+  final String storeName;
+  final String location;
+  final String? naverPlaceId;
+  final String googleSearchQuery;
+  final VoidCallback onTapNaverReview;
+  final VoidCallback onTapGoogleReview;
+  final Future<void> Function(ReviewWriteResult result) onSubmitReview;
+  final bool isReviewLoading;
+  final ReviewAiSummary? aiSummary;
+  final List<InternalReview>? reviews;
 
   @override
   Widget build(BuildContext context) {
-    // 임시 데이터
     final summary =
         aiSummary ??
-        const AiReviewSummary(
-          oneLine: '조용한 분위기에서 즐기는 고퀄리티 파스타, 기념일에 방문하기 좋아요',
-          keywords: ['분위기 맛집', '친절한 서비스', '재방문 의사 높음'],
+        const ReviewAiSummary(
+          oneLine: '자체 리뷰가 쌓이면 매장의 강점과 방문 포인트를 AI가 짧게 요약해 보여줄 예정입니다.',
+          keywords: ['자체 리뷰', '방문 후기', '스탬프 보상'],
           positiveRatio: 0.92,
         );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. AI 지능형 요약 섹션
         _AiSummaryBox(summary: summary),
         const SizedBox(height: 32),
-
-        // 2. 외부 리뷰 확인 섹션
         const Text(
           '외부 리뷰 확인',
           style: TextStyle(
@@ -75,8 +79,6 @@ class StoreDetailReviewSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 32),
-
-        // 3. 자체 리뷰 헤더
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -89,7 +91,7 @@ class StoreDetailReviewSection extends StatelessWidget {
               ),
             ),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () => _showWriteReviewBottomSheet(context),
               icon: const Icon(Icons.edit_outlined, size: 16),
               label: const Text('리뷰 쓰기'),
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
@@ -97,24 +99,23 @@ class StoreDetailReviewSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-
-        // 4. 자체 리뷰 리스트
-        if (reviews == null || reviews!.isEmpty)
-          const Column(
-            children: [
-              _InternalReviewItem(),
-              Divider(height: 32, color: AppColors.border, thickness: 1),
-              _InternalReviewItem(),
-              Divider(height: 32, color: AppColors.border, thickness: 1),
-              _InternalReviewItem(),
-            ],
+        if (isReviewLoading)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (reviews == null || reviews!.isEmpty)
+          _EmptyReviewState(
+            onTapWriteReview: () => _showWriteReviewBottomSheet(context),
           )
         else
           ...reviews!.asMap().entries.map((entry) {
             final isLast = entry.key == reviews!.length - 1;
             return Column(
               children: [
-                const _InternalReviewItem(),
+                _InternalReviewItem(review: entry.value),
                 if (!isLast)
                   const Divider(
                     height: 32,
@@ -127,127 +128,31 @@ class StoreDetailReviewSection extends StatelessWidget {
       ],
     );
   }
-}
 
-// --- 데이터 모델 및 내부 위젯 (기존과 동일) ---
-/*
-// [DB integration guide] Firestore example for review feature.
-//
-// Suggested collections:
-// - stores/{storeId}
-// - stores/{storeId}/reviews/{reviewId}
-// - stores/{storeId}/review_summary/ai
-//
-// Example documents:
-// stores/{storeId}/reviews/{reviewId}
-// {
-//   "user_id": "uid_123",
-//   "user_name": "hong",
-//   "rating": 4.5,
-//   "content": "Great service and clean place.",
-//   "image_urls": ["https://..."],
-//   "visited_at": Timestamp,
-//   "created_at": Timestamp,
-//   "reservation_id": "reservation_123",
-//   "is_visible": true
-// }
-//
-// stores/{storeId}/review_summary/ai
-// {
-//   "one_line": "Good for quiet meetings.",
-//   "keywords": ["quiet", "friendly", "clean"],
-//   "positive_ratio": 0.92,
-//   "updated_at": Timestamp
-// }
-//
-// Example repository:
-// class StoreReviewRepository {
-//   final FirebaseFirestore _firestore;
-//
-//   StoreReviewRepository(this._firestore);
-//
-//   Future<AiReviewSummary?> fetchAiSummary(String storeId) async {
-//     final doc = await _firestore
-//         .collection('stores')
-//         .doc(storeId)
-//         .collection('review_summary')
-//         .doc('ai')
-//         .get();
-//
-//     if (!doc.exists) return null;
-//     final data = doc.data()!;
-//     return AiReviewSummary(
-//       oneLine: data['one_line'] as String? ?? '',
-//       keywords: List<String>.from(data['keywords'] as List? ?? const []),
-//       positiveRatio: (data['positive_ratio'] as num?)?.toDouble() ?? 0,
-//     );
-//   }
-//
-//   Future<List<ReviewItem>> fetchReviews(String storeId) async {
-//     final snapshot = await _firestore
-//         .collection('stores')
-//         .doc(storeId)
-//         .collection('reviews')
-//         .where('is_visible', isEqualTo: true)
-//         .orderBy('created_at', descending: true)
-//         .limit(20)
-//         .get();
-//
-//     return snapshot.docs
-//         .map((doc) => ReviewItem.fromJson(doc.id, doc.data()))
-//         .toList();
-//   }
-// }
-*/
-class AiReviewSummary {
-  final String oneLine;
-  final List<String> keywords;
-  final double positiveRatio;
-  const AiReviewSummary({
-    required this.oneLine,
-    required this.keywords,
-    required this.positiveRatio,
-  });
-}
+  Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
+    final result = await showModalBottomSheet<ReviewWriteResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => ReviewWriteBottomSheet(storeName: storeName),
+    );
 
-/*
-// [DB integration guide] Replace the placeholder with a real review model when
-// Firestore is connected.
-//
-// class ReviewItem {
-//   final String id;
-//   final String userName;
-//   final double rating;
-//   final String content;
-//   final List<String> imageUrls;
-//   final DateTime createdAt;
-//
-//   const ReviewItem({
-//     required this.id,
-//     required this.userName,
-//     required this.rating,
-//     required this.content,
-//     required this.imageUrls,
-//     required this.createdAt,
-//   });
-//
-//   factory ReviewItem.fromJson(String id, Map<String, dynamic> json) {
-//     return ReviewItem(
-//       id: id,
-//       userName: json['user_name'] as String? ?? '',
-//       rating: (json['rating'] as num?)?.toDouble() ?? 0,
-//       content: json['content'] as String? ?? '',
-//       imageUrls: List<String>.from(json['image_urls'] as List? ?? const []),
-//       createdAt: (json['created_at'] as Timestamp).toDate(),
-//     );
-//   }
-// }
-*/
-class ReviewItem {}
+    if (result == null || !context.mounted) {
+      return;
+    }
+
+    await onSubmitReview(result);
+  }
+}
 
 class _AiSummaryBox extends StatelessWidget {
-  final AiReviewSummary summary;
   const _AiSummaryBox({required this.summary});
+
+  final ReviewAiSummary summary;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -289,7 +194,7 @@ class _AiSummaryBox extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: summary.keywords
-                .map((kw) => _AiKeywordTag(label: kw))
+                .map((keyword) => _AiKeywordTag(label: keyword))
                 .toList(),
           ),
           const SizedBox(height: 16),
@@ -301,8 +206,10 @@ class _AiSummaryBox extends StatelessWidget {
 }
 
 class _AiKeywordTag extends StatelessWidget {
-  final String label;
   const _AiKeywordTag({required this.label});
+
+  final String label;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -325,8 +232,10 @@ class _AiKeywordTag extends StatelessWidget {
 }
 
 class _AiSentimentBar extends StatelessWidget {
-  final double positiveRatio;
   const _AiSentimentBar({required this.positiveRatio});
+
+  final double positiveRatio;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -335,7 +244,7 @@ class _AiSentimentBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              '긍정 후기',
+              '긍정 비율',
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             Text(
@@ -364,12 +273,6 @@ class _AiSentimentBar extends StatelessWidget {
 }
 
 class _ExternalReviewButton extends StatelessWidget {
-  final String title;
-  final String logoPath;
-  final void Function() onTap;
-  final Color backgroundColor;
-  final Color textColor;
-  final bool showBorder;
   const _ExternalReviewButton({
     required this.title,
     required this.logoPath,
@@ -378,6 +281,14 @@ class _ExternalReviewButton extends StatelessWidget {
     this.textColor = Colors.white,
     this.showBorder = false,
   });
+
+  final String title;
+  final String logoPath;
+  final VoidCallback onTap;
+  final Color backgroundColor;
+  final Color textColor;
+  final bool showBorder;
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -404,7 +315,8 @@ class _ExternalReviewButton extends StatelessWidget {
               logoPath,
               width: 20,
               height: 20,
-              errorBuilder: (_, __, ___) => const Icon(Icons.link, size: 20),
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.link, size: 20),
             ),
             const SizedBox(width: 8),
             Text(
@@ -422,10 +334,63 @@ class _ExternalReviewButton extends StatelessWidget {
   }
 }
 
-class _InternalReviewItem extends StatelessWidget {
-  const _InternalReviewItem();
+class _EmptyReviewState extends StatelessWidget {
+  const _EmptyReviewState({required this.onTapWriteReview});
+
+  final VoidCallback onTapWriteReview;
+
   @override
   Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8FA),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '아직 등록된 자체 리뷰가 없습니다.',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '발표 시연에서는 mock 저장소에 리뷰를 쌓아 자연스럽게 흐름을 보여주고, 실제 서비스 단계에서 작성 권한과 저장 로직을 연결할 예정입니다.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 14),
+          OutlinedButton.icon(
+            onPressed: onTapWriteReview,
+            icon: const Icon(Icons.rate_review_outlined, size: 16),
+            label: const Text('리뷰 작성하기'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InternalReviewItem extends StatelessWidget {
+  const _InternalReviewItem({required this.review});
+
+  final InternalReview review;
+
+  @override
+  Widget build(BuildContext context) {
+    final displayName = review.userName.isEmpty ? '방문자' : review.userName;
+    final reviewText = review.content.isEmpty ? '등록된 리뷰 내용이 없습니다.' : review.content;
+    final visitPurpose = review.visitPurpose?.trim();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -441,20 +406,43 @@ class _InternalReviewItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '예약자 닉네임',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          displayName,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (visitPurpose != null && visitPurpose.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            '[$visitPurpose]으로 방문함',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   Row(
                     children: List.generate(
                       5,
                       (index) => Icon(
                         Icons.star_rounded,
-                        color: index < 4 ? Colors.amber : AppColors.border,
+                        color: index < review.rating.round()
+                            ? Colors.amber
+                            : AppColors.border,
                         size: 14,
                       ),
                     ),
@@ -463,30 +451,54 @@ class _InternalReviewItem extends StatelessWidget {
               ),
             ),
             Text(
-              '2024.04.19',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              formatDotDate(review.createdAt),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 12),
-        const Text(
-          '매장 분위기가 너무 좋고 파스타가 정말 맛있었습니다! 다음에도 꼭 다시 방문하고 싶네요. 직원분들도 친절하셔서 기분 좋게 식사했습니다.',
-          style: TextStyle(
+        Text(
+          reviewText,
+          style: const TextStyle(
             fontSize: 14,
             height: 1.5,
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 12),
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: AppColors.border,
-            borderRadius: BorderRadius.circular(8),
+        if (review.imageUrls.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 80,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: review.imageUrls.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    review.imageUrls[index],
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 80,
+                      height: 80,
+                      color: AppColors.border,
+                      child: const Icon(
+                        Icons.broken_image_outlined,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-          child: const Icon(Icons.image_outlined, color: Colors.white),
-        ),
+        ],
       ],
     );
   }

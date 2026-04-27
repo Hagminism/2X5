@@ -1,10 +1,15 @@
+import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_bottom_bar.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_image_carousel.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_info_section.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/component/bookmark_store_detail_tab_section.dart';
-import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BookmarkStoreDetailScreen extends StatefulWidget {
   const BookmarkStoreDetailScreen({
@@ -21,6 +26,24 @@ class BookmarkStoreDetailScreen extends StatefulWidget {
 
 class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
   int _selectedTab = 0;
+  bool _isReviewLoading = true;
+  List<InternalReview> _reviews = const [];
+
+  StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReviews();
+  }
+
+  @override
+  void didUpdateWidget(covariant BookmarkStoreDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.storeId != widget.storeId) {
+      _loadReviews();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +82,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
                           const SizedBox(width: 8),
                           _CircleIconButton(
                             icon: Icons.bookmark_border_rounded,
-                            onTap: () => _showSoonMessage('저장 기능은 준비 중입니다.'),
+                            onTap: () => _showSoonMessage('북마크 기능은 준비 중입니다.'),
                           ),
                           const SizedBox(width: 8),
                           _CircleIconButton(
@@ -93,6 +116,11 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
                   location: data.location,
                   naverPlaceId: data.naverPlaceId,
                   googleSearchQuery: data.googleSearchQuery,
+                  reviews: _reviews,
+                  isReviewLoading: _isReviewLoading,
+                  onSubmitReview: (result) => _submitReview(data, result),
+                  onTapNaverReview: () => _openNaverReview(data),
+                  onTapGoogleReview: () => _openGoogleReview(data),
                   onTabSelected: (index) {
                     setState(() {
                       _selectedTab = index;
@@ -106,17 +134,93 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
         ],
       ),
       bottomNavigationBar: BookmarkStoreDetailBottomBar(
-        onBookmarkTap: () => _showSoonMessage('저장 기능은 준비 중입니다.'),
+        onBookmarkTap: () => _showSoonMessage('북마크 기능은 준비 중입니다.'),
         onCallTap: () => _showSoonMessage('전화 연결 기능은 준비 중입니다.'),
-        onReserveTap: () => _showSoonMessage('예약 바텀시트는 다음 스텝에서 연결됩니다.'),
+        onReserveTap: () => _showSoonMessage('예약 바텀시트는 다음 단계에서 연결됩니다.'),
       ),
     );
+  }
+
+  Future<void> _loadReviews() async {
+    setState(() {
+      _isReviewLoading = true;
+    });
+
+    final reviews = await _storeReviewService.loadStoreReviews(
+      storeId: widget.storeId,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _reviews = reviews;
+      _isReviewLoading = false;
+    });
+  }
+
+  Future<void> _submitReview(
+    _StoreDetailData data,
+    ReviewWriteResult result,
+  ) async {
+    final createdReview = await _storeReviewService.submitReview(
+      storeId: widget.storeId,
+      storeName: data.name,
+      review: result,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _reviews = [createdReview, ..._reviews];
+    });
+
+    _showSoonMessage('리뷰가 등록되었습니다.');
   }
 
   void _showSoonMessage(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _openNaverReview(_StoreDetailData data) async {
+    final target = await _storeReviewService.getNaverReviewLinkTarget(
+      storeName: data.name,
+      location: data.location,
+      placeId: data.naverPlaceId,
+    );
+
+    try {
+      if (target.appUri != null && await canLaunchUrl(Uri.parse('nmap://'))) {
+        await launchUrl(target.appUri!, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(target.webUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      _showSoonMessage('외부 리뷰 페이지를 열 수 없습니다.');
+    }
+  }
+
+  Future<void> _openGoogleReview(_StoreDetailData data) async {
+    final uri = _storeReviewService.getGoogleMapSearchUri(
+      data.googleSearchQuery,
+    );
+
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      _showSoonMessage('외부 리뷰 페이지를 열 수 없습니다.');
+    }
   }
 }
 
@@ -183,7 +287,7 @@ const _defaultStoreData = _StoreDetailData(
   description: '업장 소개 텍스트입니다.',
   location: '위치 정보',
   priceRange: '가격 정보',
-  openHours: '운영시간 정보',
+  openHours: '운영 시간 정보',
   tags: ['주차', '단체', '룸'],
   googleSearchQuery: '한성대학교',
 );
@@ -199,7 +303,7 @@ const Map<String, _StoreDetailData> _storeData = {
     priceRange: '2.5 - 3.5만원',
     openHours: '오늘 11:00 - 22:00',
     tags: ['단체 이용 가능', '무선 인터넷', '콜키지'],
-    googleSearchQuery: '세상의 모든 아침 여의도',
+    googleSearchQuery: '돈블랑 여의도점',
     naverPlaceId: '1605601457',
   ),
   's2': _StoreDetailData(
@@ -207,12 +311,12 @@ const Map<String, _StoreDetailData> _storeData = {
     category: '카페',
     rating: 4.7,
     reviewCount: 96,
-    description: '핸드드립 원두와 디저트가 유명한 스페셜티 카페입니다.',
+    description: '채광이 좋고 조용한 분위기의 스페셜티 카페입니다.',
     location: '여의도역에서 180m',
     priceRange: '0.8 - 2만원',
     openHours: '오늘 09:00 - 22:00',
-    tags: ['콘센트', '와이파이', '단체석'],
-    googleSearchQuery: '블루보틀 여의도',
+    tags: ['콘센트', '와이파이', '좌석 여유'],
+    googleSearchQuery: '블루보틀 여의도 카페',
     naverPlaceId: '1656542083',
   ),
   's3': _StoreDetailData(
@@ -224,8 +328,8 @@ const Map<String, _StoreDetailData> _storeData = {
     location: '여의도역에서 420m',
     priceRange: '2 - 10만원',
     openHours: '오늘 10:00 - 20:00',
-    tags: ['남/여 커트', '두피케어', '예약제'],
-    googleSearchQuery: '아이디헤어 여의도점',
+    tags: ['1:1 스타일 컨설팅', '헤어컷', '예약제'],
+    googleSearchQuery: '아이디헤어 브라이튼여의도점',
     naverPlaceId: '1600258358',
   ),
 };

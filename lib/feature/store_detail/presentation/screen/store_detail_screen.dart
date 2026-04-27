@@ -1,3 +1,4 @@
+import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_bottom_bar.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_header_section.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_info_section.dart';
@@ -9,10 +10,12 @@ import 'package:flutter/material.dart';
 class StoreDetailScreen extends StatelessWidget {
   final StoreDetailState state;
   final void Function(StoreDetailAction) onAction;
+  final Future<void> Function(ReviewWriteResult review) onSubmitReview;
 
   const StoreDetailScreen({
     required this.state,
     required this.onAction,
+    required this.onSubmitReview,
     super.key,
   });
 
@@ -67,6 +70,9 @@ class StoreDetailScreen extends StatelessWidget {
                     location: state.data.location,
                     naverPlaceId: state.data.naverPlaceId,
                     googleSearchQuery: state.data.googleSearchQuery,
+                    reviews: state.reviews,
+                    isReviewLoading: state.isReviewLoading,
+                    onSubmitReview: onSubmitReview,
                     onTapNaverReview: () {
                       onAction(const StoreDetailAction.tapNaverReviewButton());
                     },

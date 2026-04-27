@@ -1,3 +1,6 @@
+import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/review_ai_summary_generator.dart';
+import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +13,11 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
     required this.location,
     this.naverPlaceId,
     required this.googleSearchQuery,
+    required this.reviews,
+    required this.isReviewLoading,
+    required this.onSubmitReview,
+    required this.onTapNaverReview,
+    required this.onTapGoogleReview,
     super.key,
   });
 
@@ -19,6 +27,11 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
   final String location;
   final String? naverPlaceId;
   final String googleSearchQuery;
+  final List<InternalReview> reviews;
+  final bool isReviewLoading;
+  final Future<void> Function(ReviewWriteResult result) onSubmitReview;
+  final VoidCallback onTapNaverReview;
+  final VoidCallback onTapGoogleReview;
 
   static const List<String> _tabs = ['홈', '메뉴', '사진', '리뷰', '매장정보'];
 
@@ -87,25 +100,35 @@ class BookmarkStoreDetailTabSection extends StatelessWidget {
           location: location,
           naverPlaceId: naverPlaceId,
           googleSearchQuery: googleSearchQuery,
-          onTapNaverReview: () {},
-          onTapGoogleReview: () {},
+          aiSummary: ReviewAiSummaryGenerator.generate(
+            storeName: storeName,
+            reviews: reviews,
+          ),
+          reviews: reviews,
+          isReviewLoading: isReviewLoading,
+          onSubmitReview: onSubmitReview,
+          onTapNaverReview: onTapNaverReview,
+          onTapGoogleReview: onTapGoogleReview,
         );
       case 1:
         return const Text(
-          '대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.',
+          '대표 메뉴와 가격 구성을 정리한 영역이 이 위치에 표시됩니다.',
           style: _contentStyle,
         );
       case 2:
-        return const Text('업장/메뉴 사진 목록을 갤러리 형태로 표시합니다.', style: _contentStyle);
+        return const Text(
+          '매장 및 메뉴 사진을 갤러리 형태로 보여주는 영역입니다.',
+          style: _contentStyle,
+        );
       case 4:
         return const Text(
-          '매장 주소, 운영시간, 주차/편의 정보 등 상세 정보를 표시합니다.',
+          '주소, 연락처, 운영 시간, 편의 정보가 이 탭에 정리됩니다.',
           style: _contentStyle,
         );
       case 0:
       default:
         return const Text(
-          '업장 소개, 추천 포인트, 공지사항 등 핵심 정보를 우선 제공합니다.',
+          '북마크에서 진입한 상세 페이지에서도 핵심 소개와 리뷰, 외부 링크를 바로 확인할 수 있습니다.',
           style: _contentStyle,
         );
     }

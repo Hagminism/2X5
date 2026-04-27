@@ -7,6 +7,7 @@ import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
+import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_view_model.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
@@ -15,10 +16,11 @@ import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source_impl.dart';
-import 'package:capstone_2026/feature/store_detail/data/repository/mocks/mock_store_detail_repository_impl.dart';
+import 'package:capstone_2026/feature/store_detail/data/repository/store_detail_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/repository/store_review_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -69,6 +71,13 @@ void diSetup() {
   getIt.registerLazySingleton<StoreReviewRepository>(
     () => StoreReviewRepositoryImpl(
       naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
+      supabase: getIt<Supabase>(),
+    ),
+  );
+  getIt.registerLazySingleton<StoreReviewService>(
+    () => StoreReviewService(
+      storeReviewRepository: getIt<StoreReviewRepository>(),
+      authRepository: getIt<AuthRepository>(),
     ),
   );
   getIt.registerLazySingleton<UserRepository>(
@@ -103,10 +112,16 @@ void diSetup() {
   getIt.registerFactory<MyPageViewModel>(
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
+  getIt.registerFactory<ReviewHistoryViewModel>(
+    () => ReviewHistoryViewModel(
+      authRepository: getIt<AuthRepository>(),
+      storeReviewRepository: getIt<StoreReviewRepository>(),
+    ),
+  );
   getIt.registerFactory<StoreDetailViewModel>(
     () => StoreDetailViewModel(
       storeDetailRepository: getIt<StoreDetailRepository>(),
-      storeReviewRepository: getIt<StoreReviewRepository>(),
+      storeReviewService: getIt<StoreReviewService>(),
     ),
   );
 }
