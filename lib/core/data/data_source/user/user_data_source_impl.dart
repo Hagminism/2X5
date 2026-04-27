@@ -11,7 +11,11 @@ class UserDataSourceImpl implements UserDataSource {
 
   @override
   Future<UserDto> createUser(UserDto userDto) async {
-    final json = await _supabaseClient.from('users').upsert(userDto.toJson());
+    final json = await _supabaseClient
+        .from('users')
+        .upsert(userDto.toJson())
+        .select()
+        .single();
 
     return UserDto.fromJson(json);
   }
