@@ -1,6 +1,8 @@
 import 'package:app_links/app_links.dart';
+import 'package:capstone_2026/core/domain/model/enum/user_registration_status.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
+import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
@@ -15,6 +17,7 @@ import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_screen_root.dart';
+import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_view_model.dart';
 import 'package:capstone_2026/feature/select_auth_provider/core/presentation/component/scope/select_auth_provider_scope.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/core/presentation/component/scope/sign_in_scope.dart';
@@ -219,19 +222,23 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routes.onBoarding,
-      builder: (context, state) => const OnBoardingScreenRoot(),
+      builder: (context, state) => OnBoardingScreenRoot(
+        viewModel: getIt<OnBoardingViewModel>(),
+      ),
     ),
   ],
   redirect: _redirect,
-  refreshListenable: AuthRefreshNotifier(
-    getIt<AuthRepository>().authStateChanges(),
-  ),
+  refreshListenable: Listenable.merge([
+    AuthRefreshNotifier(getIt<AuthRepository>().authStateChanges()),
+    getIt<UserRegistrationStatusNotifier>(),
+  ]),
 );
 
 // 리다이렉트 로직
 // TODO: 회원 탈퇴(deleteAccount) 후 리다이렉션 문제 있는지 추가 확인해야함
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final currentUser = getIt<AuthRepository>().getCurrentUser();
+  final registrationStatus = getIt<UserRegistrationStatusNotifier>().status;
 
   final isLoggedIn = currentUser != null;
   final location = state.matchedLocation;
@@ -242,7 +249,17 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
     return isInAuthFlow ? null : Routes.signIn;
   }
 
-  if (isInAuthFlow) {
+  if (registrationStatus == UserRegistrationStatus.unknown ||
+      registrationStatus == UserRegistrationStatus.loading ||
+      registrationStatus == UserRegistrationStatus.error) {
+    return null;
+  }
+
+  if (registrationStatus == UserRegistrationStatus.notExists) {
+    return location == Routes.onBoarding ? null : Routes.onBoarding;
+  }
+
+  if (isInAuthFlow || location == Routes.onBoarding) {
     return Routes.home;
   }
 
