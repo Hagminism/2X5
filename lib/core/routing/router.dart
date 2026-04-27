@@ -244,6 +244,9 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final location = state.matchedLocation;
   final isInAuthFlow =
       location == Routes.signIn || location.startsWith('${Routes.signIn}/');
+  final isInSignUpFlow = location.startsWith(
+    '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
+  );
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -256,6 +259,9 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   }
 
   if (registrationStatus == UserRegistrationStatus.notExists) {
+    if (isInSignUpFlow) {
+      return null;
+    }
     return location == Routes.onBoarding ? null : Routes.onBoarding;
   }
 
