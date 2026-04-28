@@ -5,6 +5,7 @@ import 'package:capstone_2026/core/data/repository/auth/auth_repository_impl.dar
 import 'package:capstone_2026/core/data/repository/user/user_repository_impl.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
+import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
@@ -39,6 +40,8 @@ void diSetup() {
   getIt.registerLazySingleton<FirebaseAuth>(
     () => FirebaseAuth.instance,
   );
+
+  // Util
   getIt.registerLazySingleton<AppLinks>(
     () => AppLinks(),
   );
@@ -56,6 +59,15 @@ void diSetup() {
     () => SupabaseClient(
       dotenv.env['SUPABASE_URL']!,
       dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
+    ),
+  );
+
+  // Service
+  getIt.registerLazySingleton<SignUpWithEmailService>(
+        () => SignUpWithEmailService(
+      authRepository: getIt<AuthRepository>(),
+      userRepository: getIt<UserRepository>(),
+      userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
   );
 
@@ -101,7 +113,9 @@ void diSetup() {
     () => FindPasswordViewModel(),
   );
   getIt.registerFactory<SignUpCustomerViewModel>(
-    () => SignUpCustomerViewModel(authRepository: getIt<AuthRepository>()),
+    () => SignUpCustomerViewModel(
+      signUpWithEmailService: getIt<SignUpWithEmailService>(),
+    ),
   );
   getIt.registerFactory<OnBoardingViewModel>(
     () => OnBoardingViewModel(
@@ -111,7 +125,9 @@ void diSetup() {
     ),
   );
   getIt.registerFactory<SignUpPartnerViewModel>(
-    () => SignUpPartnerViewModel(),
+    () => SignUpPartnerViewModel(
+      signUpWithEmailService: getIt<SignUpWithEmailService>(),
+    ),
   );
   getIt.registerFactory<SelectAuthProviderViewModel>(
     () => SelectAuthProviderViewModel(authRepository: getIt<AuthRepository>()),
