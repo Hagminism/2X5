@@ -7,16 +7,25 @@ extension UserDtoMapper on UserDto {
   User toModel() {
     return User(
       id: id ?? '',
-      authProvider: buildAuthProvider(authProvider ?? ''),
+      authProvider: _parseAuthProvider(authProvider ?? ''),
       name: name ?? '',
       userType: (userType == 'customer') ? UserType.customer : UserType.partner,
       email: email ?? '',
       phone: phone ?? '',
       imageUrl: imageUrl ?? '',
+      openingDate: _parseOpeningDate(openingDate),
+      businessNumber: businessNumber,
     );
   }
 
-  AuthProvider buildAuthProvider(String authProvider) {
+  DateTime? _parseOpeningDate(String? dateText) {
+    if (dateText == null || dateText.isEmpty) {
+      return null;
+    }
+    return DateTime.tryParse(dateText);
+  }
+
+  AuthProvider _parseAuthProvider(String authProvider) {
     AuthProvider result = AuthProvider.email;
 
     switch (authProvider) {
@@ -48,6 +57,19 @@ extension UserToDtoMapper on User {
       email: email,
       phone: phone,
       imageUrl: imageUrl,
+      openingDate: _formatDateOnly(openingDate),
+      businessNumber: businessNumber,
     );
+  }
+
+  String? _formatDateOnly(DateTime? date) {
+    if (date == null) {
+      return null;
+    }
+    final normalized = DateTime(date.year, date.month, date.day);
+    final year = normalized.year.toString().padLeft(4, '0');
+    final month = normalized.month.toString().padLeft(2, '0');
+    final day = normalized.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
   }
 }
