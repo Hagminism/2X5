@@ -140,6 +140,8 @@ class SignUpPartnerViewModel extends ChangeNotifier {
     _state = state.copyWith(isLoading: true);
     notifyListeners();
 
+    bool didSucceed = false;
+
     try {
       await _signUpWithEmailService.signUpAndCreateProfile(
         name: state.name,
@@ -150,6 +152,7 @@ class SignUpPartnerViewModel extends ChangeNotifier {
         openingDate: state.openingDate,
         businessNumber: _formatBusinessNumber(state.businessNumber),
       );
+      didSucceed = true;
     } on FirebaseAuthException catch (e) {
       _eventController.add(
         SignUpPartnerEvent.showSignUpError(_mapFirebaseAuthError(e.code)),
@@ -161,8 +164,10 @@ class SignUpPartnerViewModel extends ChangeNotifier {
         const SignUpPartnerEvent.showSignUpError('회원가입 중 오류가 발생했습니다.'),
       );
     } finally {
-      _state = state.copyWith(isLoading: false);
-      notifyListeners();
+      if (!didSucceed) {
+        _state = state.copyWith(isLoading: false);
+        notifyListeners();
+      }
     }
   }
 

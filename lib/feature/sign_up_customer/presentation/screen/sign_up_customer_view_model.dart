@@ -121,6 +121,8 @@ class SignUpCustomerViewModel extends ChangeNotifier {
     _state = state.copyWith(isLoading: true);
     notifyListeners();
 
+    bool didSucceed = false;
+
     try {
       await _signUpWithEmailService.signUpAndCreateProfile(
         name: state.name,
@@ -129,6 +131,7 @@ class SignUpCustomerViewModel extends ChangeNotifier {
         password: state.password,
         userType: UserType.customer,
       );
+      didSucceed = true;
     } on FirebaseAuthException catch (e) {
       _eventController.add(
         SignUpCustomerEvent.showSignUpError(_mapFirebaseAuthError(e.code)),
@@ -140,8 +143,10 @@ class SignUpCustomerViewModel extends ChangeNotifier {
         const SignUpCustomerEvent.showSignUpError('회원가입 중 오류가 발생했습니다.'),
       );
     } finally {
-      _state = state.copyWith(isLoading: false);
-      notifyListeners();
+      if (!didSucceed) {
+        _state = state.copyWith(isLoading: false);
+        notifyListeners();
+      }
     }
   }
 
