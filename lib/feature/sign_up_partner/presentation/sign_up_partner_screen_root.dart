@@ -33,7 +33,7 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (mounted) {
         switch (event) {
-          case ShowGoogleSignUpError():
+          case ShowSignUpError():
             // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
