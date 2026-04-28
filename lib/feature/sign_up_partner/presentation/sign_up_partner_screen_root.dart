@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:capstone_2026/feature/sign_up_partner/component/sign_up_date_picker.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_action.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_event.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
@@ -44,11 +45,8 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
             );
             break;
           case ShowDatePicker():
-            showDatePicker(
-              context: context,
-              firstDate: DateTime.now(),
-              lastDate: DateTime(2100),
-            );
+            showSignUpDatePicker(context);
+            break;
         }
       }
     });
