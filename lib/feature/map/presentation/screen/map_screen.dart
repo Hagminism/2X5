@@ -33,8 +33,7 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _naverMapManager = NaverMapManager.createNaverMapManager();
-    _mapStatusSubscription =
-        _naverMapManager.onMapLoadStatus.listen((status) {
+    _mapStatusSubscription = _naverMapManager.onMapLoadStatus.listen((status) {
       if (status is MapLoadSuccess) {
         _naverMapManager.addMapCenterChangedEventListener();
         _addMyLocationMarker();

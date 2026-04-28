@@ -1,21 +1,31 @@
 import 'package:app_links/app_links.dart';
+import 'package:capstone_2026/core/data/data_source/user/user_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/user/user_data_source_impl.dart';
 import 'package:capstone_2026/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:capstone_2026/core/data/repository/user/user_repository_impl.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
+import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
+import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
+import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
+import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_view_model.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source_impl.dart';
-import 'package:capstone_2026/feature/store_detail/data/repository/mocks/mock_store_detail_repository_impl.dart';
+import 'package:capstone_2026/feature/store_detail/data/repository/store_detail_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/repository/store_review_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -30,18 +40,43 @@ void diSetup() {
   getIt.registerLazySingleton<FirebaseAuth>(
     () => FirebaseAuth.instance,
   );
+
+  // Util
   getIt.registerLazySingleton<AppLinks>(
     () => AppLinks(),
   );
 
+  // Redirect
+  getIt.registerLazySingleton<UserRegistrationStatusNotifier>(
+    () => UserRegistrationStatusNotifier(
+      authRepository: getIt<AuthRepository>(),
+      userRepository: getIt<UserRepository>(),
+    ),
+  );
+
   // DB
-  getIt.registerLazySingleton<Supabase>(
-    () => Supabase.instance,
+  getIt.registerLazySingleton<SupabaseClient>(
+    () => SupabaseClient(
+      dotenv.env['SUPABASE_URL']!,
+      dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
+    ),
+  );
+
+  // Service
+  getIt.registerLazySingleton<SignUpWithEmailService>(
+        () => SignUpWithEmailService(
+      authRepository: getIt<AuthRepository>(),
+      userRepository: getIt<UserRepository>(),
+      userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
+    ),
   );
 
   // DataSource
   getIt.registerLazySingleton<NaverStoreSearchDataSource>(
     () => NaverStoreSearchDataSourceImpl(),
+  );
+  getIt.registerLazySingleton<UserDataSource>(
+    () => UserDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
 
   // Repository
@@ -57,7 +92,17 @@ void diSetup() {
   getIt.registerLazySingleton<StoreReviewRepository>(
     () => StoreReviewRepositoryImpl(
       naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
+      supabase: getIt<Supabase>(),
     ),
+  );
+  getIt.registerLazySingleton<StoreReviewService>(
+    () => StoreReviewService(
+      storeReviewRepository: getIt<StoreReviewRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
+  getIt.registerLazySingleton<UserRepository>(
+    () => UserRepositoryImpl(userDataSource: getIt<UserDataSource>()),
   );
 
   // ViewModel
@@ -68,10 +113,21 @@ void diSetup() {
     () => FindPasswordViewModel(),
   );
   getIt.registerFactory<SignUpCustomerViewModel>(
-    () => SignUpCustomerViewModel(authRepository: getIt<AuthRepository>()),
+    () => SignUpCustomerViewModel(
+      signUpWithEmailService: getIt<SignUpWithEmailService>(),
+    ),
+  );
+  getIt.registerFactory<OnBoardingViewModel>(
+    () => OnBoardingViewModel(
+      authRepository: getIt<AuthRepository>(),
+      userRepository: getIt<UserRepository>(),
+      userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
+    ),
   );
   getIt.registerFactory<SignUpPartnerViewModel>(
-    () => SignUpPartnerViewModel(),
+    () => SignUpPartnerViewModel(
+      signUpWithEmailService: getIt<SignUpWithEmailService>(),
+    ),
   );
   getIt.registerFactory<SelectAuthProviderViewModel>(
     () => SelectAuthProviderViewModel(authRepository: getIt<AuthRepository>()),
@@ -82,10 +138,16 @@ void diSetup() {
   getIt.registerFactory<MyPageViewModel>(
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
+  getIt.registerFactory<ReviewHistoryViewModel>(
+    () => ReviewHistoryViewModel(
+      authRepository: getIt<AuthRepository>(),
+      storeReviewRepository: getIt<StoreReviewRepository>(),
+    ),
+  );
   getIt.registerFactory<StoreDetailViewModel>(
     () => StoreDetailViewModel(
       storeDetailRepository: getIt<StoreDetailRepository>(),
-      storeReviewRepository: getIt<StoreReviewRepository>(),
+      storeReviewService: getIt<StoreReviewService>(),
     ),
   );
 }

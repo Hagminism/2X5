@@ -2,11 +2,11 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-class SignUpCustomerTermsRow extends StatelessWidget {
+class SignUpTermsRow extends StatelessWidget {
   final bool isChecked;
   final void Function() onToggle;
 
-  const SignUpCustomerTermsRow({
+  const SignUpTermsRow({
     super.key,
     required this.isChecked,
     required this.onToggle,

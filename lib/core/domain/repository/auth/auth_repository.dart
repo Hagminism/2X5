@@ -35,5 +35,9 @@ abstract interface class AuthRepository {
 
   User? getCurrentUser();
 
+  String getCurrentUserId({String fallback = 'mock-user'});
+
+  String getCurrentUserDisplayName({String fallback = '방문자'});
+
   Stream<User?> authStateChanges();
 }
