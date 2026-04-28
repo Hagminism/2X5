@@ -19,5 +19,6 @@ abstract class SignUpPartnerState with _$SignUpPartnerState {
     @Default(true) bool passwordConfirmObscureText,
     @Default(false) bool isSubmitting,
     String? errorMessage,
+    @Default(null) DateTime? openingDate,
   }) = _SignUpPartnerState;
 }

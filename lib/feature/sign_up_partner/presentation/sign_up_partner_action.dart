@@ -24,6 +24,9 @@ sealed class SignUpPartnerAction with _$SignUpPartnerAction {
     String businessNumber,
   ) = ChangeBusinessNumber;
 
+  const factory SignUpPartnerAction.changeOpeningDate(DateTime date) =
+      ChangeOpeningDate;
+
   const factory SignUpPartnerAction.changePasswordObscureText() =
       ChangePasswordObscureText;
 
