@@ -147,6 +147,8 @@ class SignUpPartnerViewModel extends ChangeNotifier {
         email: state.email,
         password: state.password,
         userType: UserType.partner,
+        openingDate: state.openingDate,
+        businessNumber: _formatBusinessNumber(state.businessNumber),
       );
     } on FirebaseAuthException catch (e) {
       _eventController.add(
@@ -181,6 +183,18 @@ class SignUpPartnerViewModel extends ChangeNotifier {
     if (!_isValidEmail(state.email)) {
       return '올바른 이메일 형식을 입력해 주세요.';
     }
+    if (state.openingDate == null) {
+      return '개업 일자를 선택해 주세요.';
+    }
+    final normalizedBusinessNumber = _formatBusinessNumber(
+      state.businessNumber,
+    );
+    if (normalizedBusinessNumber.isEmpty) {
+      return '사업자등록번호를 입력해 주세요.';
+    }
+    if (!RegExp(r'^\d{10}$').hasMatch(normalizedBusinessNumber)) {
+      return '사업자등록번호는 숫자 10자리로 입력해 주세요.';
+    }
     if (!state.agreeTerms) {
       return '이용약관 및 개인정보 처리방침 동의가 필요합니다.';
     }
@@ -213,6 +227,10 @@ class SignUpPartnerViewModel extends ChangeNotifier {
   bool _isValidEmail(String email) {
     final pattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     return pattern.hasMatch(email.trim());
+  }
+
+  String _formatBusinessNumber(String value) {
+    return value.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
   String _mapFirebaseAuthError(String code) {

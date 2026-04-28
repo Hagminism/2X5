@@ -107,7 +107,6 @@ class SignUpPartnerScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 28),
                     buildLabel('개업 일자'),
-                    // TODO: API 연동 부분 고려
                     DatePickerButton(
                       labelText: (state.openingDate == null)
                           ? '개업 일자를 선택하세요'
@@ -120,6 +119,7 @@ class SignUpPartnerScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 28),
                     buildLabel('사업자등록번호'),
+                    // TODO: API 연동 부분 고려
                     Row(
                       children: [
                         Flexible(
@@ -127,10 +127,10 @@ class SignUpPartnerScreen extends StatelessWidget {
                           child: CustomTextField(
                             textFieldContentType:
                                 TextFieldContentType.businessNumber,
-                            onChanged: (passwordConfirm) {
+                            onChanged: (businessNumber) {
                               onAction(
-                                SignUpPartnerAction.changePasswordConfirm(
-                                  passwordConfirm,
+                                SignUpPartnerAction.changeBusinessNumber(
+                                  businessNumber,
                                 ),
                               );
                             },
