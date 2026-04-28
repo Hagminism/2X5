@@ -59,6 +59,9 @@ class SignUpPartnerViewModel extends ChangeNotifier {
       case ChangeBusinessNumber():
         _changeBusinessNumber(action.businessNumber);
         break;
+      case ChangeOpeningDate():
+        _changeOpeningDate(action.date);
+        break;
       case TapDatePickerButton():
         _eventController.add(SignUpPartnerEvent.showDatePicker());
         break;
@@ -92,6 +95,11 @@ class SignUpPartnerViewModel extends ChangeNotifier {
 
   void _changeBusinessNumber(String businessNumber) {
     _state = state.copyWith(businessNumber: businessNumber);
+    notifyListeners();
+  }
+
+  void _changeOpeningDate(DateTime date) {
+    _state = state.copyWith(openingDate: date);
     notifyListeners();
   }
 

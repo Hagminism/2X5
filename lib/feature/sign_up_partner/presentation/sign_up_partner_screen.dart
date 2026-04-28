@@ -107,9 +107,13 @@ class SignUpPartnerScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 28),
                     buildLabel('개업 일자'),
-                    // TODO: API 연동 부분 고려, 액션 연결 수정
+                    // TODO: API 연동 부분 고려
                     DatePickerButton(
-                      labelText: '개업 일자를 선택하세요',
+                      labelText: (state.openingDate == null)
+                          ? '개업 일자를 선택하세요'
+                          : MaterialLocalizations.of(context).formatFullDate(
+                              state.openingDate!,
+                            ),
                       onTap: () {
                         onAction(SignUpPartnerAction.tapDatePickerButton());
                       },

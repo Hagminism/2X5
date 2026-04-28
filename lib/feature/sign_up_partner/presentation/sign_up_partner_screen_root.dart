@@ -45,7 +45,7 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
             );
             break;
           case ShowDatePicker():
-            showSignUpDatePicker(context);
+            unawaited(_onShowDatePicker());
             break;
         }
       }
@@ -67,6 +67,7 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
               case ChangePassword():
               case ChangePasswordConfirm():
               case ChangeBusinessNumber():
+              case ChangeOpeningDate():
               case ToggleTermsAgreement():
               case TapSubmit():
               case TapDatePickerButton():
@@ -88,5 +89,11 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
   void dispose() {
     _eventSubscription?.cancel();
     super.dispose();
+  }
+
+  Future<void> _onShowDatePicker() async {
+    final picked = await showSignUpDatePicker(context);
+    if (!mounted || picked == null) return;
+    widget.viewModel.onAction(SignUpPartnerAction.changeOpeningDate(picked));
   }
 }
