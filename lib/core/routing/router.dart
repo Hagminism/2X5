@@ -23,11 +23,11 @@ import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/s
 import 'package:capstone_2026/feature/sign_in/core/presentation/component/scope/sign_in_scope.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/map/presentation/screen/map_screen.dart';
+import 'package:capstone_2026/feature/sign_up_customer/core/presentation/component/scope/sign_up_customer_scope.dart';
+import 'package:capstone_2026/feature/sign_up_partner/core/presentation/component/scope/sign_up_partner_scope.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_screen_root.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
-import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_screen_root.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
-import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_screen_root.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:go_router/go_router.dart';
@@ -66,13 +66,13 @@ final router = GoRouter(
               routes: [
                 GoRoute(
                   path: Routes.signUpCustomer,
-                  builder: (context, state) => SignUpCustomerScreenRoot(
+                  builder: (context, state) => SignUpCustomerScope(
                     viewModel: getIt<SignUpCustomerViewModel>(),
                   ),
                 ),
                 GoRoute(
                   path: Routes.signUpPartner,
-                  builder: (context, state) => SignUpPartnerScreenRoot(
+                  builder: (context, state) => SignUpPartnerScope(
                     viewModel: getIt<SignUpPartnerViewModel>(),
                   ),
                 ),
