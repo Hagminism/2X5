@@ -16,6 +16,8 @@ import 'package:capstone_2026/feature/my_page/account_settings/presentation/scre
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
+import 'package:capstone_2026/feature/admin_onboarding/core/presentation/component/scope/admin_onboarding_scope.dart';
+import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_screen_root.dart';
@@ -229,12 +231,8 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routes.adminOnboarding,
-      builder: (context, state) => const Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: Text('관리자 인증 온보딩 페이지'),
-          ),
-        ),
+      builder: (context, state) => AdminOnboardingScope(
+        viewModel: getIt<AdminOnboardingViewModel>(),
       ),
     ),
   ],

@@ -8,6 +8,7 @@ import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
+import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
@@ -108,6 +109,12 @@ void diSetup() {
   // ViewModel
   getIt.registerFactory<SignInViewModel>(
     () => SignInViewModel(authRepository: getIt<AuthRepository>()),
+  );
+  getIt.registerFactory<AdminOnboardingViewModel>(
+    () => AdminOnboardingViewModel(
+      supabaseClient: getIt<SupabaseClient>(),
+      userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
+    ),
   );
   getIt.registerFactory<FindPasswordViewModel>(
     () => FindPasswordViewModel(),
