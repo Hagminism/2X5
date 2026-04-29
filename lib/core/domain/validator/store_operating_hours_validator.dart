@@ -1,5 +1,5 @@
 class StoreOperatingHoursValidator {
-  static final RegExp _timePattern = RegExp(r'^\d{2}:\d{2}$');
+  static final RegExp _timePattern = RegExp(r'^([01]\d|2[0-3]):([0-5]\d)$');
 
   const StoreOperatingHoursValidator();
 
