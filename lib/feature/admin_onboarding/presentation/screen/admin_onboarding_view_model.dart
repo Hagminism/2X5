@@ -33,11 +33,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
   Stream<AdminOnboardingEvent> get eventStream => _eventController.stream;
 
   void initialize() {
-    final profile = _userRegistrationStatusNotifier.currentUserProfile;
-    final isPending =
-        profile?.userType == UserType.partner &&
-        profile?.partnerStatus == PartnerStatus.pending;
-    _state = state.copyWith(isPending: isPending);
+    _syncPartnerStatusFromProfile();
     notifyListeners();
   }
 
@@ -71,7 +67,25 @@ class AdminOnboardingViewModel extends ChangeNotifier {
       case TapSubmit():
         await _submit();
         break;
+      case TapRefreshStatus():
+        await _refreshStatus();
+        break;
+      case TapRetrySubmit():
+        _retrySubmit();
+        break;
     }
+  }
+
+  void _syncPartnerStatusFromProfile() {
+    final profile = _userRegistrationStatusNotifier.currentUserProfile;
+    final isPartner = profile?.userType == UserType.partner;
+    final isPending = isPartner && profile?.partnerStatus == PartnerStatus.pending;
+    final isRejected =
+        isPartner && profile?.partnerStatus == PartnerStatus.rejected;
+    _state = state.copyWith(
+      isPending: isPending,
+      isRejected: isRejected,
+    );
   }
 
   void _changeRepresentativeName(String name) {
@@ -182,8 +196,8 @@ class AdminOnboardingViewModel extends ChangeNotifier {
       });
 
       await _userRegistrationStatusNotifier.refresh(uid);
-
-      _state = state.copyWith(isPending: true, isSubmitting: false);
+      _syncPartnerStatusFromProfile();
+      _state = state.copyWith(isSubmitting: false);
       notifyListeners();
       _eventController.add(
         const AdminOnboardingEvent.showMessage(
@@ -211,6 +225,42 @@ class AdminOnboardingViewModel extends ChangeNotifier {
 
   String _normalizeBusinessNumber(String value) {
     return value.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  Future<void> _refreshStatus() async {
+    final uid = _authRepository.getCurrentUser()?.uid;
+    if (uid == null) {
+      _eventController.add(
+        const AdminOnboardingEvent.showMessage(
+          '로그인 정보가 만료되었습니다. 다시 로그인해 주세요.',
+        ),
+      );
+      return;
+    }
+
+    _state = state.copyWith(isRefreshingStatus: true);
+    notifyListeners();
+
+    await _userRegistrationStatusNotifier.refresh(uid);
+    _syncPartnerStatusFromProfile();
+
+    _state = state.copyWith(isRefreshingStatus: false);
+    notifyListeners();
+  }
+
+  void _retrySubmit() {
+    _state = state.copyWith(
+      isRejected: false,
+      representativeName: '',
+      businessNumber: '',
+      openedOn: null,
+      licenseImageUrl: null,
+      isBusinessNumberVerified: false,
+      isVerifyingBusinessNumber: false,
+      isUploadingLicenseImage: false,
+      isSubmitting: false,
+    );
+    notifyListeners();
   }
 
   @override

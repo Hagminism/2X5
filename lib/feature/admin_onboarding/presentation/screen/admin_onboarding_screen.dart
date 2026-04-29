@@ -26,13 +26,67 @@ class AdminOnboardingScreen extends StatelessWidget {
       return Scaffold(
         backgroundColor: AppColors.white,
         appBar: const CustomAppBar(title: '관리자 인증', showBackButton: false),
-        body: const SafeArea(
+        body: SafeArea(
           child: Center(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                '사업자 인증 심사 중입니다.\n승인 후 관리자 기능이 활성화됩니다.',
-                textAlign: TextAlign.center,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '사업자 인증 심사 중입니다.\n승인 후 관리자 기능이 활성화됩니다.',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.subtitle,
+                  ),
+                  const SizedBox(height: 24),
+                  Opacity(
+                    opacity: state.isRefreshingStatus ? 0.6 : 1,
+                    child: IgnorePointer(
+                      ignoring: state.isRefreshingStatus,
+                      child: PrimaryButton(
+                        text: state.isRefreshingStatus
+                            ? '새로고침 중...'
+                            : '상태 새로고침',
+                        onTap: () {
+                          onAction(
+                            const AdminOnboardingAction.tapRefreshStatus(),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (state.isRejected) {
+      return Scaffold(
+        backgroundColor: AppColors.white,
+        appBar: const CustomAppBar(title: '관리자 인증', showBackButton: false),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '사업자 인증이 반려되었습니다.\n정보를 확인 후 다시 제출해 주세요.',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.subtitle,
+                  ),
+                  const SizedBox(height: 24),
+                  PrimaryButton(
+                    text: '재제출하기',
+                    onTap: () {
+                      onAction(const AdminOnboardingAction.tapRetrySubmit());
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -53,7 +107,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                   '사업자 인증 정보를 입력해 주세요',
                   style: AppTextStyles.titleLarge.copyWith(
                     color: AppColors.textPrimary,
-                     fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -61,7 +115,9 @@ class AdminOnboardingScreen extends StatelessWidget {
                 CustomTextField(
                   textFieldContentType: TextFieldContentType.name,
                   onChanged: (value) {
-                    onAction(AdminOnboardingAction.changeRepresentativeName(value));
+                    onAction(
+                      AdminOnboardingAction.changeRepresentativeName(value),
+                    );
                   },
                 ),
                 const SizedBox(height: 28),
@@ -71,7 +127,8 @@ class AdminOnboardingScreen extends StatelessWidget {
                     Expanded(
                       flex: 4,
                       child: CustomTextField(
-                        textFieldContentType: TextFieldContentType.businessNumber,
+                        textFieldContentType:
+                            TextFieldContentType.businessNumber,
                         onChanged: (value) {
                           onAction(
                             AdminOnboardingAction.changeBusinessNumber(value),
@@ -128,7 +185,9 @@ class AdminOnboardingScreen extends StatelessWidget {
                   onTap: state.isUploadingLicenseImage
                       ? () {}
                       : () {
-                          onAction(const AdminOnboardingAction.tapPickLicenseImage());
+                          onAction(
+                            const AdminOnboardingAction.tapPickLicenseImage(),
+                          );
                         },
                 ),
                 const SizedBox(height: 40),

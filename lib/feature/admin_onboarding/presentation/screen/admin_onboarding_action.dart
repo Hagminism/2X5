@@ -25,5 +25,9 @@ sealed class AdminOnboardingAction with _$AdminOnboardingAction {
   const factory AdminOnboardingAction.changeLicenseImageUrl(String imageUrl) =
       ChangeLicenseImageUrl;
 
+  const factory AdminOnboardingAction.tapRefreshStatus() = TapRefreshStatus;
+
+  const factory AdminOnboardingAction.tapRetrySubmit() = TapRetrySubmit;
+
   const factory AdminOnboardingAction.tapSubmit() = TapSubmit;
 }

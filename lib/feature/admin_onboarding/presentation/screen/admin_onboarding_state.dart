@@ -16,6 +16,8 @@ abstract class AdminOnboardingState with _$AdminOnboardingState {
     @Default(false) bool isUploadingLicenseImage,
     @Default(false) bool isSubmitting,
     @Default(false) bool isPending,
+    @Default(false) bool isRejected,
+    @Default(false) bool isRefreshingStatus,
   }) = _AdminOnboardingState;
 
   bool get canSubmit {
@@ -26,6 +28,7 @@ abstract class AdminOnboardingState with _$AdminOnboardingState {
         !isVerifyingBusinessNumber &&
         !isUploadingLicenseImage &&
         !isSubmitting &&
-        !isPending;
+        !isPending &&
+        !isRejected;
   }
 }
