@@ -104,7 +104,6 @@ class SignUpPartnerScreen extends StatelessWidget {
                         );
                       },
                     ),
-                    const SizedBox(height: 28),
                     const SizedBox(height: 36),
                     SignUpTermsRow(
                       isChecked: state.agreeTerms,
