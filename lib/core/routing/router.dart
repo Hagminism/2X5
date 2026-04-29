@@ -1,5 +1,7 @@
 import 'package:app_links/app_links.dart';
+import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_registration_status.dart';
+import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
@@ -59,7 +61,6 @@ final router = GoRouter(
             appLinks: getIt<AppLinks>(),
           ),
           routes: [
-            // TODO: 소셜 로그인 인증 붙으면 중첩 -> 단일 라우트 분리할 것.
             GoRoute(
               path: Routes.signUpType,
               builder: (context, state) => SignUpTypeScreenRoot(),
@@ -226,6 +227,16 @@ final router = GoRouter(
         viewModel: getIt<OnBoardingViewModel>(),
       ),
     ),
+    GoRoute(
+      path: Routes.adminOnboarding,
+      builder: (context, state) => const Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Text('관리자 인증 온보딩 페이지'),
+          ),
+        ),
+      ),
+    ),
   ],
   redirect: _redirect,
   refreshListenable: Listenable.merge([
@@ -238,7 +249,9 @@ final router = GoRouter(
 // TODO: 회원 탈퇴(deleteAccount) 후 리다이렉션 문제 있는지 추가 확인해야함
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final currentUser = getIt<AuthRepository>().getCurrentUser();
-  final registrationStatus = getIt<UserRegistrationStatusNotifier>().status;
+  final registrationNotifier = getIt<UserRegistrationStatusNotifier>();
+  final registrationStatus = registrationNotifier.status;
+  final userProfile = registrationNotifier.currentUserProfile;
 
   final isLoggedIn = currentUser != null;
   final location = state.matchedLocation;
@@ -247,6 +260,7 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final isInSignUpFlow = location.startsWith(
     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
   );
+  final isInAdminOnboarding = location == Routes.adminOnboarding;
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -263,6 +277,17 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
       return null;
     }
     return location == Routes.onBoarding ? null : Routes.onBoarding;
+  }
+
+  if (registrationStatus == UserRegistrationStatus.exists &&
+      userProfile != null &&
+      userProfile.userType == UserType.partner &&
+      userProfile.partnerStatus != PartnerStatus.approved) {
+    return isInAdminOnboarding ? null : Routes.adminOnboarding;
+  }
+
+  if (isInAdminOnboarding) {
+    return Routes.home;
   }
 
   if (isInAuthFlow || location == Routes.onBoarding) {
