@@ -153,6 +153,11 @@ type ApprovePartnerForDemoRequest = {
   demoKey?: string;
 };
 
+type RejectPartnerForDemoRequest = {
+  targetUid?: string;
+  demoKey?: string;
+};
+
 /**
  * 데모용으로 특정 partner 사용자를 승인 상태로 변경한다.
  * @param {string} targetUid 승인할 사용자 UID
@@ -225,6 +230,90 @@ export const approvePartnerForDemo = onRequest(
       updatedUsers[0].partner_status !== "approved"
     ) {
       response.status(500).json({message: "사용자 승인 상태 변경에 실패했습니다."});
+      return;
+    }
+
+    response.status(200).json({
+      success: true,
+      targetUid,
+      beforeStatus: currentStatus,
+      afterStatus: updatedUsers[0].partner_status,
+    });
+  },
+);
+
+/**
+ * 데모용으로 특정 partner 사용자를 반려 상태로 변경한다.
+ * @param {string} targetUid 반려할 사용자 UID
+ * @param {string} demoKey 데모 승인용 임의 키
+ * @return {Promise<void>} HTTP 응답
+ */
+export const rejectPartnerForDemo = onRequest(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "DEMO_ADMIN_KEY"],
+  },
+  async (request, response) => {
+    if (request.method !== "POST") {
+      response.status(405).json({message: "POST 메서드만 허용됩니다."});
+      return;
+    }
+
+    const body = (request.body ?? {}) as RejectPartnerForDemoRequest;
+    const targetUid = (body.targetUid ?? "").trim();
+    const demoKey = (body.demoKey ?? "").trim();
+    const expectedDemoKey = (process.env.DEMO_ADMIN_KEY ?? "").trim();
+
+    if (!targetUid) {
+      response.status(400).json({message: "targetUid가 필요합니다."});
+      return;
+    }
+    if (!expectedDemoKey || demoKey !== expectedDemoKey) {
+      response.status(403).json({message: "승인 키가 올바르지 않습니다."});
+      return;
+    }
+
+    const users = await supabaseRequest<
+      Array<{id: string; partner_status: string | null}>
+    >(
+      `users?id=eq.${targetUid}&select=id,partner_status`,
+      "GET",
+    );
+
+    if (users.length === 0) {
+      response.status(404).json({message: "대상 사용자를 찾지 못했습니다."});
+      return;
+    }
+
+    const currentStatus = users[0].partner_status;
+    if (currentStatus !== PARTNER_STATUS_PENDING) {
+      response.status(409).json({
+        message: `현재 상태(${currentStatus ?? "null"})에서는 반려할 수 없습니다.`,
+      });
+      return;
+    }
+
+    const updatedUsers = await supabaseRequest<
+      Array<{id: string; partner_status: string}>
+    >(
+      `users?id=eq.${targetUid}`,
+      "PATCH",
+      {partner_status: "rejected"},
+    );
+
+    const verificationFilter =
+      `owner_verifications?owner_id=eq.${targetUid}` +
+      `&status=eq.${PARTNER_STATUS_PENDING}`;
+    await supabaseRequest(
+      verificationFilter,
+      "PATCH",
+      {status: "rejected"},
+    );
+
+    if (
+      updatedUsers.length === 0 ||
+      updatedUsers[0].partner_status !== "rejected"
+    ) {
+      response.status(500).json({message: "사용자 반려 상태 변경에 실패했습니다."});
       return;
     }
 
