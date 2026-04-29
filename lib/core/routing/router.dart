@@ -3,11 +3,15 @@ import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_registration_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/presentation/component/admin_bottom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
+import 'package:capstone_2026/feature/admin_page/presentation/screen/admin_dashboard_screen.dart';
+import 'package:capstone_2026/feature/admin_page/presentation/screen/admin_reservations_screen.dart';
+import 'package:capstone_2026/feature/admin_page/presentation/screen/admin_store_management_screen.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
@@ -223,6 +227,37 @@ final router = GoRouter(
         ),
       ],
     ),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return AdminBottomAppBar(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.adminHome,
+              builder: (context, state) => const AdminDashboardScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.adminStore,
+              builder: (context, state) => const AdminStoreManagementScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.adminReservations,
+              builder: (context, state) => const AdminReservationsScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
     GoRoute(
       path: Routes.onBoarding,
       builder: (context, state) => OnBoardingScreenRoot(
@@ -259,6 +294,22 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
   );
   final isInAdminOnboarding = location == Routes.adminOnboarding;
+  final isInAdminShell =
+      location == Routes.adminHome ||
+      location.startsWith('${Routes.adminHome}/') ||
+      location == Routes.adminStore ||
+      location.startsWith('${Routes.adminStore}/') ||
+      location == Routes.adminReservations ||
+      location.startsWith('${Routes.adminReservations}/');
+  final isInUserShell =
+      location == Routes.home ||
+      location.startsWith('${Routes.home}/') ||
+      location == Routes.map ||
+      location.startsWith('${Routes.map}/') ||
+      location == Routes.bookmark ||
+      location.startsWith('${Routes.bookmark}/') ||
+      location == Routes.myPage ||
+      location.startsWith('${Routes.myPage}/');
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -284,7 +335,20 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
     return isInAdminOnboarding ? null : Routes.adminOnboarding;
   }
 
-  if (isInAdminOnboarding) {
+  final isApprovedPartner =
+      registrationStatus == UserRegistrationStatus.exists &&
+      userProfile != null &&
+      userProfile.userType == UserType.partner &&
+      userProfile.partnerStatus == PartnerStatus.approved;
+
+  if (isApprovedPartner) {
+    if (isInAdminOnboarding || isInAuthFlow || location == Routes.onBoarding || isInUserShell) {
+      return Routes.adminHome;
+    }
+    return null;
+  }
+
+  if (isInAdminOnboarding || isInAdminShell) {
     return Routes.home;
   }
 
