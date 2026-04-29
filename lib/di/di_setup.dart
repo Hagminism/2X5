@@ -26,6 +26,7 @@ import 'package:capstone_2026/feature/store_detail/domain/repository/store_revie
 import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -40,6 +41,9 @@ void diSetup() {
   );
   getIt.registerLazySingleton<FirebaseAuth>(
     () => FirebaseAuth.instance,
+  );
+  getIt.registerLazySingleton<FirebaseFunctions>(
+    () => FirebaseFunctions.instance,
   );
 
   // Util
@@ -112,7 +116,8 @@ void diSetup() {
   );
   getIt.registerFactory<AdminOnboardingViewModel>(
     () => AdminOnboardingViewModel(
-      supabaseClient: getIt<SupabaseClient>(),
+      authRepository: getIt<AuthRepository>(),
+      firebaseFunctions: getIt<FirebaseFunctions>(),
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
   );

@@ -2,21 +2,25 @@ import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_action.dart';
 import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_event.dart';
 import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_state.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminOnboardingViewModel extends ChangeNotifier {
-  final SupabaseClient _supabaseClient;
+  final AuthRepository _authRepository;
+  final FirebaseFunctions _firebaseFunctions;
   final UserRegistrationStatusNotifier _userRegistrationStatusNotifier;
 
   AdminOnboardingViewModel({
-    required SupabaseClient supabaseClient,
+    required AuthRepository authRepository,
+    required FirebaseFunctions firebaseFunctions,
     required UserRegistrationStatusNotifier userRegistrationStatusNotifier,
-  }) : _supabaseClient = supabaseClient,
+  }) : _authRepository = authRepository,
+       _firebaseFunctions = firebaseFunctions,
        _userRegistrationStatusNotifier = userRegistrationStatusNotifier;
 
   AdminOnboardingState _state = const AdminOnboardingState();
@@ -30,7 +34,8 @@ class AdminOnboardingViewModel extends ChangeNotifier {
 
   void initialize() {
     final profile = _userRegistrationStatusNotifier.currentUserProfile;
-    final isPending = profile?.userType == UserType.partner &&
+    final isPending =
+        profile?.userType == UserType.partner &&
         profile?.partnerStatus == PartnerStatus.pending;
     _state = state.copyWith(isPending: isPending);
     notifyListeners();
@@ -48,13 +53,17 @@ class AdminOnboardingViewModel extends ChangeNotifier {
         await _verifyBusinessNumber();
         break;
       case TapPickOpenedOn():
-        _eventController.add(AdminOnboardingEvent.showDatePicker(state.openedOn));
+        _eventController.add(
+          AdminOnboardingEvent.showDatePicker(state.openedOn),
+        );
         break;
       case ChangeOpenedOn():
         _changeOpenedOn(action.openedOn);
         break;
       case TapPickLicenseImage():
-        _eventController.add(const AdminOnboardingEvent.showMockGalleryPicker());
+        _eventController.add(
+          const AdminOnboardingEvent.showMockGalleryPicker(),
+        );
         break;
       case ChangeLicenseImageUrl():
         _changeLicenseImageUrl(action.imageUrl);
@@ -140,9 +149,11 @@ class AdminOnboardingViewModel extends ChangeNotifier {
   }
 
   Future<void> _submit() async {
+    // 중복 호출 방지
     if (!state.canSubmit) return;
 
-    final uid = _supabaseClient.auth.currentUser?.id;
+    // 현재 Firebase 인증 정보 조회
+    final uid = _authRepository.getCurrentUser()?.uid;
     if (uid == null) {
       _eventController.add(
         const AdminOnboardingEvent.showMessage(
@@ -156,15 +167,35 @@ class AdminOnboardingViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _supabaseClient
-          .from('users')
-          .update({'partner_status': PartnerStatus.pending.name}).eq('id', uid);
+      final callable = _firebaseFunctions.httpsCallable(
+        'submitPartnerVerification',
+      );
+      final openedOnIsoDate = DateUtils.dateOnly(
+        state.openedOn!,
+      ).toIso8601String();
+
+      await callable({
+        'representativeName': state.representativeName.trim(),
+        'businessNumber': state.businessNumber,
+        'openedOn': openedOnIsoDate,
+        'licenseImageUrl': state.licenseImageUrl,
+      });
+
       await _userRegistrationStatusNotifier.refresh(uid);
+
       _state = state.copyWith(isPending: true, isSubmitting: false);
       notifyListeners();
       _eventController.add(
         const AdminOnboardingEvent.showMessage(
           '사업자 인증 정보가 제출되었습니다. 심사를 기다려 주세요.',
+        ),
+      );
+    } on FirebaseFunctionsException catch (e) {
+      _state = state.copyWith(isSubmitting: false);
+      notifyListeners();
+      _eventController.add(
+        AdminOnboardingEvent.showMessage(
+          e.message ?? '제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
         ),
       );
     } catch (_) {
