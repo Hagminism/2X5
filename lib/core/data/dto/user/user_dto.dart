@@ -6,6 +6,7 @@ class UserDto {
   String? email;
   String? phone;
   String? imageUrl;
+  String? partnerStatus;
 
   UserDto({
     this.id,
@@ -15,6 +16,7 @@ class UserDto {
     this.email,
     this.phone,
     this.imageUrl,
+    this.partnerStatus,
   });
 
   UserDto.fromJson(dynamic json) {
@@ -25,6 +27,7 @@ class UserDto {
     email = json['email'];
     phone = json['phone'];
     imageUrl = json['image_url'];
+    partnerStatus = json['partner_status'];
   }
 
   Map<String, dynamic> toJson() {
@@ -36,6 +39,7 @@ class UserDto {
     map['email'] = email;
     map['phone'] = phone;
     map['image_url'] = imageUrl;
+    map['partner_status'] = partnerStatus;
     return map;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/data/dto/user/user_dto.dart';
 import 'package:capstone_2026/core/domain/model/enum/auth_provider.dart';
+import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/model/user/user.dart';
 
@@ -9,11 +10,35 @@ extension UserDtoMapper on UserDto {
       id: id ?? '',
       authProvider: _parseAuthProvider(authProvider ?? ''),
       name: name ?? '',
-      userType: (userType == 'customer') ? UserType.customer : UserType.partner,
+      userType: _parseUserType(userType),
       email: email ?? '',
       phone: phone ?? '',
       imageUrl: imageUrl ?? '',
+      partnerStatus: _parsePartnerStatus(partnerStatus),
     );
+  }
+
+  UserType _parseUserType(String? userType) {
+    return (userType == 'customer') ? UserType.customer : UserType.partner;
+  }
+
+  PartnerStatus? _parsePartnerStatus(String? partnerStatus) {
+    if (partnerStatus == null || partnerStatus.isEmpty) {
+      return null;
+    }
+
+    switch (partnerStatus) {
+      case 'unverified':
+        return PartnerStatus.unverified;
+      case 'pending':
+        return PartnerStatus.pending;
+      case 'approved':
+        return PartnerStatus.approved;
+      case 'rejected':
+        return PartnerStatus.rejected;
+      default:
+        return null;
+    }
   }
 
   AuthProvider _parseAuthProvider(String authProvider) {
@@ -45,6 +70,7 @@ extension UserToDtoMapper on User {
       authProvider: authProvider.name,
       name: name,
       userType: userType.name,
+      partnerStatus: partnerStatus?.name,
       email: email,
       phone: phone,
       imageUrl: imageUrl,

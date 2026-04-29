@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/domain/model/enum/auth_provider.dart';
+import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -13,6 +14,7 @@ abstract class User with _$User {
     required AuthProvider authProvider,
     required String name,
     required UserType userType,
+    PartnerStatus? partnerStatus,
     required String email,
     required String phone,
     required String imageUrl,
