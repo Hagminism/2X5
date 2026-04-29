@@ -79,7 +79,8 @@ class PartnerOnboardingViewModel extends ChangeNotifier {
   void _syncPartnerStatusFromProfile() {
     final profile = _userRegistrationStatusNotifier.currentUserProfile;
     final isPartner = profile?.userType == UserType.partner;
-    final isPending = isPartner && profile?.partnerStatus == PartnerStatus.pending;
+    final isPending =
+        isPartner && profile?.partnerStatus == PartnerStatus.pending;
     final isRejected =
         isPartner && profile?.partnerStatus == PartnerStatus.rejected;
     _state = state.copyWith(

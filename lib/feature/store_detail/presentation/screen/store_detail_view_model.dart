@@ -38,7 +38,9 @@ class StoreDetailViewModel extends ChangeNotifier {
     );
     notifyListeners();
 
-    final reviews = await _storeReviewService.loadStoreReviews(storeId: storeId);
+    final reviews = await _storeReviewService.loadStoreReviews(
+      storeId: storeId,
+    );
 
     _state = state.copyWith(
       isReviewLoading: false,

@@ -101,8 +101,10 @@ class StoreRepositoryImpl implements StoreRepository {
       throw ArgumentError('좌표 정보 형식이 올바르지 않습니다.');
     }
 
-    final normalizedBusinessNumber =
-        store.businessNumber.replaceAll(RegExp(r'[^0-9]'), '');
+    final normalizedBusinessNumber = store.businessNumber.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
     if (!RegExp(r'^\d{10}$').hasMatch(normalizedBusinessNumber)) {
       throw ArgumentError('사업자등록번호는 숫자 10자리여야 합니다.');
     }

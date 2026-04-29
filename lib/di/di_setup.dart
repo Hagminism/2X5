@@ -77,7 +77,7 @@ void diSetup() {
 
   // Service
   getIt.registerLazySingleton<SignUpWithEmailService>(
-        () => SignUpWithEmailService(
+    () => SignUpWithEmailService(
       authRepository: getIt<AuthRepository>(),
       userRepository: getIt<UserRepository>(),
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),

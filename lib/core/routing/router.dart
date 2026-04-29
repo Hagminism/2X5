@@ -342,7 +342,10 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
       userProfile.partnerStatus == PartnerStatus.approved;
 
   if (isApprovedPartner) {
-    if (isInPartnerOnboarding || isInAuthFlow || location == Routes.onBoarding || isInUserShell) {
+    if (isInPartnerOnboarding ||
+        isInAuthFlow ||
+        location == Routes.onBoarding ||
+        isInUserShell) {
       return Routes.partnerHome;
     }
     return null;

@@ -60,21 +60,31 @@ class _MapScreenState extends State<MapScreen> {
 
   String _categoryColor(String category) {
     switch (category) {
-      case 'restaurant': return '#E53935';
-      case 'cafe':        return '#6D4C41';
-      case 'study_cafe':  return '#1E88E5';
-      case 'salon':       return '#8E24AA';
-      default:            return '#43A047';
+      case 'restaurant':
+        return '#E53935';
+      case 'cafe':
+        return '#6D4C41';
+      case 'study_cafe':
+        return '#1E88E5';
+      case 'salon':
+        return '#8E24AA';
+      default:
+        return '#43A047';
     }
   }
 
   String _categoryEmoji(String category) {
     switch (category) {
-      case 'restaurant': return '🍽';
-      case 'cafe':        return '☕';
-      case 'study_cafe':  return '📚';
-      case 'salon':       return '✂';
-      default:            return '📍';
+      case 'restaurant':
+        return '🍽';
+      case 'cafe':
+        return '☕';
+      case 'study_cafe':
+        return '📚';
+      case 'salon':
+        return '✂';
+      default:
+        return '📍';
     }
   }
 

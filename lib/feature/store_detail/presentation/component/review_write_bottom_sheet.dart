@@ -89,11 +89,14 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                   ...List.generate(5, (index) {
                     final value = index + 1;
                     return IconButton(
-                      onPressed: () => setState(() => _rating = value.toDouble()),
+                      onPressed: () =>
+                          setState(() => _rating = value.toDouble()),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: Icon(
-                        value <= _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                        value <= _rating
+                            ? Icons.star_rounded
+                            : Icons.star_border_rounded,
                         color: Colors.amber,
                         size: 32,
                       ),
@@ -125,8 +128,12 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                     backgroundColor: Colors.white,
                     selectedColor: AppColors.primary.withValues(alpha: 0.14),
                     labelStyle: TextStyle(
-                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                     ),
                     side: BorderSide(
                       color: isSelected
@@ -167,13 +174,19 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                       width: 84,
                       height: 84,
                       decoration: BoxDecoration(
-                        color: isAddTile ? const Color(0xFFF7F8FA) : AppColors.border,
+                        color: isAddTile
+                            ? const Color(0xFFF7F8FA)
+                            : AppColors.border,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Icon(
-                        isAddTile ? Icons.add_a_photo_outlined : Icons.image_outlined,
-                        color: isAddTile ? AppColors.textSecondary : Colors.white,
+                        isAddTile
+                            ? Icons.add_a_photo_outlined
+                            : Icons.image_outlined,
+                        color: isAddTile
+                            ? AppColors.textSecondary
+                            : Colors.white,
                       ),
                     ),
                   );
@@ -194,7 +207,11 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.card_giftcard_outlined, color: Color(0xFFD99A00), size: 18),
+                    Icon(
+                      Icons.card_giftcard_outlined,
+                      color: Color(0xFFD99A00),
+                      size: 18,
+                    ),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(

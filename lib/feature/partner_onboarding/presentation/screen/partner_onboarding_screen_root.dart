@@ -21,7 +21,8 @@ class PartnerOnboardingScreenRoot extends StatefulWidget {
       _PartnerOnboardingScreenRootState();
 }
 
-class _PartnerOnboardingScreenRootState extends State<PartnerOnboardingScreenRoot> {
+class _PartnerOnboardingScreenRootState
+    extends State<PartnerOnboardingScreenRoot> {
   StreamSubscription<PartnerOnboardingEvent>? _eventSubscription;
 
   @override

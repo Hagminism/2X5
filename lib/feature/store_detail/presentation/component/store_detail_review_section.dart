@@ -388,7 +388,9 @@ class _InternalReviewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayName = review.userName.isEmpty ? '방문자' : review.userName;
-    final reviewText = review.content.isEmpty ? '등록된 리뷰 내용이 없습니다.' : review.content;
+    final reviewText = review.content.isEmpty
+        ? '등록된 리뷰 내용이 없습니다.'
+        : review.content;
     final visitPurpose = review.visitPurpose?.trim();
 
     return Column(
