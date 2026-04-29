@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:capstone_2026/feature/sign_up_partner/component/sign_up_date_picker.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_action.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_event.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
@@ -44,9 +43,6 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
               ),
             );
             break;
-          case ShowDatePicker():
-            unawaited(_onShowDatePicker());
-            break;
         }
       }
     });
@@ -66,11 +62,8 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
               case ChangeEmail():
               case ChangePassword():
               case ChangePasswordConfirm():
-              case ChangeBusinessNumber():
-              case ChangeOpeningDate():
               case ToggleTermsAgreement():
               case TapSubmit():
-              case TapDatePickerButton():
               case ChangePasswordObscureText():
               case ChangePasswordConfirmObscureText():
                 widget.viewModel.onAction(action);
@@ -89,11 +82,5 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
   void dispose() {
     _eventSubscription?.cancel();
     super.dispose();
-  }
-
-  Future<void> _onShowDatePicker() async {
-    final picked = await showSignUpDatePicker(context);
-    if (!mounted || picked == null) return;
-    widget.viewModel.onAction(SignUpPartnerAction.changeOpeningDate(picked));
   }
 }

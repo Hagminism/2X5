@@ -1,11 +1,17 @@
 import 'package:app_links/app_links.dart';
+import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_registration_status.dart';
+import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/presentation/component/admin_bottom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
+import 'package:capstone_2026/feature/admin_page/presentation/screen/admin_dashboard_screen.dart';
+import 'package:capstone_2026/feature/admin_page/presentation/screen/admin_reservations_screen.dart';
+import 'package:capstone_2026/feature/admin_page/presentation/screen/admin_store_management_screen.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
@@ -14,6 +20,8 @@ import 'package:capstone_2026/feature/my_page/account_settings/presentation/scre
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
+import 'package:capstone_2026/feature/admin_onboarding/core/presentation/component/scope/admin_onboarding_scope.dart';
+import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_screen_root.dart';
@@ -59,7 +67,6 @@ final router = GoRouter(
             appLinks: getIt<AppLinks>(),
           ),
           routes: [
-            // TODO: 소셜 로그인 인증 붙으면 중첩 -> 단일 라우트 분리할 것.
             GoRoute(
               path: Routes.signUpType,
               builder: (context, state) => SignUpTypeScreenRoot(),
@@ -220,10 +227,47 @@ final router = GoRouter(
         ),
       ],
     ),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return AdminBottomAppBar(navigationShell: navigationShell);
+      },
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.adminHome,
+              builder: (context, state) => const AdminDashboardScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.adminStore,
+              builder: (context, state) => const AdminStoreManagementScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.adminReservations,
+              builder: (context, state) => const AdminReservationsScreen(),
+            ),
+          ],
+        ),
+      ],
+    ),
     GoRoute(
       path: Routes.onBoarding,
       builder: (context, state) => OnBoardingScreenRoot(
         viewModel: getIt<OnBoardingViewModel>(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.adminOnboarding,
+      builder: (context, state) => AdminOnboardingScope(
+        viewModel: getIt<AdminOnboardingViewModel>(),
       ),
     ),
   ],
@@ -238,7 +282,9 @@ final router = GoRouter(
 // TODO: 회원 탈퇴(deleteAccount) 후 리다이렉션 문제 있는지 추가 확인해야함
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final currentUser = getIt<AuthRepository>().getCurrentUser();
-  final registrationStatus = getIt<UserRegistrationStatusNotifier>().status;
+  final registrationNotifier = getIt<UserRegistrationStatusNotifier>();
+  final registrationStatus = registrationNotifier.status;
+  final userProfile = registrationNotifier.currentUserProfile;
 
   final isLoggedIn = currentUser != null;
   final location = state.matchedLocation;
@@ -247,6 +293,23 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final isInSignUpFlow = location.startsWith(
     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
   );
+  final isInAdminOnboarding = location == Routes.adminOnboarding;
+  final isInAdminShell =
+      location == Routes.adminHome ||
+      location.startsWith('${Routes.adminHome}/') ||
+      location == Routes.adminStore ||
+      location.startsWith('${Routes.adminStore}/') ||
+      location == Routes.adminReservations ||
+      location.startsWith('${Routes.adminReservations}/');
+  final isInUserShell =
+      location == Routes.home ||
+      location.startsWith('${Routes.home}/') ||
+      location == Routes.map ||
+      location.startsWith('${Routes.map}/') ||
+      location == Routes.bookmark ||
+      location.startsWith('${Routes.bookmark}/') ||
+      location == Routes.myPage ||
+      location.startsWith('${Routes.myPage}/');
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -263,6 +326,30 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
       return null;
     }
     return location == Routes.onBoarding ? null : Routes.onBoarding;
+  }
+
+  if (registrationStatus == UserRegistrationStatus.exists &&
+      userProfile != null &&
+      userProfile.userType == UserType.partner &&
+      userProfile.partnerStatus != PartnerStatus.approved) {
+    return isInAdminOnboarding ? null : Routes.adminOnboarding;
+  }
+
+  final isApprovedPartner =
+      registrationStatus == UserRegistrationStatus.exists &&
+      userProfile != null &&
+      userProfile.userType == UserType.partner &&
+      userProfile.partnerStatus == PartnerStatus.approved;
+
+  if (isApprovedPartner) {
+    if (isInAdminOnboarding || isInAuthFlow || location == Routes.onBoarding || isInUserShell) {
+      return Routes.adminHome;
+    }
+    return null;
+  }
+
+  if (isInAdminOnboarding || isInAdminShell) {
+    return Routes.home;
   }
 
   if (isInAuthFlow || location == Routes.onBoarding) {

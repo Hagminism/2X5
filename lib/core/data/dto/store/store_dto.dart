@@ -1,0 +1,61 @@
+class StoreDto {
+  String? id;
+  String? ownerId;
+  String? name;
+  String? category;
+  String? businessNumber;
+  String? address;
+  double? latitude;
+  double? longitude;
+  String? naverPlaceId;
+  String? contact;
+  Map<String, dynamic>? operatingHours;
+  String? createdAt;
+
+  StoreDto({
+    this.id,
+    this.ownerId,
+    this.name,
+    this.category,
+    this.businessNumber,
+    this.address,
+    this.latitude,
+    this.longitude,
+    this.naverPlaceId,
+    this.contact,
+    this.operatingHours,
+    this.createdAt,
+  });
+
+  StoreDto.fromJson(dynamic json) {
+    id = json['id'];
+    ownerId = json['owner_id'];
+    name = json['name'];
+    category = json['category'];
+    businessNumber = json['business_number'];
+    address = json['address'];
+    latitude = (json['latitude'] as num?)?.toDouble();
+    longitude = (json['longitude'] as num?)?.toDouble();
+    naverPlaceId = json['naver_place_id'];
+    contact = json['contact'];
+    operatingHours = (json['operating_hours'] as Map?)?.cast<String, dynamic>();
+    createdAt = json['created_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{};
+    map['id'] = id;
+    map['owner_id'] = ownerId;
+    map['name'] = name;
+    map['category'] = category;
+    map['business_number'] = businessNumber;
+    map['address'] = address;
+    map['latitude'] = latitude;
+    map['longitude'] = longitude;
+    map['naver_place_id'] = naverPlaceId;
+    map['contact'] = contact;
+    map['operating_hours'] = operatingHours;
+    map['created_at'] = createdAt;
+    return map;
+  }
+}

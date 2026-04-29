@@ -13,12 +13,10 @@ abstract class SignUpPartnerState with _$SignUpPartnerState {
     @Default('') String email,
     @Default('') String password,
     @Default('') String passwordConfirm,
-    @Default('') String businessNumber,
     @Default(false) bool agreeTerms,
     @Default(true) bool passwordObscureText,
     @Default(true) bool passwordConfirmObscureText,
     @Default(false) bool isSubmitting,
     String? errorMessage,
-    @Default(null) DateTime? openingDate,
   }) = _SignUpPartnerState;
 }

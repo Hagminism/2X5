@@ -20,13 +20,6 @@ sealed class SignUpPartnerAction with _$SignUpPartnerAction {
     String passwordConfirm,
   ) = ChangePasswordConfirm;
 
-  const factory SignUpPartnerAction.changeBusinessNumber(
-    String businessNumber,
-  ) = ChangeBusinessNumber;
-
-  const factory SignUpPartnerAction.changeOpeningDate(DateTime date) =
-      ChangeOpeningDate;
-
   const factory SignUpPartnerAction.changePasswordObscureText() =
       ChangePasswordObscureText;
 
@@ -34,8 +27,6 @@ sealed class SignUpPartnerAction with _$SignUpPartnerAction {
       ChangePasswordConfirmObscureText;
 
   const factory SignUpPartnerAction.tapBackButton() = TapBackButton;
-
-  const factory SignUpPartnerAction.tapDatePickerButton() = TapDatePickerButton;
 
   const factory SignUpPartnerAction.tapSubmit() = TapSubmit;
 }
