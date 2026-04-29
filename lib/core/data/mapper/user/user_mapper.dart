@@ -13,16 +13,7 @@ extension UserDtoMapper on UserDto {
       email: email ?? '',
       phone: phone ?? '',
       imageUrl: imageUrl ?? '',
-      openingDate: _parseOpeningDate(openingDate),
-      businessNumber: businessNumber,
     );
-  }
-
-  DateTime? _parseOpeningDate(String? dateText) {
-    if (dateText == null || dateText.isEmpty) {
-      return null;
-    }
-    return DateTime.tryParse(dateText);
   }
 
   AuthProvider _parseAuthProvider(String authProvider) {
@@ -57,19 +48,6 @@ extension UserToDtoMapper on User {
       email: email,
       phone: phone,
       imageUrl: imageUrl,
-      openingDate: _formatDateOnly(openingDate),
-      businessNumber: businessNumber,
     );
-  }
-
-  String? _formatDateOnly(DateTime? date) {
-    if (date == null) {
-      return null;
-    }
-    final normalized = DateTime(date.year, date.month, date.day);
-    final year = normalized.year.toString().padLeft(4, '0');
-    final month = normalized.month.toString().padLeft(2, '0');
-    final day = normalized.day.toString().padLeft(2, '0');
-    return '$year-$month-$day';
   }
 }

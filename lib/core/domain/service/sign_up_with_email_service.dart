@@ -25,8 +25,6 @@ class SignUpWithEmailService {
     required String email,
     required String password,
     required UserType userType,
-    DateTime? openingDate,
-    String? businessNumber,
   }) async {
     await _authRepository.signUpWithEmail(
       email: email.trim(),
@@ -50,8 +48,6 @@ class SignUpWithEmailService {
           email: email.trim(),
           phone: phone.trim(),
           imageUrl: firebaseUser.photoURL ?? '',
-          openingDate: openingDate,
-          businessNumber: businessNumber?.trim(),
         ),
       );
       await _userRegistrationStatusNotifier.refresh(firebaseUser.uid);

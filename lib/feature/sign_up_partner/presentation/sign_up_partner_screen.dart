@@ -4,7 +4,6 @@ import 'package:capstone_2026/core/presentation/component/button/primary_button.
 import 'package:capstone_2026/core/presentation/component/text_field/custom_text_field.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_header.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_terms_row.dart';
-import 'package:capstone_2026/feature/sign_up_partner/component/date_picker_button.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_action.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -106,46 +105,6 @@ class SignUpPartnerScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 28),
-                    buildLabel('개업 일자'),
-                    DatePickerButton(
-                      labelText: (state.openingDate == null)
-                          ? '개업 일자를 선택하세요'
-                          : MaterialLocalizations.of(context).formatFullDate(
-                              state.openingDate!,
-                            ),
-                      onTap: () {
-                        onAction(SignUpPartnerAction.tapDatePickerButton());
-                      },
-                    ),
-                    const SizedBox(height: 28),
-                    buildLabel('사업자등록번호'),
-                    // TODO: API 연동 부분 고려
-                    Row(
-                      children: [
-                        Flexible(
-                          flex: 4,
-                          child: CustomTextField(
-                            textFieldContentType:
-                                TextFieldContentType.businessNumber,
-                            onChanged: (businessNumber) {
-                              onAction(
-                                SignUpPartnerAction.changeBusinessNumber(
-                                  businessNumber,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Flexible(
-                          flex: 1,
-                          child: PrimaryButton(
-                            text: '제출',
-                            onTap: () {},
-                          ),
-                        ),
-                      ],
-                    ),
                     const SizedBox(height: 36),
                     SignUpTermsRow(
                       isChecked: state.agreeTerms,
