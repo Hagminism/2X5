@@ -41,9 +41,7 @@ class SignUpPartnerScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Center(
-                      child: SignUpHeader(
-                        userType: UserType.partner,
-                      ),
+                      child: SignUpHeader(),
                     ),
                     const SizedBox(height: 40),
                     buildLabel('대표자 성명'),

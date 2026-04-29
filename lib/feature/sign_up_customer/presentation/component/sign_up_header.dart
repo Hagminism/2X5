@@ -4,11 +4,8 @@ import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class SignUpHeader extends StatelessWidget {
-  final UserType userType;
-
   const SignUpHeader({
     super.key,
-    required this.userType,
   });
 
   @override
@@ -25,9 +22,7 @@ class SignUpHeader extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          (userType == UserType.customer)
-              ? '필수 정보만 입력하여 간편하게 시작하세요.'
-              : '사업자 번호 하나로 스마트한 매장 관리를 시작하세요.',
+          '필수 정보만 입력하여 간편하게 시작하세요.',
           style: AppTextStyles.body.copyWith(
             fontSize: 14,
             color: const Color(0xFF5A5C5D),

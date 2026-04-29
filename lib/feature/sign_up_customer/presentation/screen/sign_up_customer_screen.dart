@@ -41,9 +41,7 @@ class SignUpCustomerScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Center(
-                      child: SignUpHeader(
-                        userType: UserType.customer,
-                      ),
+                      child: SignUpHeader(),
                     ),
                     const SizedBox(height: 40),
                     buildLabel('이름'),
