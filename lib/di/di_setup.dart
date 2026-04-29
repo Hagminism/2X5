@@ -1,11 +1,16 @@
 import 'package:app_links/app_links.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source_impl.dart';
+import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/store/store_data_source_impl.dart';
 import 'package:capstone_2026/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:capstone_2026/core/data/repository/store/store_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/user/user_repository_impl.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
+import 'package:capstone_2026/core/domain/validator/store_operating_hours_validator.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_view_model.dart';
@@ -83,6 +88,9 @@ void diSetup() {
   getIt.registerLazySingleton<UserDataSource>(
     () => UserDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
+  getIt.registerLazySingleton<StoreDataSource>(
+    () => StoreDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
+  );
 
   // Repository
   getIt.registerLazySingleton<AuthRepository>(
@@ -108,6 +116,17 @@ void diSetup() {
   );
   getIt.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(userDataSource: getIt<UserDataSource>()),
+  );
+  getIt.registerLazySingleton<StoreOperatingHoursValidator>(
+    () => const StoreOperatingHoursValidator(),
+  );
+  getIt.registerLazySingleton<StoreRepository>(
+    () => StoreRepositoryImpl(
+      storeDataSource: getIt<StoreDataSource>(),
+      authRepository: getIt<AuthRepository>(),
+      userRepository: getIt<UserRepository>(),
+      operatingHoursValidator: getIt<StoreOperatingHoursValidator>(),
+    ),
   );
 
   // ViewModel
