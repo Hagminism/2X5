@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-class AdminReservationsScreen extends StatelessWidget {
-  const AdminReservationsScreen({super.key});
+class PartnerDashboardScreen extends StatelessWidget {
+  const PartnerDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       body: SafeArea(
         child: Center(
-          child: Text('예약 현황 화면'),
+          child: Text('파트너 대시보드'),
         ),
       ),
     );

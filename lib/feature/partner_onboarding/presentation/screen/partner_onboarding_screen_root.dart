@@ -1,28 +1,28 @@
 import 'dart:async';
 
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_action.dart';
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_event.dart';
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_screen.dart';
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_view_model.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_action.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_event.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_screen.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/component/sign_up_date_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AdminOnboardingScreenRoot extends StatefulWidget {
-  final AdminOnboardingViewModel viewModel;
+class PartnerOnboardingScreenRoot extends StatefulWidget {
+  final PartnerOnboardingViewModel viewModel;
 
-  const AdminOnboardingScreenRoot({
+  const PartnerOnboardingScreenRoot({
     super.key,
     required this.viewModel,
   });
 
   @override
-  State<AdminOnboardingScreenRoot> createState() =>
-      _AdminOnboardingScreenRootState();
+  State<PartnerOnboardingScreenRoot> createState() =>
+      _PartnerOnboardingScreenRootState();
 }
 
-class _AdminOnboardingScreenRootState extends State<AdminOnboardingScreenRoot> {
-  StreamSubscription<AdminOnboardingEvent>? _eventSubscription;
+class _PartnerOnboardingScreenRootState extends State<PartnerOnboardingScreenRoot> {
+  StreamSubscription<PartnerOnboardingEvent>? _eventSubscription;
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _AdminOnboardingScreenRootState extends State<AdminOnboardingScreenRoot> {
           if (!mounted || picked == null) return;
           unawaited(
             widget.viewModel.onAction(
-              AdminOnboardingAction.changeOpenedOn(picked),
+              PartnerOnboardingAction.changeOpenedOn(picked),
             ),
           );
           break;
@@ -69,7 +69,7 @@ class _AdminOnboardingScreenRootState extends State<AdminOnboardingScreenRoot> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, child) {
-        return AdminOnboardingScreen(
+        return PartnerOnboardingScreen(
           state: widget.viewModel.state,
           onAction: (action) => widget.viewModel.onAction(action),
         );

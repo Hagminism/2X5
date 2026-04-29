@@ -32,10 +32,10 @@ class Routes {
   static const String terms = 'terms';
   static const String inquiry = 'inquiry';
 
-  // Admin
-  static const String adminHome = '/admin/home';
-  static const String adminStore = '/admin/store';
-  static const String adminOnboarding = '/admin/onboarding';
-  static const String adminStoreEdit = '/admin/store/edit';
-  static const String adminReservations = '/admin/reservations';
+  // Partner
+  static const String partnerHome = '/partner/home';
+  static const String partnerStore = '/partner/store';
+  static const String partnerOnboarding = '/partner/onboarding';
+  static const String partnerStoreEdit = '/partner/store/edit';
+  static const String partnerReservations = '/partner/reservations';
 }

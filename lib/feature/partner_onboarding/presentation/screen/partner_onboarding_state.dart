@@ -1,12 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'admin_onboarding_state.freezed.dart';
+part 'partner_onboarding_state.freezed.dart';
 
 @freezed
-abstract class AdminOnboardingState with _$AdminOnboardingState {
-  const AdminOnboardingState._();
+abstract class PartnerOnboardingState with _$PartnerOnboardingState {
+  const PartnerOnboardingState._();
 
-  const factory AdminOnboardingState({
+  const factory PartnerOnboardingState({
     @Default('') String representativeName,
     @Default('') String businessNumber,
     DateTime? openedOn,
@@ -18,7 +18,7 @@ abstract class AdminOnboardingState with _$AdminOnboardingState {
     @Default(false) bool isPending,
     @Default(false) bool isRejected,
     @Default(false) bool isRefreshingStatus,
-  }) = _AdminOnboardingState;
+  }) = _PartnerOnboardingState;
 
   bool get canSubmit {
     return representativeName.trim().isNotEmpty &&

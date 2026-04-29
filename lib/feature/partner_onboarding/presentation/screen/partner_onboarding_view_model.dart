@@ -4,18 +4,18 @@ import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_action.dart';
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_event.dart';
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_state.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_action.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_event.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_state.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 
-class AdminOnboardingViewModel extends ChangeNotifier {
+class PartnerOnboardingViewModel extends ChangeNotifier {
   final AuthRepository _authRepository;
   final FirebaseFunctions _firebaseFunctions;
   final UserRegistrationStatusNotifier _userRegistrationStatusNotifier;
 
-  AdminOnboardingViewModel({
+  PartnerOnboardingViewModel({
     required AuthRepository authRepository,
     required FirebaseFunctions firebaseFunctions,
     required UserRegistrationStatusNotifier userRegistrationStatusNotifier,
@@ -23,21 +23,21 @@ class AdminOnboardingViewModel extends ChangeNotifier {
        _firebaseFunctions = firebaseFunctions,
        _userRegistrationStatusNotifier = userRegistrationStatusNotifier;
 
-  AdminOnboardingState _state = const AdminOnboardingState();
+  PartnerOnboardingState _state = const PartnerOnboardingState();
 
-  AdminOnboardingState get state => _state;
+  PartnerOnboardingState get state => _state;
 
-  final StreamController<AdminOnboardingEvent> _eventController =
-      StreamController<AdminOnboardingEvent>.broadcast();
+  final StreamController<PartnerOnboardingEvent> _eventController =
+      StreamController<PartnerOnboardingEvent>.broadcast();
 
-  Stream<AdminOnboardingEvent> get eventStream => _eventController.stream;
+  Stream<PartnerOnboardingEvent> get eventStream => _eventController.stream;
 
   void initialize() {
     _syncPartnerStatusFromProfile();
     notifyListeners();
   }
 
-  Future<void> onAction(AdminOnboardingAction action) async {
+  Future<void> onAction(PartnerOnboardingAction action) async {
     switch (action) {
       case ChangeRepresentativeName():
         _changeRepresentativeName(action.name);
@@ -50,7 +50,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
         break;
       case TapPickOpenedOn():
         _eventController.add(
-          AdminOnboardingEvent.showDatePicker(state.openedOn),
+          PartnerOnboardingEvent.showDatePicker(state.openedOn),
         );
         break;
       case ChangeOpenedOn():
@@ -58,7 +58,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
         break;
       case TapPickLicenseImage():
         _eventController.add(
-          const AdminOnboardingEvent.showMockGalleryPicker(),
+          const PartnerOnboardingEvent.showMockGalleryPicker(),
         );
         break;
       case ChangeLicenseImageUrl():
@@ -118,7 +118,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
     final normalized = _normalizeBusinessNumber(state.businessNumber);
     if (!RegExp(r'^\d{10}$').hasMatch(normalized)) {
       _eventController.add(
-        const AdminOnboardingEvent.showMessage(
+        const PartnerOnboardingEvent.showMessage(
           '사업자등록번호는 숫자 10자리로 입력해 주세요.',
         ),
       );
@@ -141,7 +141,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
     notifyListeners();
 
     _eventController.add(
-      const AdminOnboardingEvent.showMessage(
+      const PartnerOnboardingEvent.showMessage(
         '사업자등록번호 검증이 완료되었습니다. (Mock)',
       ),
     );
@@ -156,21 +156,19 @@ class AdminOnboardingViewModel extends ChangeNotifier {
     final uploadedUrl = 'https://mock-storage.local/license/$selectedImageName';
     _changeLicenseImageUrl(uploadedUrl);
     _eventController.add(
-      const AdminOnboardingEvent.showMessage(
+      const PartnerOnboardingEvent.showMessage(
         '등록증 이미지 업로드가 완료되었습니다. (Mock)',
       ),
     );
   }
 
   Future<void> _submit() async {
-    // 중복 호출 방지
     if (!state.canSubmit) return;
 
-    // 현재 Firebase 인증 정보 조회
     final uid = _authRepository.getCurrentUser()?.uid;
     if (uid == null) {
       _eventController.add(
-        const AdminOnboardingEvent.showMessage(
+        const PartnerOnboardingEvent.showMessage(
           '로그인 정보가 만료되었습니다. 다시 로그인해 주세요.',
         ),
       );
@@ -200,7 +198,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
       _state = state.copyWith(isSubmitting: false);
       notifyListeners();
       _eventController.add(
-        const AdminOnboardingEvent.showMessage(
+        const PartnerOnboardingEvent.showMessage(
           '사업자 인증 정보가 제출되었습니다. 심사를 기다려 주세요.',
         ),
       );
@@ -208,7 +206,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
       _state = state.copyWith(isSubmitting: false);
       notifyListeners();
       _eventController.add(
-        AdminOnboardingEvent.showMessage(
+        PartnerOnboardingEvent.showMessage(
           e.message ?? '제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
         ),
       );
@@ -216,7 +214,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
       _state = state.copyWith(isSubmitting: false);
       notifyListeners();
       _eventController.add(
-        const AdminOnboardingEvent.showMessage(
+        const PartnerOnboardingEvent.showMessage(
           '제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
         ),
       );
@@ -231,7 +229,7 @@ class AdminOnboardingViewModel extends ChangeNotifier {
     final uid = _authRepository.getCurrentUser()?.uid;
     if (uid == null) {
       _eventController.add(
-        const AdminOnboardingEvent.showMessage(
+        const PartnerOnboardingEvent.showMessage(
           '로그인 정보가 만료되었습니다. 다시 로그인해 주세요.',
         ),
       );

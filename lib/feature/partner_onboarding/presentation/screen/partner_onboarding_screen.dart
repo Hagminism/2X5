@@ -2,19 +2,19 @@ import 'package:capstone_2026/core/domain/model/enum/text_field_content_type.dar
 import 'package:capstone_2026/core/presentation/component/app_bar/custom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
 import 'package:capstone_2026/core/presentation/component/text_field/custom_text_field.dart';
-import 'package:capstone_2026/feature/admin_onboarding/component/gallery_picker_button.dart';
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_action.dart';
-import 'package:capstone_2026/feature/admin_onboarding/presentation/screen/admin_onboarding_state.dart';
+import 'package:capstone_2026/feature/partner_onboarding/component/gallery_picker_button.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_action.dart';
+import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_state.dart';
 import 'package:capstone_2026/feature/sign_up_partner/component/date_picker_button.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-class AdminOnboardingScreen extends StatelessWidget {
-  final AdminOnboardingState state;
-  final void Function(AdminOnboardingAction action) onAction;
+class PartnerOnboardingScreen extends StatelessWidget {
+  final PartnerOnboardingState state;
+  final void Function(PartnerOnboardingAction action) onAction;
 
-  const AdminOnboardingScreen({
+  const PartnerOnboardingScreen({
     super.key,
     required this.state,
     required this.onAction,
@@ -25,7 +25,7 @@ class AdminOnboardingScreen extends StatelessWidget {
     if (state.isPending) {
       return Scaffold(
         backgroundColor: AppColors.white,
-        appBar: const CustomAppBar(title: '관리자 인증', showBackButton: false),
+        appBar: const CustomAppBar(title: '파트너 인증', showBackButton: false),
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -34,7 +34,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '사업자 인증 심사 중입니다.\n승인 후 관리자 기능이 활성화됩니다.',
+                    '사업자 인증 심사 중입니다.\n승인 후 파트너 기능이 활성화됩니다.',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.subtitle,
                   ),
@@ -49,7 +49,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                             : '상태 새로고침',
                         onTap: () {
                           onAction(
-                            const AdminOnboardingAction.tapRefreshStatus(),
+                            const PartnerOnboardingAction.tapRefreshStatus(),
                           );
                         },
                       ),
@@ -66,7 +66,7 @@ class AdminOnboardingScreen extends StatelessWidget {
     if (state.isRejected) {
       return Scaffold(
         backgroundColor: AppColors.white,
-        appBar: const CustomAppBar(title: '관리자 인증', showBackButton: false),
+        appBar: const CustomAppBar(title: '파트너 인증', showBackButton: false),
         body: SafeArea(
           child: Center(
             child: Padding(
@@ -83,7 +83,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                   PrimaryButton(
                     text: '재제출하기',
                     onTap: () {
-                      onAction(const AdminOnboardingAction.tapRetrySubmit());
+                      onAction(const PartnerOnboardingAction.tapRetrySubmit());
                     },
                   ),
                 ],
@@ -116,7 +116,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                   textFieldContentType: TextFieldContentType.name,
                   onChanged: (value) {
                     onAction(
-                      AdminOnboardingAction.changeRepresentativeName(value),
+                      PartnerOnboardingAction.changeRepresentativeName(value),
                     );
                   },
                 ),
@@ -131,7 +131,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                             TextFieldContentType.businessNumber,
                         onChanged: (value) {
                           onAction(
-                            AdminOnboardingAction.changeBusinessNumber(value),
+                            PartnerOnboardingAction.changeBusinessNumber(value),
                           );
                         },
                       ),
@@ -144,7 +144,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                             ? () {}
                             : () {
                                 onAction(
-                                  const AdminOnboardingAction.tapVerifyBusinessNumber(),
+                                  const PartnerOnboardingAction.tapVerifyBusinessNumber(),
                                 );
                               },
                       ),
@@ -171,7 +171,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                           state.openedOn!,
                         ),
                   onTap: () {
-                    onAction(const AdminOnboardingAction.tapPickOpenedOn());
+                    onAction(const PartnerOnboardingAction.tapPickOpenedOn());
                   },
                 ),
                 const SizedBox(height: 28),
@@ -186,7 +186,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                       ? () {}
                       : () {
                           onAction(
-                            const AdminOnboardingAction.tapPickLicenseImage(),
+                            const PartnerOnboardingAction.tapPickLicenseImage(),
                           );
                         },
                 ),
@@ -198,7 +198,7 @@ class AdminOnboardingScreen extends StatelessWidget {
                     child: PrimaryButton(
                       text: state.isSubmitting ? '제출 중...' : '최종 제출',
                       onTap: () {
-                        onAction(const AdminOnboardingAction.tapSubmit());
+                        onAction(const PartnerOnboardingAction.tapSubmit());
                       },
                     ),
                   ),

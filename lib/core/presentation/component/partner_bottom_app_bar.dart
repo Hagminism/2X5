@@ -2,10 +2,10 @@ import 'package:capstone_2026/core/presentation/component/app_bar_nav_item.dart'
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class AdminBottomAppBar extends StatelessWidget {
+class PartnerBottomAppBar extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const AdminBottomAppBar({
+  const PartnerBottomAppBar({
     super.key,
     required this.navigationShell,
   });

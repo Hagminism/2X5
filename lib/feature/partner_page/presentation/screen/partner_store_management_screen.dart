@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
-  const AdminDashboardScreen({super.key});
+class PartnerStoreManagementScreen extends StatelessWidget {
+  const PartnerStoreManagementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       body: SafeArea(
         child: Center(
-          child: Text('관리자 대시보드'),
+          child: Text('업장 관리 화면'),
         ),
       ),
     );
