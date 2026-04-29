@@ -92,7 +92,7 @@ void diSetup() {
   getIt.registerLazySingleton<StoreReviewRepository>(
     () => StoreReviewRepositoryImpl(
       naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
-      supabase: getIt<Supabase>(),
+      supabase: getIt<SupabaseClient>(),
     ),
   );
   getIt.registerLazySingleton<StoreReviewService>(
