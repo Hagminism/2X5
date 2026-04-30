@@ -50,10 +50,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     HomeSearchBar(
-                      onTap: () => _showSoonMessage(
-                        context,
-                        '검색 화면은 다음 단계에서 연결될 예정입니다.',
-                      ),
+                      onTap: () => context.go('${Routes.home}/${Routes.search}'),
                     ),
                     const SizedBox(height: 20),
                     HomeSectionContainer(

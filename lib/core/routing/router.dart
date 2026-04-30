@@ -38,6 +38,7 @@ import 'package:capstone_2026/feature/store_detail/presentation/screen/store_det
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
+import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -100,6 +101,11 @@ final router = GoRouter(
               path: Routes.home,
               builder: (context, state) => const HomeScreen(),
               routes: [
+                GoRoute(
+                  parentNavigatorKey: _rootNavigatorKey,
+                  path: Routes.search,
+                  builder: (context, state) => const SearchScreen(),
+                ),
                 GoRoute(
                   parentNavigatorKey: _rootNavigatorKey,
                   path: Routes.homeStoreDetail,
