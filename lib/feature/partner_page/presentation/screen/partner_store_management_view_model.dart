@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/repository/owner_verification/owner_verification_repository.dart';
+import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_action.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_event.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_state.dart';
@@ -9,10 +11,15 @@ import 'package:flutter/material.dart';
 
 class PartnerStoreManagementViewModel extends ChangeNotifier {
   final OwnerVerificationRepository _ownerVerificationRepository;
+  final StoreRepository _storeRepository;
+  Store? _myStore;
+  bool _initialized = false;
 
   PartnerStoreManagementViewModel({
     required OwnerVerificationRepository ownerVerificationRepository,
-  }) : _ownerVerificationRepository = ownerVerificationRepository;
+    required StoreRepository storeRepository,
+  }) : _ownerVerificationRepository = ownerVerificationRepository,
+       _storeRepository = storeRepository;
 
   PartnerStoreManagementState _state = const PartnerStoreManagementState();
 
@@ -42,10 +49,6 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         _state = state.copyWith(businessNumber: action.value);
         notifyListeners();
         break;
-      case ChangeAddress():
-        _state = state.copyWith(address: action.value);
-        notifyListeners();
-        break;
       case TapAddressSearch():
         _eventController.add(
           const PartnerStoreManagementEvent.openAddressSearch(),
@@ -67,20 +70,40 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         );
         notifyListeners();
         break;
-      case ChangeLatitude():
-        _state = state.copyWith(latitude: action.value);
-        notifyListeners();
-        break;
-      case ChangeLongitude():
-        _state = state.copyWith(longitude: action.value);
-        notifyListeners();
-        break;
       case ChangeStoreContact():
         _state = state.copyWith(storeContact: action.value);
         notifyListeners();
         break;
-      case ChangeOperatingHours():
-        _state = state.copyWith(operatingHours: action.value);
+      case ToggleDayOpened():
+        _updateDayConfig(
+          day: action.day,
+          update: (current) => {
+            ...current,
+            'isOpened': action.isOpened,
+            'openTime': action.isOpened ? current['openTime'] : null,
+            'closeTime': action.isOpened ? current['closeTime'] : null,
+          },
+        );
+        notifyListeners();
+        break;
+      case ChangeDayOpenTime():
+        _updateDayConfig(
+          day: action.day,
+          update: (current) => {
+            ...current,
+            'openTime': action.value,
+          },
+        );
+        notifyListeners();
+        break;
+      case ChangeDayCloseTime():
+        _updateDayConfig(
+          day: action.day,
+          update: (current) => {
+            ...current,
+            'closeTime': action.value,
+          },
+        );
         notifyListeners();
         break;
       case TapSubmit():
@@ -90,16 +113,39 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
   }
 
   Future<void> initialize() async {
-    if (state.isLoadingInitialData || state.businessNumber.trim().isNotEmpty) {
+    if (_initialized || state.isLoadingInitialData) {
       return;
     }
+    _initialized = true;
 
     _state = state.copyWith(isLoadingInitialData: true);
     notifyListeners();
 
     try {
-      final businessNumber = await _ownerVerificationRepository
+      final businessNumberFuture = _ownerVerificationRepository
           .getMyApprovedBusinessNumber();
+      final myStoreFuture = _storeRepository.getMyStore();
+      final businessNumber = await businessNumberFuture;
+      _myStore = await myStoreFuture;
+
+      if (_myStore != null) {
+        final operatingHours = _normalizeOperatingHours(_myStore!.operatingHours);
+        _state = state.copyWith(
+          isLoadingInitialData: false,
+          isFormVisible: true,
+          isEditMode: true,
+          storeName: _myStore!.name,
+          category: _myStore!.category,
+          businessNumber: _myStore!.businessNumber,
+          address: _myStore!.address,
+          latitude: _myStore!.latitude.toStringAsFixed(7),
+          longitude: _myStore!.longitude.toStringAsFixed(7),
+          storeContact: _myStore!.contact,
+          operatingHours: operatingHours,
+        );
+        notifyListeners();
+        return;
+      }
 
       if (businessNumber == null || businessNumber.isEmpty) {
         _state = state.copyWith(isLoadingInitialData: false);
@@ -141,17 +187,99 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
     _state = state.copyWith(isSubmitting: true);
     notifyListeners();
 
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    try {
+      final isCreate = _myStore == null;
+      final latitude = double.parse(state.latitude);
+      final longitude = double.parse(state.longitude);
+      final payload = Store(
+        id: _myStore?.id ?? '',
+        ownerId: _myStore?.ownerId ?? '',
+        name: state.storeName.trim(),
+        category: state.category.trim(),
+        businessNumber: state.businessNumber.trim(),
+        address: state.address.trim(),
+        latitude: latitude,
+        longitude: longitude,
+        contact: state.storeContact.trim(),
+        naverPlaceId: _myStore?.naverPlaceId,
+        operatingHours: state.operatingHours,
+      );
 
-    _state = state.copyWith(
-      isSubmitting: false,
-      isSubmitted: true,
-    );
-    notifyListeners();
+      final savedStore = _myStore == null
+          ? await _storeRepository.createMyStore(payload)
+          : await _storeRepository.updateMyStore(payload);
+      _myStore = savedStore;
 
-    _eventController.add(
-      const PartnerStoreManagementEvent.showMessage('업장 등록 요청이 접수되었습니다.'),
-    );
+      _state = state.copyWith(
+        isSubmitting: false,
+        isEditMode: true,
+        isFormVisible: true,
+      );
+      notifyListeners();
+
+      _eventController.add(
+        PartnerStoreManagementEvent.showMessage(
+          isCreate ? '업장 등록이 완료되었습니다.' : '업장 정보가 수정되었습니다.',
+        ),
+      );
+    } catch (e) {
+      _state = state.copyWith(isSubmitting: false);
+      notifyListeners();
+      print('${state.operatingHours}');
+      print('error: $e');
+      _eventController.add(
+        PartnerStoreManagementEvent.showMessage(
+          e is StateError || e is ArgumentError
+              ? e
+                    .toString()
+                    .replaceFirst('Bad state: ', '')
+                    .replaceFirst('Invalid argument(s): ', '')
+              : '업장 정보 저장 중 오류가 발생했습니다.',
+        ),
+      );
+    }
+  }
+
+  void _updateDayConfig({
+    required String day,
+    required Map<String, dynamic> Function(Map<String, dynamic> current) update,
+  }) {
+    final next = Map<String, Map<String, dynamic>>.from(state.operatingHours);
+    final current = Map<String, dynamic>.from(next[day] ?? const {});
+    next[day] = update(current);
+    _state = state.copyWith(operatingHours: next);
+  }
+
+  Map<String, Map<String, dynamic>> _normalizeOperatingHours(
+    Map<String, dynamic> raw,
+  ) {
+    const days = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ];
+    final normalized = <String, Map<String, dynamic>>{};
+    for (final day in days) {
+      final current = raw[day];
+      if (current is Map) {
+        normalized[day] = {
+          'isOpened': current['isOpened'] == true,
+          'openTime': current['openTime'],
+          'closeTime': current['closeTime'],
+        };
+      } else {
+        normalized[day] = {
+          'isOpened': true,
+          'openTime': null,
+          'closeTime': null,
+        };
+      }
+    }
+    return normalized;
   }
 
   @override

@@ -18,9 +18,6 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
     String value,
   ) = ChangeBusinessNumber;
 
-  const factory PartnerStoreManagementAction.changeAddress(String value) =
-      ChangeAddress;
-
   const factory PartnerStoreManagementAction.tapAddressSearch() =
       TapAddressSearch;
 
@@ -28,18 +25,23 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
     AddressSearchResult result,
   ) = SelectAddressSearchResult;
 
-  const factory PartnerStoreManagementAction.changeLatitude(String value) =
-      ChangeLatitude;
-
-  const factory PartnerStoreManagementAction.changeLongitude(String value) =
-      ChangeLongitude;
-
   const factory PartnerStoreManagementAction.changeStoreContact(String value) =
       ChangeStoreContact;
 
-  const factory PartnerStoreManagementAction.changeOperatingHours(
-    String value,
-  ) = ChangeOperatingHours;
+  const factory PartnerStoreManagementAction.toggleDayOpened({
+    required String day,
+    required bool isOpened,
+  }) = ToggleDayOpened;
+
+  const factory PartnerStoreManagementAction.changeDayOpenTime({
+    required String day,
+    required String value,
+  }) = ChangeDayOpenTime;
+
+  const factory PartnerStoreManagementAction.changeDayCloseTime({
+    required String day,
+    required String value,
+  }) = ChangeDayCloseTime;
 
   const factory PartnerStoreManagementAction.tapSubmit() = TapSubmit;
 }
