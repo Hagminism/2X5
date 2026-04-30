@@ -10,6 +10,7 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
     @Default(false) bool isFormVisible,
     @Default(false) bool isSubmitted,
     @Default(false) bool isSubmitting,
+    @Default(false) bool isLoadingInitialData,
     @Default('') String storeName,
     @Default('') String category,
     @Default('') String businessNumber,
@@ -29,6 +30,7 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
         longitude.trim().isNotEmpty &&
         storeContact.trim().isNotEmpty &&
         operatingHours.trim().isNotEmpty &&
+        !isLoadingInitialData &&
         !isSubmitting;
   }
 }

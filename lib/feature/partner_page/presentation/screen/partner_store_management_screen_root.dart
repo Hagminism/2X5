@@ -26,6 +26,8 @@ class _PartnerStoreManagementScreenRootState
   void initState() {
     super.initState();
 
+    widget.viewModel.initialize();
+
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (!mounted) return;
 

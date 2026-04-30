@@ -1,11 +1,18 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/domain/repository/owner_verification/owner_verification_repository.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_action.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_event.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_state.dart';
 import 'package:flutter/material.dart';
 
 class PartnerStoreManagementViewModel extends ChangeNotifier {
+  final OwnerVerificationRepository _ownerVerificationRepository;
+
+  PartnerStoreManagementViewModel({
+    required OwnerVerificationRepository ownerVerificationRepository,
+  }) : _ownerVerificationRepository = ownerVerificationRepository;
+
   PartnerStoreManagementState _state = const PartnerStoreManagementState();
 
   PartnerStoreManagementState get state => _state;
@@ -56,6 +63,45 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
       case TapSubmit():
         _submit();
         break;
+    }
+  }
+
+  Future<void> initialize() async {
+    if (state.isLoadingInitialData || state.businessNumber.trim().isNotEmpty) {
+      return;
+    }
+
+    _state = state.copyWith(isLoadingInitialData: true);
+    notifyListeners();
+
+    try {
+      final businessNumber = await _ownerVerificationRepository
+          .getMyApprovedBusinessNumber();
+
+      if (businessNumber == null || businessNumber.isEmpty) {
+        _state = state.copyWith(isLoadingInitialData: false);
+        notifyListeners();
+        _eventController.add(
+          const PartnerStoreManagementEvent.showMessage(
+            '승인된 사업자등록번호 정보를 찾을 수 없습니다. 관리자에게 문의해 주세요.',
+          ),
+        );
+        return;
+      }
+
+      _state = state.copyWith(
+        isLoadingInitialData: false,
+        businessNumber: businessNumber,
+      );
+      notifyListeners();
+    } catch (_) {
+      _state = state.copyWith(isLoadingInitialData: false);
+      notifyListeners();
+      _eventController.add(
+        const PartnerStoreManagementEvent.showMessage(
+          '사업자등록번호를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
+      );
     }
   }
 

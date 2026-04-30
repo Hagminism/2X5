@@ -91,7 +91,9 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   PrimaryButton(
-                    text: '업장 정보 등록하기',
+                    text: state.isLoadingInitialData
+                        ? '사업자등록번호 불러오는 중...'
+                        : '업장 정보 등록하기',
                     onTap: () {
                       onAction(
                         const PartnerStoreManagementAction.tapShowRegistrationForm(),
@@ -259,7 +261,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
               Opacity(
                 opacity: state.canSubmit ? 1 : 0.45,
                 child: IgnorePointer(
-                  ignoring: !state.canSubmit,
+                  ignoring: !state.canSubmit || state.isLoadingInitialData,
                   child: PrimaryButton(
                     text: state.isSubmitting ? '제출 중...' : '등록 제출',
                     onTap: () {
