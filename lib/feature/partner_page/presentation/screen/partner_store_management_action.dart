@@ -14,8 +14,9 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
   const factory PartnerStoreManagementAction.changeCategory(String value) =
       ChangeCategory;
 
-  const factory PartnerStoreManagementAction.changeBusinessNumber(String value) =
-      ChangeBusinessNumber;
+  const factory PartnerStoreManagementAction.changeBusinessNumber(
+    String value,
+  ) = ChangeBusinessNumber;
 
   const factory PartnerStoreManagementAction.changeAddress(String value) =
       ChangeAddress;
@@ -36,8 +37,9 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
   const factory PartnerStoreManagementAction.changeStoreContact(String value) =
       ChangeStoreContact;
 
-  const factory PartnerStoreManagementAction.changeOperatingHours(String value) =
-      ChangeOperatingHours;
+  const factory PartnerStoreManagementAction.changeOperatingHours(
+    String value,
+  ) = ChangeOperatingHours;
 
   const factory PartnerStoreManagementAction.tapSubmit() = TapSubmit;
 }

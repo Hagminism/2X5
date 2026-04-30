@@ -2,7 +2,8 @@ enum StoreCategory {
   restaurant,
   cafe,
   studyCafe,
-  salon;
+  salon
+  ;
 
   String get dbValue => switch (this) {
     StoreCategory.restaurant => 'restaurant',

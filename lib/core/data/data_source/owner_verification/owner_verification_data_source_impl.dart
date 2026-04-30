@@ -9,7 +9,9 @@ class OwnerVerificationDataSourceImpl implements OwnerVerificationDataSource {
   }) : _supabaseClient = supabaseClient;
 
   @override
-  Future<String?> findLatestApprovedBusinessNumberByOwnerId(String ownerId) async {
+  Future<String?> findLatestApprovedBusinessNumberByOwnerId(
+    String ownerId,
+  ) async {
     final json = await _supabaseClient
         .from('owner_verifications')
         .select('business_number')

@@ -21,7 +21,8 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
   final StreamController<PartnerStoreManagementEvent> _eventController =
       StreamController<PartnerStoreManagementEvent>.broadcast();
 
-  Stream<PartnerStoreManagementEvent> get eventStream => _eventController.stream;
+  Stream<PartnerStoreManagementEvent> get eventStream =>
+      _eventController.stream;
 
   void onAction(PartnerStoreManagementAction action) {
     switch (action) {
@@ -46,7 +47,9 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         notifyListeners();
         break;
       case TapAddressSearch():
-        _eventController.add(const PartnerStoreManagementEvent.openAddressSearch());
+        _eventController.add(
+          const PartnerStoreManagementEvent.openAddressSearch(),
+        );
         break;
       case SelectAddressSearchResult():
         debugPrint(

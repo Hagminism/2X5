@@ -19,8 +19,9 @@ class OwnerVerificationRepositoryImpl implements OwnerVerificationRepository {
       throw StateError('로그인 정보가 유효하지 않습니다.');
     }
 
-    return _ownerVerificationDataSource.findLatestApprovedBusinessNumberByOwnerId(
-      uid,
-    );
+    return _ownerVerificationDataSource
+        .findLatestApprovedBusinessNumberByOwnerId(
+          uid,
+        );
   }
 }

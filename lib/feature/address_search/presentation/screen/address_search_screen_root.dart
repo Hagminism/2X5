@@ -16,7 +16,8 @@ class AddressSearchScreenRoot extends StatefulWidget {
   });
 
   @override
-  State<AddressSearchScreenRoot> createState() => _AddressSearchScreenRootState();
+  State<AddressSearchScreenRoot> createState() =>
+      _AddressSearchScreenRootState();
 }
 
 class _AddressSearchScreenRootState extends State<AddressSearchScreenRoot> {

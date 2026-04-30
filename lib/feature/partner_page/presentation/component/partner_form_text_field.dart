@@ -38,7 +38,10 @@ class PartnerFormTextField extends StatelessWidget {
         hintText: hintText,
         filled: true,
         fillColor: AppColors.signInTextField,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

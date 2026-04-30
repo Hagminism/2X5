@@ -63,7 +63,9 @@ class AddressSearchViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final results = await _addressSearchDataSource.searchAddresses(state.query);
+      final results = await _addressSearchDataSource.searchAddresses(
+        state.query,
+      );
       _state = state.copyWith(isLoading: false, results: results);
       notifyListeners();
       if (results.isEmpty) {
