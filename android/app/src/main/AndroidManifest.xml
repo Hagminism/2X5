@@ -25,6 +25,7 @@
             android:name="com.naver.sdk.clientName"
             android:value="capstone_2026" />
 
+
         <!-- 카카오 로그인 커스텀 URL 스킴 설정 -->
         <activity
             android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
