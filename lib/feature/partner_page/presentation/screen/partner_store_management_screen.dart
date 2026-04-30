@@ -279,7 +279,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
             const SizedBox(width: 8),
             Switch(
               value: isOpened,
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
               onChanged: (value) => onAction(
                 PartnerStoreManagementAction.toggleDayOpened(
                   day: dayKey,
