@@ -3,6 +3,8 @@ import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_registration_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen_root.dart';
+import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/partner_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
@@ -254,6 +256,15 @@ final router = GoRouter(
               builder: (context, state) => PartnerStoreManagementScope(
                 viewModel: getIt<PartnerStoreManagementViewModel>(),
               ),
+              routes: [
+                GoRoute(
+                  path: Routes.partnerAddressSearch,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => AddressSearchScreenRoot(
+                    viewModel: getIt<AddressSearchViewModel>(),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
