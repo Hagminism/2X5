@@ -70,6 +70,8 @@ class _SearchScreenState extends State<SearchScreen> {
       final results = List<Map<String, dynamic>>.from(response);
       final grouped = _groupByCategory(results);
 
+       if (!mounted) return;
+
       setState(() {
         _categorizedResults = grouped;
         _isLoading = false;
