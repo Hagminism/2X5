@@ -3,38 +3,38 @@ import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class PartnerFormTextField extends StatelessWidget {
-  final String label;
   final String initialValue;
   final ValueChanged<String> onChanged;
   final String? hintText;
   final TextInputType? keyboardType;
   final int maxLines;
   final bool isInteractive;
+  final VoidCallback? onTap;
 
   const PartnerFormTextField({
     super.key,
-    required this.label,
     required this.initialValue,
     required this.onChanged,
     this.hintText,
     this.keyboardType,
     this.maxLines = 1,
     this.isInteractive = true,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    final textField = TextFormField(
       initialValue: initialValue,
       enabled: isInteractive,
       onChanged: isInteractive ? onChanged : null,
+      onTap: isInteractive ? onTap : null,
       keyboardType: keyboardType,
       maxLines: maxLines,
       style: AppTextStyles.body.copyWith(
         color: isInteractive ? AppColors.textPrimary : AppColors.textSecondary,
       ),
       decoration: InputDecoration(
-        labelText: label,
         hintText: hintText,
         filled: true,
         fillColor: AppColors.signInTextField,
@@ -56,6 +56,16 @@ class PartnerFormTextField extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
       ),
+    );
+
+    if (onTap == null || isInteractive) {
+      return textField;
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AbsorbPointer(child: textField),
     );
   }
 }

@@ -6,4 +6,6 @@ part 'partner_store_management_event.freezed.dart';
 sealed class PartnerStoreManagementEvent with _$PartnerStoreManagementEvent {
   const factory PartnerStoreManagementEvent.showMessage(String message) =
       ShowMessage;
+  const factory PartnerStoreManagementEvent.openAddressSearch() =
+      OpenAddressSearch;
 }

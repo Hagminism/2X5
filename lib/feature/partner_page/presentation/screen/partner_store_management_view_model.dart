@@ -4,6 +4,7 @@ import 'package:capstone_2026/core/domain/repository/owner_verification/owner_ve
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_action.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_event.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class PartnerStoreManagementViewModel extends ChangeNotifier {
@@ -42,6 +43,25 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         break;
       case ChangeAddress():
         _state = state.copyWith(address: action.value);
+        notifyListeners();
+        break;
+      case TapAddressSearch():
+        _eventController.add(const PartnerStoreManagementEvent.openAddressSearch());
+        break;
+      case SelectAddressSearchResult():
+        debugPrint(
+          '[AddressFlow] apply result address=${action.result.address}, '
+          'lat=${action.result.latitude}, lng=${action.result.longitude}',
+        );
+        _state = state.copyWith(
+          address: action.result.address,
+          latitude: action.result.latitude.toStringAsFixed(7),
+          longitude: action.result.longitude.toStringAsFixed(7),
+        );
+        debugPrint(
+          '[AddressFlow] state updated address=${_state.address}, '
+          'lat=${_state.latitude}, lng=${_state.longitude}',
+        );
         notifyListeners();
         break;
       case ChangeLatitude():

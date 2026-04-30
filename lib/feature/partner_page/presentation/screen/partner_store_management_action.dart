@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:capstone_2026/feature/address_search/domain/model/address_search_result.dart';
 
 part 'partner_store_management_action.freezed.dart';
 
@@ -18,6 +19,13 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
 
   const factory PartnerStoreManagementAction.changeAddress(String value) =
       ChangeAddress;
+
+  const factory PartnerStoreManagementAction.tapAddressSearch() =
+      TapAddressSearch;
+
+  const factory PartnerStoreManagementAction.selectAddressSearchResult(
+    AddressSearchResult result,
+  ) = SelectAddressSearchResult;
 
   const factory PartnerStoreManagementAction.changeLatitude(String value) =
       ChangeLatitude;

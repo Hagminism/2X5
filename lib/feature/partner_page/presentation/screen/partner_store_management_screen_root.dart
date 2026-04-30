@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/feature/address_search/domain/model/address_search_result.dart';
+import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_action.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_event.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_screen.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PartnerStoreManagementScreenRoot extends StatefulWidget {
   final PartnerStoreManagementViewModel viewModel;
@@ -41,8 +45,24 @@ class _PartnerStoreManagementScreenRootState
             ),
           );
           break;
+        case OpenAddressSearch():
+          _openAddressSearch();
+          break;
       }
     });
+  }
+
+  Future<void> _openAddressSearch() async {
+    final result = await context.push<AddressSearchResult>(
+      '${Routes.partnerStore}/${Routes.partnerAddressSearch}',
+    );
+    debugPrint('[AddressFlow] returned result=$result');
+    if (!mounted || result == null) {
+      return;
+    }
+    widget.viewModel.onAction(
+      PartnerStoreManagementAction.selectAddressSearchResult(result),
+    );
   }
 
   @override
