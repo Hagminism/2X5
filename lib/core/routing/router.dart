@@ -17,6 +17,8 @@ import 'package:capstone_2026/feature/find_password/presentation/screen/find_pas
 import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
+import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
@@ -176,10 +178,8 @@ final router = GoRouter(
                 GoRoute(
                   path: Routes.reviewHistory,
                   parentNavigatorKey: _rootNavigatorKey,
-                  builder: (context, state) => const Scaffold(
-                    body: SafeArea(
-                      child: Center(child: Text('리뷰 내역 페이지')),
-                    ),
+                  builder: (context, state) => ReviewHistoryScreenRoot(
+                    viewModel: getIt<ReviewHistoryViewModel>(),
                   ),
                 ),
                 GoRoute(
