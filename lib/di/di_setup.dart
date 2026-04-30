@@ -1,12 +1,16 @@
+import 'package:capstone_2026/core/data/data_source/owner_verification/owner_verification_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/owner_verification/owner_verification_data_source_impl.dart';
 import 'package:app_links/app_links.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/store/store_data_source_impl.dart';
 import 'package:capstone_2026/core/data/repository/auth/auth_repository_impl.dart';
+import 'package:capstone_2026/core/data/repository/owner_verification/owner_verification_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/store/store_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/user/user_repository_impl.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/domain/repository/owner_verification/owner_verification_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
@@ -92,6 +96,11 @@ void diSetup() {
   getIt.registerLazySingleton<UserDataSource>(
     () => UserDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
+  getIt.registerLazySingleton<OwnerVerificationDataSource>(
+    () => OwnerVerificationDataSourceImpl(
+      supabaseClient: getIt<SupabaseClient>(),
+    ),
+  );
   getIt.registerLazySingleton<StoreDataSource>(
     () => StoreDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
@@ -121,6 +130,12 @@ void diSetup() {
   getIt.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(userDataSource: getIt<UserDataSource>()),
   );
+  getIt.registerLazySingleton<OwnerVerificationRepository>(
+    () => OwnerVerificationRepositoryImpl(
+      ownerVerificationDataSource: getIt<OwnerVerificationDataSource>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
   getIt.registerLazySingleton<StoreRepository>(
     () => StoreRepositoryImpl(
       storeDataSource: getIt<StoreDataSource>(),
@@ -142,7 +157,9 @@ void diSetup() {
     ),
   );
   getIt.registerFactory<PartnerStoreManagementViewModel>(
-    () => PartnerStoreManagementViewModel(),
+    () => PartnerStoreManagementViewModel(
+      ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
+    ),
   );
   getIt.registerFactory<FindPasswordViewModel>(
     () => FindPasswordViewModel(),
