@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/home/presentation/component/home_store_car
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/feature/detail/presentation/screen/store_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -101,10 +102,25 @@ class HomeScreen extends StatelessWidget {
                     name: item.name,
                     subtitle: item.subtitle,
                     rating: item.rating,
-                    onTap: () =>
-                        context.go('${Routes.home}/store/${item.storeId}'),
-                  );
-                },
+                    // 기존 go_router 방식은 나중에 참고용으로 주석 처리해 둡니다.
+                    /*
+                  onTap: () =>
+                   context.go('${Routes.home}/store/${item.storeId}'),
+    */
+                    onTap: () {
+                      // 라우터 설정 없이 바로 상세 페이지 띄우기
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => StoreDetailScreen(
+                            name: item.name,
+                            subtitle: item.subtitle,
+                            rating: item.rating,
+                          ),
+                        ),
+                      );
+                    },
+                  ); // HomeStoreCard 닫기
+                }, // itemBuilder 닫기,
                 separatorBuilder: (_, _) => const SizedBox(height: 12),
               ),
             ),

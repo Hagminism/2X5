@@ -15,7 +15,6 @@ class ReservationScreen extends StatefulWidget {
 }
 
 class _ReservationScreenState extends State<ReservationScreen> {
-  // 수파베이스 클라이언트 전역 싱글톤 연결
   final supabase = Supabase.instance.client;
 
   DateTime _focusedDay = DateTime.now();
@@ -38,34 +37,36 @@ class _ReservationScreenState extends State<ReservationScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. 수파베이스 'reservations' 테이블에 데이터 전송
+      // DB 저장 (컬럼명은 상준 님 프로젝트의 테이블 구조와 맞는지 확인해 주세요!)
       await supabase.from('reservations').insert({
-        'booking_date': _selectedDay!.toIso8601String().split('T')[0], // '2026-04-30' 형식
-        'booking_time': _selectedTime, // '10:30' 형식
+        'booking_date': _selectedDay!.toIso8601String().split('T')[0],
+        'booking_time': _selectedTime,
         'guest_count': _guestCount,
       });
 
       if (!mounted) return;
 
-      // 2. 성공 팝업
+      // 🛠️ 성공 팝업 및 Navigator 복구
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        barrierDismissible: false, // 확인 버튼을 눌러서만 닫히도록 설정
+        builder: (dialogContext) => AlertDialog(
           title: const Text("예약 성공"),
           content: Text("${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n정상적으로 예약되었습니다!"),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // 팝업 닫기
-                Navigator.pop(context); // 예약 화면 종료 (메인/이전 화면으로)
+                // 1. 다이얼로그 닫기
+                Navigator.pop(dialogContext);
+                // 2. 예약 화면 닫고 상세 페이지로 돌아가기 (Navigator 방식)
+                Navigator.of(context).pop();
               },
-              child: const Text("확인"),
+              child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
       );
     } catch (e) {
-      // 3. 에러 발생 시 알림
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("예약 실패: $e")),
       );
@@ -81,7 +82,10 @@ class _ReservationScreenState extends State<ReservationScreen> {
       appBar: CustomAppBar(
         title: '날짜와 시간을 선택해 주세요',
         showBackButton: true,
-        onTap: () => Navigator.pop(context),
+        onTap: () {
+          // 🛠️ 수정: 앱바 뒤로가기 버튼 Navigator 복구
+          Navigator.of(context).pop();
+        },
       ),
       body: Stack(
         children: [
@@ -155,19 +159,19 @@ class _ReservationScreenState extends State<ReservationScreen> {
               : () {
             showDialog(
               context: context,
-              builder: (context) => AlertDialog(
+              builder: (dialogContext) => AlertDialog(
                 title: const Text("예약 확인"),
                 content: Text(
                     "${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n인원: $_guestCount명\n이대로 예약하시겠습니까?"
                 ),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pop(dialogContext),
                     child: const Text("취소", style: TextStyle(color: Colors.grey)),
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pop(dialogContext);
                       _submitReservation();
                     },
                     child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
