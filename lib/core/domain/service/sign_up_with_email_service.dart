@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/domain/model/enum/auth_provider.dart';
+import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/model/user/user.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
@@ -25,8 +26,6 @@ class SignUpWithEmailService {
     required String email,
     required String password,
     required UserType userType,
-    DateTime? openingDate,
-    String? businessNumber,
   }) async {
     await _authRepository.signUpWithEmail(
       email: email.trim(),
@@ -50,8 +49,9 @@ class SignUpWithEmailService {
           email: email.trim(),
           phone: phone.trim(),
           imageUrl: firebaseUser.photoURL ?? '',
-          openingDate: openingDate,
-          businessNumber: businessNumber?.trim(),
+          partnerStatus: (userType == UserType.partner)
+              ? PartnerStatus.unverified
+              : null,
         ),
       );
       await _userRegistrationStatusNotifier.refresh(firebaseUser.uid);
