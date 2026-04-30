@@ -5,14 +5,15 @@ import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen_root.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
+import 'package:capstone_2026/feature/partner_my_page/presentation/screen/partner_my_page_screen.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/partner_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
+import 'package:capstone_2026/feature/partner_dashboard/presentation/screen/partner_dashboard_screen.dart';
 import 'package:capstone_2026/feature/partner_page/core/presentation/component/scope/partner_store_management_scope.dart';
-import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_dashboard_screen.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_reservations_screen.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
@@ -276,6 +277,14 @@ final router = GoRouter(
             ),
           ],
         ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: Routes.partnerMyPage,
+              builder: (context, state) => const PartnerMyPageScreen(),
+            ),
+          ],
+        ),
       ],
     ),
     GoRoute(
@@ -320,7 +329,9 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
       location == Routes.partnerStore ||
       location.startsWith('${Routes.partnerStore}/') ||
       location == Routes.partnerReservations ||
-      location.startsWith('${Routes.partnerReservations}/');
+      location.startsWith('${Routes.partnerReservations}/') ||
+      location == Routes.partnerMyPage ||
+      location.startsWith('${Routes.partnerMyPage}/');
   final isInUserShell =
       location == Routes.home ||
       location.startsWith('${Routes.home}/') ||

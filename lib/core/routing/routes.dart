@@ -39,4 +39,5 @@ class Routes {
   static const String partnerOnboarding = '/partner/onboarding';
   static const String partnerStoreEdit = '/partner/store/edit';
   static const String partnerReservations = '/partner/reservations';
+  static const String partnerMyPage = '/partner/mypage';
 }

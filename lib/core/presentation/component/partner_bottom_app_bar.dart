@@ -37,6 +37,12 @@ class PartnerBottomAppBar extends StatelessWidget {
               icon: Icons.event_note_outlined,
               label: '예약 현황',
             ),
+            AppBarNavItem(
+              navigationShell: navigationShell,
+              index: 3,
+              icon: Icons.person_outline,
+              label: '마이페이지',
+            ),
           ],
         ),
       ),
