@@ -1,8 +1,10 @@
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -12,44 +14,58 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _phoneController;
   late final TextEditingController _nicknameController;
+  final firebase.User? _user = firebase.FirebaseAuth.instance.currentUser;
+  String? _phone;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: '이학민');
-    _emailController = TextEditingController(text: 'hakmin@example.com');
-    _phoneController = TextEditingController(text: '010-1234-5678');
-    _nicknameController = TextEditingController(text: 'hakmin');
+    _nicknameController = TextEditingController(
+      text: _user?.displayName ?? '',
+    );
+    _fetchPhone();
+  }
+
+  Future<void> _fetchPhone() async {
+    final uid = _user?.uid;
+    if (uid == null) return;
+    final response = await Supabase.instance.client
+        .from('users')
+        .select('phone')
+        .eq('id', uid)
+        .maybeSingle();
+    if (mounted) {
+      setState(() => _phone = response?['phone'] as String?);
+    }
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
     _nicknameController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    final name = _nameController.text.trim();
-    final email = _emailController.text.trim();
-    final phone = _phoneController.text.trim();
     final nickname = _nicknameController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || phone.isEmpty || nickname.isEmpty) {
+    if (nickname.isEmpty) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(content: Text('필수 정보를 모두 입력해 주세요.')),
+          const SnackBar(content: Text('닉네임을 입력해 주세요.')),
         );
       return;
     }
 
+    await _user?.updateDisplayName(nickname);
+    await firebase.FirebaseAuth.instance.currentUser?.reload();
+    await Supabase.instance.client
+        .from('users')
+        .update({'name': nickname})
+        .eq('id', _user?.uid ?? '');
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -57,9 +73,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       );
 
     await Future<void>.delayed(const Duration(milliseconds: 250));
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
     context.go(Routes.myPage);
   }
 
@@ -103,18 +117,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        '내 정보를 수정하고 저장해 주세요.',
+                        '닉네임만 변경할 수 있어요.',
                         style: AppTextStyles.subtitle,
                       ),
                       const SizedBox(height: 24),
                       const Text('이름', style: AppTextStyles.label),
                       const SizedBox(height: 8),
-                      TextField(
-                        controller: _nameController,
-                        decoration: _inputDecoration(
-                          hintText: '이름을 입력해 주세요.',
-                          icon: Icons.person_outline_rounded,
-                        ),
+                      _ReadOnlyField(
+                        value: _user?.displayName ?? '-',
+                        icon: Icons.person_outline_rounded,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text('이메일', style: AppTextStyles.label),
+                      const SizedBox(height: 8),
+                      _ReadOnlyField(
+                        value: _user?.email ?? '-',
+                        icon: Icons.alternate_email_rounded,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text('전화번호', style: AppTextStyles.label),
+                      const SizedBox(height: 8),
+                      _ReadOnlyField(
+                        value: _phone ?? '-',
+                        icon: Icons.phone_outlined,
                       ),
                       const SizedBox(height: 16),
                       const Text('닉네임', style: AppTextStyles.label),
@@ -124,28 +149,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: _inputDecoration(
                           hintText: '닉네임을 입력해 주세요.',
                           icon: Icons.badge_outlined,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text('이메일', style: AppTextStyles.label),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: _inputDecoration(
-                          hintText: 'example@email.com',
-                          icon: Icons.alternate_email_rounded,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text('휴대폰 번호', style: AppTextStyles.label),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        decoration: _inputDecoration(
-                          hintText: '010-1234-5678',
-                          icon: Icons.phone_outlined,
                         ),
                       ),
                       const SizedBox(height: 22),
@@ -204,7 +207,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    );
+  }
+}
+
+class _ReadOnlyField extends StatelessWidget {
+  final String value;
+  final IconData icon;
+
+  const _ReadOnlyField({required this.value, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEEEEE),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.textSecondary, size: 22),
+          const SizedBox(width: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
