@@ -27,19 +27,33 @@ class ReviewWriteBottomSheet extends StatefulWidget {
 
 class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
   final TextEditingController _reviewController = TextEditingController();
-  final List<String> _visitTags = const ['혼밥', '데이트', '모임', '가족 외식', '빠른 방문'];
+  final TextEditingController _customVisitTagController =
+      TextEditingController();
+  final List<String> _visitTags = const [
+    '혼밥',
+    '데이트',
+    '모임',
+    '가족 외식',
+    '빠른 방문',
+  ];
 
   double _rating = 4;
   String? _selectedTag;
+  String? _customVisitTag;
+  bool _isCustomVisitTagEditing = false;
 
   @override
   void dispose() {
     _reviewController.dispose();
+    _customVisitTagController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isCustomSelected =
+        _customVisitTag != null && _selectedTag == _customVisitTag;
+
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -93,7 +107,9 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: Icon(
-                        value <= _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                        value <= _rating
+                            ? Icons.star_rounded
+                            : Icons.star_border_rounded,
                         color: Colors.amber,
                         size: 32,
                       ),
@@ -116,26 +132,104 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: _visitTags.map((tag) {
-                  final isSelected = _selectedTag == tag;
-                  return ChoiceChip(
-                    label: Text(tag),
-                    selected: isSelected,
-                    onSelected: (_) => setState(() => _selectedTag = tag),
-                    backgroundColor: Colors.white,
-                    selectedColor: AppColors.primary.withValues(alpha: 0.14),
+                children: [
+                  ..._visitTags.map((tag) {
+                    final isSelected = _selectedTag == tag;
+                    return ChoiceChip(
+                      label: Text(tag),
+                      selected: isSelected,
+                      onSelected: (_) {
+                        setState(() {
+                          _selectedTag = tag;
+                          _isCustomVisitTagEditing = false;
+                        });
+                      },
+                      backgroundColor: Colors.white,
+                      selectedColor: AppColors.primary.withValues(alpha: 0.14),
+                      labelStyle: TextStyle(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.4)
+                            : AppColors.border,
+                      ),
+                    );
+                  }),
+                  ActionChip(
+                    label: Text(_customVisitTag ?? '직접 입력'),
+                    onPressed: () {
+                      setState(() {
+                        _isCustomVisitTagEditing = true;
+                        _customVisitTagController.text = _customVisitTag ?? '';
+                      });
+                    },
+                    backgroundColor: isCustomSelected
+                        ? AppColors.primary.withValues(alpha: 0.14)
+                        : Colors.white,
                     labelStyle: TextStyle(
-                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isCustomSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      fontWeight: isCustomSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                     ),
                     side: BorderSide(
-                      color: isSelected
+                      color: isCustomSelected
                           ? AppColors.primary.withValues(alpha: 0.4)
                           : AppColors.border,
                     ),
-                  );
-                }).toList(),
+                  ),
+                ],
               ),
+              if (_isCustomVisitTagEditing) ...[
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _customVisitTagController,
+                  autofocus: true,
+                  maxLength: 20,
+                  decoration: InputDecoration(
+                    hintText: '예: 가족 생일, 회식, 부모님과 방문',
+                    filled: true,
+                    fillColor: const Color(0xFFF7F8FA),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        setState(() {
+                          _isCustomVisitTagEditing = false;
+                          _customVisitTagController.clear();
+                        });
+                      },
+                      child: const Text('취소'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: _applyCustomVisitTag,
+                      child: const Text('적용'),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 20),
               const _SectionTitle('리뷰 내용'),
               const SizedBox(height: 10),
@@ -144,7 +238,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                 minLines: 5,
                 maxLines: 7,
                 decoration: InputDecoration(
-                  hintText: '음식 맛, 서비스, 분위기, 재방문 의사 등을 자연스럽게 남겨주세요.',
+                  hintText: '음식 맛, 서비스, 분위기, 재방문 의사 등을 자연스럽게 적어주세요.',
                   hintStyle: const TextStyle(color: AppColors.textSecondary),
                   filled: true,
                   fillColor: const Color(0xFFF7F8FA),
@@ -167,13 +261,19 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                       width: 84,
                       height: 84,
                       decoration: BoxDecoration(
-                        color: isAddTile ? const Color(0xFFF7F8FA) : AppColors.border,
+                        color: isAddTile
+                            ? const Color(0xFFF7F8FA)
+                            : AppColors.border,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Icon(
-                        isAddTile ? Icons.add_a_photo_outlined : Icons.image_outlined,
-                        color: isAddTile ? AppColors.textSecondary : Colors.white,
+                        isAddTile
+                            ? Icons.add_a_photo_outlined
+                            : Icons.image_outlined,
+                        color: isAddTile
+                            ? AppColors.textSecondary
+                            : Colors.white,
                       ),
                     ),
                   );
@@ -181,7 +281,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
               ),
               const SizedBox(height: 10),
               const Text(
-                '사진 업로드는 발표 시연에서는 비활성화하고, 실제 연결 시 Storage와 연동합니다.',
+                '사진 업로드는 발표 시연에서는 비활성화하고, 실제 연결 시 Storage와 연동할 예정입니다.',
                 style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
@@ -194,7 +294,11 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.card_giftcard_outlined, color: Color(0xFFD99A00), size: 18),
+                    Icon(
+                      Icons.card_giftcard_outlined,
+                      color: Color(0xFFD99A00),
+                      size: 18,
+                    ),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -233,6 +337,24 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
         ),
       ),
     );
+  }
+
+  void _applyCustomVisitTag() {
+    final value = _customVisitTagController.text.trim();
+    if (value.isEmpty) {
+      FocusScope.of(context).unfocus();
+      setState(() {
+        _isCustomVisitTagEditing = false;
+      });
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _customVisitTag = value;
+      _selectedTag = value;
+      _isCustomVisitTagEditing = false;
+    });
   }
 
   void _submit() {

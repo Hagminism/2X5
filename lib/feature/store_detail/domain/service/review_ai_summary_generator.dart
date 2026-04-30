@@ -9,10 +9,10 @@ class ReviewAiSummaryGenerator {
     '메뉴 만족도': ['맛', '커피', '디저트', '메뉴', '음식', '국수'],
     '쾌적한 분위기': ['분위기', '조용', '깔끔', '쾌적', '편안', '창문', '창가'],
     '단체 방문': ['회식', '단체', '모임', '친구들'],
-    '데이트 코스': ['데이트', '분위기', '사진'],
+    '데이트 코스': ['데이트', '소개팅', '연인', '분위기'],
     '가족 외식': ['가족', '아이', '부모님', '생일'],
     '콜키지 장점': ['콜키지', '와인'],
-    '빠른 방문': ['빠른', '간단', '잠깐'],
+    '빠른 방문': ['빠른', '간단', '가볍게'],
     '맞춤 상담': ['스타일', '디자이너', '컷', '상담', '컬러'],
   };
 
@@ -26,7 +26,7 @@ class ReviewAiSummaryGenerator {
     '재방문',
     '편하',
     '맛있',
-    '훌륭',
+    '최고',
   ];
 
   static const List<String> _negativeKeywords = [
@@ -34,9 +34,9 @@ class ReviewAiSummaryGenerator {
     '아쉽',
     '불친절',
     '시끄럽',
-    '늦',
+    '짜증',
     '불편',
-    '아쉬',
+    '실망',
   ];
 
   static const Map<String, _SummaryPhrase> _phrases = {
@@ -52,8 +52,8 @@ class ReviewAiSummaryGenerator {
     ),
     '반찬 구성이 좋음': _SummaryPhrase(
       label: '반찬 구성이 좋음',
-      single: '반찬 구성이 알찬',
-      pair: '반찬 구성이 알차고',
+      single: '반찬 구성이 만족스러운',
+      pair: '반찬 구성이 만족스럽고',
     ),
     '메뉴 만족도': _SummaryPhrase(
       label: '메뉴 만족도',
@@ -103,7 +103,7 @@ class ReviewAiSummaryGenerator {
   }) {
     if (reviews.isEmpty) {
       return const ReviewAiSummary(
-        oneLine: '아직 등록된 리뷰가 많지 않아, 리뷰가 쌓이면 매장의 특징을 더 정확하게 요약해 드릴 예정입니다.',
+        oneLine: '아직 등록된 리뷰가 많지 않아, 리뷰가 쌓이면 매장의 특징을 더 정확하게 요약해 보여줄 예정입니다.',
         keywords: ['자체 리뷰', '방문 목적', '스탬프 적립'],
         positiveRatio: 0.92,
       );
@@ -181,21 +181,35 @@ class ReviewAiSummaryGenerator {
   }
 
   static String _mapVisitPurpose(String visitPurpose) {
-    switch (visitPurpose) {
-      case '혼밥':
-      case '빠른 방문':
-        return '빠른 방문';
-      case '데이트':
-        return '데이트 코스';
-      case '모임':
-      case '친구 모임':
-      case '회식':
-        return '단체 방문';
-      case '가족 외식':
-        return '가족 외식';
-      default:
-        return visitPurpose;
+    final normalized = visitPurpose.trim().toLowerCase();
+
+    if (normalized.contains('혼밥') ||
+        normalized.contains('빠른') ||
+        normalized.contains('간단')) {
+      return '빠른 방문';
     }
+
+    if (normalized.contains('데이트') ||
+        normalized.contains('소개팅') ||
+        normalized.contains('연인')) {
+      return '데이트 코스';
+    }
+
+    if (normalized.contains('모임') ||
+        normalized.contains('회식') ||
+        normalized.contains('친구') ||
+        normalized.contains('단체')) {
+      return '단체 방문';
+    }
+
+    if (normalized.contains('가족') ||
+        normalized.contains('부모님') ||
+        normalized.contains('생일') ||
+        normalized.contains('아이')) {
+      return '가족 외식';
+    }
+
+    return visitPurpose;
   }
 
   static String _buildOneLine({
@@ -226,7 +240,7 @@ class ReviewAiSummaryGenerator {
     }
 
     if (first == '가족 외식' && second == '콜키지 장점') {
-      return '$storeName은 가족 외식에 잘 어울리고 콜키지 이용도 편한 매장입니다.';
+      return '$storeName은 가족 외식에 어울리고 콜키지 이용도 편한 매장입니다.';
     }
 
     if (second == null) {
