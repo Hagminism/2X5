@@ -16,6 +16,9 @@ import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
 import 'package:capstone_2026/core/domain/validator/store_operating_hours_validator.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
+import 'package:capstone_2026/feature/address_search/data/data_source/address_search_data_source.dart';
+import 'package:capstone_2026/feature/address_search/data/data_source/address_search_data_source_impl.dart';
+import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
@@ -104,6 +107,9 @@ void diSetup() {
   getIt.registerLazySingleton<StoreDataSource>(
     () => StoreDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
+  getIt.registerLazySingleton<AddressSearchDataSource>(
+    () => AddressSearchDataSourceImpl(),
+  );
 
   // Repository
   getIt.registerLazySingleton<AuthRepository>(
@@ -159,6 +165,11 @@ void diSetup() {
   getIt.registerFactory<PartnerStoreManagementViewModel>(
     () => PartnerStoreManagementViewModel(
       ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
+    ),
+  );
+  getIt.registerFactory<AddressSearchViewModel>(
+    () => AddressSearchViewModel(
+      addressSearchDataSource: getIt<AddressSearchDataSource>(),
     ),
   );
   getIt.registerFactory<FindPasswordViewModel>(
