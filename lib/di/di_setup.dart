@@ -165,6 +165,7 @@ void diSetup() {
   getIt.registerFactory<PartnerStoreManagementViewModel>(
     () => PartnerStoreManagementViewModel(
       ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
+      storeRepository: getIt<StoreRepository>(),
     ),
   );
   getIt.registerFactory<AddressSearchViewModel>(
