@@ -25,8 +25,8 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
   const factory PartnerStoreManagementAction.changeLongitude(String value) =
       ChangeLongitude;
 
-  const factory PartnerStoreManagementAction.changeContact(String value) =
-      ChangeContact;
+  const factory PartnerStoreManagementAction.changeStoreContact(String value) =
+      ChangeStoreContact;
 
   const factory PartnerStoreManagementAction.changeOperatingHours(String value) =
       ChangeOperatingHours;

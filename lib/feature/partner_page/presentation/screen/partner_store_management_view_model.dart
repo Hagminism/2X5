@@ -45,8 +45,8 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         _state = state.copyWith(longitude: action.value);
         notifyListeners();
         break;
-      case ChangeContact():
-        _state = state.copyWith(contact: action.value);
+      case ChangeStoreContact():
+        _state = state.copyWith(storeContact: action.value);
         notifyListeners();
         break;
       case ChangeOperatingHours():

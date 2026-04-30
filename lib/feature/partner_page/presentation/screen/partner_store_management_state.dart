@@ -16,7 +16,7 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
     @Default('') String address,
     @Default('') String latitude,
     @Default('') String longitude,
-    @Default('') String contact,
+    @Default('') String storeContact,
     @Default('') String operatingHours,
   }) = _PartnerStoreManagementState;
 
@@ -27,7 +27,7 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
         address.trim().isNotEmpty &&
         latitude.trim().isNotEmpty &&
         longitude.trim().isNotEmpty &&
-        contact.trim().isNotEmpty &&
+        storeContact.trim().isNotEmpty &&
         operatingHours.trim().isNotEmpty &&
         !isSubmitting;
   }
