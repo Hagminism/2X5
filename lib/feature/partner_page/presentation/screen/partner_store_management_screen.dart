@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/feature/partner_page/presentation/component/partner_form_text_field.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_store_section_card.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_action.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_state.dart';
@@ -135,7 +136,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                 title: '기본 정보',
                 child: Column(
                   children: [
-                    _buildTextField(
+                    PartnerFormTextField(
                       label: '업장명',
                       initialValue: state.storeName,
                       onChanged: (value) => onAction(
@@ -166,10 +167,11 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 16),
-                    _buildTextField(
+                    PartnerFormTextField(
                       label: '사업자등록번호',
                       hintText: '숫자 10자리',
                       initialValue: state.businessNumber,
+                      isInteractive: false,
                       keyboardType: TextInputType.number,
                       onChanged: (value) => onAction(
                         PartnerStoreManagementAction.changeBusinessNumber(
@@ -178,13 +180,13 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildTextField(
-                      label: '연락처',
+                    PartnerFormTextField(
+                      label: '매장 연락처',
                       hintText: '예: 02-1234-5678',
-                      initialValue: state.contact,
+                      initialValue: state.storeContact,
                       keyboardType: TextInputType.phone,
                       onChanged: (value) => onAction(
-                        PartnerStoreManagementAction.changeContact(value),
+                        PartnerStoreManagementAction.changeStoreContact(value),
                       ),
                     ),
                   ],
@@ -195,7 +197,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                 title: '위치 정보',
                 child: Column(
                   children: [
-                    _buildTextField(
+                    PartnerFormTextField(
                       label: '주소',
                       hintText: '도로명 주소를 입력해 주세요',
                       initialValue: state.address,
@@ -207,7 +209,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildTextField(
+                          child: PartnerFormTextField(
                             label: '위도',
                             initialValue: state.latitude,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -222,7 +224,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: _buildTextField(
+                          child: PartnerFormTextField(
                             label: '경도',
                             initialValue: state.longitude,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -243,7 +245,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
               const SizedBox(height: 24),
               PartnerStoreSectionCard(
                 title: '운영 정보',
-                child: _buildTextField(
+                child: PartnerFormTextField(
                   label: '운영시간',
                   hintText: '예: 평일 09:00-18:00, 주말 휴무',
                   initialValue: state.operatingHours,
@@ -270,24 +272,6 @@ class PartnerStoreManagementScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String label,
-    required String initialValue,
-    required ValueChanged<String> onChanged,
-    String? hintText,
-    TextInputType? keyboardType,
-    int maxLines = 1,
-  }) {
-    return TextFormField(
-      initialValue: initialValue,
-      onChanged: onChanged,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
-      decoration: _inputDecoration(label, hintText: hintText),
     );
   }
 
