@@ -10,12 +10,12 @@ import 'package:uuid/uuid.dart';
 class StoreReviewRepositoryImpl implements StoreReviewRepository {
   StoreReviewRepositoryImpl({
     required NaverStoreSearchDataSource naverStoreSearchDataSource,
-    required Supabase supabase,
+    required SupabaseClient supabase,
   }) : _naverStoreSearchDataSource = naverStoreSearchDataSource,
        _supabase = supabase;
 
   final NaverStoreSearchDataSource _naverStoreSearchDataSource;
-  final Supabase _supabase;
+  final SupabaseClient _supabase;
 
   static const String _packageName = 'com.example.capstone_2026';
   static const Uuid _uuid = Uuid();
@@ -176,7 +176,8 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       _mockReviewsByStoreId[storeId] ?? const [],
     );
 
-    final merged = [...mockReviews, ...supabaseReviews]..sort(_compareByCreatedAtDesc);
+    final merged = [...mockReviews, ...supabaseReviews]
+      ..sort(_compareByCreatedAtDesc);
 
     return merged.take(limit).toList();
   }
@@ -195,7 +196,8 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
         .where((review) => review.userId == userId)
         .toList();
 
-    final merged = [...mockReviews, ...supabaseReviews]..sort(_compareByCreatedAtDesc);
+    final merged = [...mockReviews, ...supabaseReviews]
+      ..sort(_compareByCreatedAtDesc);
 
     return merged.take(limit).toList();
   }
@@ -235,7 +237,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required int limit,
   }) async {
     try {
-      final rows = await _supabase.client
+      final rows = await _supabase
           .from('reviews')
           .select(
             'id, store_id, user_id, user_name, store_name, rating, content, image_urls, created_at, visit_purpose',
@@ -247,7 +249,9 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
 
       return _mapReviewRows(rows);
     } catch (e) {
-      debugPrint('[StoreReviewRepository] Mock mode store reviews fallback: $e');
+      debugPrint(
+        '[StoreReviewRepository] Mock mode store reviews fallback: $e',
+      );
       return const [];
     }
   }
@@ -257,7 +261,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required int limit,
   }) async {
     try {
-      final rows = await _supabase.client
+      final rows = await _supabase
           .from('reviews')
           .select(
             'id, store_id, user_id, user_name, store_name, rating, content, image_urls, created_at, visit_purpose',
@@ -280,7 +284,9 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
 
     return rows
         .whereType<Map>()
-        .map((row) => InternalReview.fromSupabase(Map<String, dynamic>.from(row)))
+        .map(
+          (row) => InternalReview.fromSupabase(Map<String, dynamic>.from(row)),
+        )
         .toList();
   }
 

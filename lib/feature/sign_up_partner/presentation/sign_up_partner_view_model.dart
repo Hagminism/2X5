@@ -56,15 +56,6 @@ class SignUpPartnerViewModel extends ChangeNotifier {
       case ChangePasswordConfirm():
         _changePasswordConfirm(action.passwordConfirm);
         break;
-      case ChangeBusinessNumber():
-        _changeBusinessNumber(action.businessNumber);
-        break;
-      case ChangeOpeningDate():
-        _changeOpeningDate(action.date);
-        break;
-      case TapDatePickerButton():
-        _eventController.add(SignUpPartnerEvent.showDatePicker());
-        break;
     }
   }
 
@@ -90,16 +81,6 @@ class SignUpPartnerViewModel extends ChangeNotifier {
 
   void _changePasswordConfirm(String passwordConfirm) {
     _state = state.copyWith(passwordConfirm: passwordConfirm);
-    notifyListeners();
-  }
-
-  void _changeBusinessNumber(String businessNumber) {
-    _state = state.copyWith(businessNumber: businessNumber);
-    notifyListeners();
-  }
-
-  void _changeOpeningDate(DateTime date) {
-    _state = state.copyWith(openingDate: date);
     notifyListeners();
   }
 
@@ -149,8 +130,6 @@ class SignUpPartnerViewModel extends ChangeNotifier {
         email: state.email,
         password: state.password,
         userType: UserType.partner,
-        openingDate: state.openingDate,
-        businessNumber: _formatBusinessNumber(state.businessNumber),
       );
       didSucceed = true;
     } on FirebaseAuthException catch (e) {
@@ -188,18 +167,6 @@ class SignUpPartnerViewModel extends ChangeNotifier {
     if (!_isValidEmail(state.email)) {
       return '올바른 이메일 형식을 입력해 주세요.';
     }
-    if (state.openingDate == null) {
-      return '개업 일자를 선택해 주세요.';
-    }
-    final normalizedBusinessNumber = _formatBusinessNumber(
-      state.businessNumber,
-    );
-    if (normalizedBusinessNumber.isEmpty) {
-      return '사업자등록번호를 입력해 주세요.';
-    }
-    if (!RegExp(r'^\d{10}$').hasMatch(normalizedBusinessNumber)) {
-      return '사업자등록번호는 숫자 10자리로 입력해 주세요.';
-    }
     if (!state.agreeTerms) {
       return '이용약관 및 개인정보 처리방침 동의가 필요합니다.';
     }
@@ -232,10 +199,6 @@ class SignUpPartnerViewModel extends ChangeNotifier {
   bool _isValidEmail(String email) {
     final pattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     return pattern.hasMatch(email.trim());
-  }
-
-  String _formatBusinessNumber(String value) {
-    return value.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
   String _mapFirebaseAuthError(String code) {

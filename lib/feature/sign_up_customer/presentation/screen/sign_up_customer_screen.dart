@@ -10,8 +10,6 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/domain/model/enum/user_type.dart';
-
 class SignUpCustomerScreen extends StatelessWidget {
   final SignUpCustomerState state;
   final void Function(SignUpCustomerAction action) onAction;
@@ -41,9 +39,7 @@ class SignUpCustomerScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Center(
-                      child: SignUpHeader(
-                        userType: UserType.customer,
-                      ),
+                      child: SignUpHeader(),
                     ),
                     const SizedBox(height: 40),
                     buildLabel('이름'),

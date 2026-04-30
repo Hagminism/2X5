@@ -54,6 +54,8 @@ dependencies:
   uuid: ^4.5.1
   table_calendar: ^3.1.2 #예약 켈린터 페키지
   intl: 0.20.2 #한글설정
+  image_picker: ^1.2.2
+  cloud_functions: ^6.2.0
 
 dev_dependencies:
   flutter_test:
