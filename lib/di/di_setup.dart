@@ -14,6 +14,7 @@ import 'package:capstone_2026/core/domain/validator/store_operating_hours_valida
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
+import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
@@ -139,6 +140,9 @@ void diSetup() {
       firebaseFunctions: getIt<FirebaseFunctions>(),
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
+  );
+  getIt.registerFactory<PartnerStoreManagementViewModel>(
+    () => PartnerStoreManagementViewModel(),
   );
   getIt.registerFactory<FindPasswordViewModel>(
     () => FindPasswordViewModel(),

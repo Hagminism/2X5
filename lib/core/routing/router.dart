@@ -9,9 +9,10 @@ import 'package:capstone_2026/core/routing/core/component/user_registration_stat
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
+import 'package:capstone_2026/feature/partner_page/core/presentation/component/scope/partner_store_management_scope.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_dashboard_screen.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_reservations_screen.dart';
-import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_screen.dart';
+import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
@@ -250,7 +251,9 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.partnerStore,
-              builder: (context, state) => const PartnerStoreManagementScreen(),
+              builder: (context, state) => PartnerStoreManagementScope(
+                viewModel: getIt<PartnerStoreManagementViewModel>(),
+              ),
             ),
           ],
         ),
