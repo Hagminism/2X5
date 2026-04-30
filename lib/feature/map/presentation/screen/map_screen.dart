@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_search_bar.dart';
 import 'package:naver_maps_sdk_flutter/enum/naver_map_map_type_id.dart';
 import 'package:naver_maps_sdk_flutter/event/map_load_status_event.dart';
 import 'package:naver_maps_sdk_flutter/model/map_options.dart';
+import 'package:naver_maps_sdk_flutter/model/html_icon.dart';
 import 'package:naver_maps_sdk_flutter/model/marker_options.dart';
 import 'package:naver_maps_sdk_flutter/model/n_lat_lng.dart';
 import 'package:naver_maps_sdk_flutter/sdk_app/naver_maps_sdk_flutter_app.dart';
@@ -21,22 +23,85 @@ class _MapScreenState extends State<MapScreen> {
   late final NaverMapManager _naverMapManager;
   late final StreamSubscription _mapStatusSubscription;
 
-  NLatLng _initialCenter = NLatLng(37.5665, 126.9780);
+  NLatLng _initialCenter = NLatLng(37.5826, 127.0106);
   int _currentZoom = 15;
   bool _locationReady = false;
+  bool _mapReady = false;
+  List<Map<String, dynamic>> _stores = [];
 
   @override
   void initState() {
     super.initState();
     _naverMapManager = NaverMapManager.createNaverMapManager();
-    _mapStatusSubscription =
-        _naverMapManager.onMapLoadStatus.listen((status) {
+    _mapStatusSubscription = _naverMapManager.onMapLoadStatus.listen((status) {
       if (status is MapLoadSuccess) {
         _naverMapManager.addMapCenterChangedEventListener();
         _addMyLocationMarker();
+        _mapReady = true;
+        _addStoreMarkers();
       }
     });
     _loadCurrentLocation();
+    _fetchStores();
+  }
+
+  Future<void> _fetchStores() async {
+    final response = await Supabase.instance.client
+        .from('stores')
+        .select('id, name, category, latitude, longitude');
+    if (!mounted) return;
+    debugPrint('가게 수: ${response.length}');
+    if (response.isNotEmpty) {
+      debugPrint('첫 번째 가게: ${response.first}');
+    }
+    setState(() => _stores = List<Map<String, dynamic>>.from(response));
+    if (_mapReady) _addStoreMarkers();
+  }
+
+  String _categoryColor(String category) {
+    switch (category) {
+      case 'restaurant': return '#E53935';
+      case 'cafe':        return '#6D4C41';
+      case 'study_cafe':  return '#1E88E5';
+      case 'salon':       return '#8E24AA';
+      default:            return '#43A047';
+    }
+  }
+
+  String _categoryEmoji(String category) {
+    switch (category) {
+      case 'restaurant': return '🍽';
+      case 'cafe':        return '☕';
+      case 'study_cafe':  return '📚';
+      case 'salon':       return '✂';
+      default:            return '📍';
+    }
+  }
+
+  Future<void> _addStoreMarkers() async {
+    for (final store in _stores) {
+      final lat = store['latitude'] as double?;
+      final lng = store['longitude'] as double?;
+      final category = store['category'] as String? ?? '';
+      final id = store['id'] as String? ?? '';
+      if (lat == null || lng == null) continue;
+
+      final color = _categoryColor(category);
+      final emoji = _categoryEmoji(category);
+      final html =
+          '<div style="background:$color;color:white;border-radius:50%;'
+          'width:32px;height:32px;display:flex;align-items:center;'
+          'justify-content:center;font-size:16px;box-shadow:0 2px 4px rgba(0,0,0,0.3);">'
+          '$emoji</div>';
+
+      await _naverMapManager.addMarker(
+        markerId: 'store_$id',
+        markerOptions: MarkerOptions(
+          position: NLatLng(lat, lng),
+          icon: HtmlIcon(content: html),
+        ),
+      );
+    }
   }
 
   Future<void> _loadCurrentLocation() async {

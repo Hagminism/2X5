@@ -1,6 +1,7 @@
 enum AccountActivity {
   signOut,
-  deleteAccount;
+  deleteAccount
+  ;
 
   String toDisplayName() => switch (this) {
     AccountActivity.signOut => '로그아웃',

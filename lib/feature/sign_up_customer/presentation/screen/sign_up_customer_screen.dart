@@ -2,8 +2,8 @@ import 'package:capstone_2026/core/domain/model/enum/text_field_content_type.dar
 import 'package:capstone_2026/core/presentation/component/app_bar/custom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
 import 'package:capstone_2026/core/presentation/component/text_field/custom_text_field.dart';
-import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_customer_header.dart';
-import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_customer_terms_row.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_header.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_terms_row.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_action.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -38,7 +38,9 @@ class SignUpCustomerScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Center(child: SignUpCustomerHeader()),
+                    const Center(
+                      child: SignUpHeader(),
+                    ),
                     const SizedBox(height: 40),
                     buildLabel('이름'),
                     CustomTextField(
@@ -99,7 +101,7 @@ class SignUpCustomerScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 36),
-                    SignUpCustomerTermsRow(
+                    SignUpTermsRow(
                       isChecked: state.agreeTerms,
                       onToggle: () => onAction(
                         const SignUpCustomerAction.toggleTermsAgreement(),

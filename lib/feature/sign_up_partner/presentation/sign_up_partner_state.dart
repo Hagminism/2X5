@@ -7,29 +7,16 @@ abstract class SignUpPartnerState with _$SignUpPartnerState {
   const SignUpPartnerState._();
 
   const factory SignUpPartnerState({
+    @Default(false) bool isLoading,
     @Default('') String name,
+    @Default('') String phone,
     @Default('') String email,
     @Default('') String password,
     @Default('') String passwordConfirm,
-    @Default('') String storeName,
-    @Default('') String businessRegistrationNumber,
-    @Default('') String storeLocation,
     @Default(false) bool agreeTerms,
+    @Default(true) bool passwordObscureText,
+    @Default(true) bool passwordConfirmObscureText,
     @Default(false) bool isSubmitting,
     String? errorMessage,
   }) = _SignUpPartnerState;
-
-  bool get isPasswordMatched => password == passwordConfirm;
-
-  bool get canSubmit {
-    return name.trim().isNotEmpty &&
-        email.trim().isNotEmpty &&
-        password.trim().isNotEmpty &&
-        passwordConfirm.trim().isNotEmpty &&
-        storeName.trim().isNotEmpty &&
-        businessRegistrationNumber.trim().isNotEmpty &&
-        storeLocation.trim().isNotEmpty &&
-        agreeTerms &&
-        !isSubmitting;
-  }
 }

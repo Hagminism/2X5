@@ -1,268 +1,155 @@
+import 'package:capstone_2026/core/domain/model/enum/text_field_content_type.dart';
+import 'package:capstone_2026/core/presentation/component/app_bar/custom_app_bar.dart';
+import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
+import 'package:capstone_2026/core/presentation/component/text_field/custom_text_field.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_header.dart';
+import 'package:capstone_2026/feature/sign_up_customer/presentation/component/sign_up_terms_row.dart';
+import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_action.dart';
+import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_state.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-import '../../../ui/app_colors.dart';
-import '../../../ui/app_text_styles.dart';
-import 'sign_up_partner_state.dart';
-
 class SignUpPartnerScreen extends StatelessWidget {
+  final SignUpPartnerState state;
+  final void Function(SignUpPartnerAction action) onAction;
+
   const SignUpPartnerScreen({
     required this.state,
-    required this.onNameChanged,
-    required this.onEmailChanged,
-    required this.onPasswordChanged,
-    required this.onPasswordConfirmChanged,
-    required this.onStoreNameChanged,
-    required this.onBusinessRegistrationNumberChanged,
-    required this.onStoreLocationChanged,
-    required this.onTermsChanged,
-    required this.onSubmit,
-    required this.onSignInTap,
+    required this.onAction,
     super.key,
   });
 
-  final SignUpPartnerState state;
-  final ValueChanged<String> onNameChanged;
-  final ValueChanged<String> onEmailChanged;
-  final ValueChanged<String> onPasswordChanged;
-  final ValueChanged<String> onPasswordConfirmChanged;
-  final ValueChanged<String> onStoreNameChanged;
-  final ValueChanged<String> onBusinessRegistrationNumberChanged;
-  final ValueChanged<String> onStoreLocationChanged;
-  final ValueChanged<bool> onTermsChanged;
-  final VoidCallback onSubmit;
-  final VoidCallback onSignInTap;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF7FAFF), Color(0xFFEFF4FF)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.white,
+          appBar: CustomAppBar(
+            title: '',
+            showBackButton: true,
+            onTap: () => onAction(SignUpPartnerAction.tapBackButton()),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1F0F172A),
-                        blurRadius: 20,
-                        offset: Offset(0, 12),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('파트너 회원가입', style: AppTextStyles.headline),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '기본 정보와 업장 정보를 입력해 주세요.',
-                          style: AppTextStyles.subtitle,
-                        ),
-                        const SizedBox(height: 24),
-                        const Text('이름', style: AppTextStyles.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          onChanged: onNameChanged,
-                          decoration: _inputDecoration(
-                            hintText: '이름을 입력해 주세요.',
-                            icon: Icons.person_outline_rounded,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text('이메일', style: AppTextStyles.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          keyboardType: TextInputType.emailAddress,
-                          onChanged: onEmailChanged,
-                          decoration: _inputDecoration(
-                            hintText: 'example@email.com',
-                            icon: Icons.alternate_email_rounded,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text('비밀번호', style: AppTextStyles.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          obscureText: true,
-                          onChanged: onPasswordChanged,
-                          decoration: _inputDecoration(
-                            hintText: '비밀번호를 입력해 주세요.',
-                            icon: Icons.lock_outline_rounded,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text('비밀번호 확인', style: AppTextStyles.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          obscureText: true,
-                          onChanged: onPasswordConfirmChanged,
-                          decoration: _inputDecoration(
-                            hintText: '비밀번호를 다시 입력해 주세요.',
-                            icon: Icons.verified_user_outlined,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text('상호명', style: AppTextStyles.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          onChanged: onStoreNameChanged,
-                          decoration: _inputDecoration(
-                            hintText: '상호명을 입력해 주세요.',
-                            icon: Icons.storefront_outlined,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text('사업자 등록번호', style: AppTextStyles.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          keyboardType: TextInputType.number,
-                          onChanged: onBusinessRegistrationNumberChanged,
-                          decoration: _inputDecoration(
-                            hintText: '숫자 10자리를 입력해 주세요.',
-                            icon: Icons.badge_outlined,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text('매장 위치', style: AppTextStyles.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          onChanged: onStoreLocationChanged,
-                          decoration: _inputDecoration(
-                            hintText: '매장 위치를 입력해 주세요.',
-                            icon: Icons.location_on_outlined,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        InkWell(
-                          onTap: () => onTermsChanged(!state.agreeTerms),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6),
-                            child: Row(
-                              children: [
-                                Checkbox(
-                                  value: state.agreeTerms,
-                                  onChanged: (value) =>
-                                      onTermsChanged(value ?? false),
-                                ),
-                                const Expanded(
-                                  child: Text(
-                                    '필수 약관에 동의합니다.',
-                                    style: AppTextStyles.body,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (state.errorMessage != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            state.errorMessage!,
-                            style: const TextStyle(
-                              color: AppColors.danger,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: state.canSubmit ? onSubmit : null,
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            child: state.isSubmitting
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    '파트너 회원가입',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              '이미 계정이 있나요?',
-                              style: AppTextStyles.subtitle,
-                            ),
-                            TextButton(
-                              onPressed: onSignInTap,
-                              child: const Text('로그인'),
-                            ),
-                          ],
-                        ),
-                      ],
+          body: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: SignUpHeader(),
                     ),
-                  ),
+                    const SizedBox(height: 40),
+                    buildLabel('대표자 성명'),
+                    CustomTextField(
+                      textFieldContentType: TextFieldContentType.name,
+                      onChanged: (name) {
+                        onAction(SignUpPartnerAction.changeName(name));
+                      },
+                    ),
+                    const SizedBox(height: 28),
+                    buildLabel('전화번호'),
+                    CustomTextField(
+                      textFieldContentType: TextFieldContentType.phone,
+                      onChanged: (phone) {
+                        onAction(SignUpPartnerAction.changePhone(phone));
+                      },
+                    ),
+                    const SizedBox(height: 28),
+                    buildLabel('이메일'),
+                    CustomTextField(
+                      textFieldContentType: TextFieldContentType.email,
+                      onChanged: (email) {
+                        onAction(SignUpPartnerAction.changeEmail(email));
+                      },
+                    ),
+                    const SizedBox(height: 28),
+                    buildLabel('비밀번호'),
+                    CustomTextField(
+                      textFieldContentType: TextFieldContentType.password,
+                      isObscureText: state.passwordObscureText,
+                      onTap: () {
+                        onAction(
+                          const SignUpPartnerAction.changePasswordObscureText(),
+                        );
+                      },
+                      onChanged: (password) {
+                        onAction(
+                          SignUpPartnerAction.changePassword(password),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 28),
+                    buildLabel('비밀번호 확인'),
+                    CustomTextField(
+                      textFieldContentType:
+                          TextFieldContentType.passwordConfirm,
+                      isObscureText: state.passwordConfirmObscureText,
+                      onTap: () {
+                        onAction(
+                          const SignUpPartnerAction.changePasswordConfirmObscureText(),
+                        );
+                      },
+                      onChanged: (passwordConfirm) {
+                        onAction(
+                          SignUpPartnerAction.changePasswordConfirm(
+                            passwordConfirm,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 36),
+                    SignUpTermsRow(
+                      isChecked: state.agreeTerms,
+                      onToggle: () => onAction(
+                        const SignUpPartnerAction.toggleTermsAgreement(),
+                      ),
+                    ),
+                    const SizedBox(height: 36),
+                    PrimaryButton(
+                      text: '가입하기',
+                      onTap: () {
+                        onAction(const SignUpPartnerAction.tapSubmit());
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
             ),
           ),
         ),
-      ),
+        if (state.isLoading)
+          ModalBarrier(
+            dismissible: false,
+            color: AppColors.black.withValues(alpha: 0.2588),
+          ),
+        if (state.isLoading)
+          const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
+            ),
+          ),
+      ],
     );
   }
 
-  InputDecoration _inputDecoration({
-    required String hintText,
-    required IconData icon,
-  }) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: const TextStyle(color: AppColors.textSecondary),
-      filled: true,
-      fillColor: AppColors.surfaceMuted,
-      prefixIcon: Icon(icon, color: AppColors.textSecondary),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.border),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  Widget buildLabel(String labelText) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          labelText,
+          style: AppTextStyles.caption.copyWith(
+            fontSize: 14,
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+      ],
     );
   }
 }

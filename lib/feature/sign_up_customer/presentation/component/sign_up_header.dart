@@ -2,8 +2,10 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-class SignUpCustomerHeader extends StatelessWidget {
-  const SignUpCustomerHeader({super.key});
+class SignUpHeader extends StatelessWidget {
+  const SignUpHeader({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
