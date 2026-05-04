@@ -116,6 +116,7 @@ void diSetup() {
     () => AuthRepositoryImpl(
       firebaseAuth: getIt<FirebaseAuth>(),
       googleSignIn: getIt<GoogleSignIn>(),
+      firebaseFunctions: getIt<FirebaseFunctions>(),
     ),
   );
   getIt.registerLazySingleton<StoreDetailRepository>(
