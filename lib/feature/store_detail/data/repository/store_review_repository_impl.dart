@@ -218,7 +218,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       storeName: storeName,
       rating: review.rating,
       content: review.content,
-      imageUrls: const [],
+      imageUrls: List<String>.from(review.imagePaths),
       createdAt: DateTime.now(),
       visitPurpose: review.visitTag,
     );
