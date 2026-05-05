@@ -42,33 +42,49 @@ class _ReviewHistoryScreenRootState extends State<ReviewHistoryScreenRoot> {
     InternalReview review,
     ReviewWriteResult result,
   ) async {
-    await widget.viewModel.updateReview(
-      currentReview: review,
-      result: result,
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('리뷰를 수정했습니다.')),
+    try {
+      await widget.viewModel.updateReview(
+        currentReview: review,
+        result: result,
       );
+
+      if (!mounted) {
+        return;
+      }
+
+      _showMessage('리뷰를 수정했습니다.');
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      _showMessage('리뷰 수정 중 오류가 발생했습니다.');
+    }
   }
 
   Future<void> _handleDeleteReview(InternalReview review) async {
-    await widget.viewModel.deleteReview(review: review);
+    try {
+      await widget.viewModel.deleteReview(review: review);
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      _showMessage('리뷰를 삭제했습니다.');
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      _showMessage('리뷰 삭제 중 오류가 발생했습니다.');
     }
+  }
 
+  void _showMessage(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(content: Text('리뷰를 삭제했습니다.')),
+        SnackBar(content: Text(message)),
       );
   }
 }
