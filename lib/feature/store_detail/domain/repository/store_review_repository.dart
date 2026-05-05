@@ -28,4 +28,13 @@ abstract interface class StoreReviewRepository {
     required String userName,
     required ReviewWriteResult review,
   });
+
+  Future<InternalReview> updateReview({
+    required String reviewId,
+    required ReviewWriteResult review,
+  });
+
+  Future<void> deleteReview({
+    required String reviewId,
+  });
 }
