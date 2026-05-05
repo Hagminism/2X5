@@ -14,7 +14,8 @@ import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/partner_dashboard/presentation/screen/partner_dashboard_screen.dart';
 import 'package:capstone_2026/feature/partner_page/core/presentation/component/scope/partner_store_management_scope.dart';
-import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_reservations_screen.dart';
+import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_screen_root.dart';
+import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
@@ -273,7 +274,9 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.partnerReservations,
-              builder: (context, state) => const PartnerReservationsScreen(),
+              builder: (context, state) => PartnerReservationsScreenRoot(
+                viewModel: getIt<PartnerReservationsViewModel>(),
+              ),
             ),
           ],
         ),

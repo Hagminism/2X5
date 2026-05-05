@@ -3,14 +3,18 @@ import 'package:capstone_2026/core/data/data_source/owner_verification/owner_ver
 import 'package:app_links/app_links.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source_impl.dart';
+import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/store/store_data_source_impl.dart';
 import 'package:capstone_2026/core/data/repository/auth/auth_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/owner_verification/owner_verification_repository_impl.dart';
+import 'package:capstone_2026/core/data/repository/reservation/reservation_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/store/store_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/user/user_repository_impl.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/owner_verification/owner_verification_repository.dart';
+import 'package:capstone_2026/core/domain/repository/reservation/reservation_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
@@ -21,6 +25,7 @@ import 'package:capstone_2026/feature/address_search/data/data_source/address_se
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
+import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
@@ -107,6 +112,9 @@ void diSetup() {
   getIt.registerLazySingleton<StoreDataSource>(
     () => StoreDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
+  getIt.registerLazySingleton<ReservationDataSource>(
+    () => ReservationDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
+  );
   getIt.registerLazySingleton<AddressSearchDataSource>(
     () => AddressSearchDataSourceImpl(),
   );
@@ -151,6 +159,13 @@ void diSetup() {
       operatingHoursValidator: getIt<StoreOperatingHoursValidator>(),
     ),
   );
+  getIt.registerLazySingleton<ReservationRepository>(
+    () => ReservationRepositoryImpl(
+      reservationDataSource: getIt<ReservationDataSource>(),
+      storeDataSource: getIt<StoreDataSource>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
 
   // ViewModel
   getIt.registerFactory<SignInViewModel>(
@@ -167,6 +182,11 @@ void diSetup() {
     () => PartnerStoreManagementViewModel(
       ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
       storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<PartnerReservationsViewModel>(
+    () => PartnerReservationsViewModel(
+      reservationRepository: getIt<ReservationRepository>(),
     ),
   );
   getIt.registerFactory<AddressSearchViewModel>(
