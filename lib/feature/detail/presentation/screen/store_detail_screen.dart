@@ -57,7 +57,7 @@
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
-            // ✅ 수정: Navigator.of(context).pop() 대신 context.pop()을 사용합니다.
+
             onPressed: () => context.pop(),
           ),
           actions: [

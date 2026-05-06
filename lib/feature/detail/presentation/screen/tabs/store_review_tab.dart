@@ -29,13 +29,13 @@ class StoreReviewTab extends StatelessWidget {
       children: [
         Row(
           children: [
-            // 프로필 이미지 영역 (BoxCircle -> BoxShape.circle로 수정)
+
             Container(
               width: 40,
               height: 40,
               decoration: const BoxDecoration(
                 color: AppColors.surfaceMuted,
-                shape: BoxShape.circle, // 여기서 에러가 났을 거예요!
+                shape: BoxShape.circle,
               ),
               child: const Icon(Icons.person, color: AppColors.textSecondary),
             ),

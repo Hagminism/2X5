@@ -58,7 +58,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 // 1. 다이얼로그 닫기 (다이얼로그는 Navigator 방식 유지)
                 Navigator.pop(dialogContext);
 
-                // 🛠️ 2. 예약 화면 닫고 돌아가기 (GoRouter 방식)
+
                 if (context.canPop()) {
                   context.pop();
                 }
@@ -85,7 +85,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         title: '날짜와 시간을 선택해 주세요',
         showBackButton: true,
         onTap: () {
-          // 🛠️ 3. 뒤로가기 버튼 수정
+
           context.pop();
         },
       ),
