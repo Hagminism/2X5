@@ -612,6 +612,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
         rating: _rating,
         content: content,
         visitTag: visitPurpose.isEmpty ? null : visitPurpose,
+        imagePaths: widget.review.imageUrls,
       ),
     );
   }
