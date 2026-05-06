@@ -10,6 +10,8 @@ class StoreDto {
   String? naverPlaceId;
   String? contact;
   Map<String, dynamic>? operatingHours;
+  bool? depositEnabled;
+  int? depositAmount;
   String? createdAt;
 
   StoreDto({
@@ -24,6 +26,8 @@ class StoreDto {
     this.naverPlaceId,
     this.contact,
     this.operatingHours,
+    this.depositEnabled,
+    this.depositAmount,
     this.createdAt,
   });
 
@@ -39,6 +43,8 @@ class StoreDto {
     naverPlaceId = json['naver_place_id'];
     contact = json['contact'];
     operatingHours = (json['operating_hours'] as Map?)?.cast<String, dynamic>();
+    depositEnabled = json['deposit_enabled'];
+    depositAmount = (json['deposit_amount'] as num?)?.toInt();
     createdAt = json['created_at'];
   }
 
@@ -55,6 +61,8 @@ class StoreDto {
     map['naver_place_id'] = naverPlaceId;
     map['contact'] = contact;
     map['operating_hours'] = operatingHours;
+    map['deposit_enabled'] = depositEnabled;
+    map['deposit_amount'] = depositAmount;
     map['created_at'] = createdAt;
     return map;
   }
