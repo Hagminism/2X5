@@ -406,15 +406,15 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
   );
   final isInPartnerOnboarding = location == Routes.partnerOnboarding;
-  final isInPartnerShell =
-      location == Routes.partnerHome ||
-      location.startsWith('${Routes.partnerHome}/') ||
-      location == Routes.partnerStore ||
-      location.startsWith('${Routes.partnerStore}/') ||
-      location == Routes.partnerReservations ||
-      location.startsWith('${Routes.partnerReservations}/') ||
-      location == Routes.partnerMyPage ||
-      location.startsWith('${Routes.partnerMyPage}/');
+  final partnerShellBasePaths = [
+    Routes.partnerHome,
+    Routes.partnerStore,
+    Routes.partnerReservations,
+    Routes.partnerMyPage,
+  ];
+  final isInPartnerShell = partnerShellBasePaths.any(
+    (path) => location == path || location.startsWith('$path/'),
+  );
   final isInUserShell =
       location == Routes.home ||
       location.startsWith('${Routes.home}/') ||
