@@ -41,6 +41,7 @@ import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partn
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
+import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart'; // 🛠️ 추가
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -119,6 +120,14 @@ final router = GoRouter(
                       storeId: storeId,
                     );
                   },
+                  // 🛠️ 예약 화면을 상세 페이지의 하위 경로로 추가
+                  routes: [
+                    GoRoute(
+                      path: Routes.reservation, // 'reservation'
+                      parentNavigatorKey: _rootNavigatorKey, // 바텀바 숨김 처리
+                      builder: (context, state) => const ReservationScreen(),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -289,7 +298,6 @@ final router = GoRouter(
 );
 
 // 리다이렉트 로직
-// TODO: 회원 탈퇴(deleteAccount) 후 리다이렉션 문제 있는지 추가 확인해야함
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final currentUser = getIt<AuthRepository>().getCurrentUser();
   final registrationNotifier = getIt<UserRegistrationStatusNotifier>();
@@ -298,6 +306,7 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
 
   final isLoggedIn = currentUser != null;
   final location = state.matchedLocation;
+
   final isInAuthFlow =
       location == Routes.signIn || location.startsWith('${Routes.signIn}/');
   final isInSignUpFlow = location.startsWith(
@@ -306,20 +315,20 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final isInAdminOnboarding = location == Routes.adminOnboarding;
   final isInAdminShell =
       location == Routes.adminHome ||
-      location.startsWith('${Routes.adminHome}/') ||
-      location == Routes.adminStore ||
-      location.startsWith('${Routes.adminStore}/') ||
-      location == Routes.adminReservations ||
-      location.startsWith('${Routes.adminReservations}/');
+          location.startsWith('${Routes.adminHome}/') ||
+          location == Routes.adminStore ||
+          location.startsWith('${Routes.adminStore}/') ||
+          location == Routes.adminReservations ||
+          location.startsWith('${Routes.adminReservations}/');
   final isInUserShell =
       location == Routes.home ||
-      location.startsWith('${Routes.home}/') ||
-      location == Routes.map ||
-      location.startsWith('${Routes.map}/') ||
-      location == Routes.bookmark ||
-      location.startsWith('${Routes.bookmark}/') ||
-      location == Routes.myPage ||
-      location.startsWith('${Routes.myPage}/');
+          location.startsWith('${Routes.home}/') ||
+          location == Routes.map ||
+          location.startsWith('${Routes.map}/') ||
+          location == Routes.bookmark ||
+          location.startsWith('${Routes.bookmark}/') ||
+          location == Routes.myPage ||
+          location.startsWith('${Routes.myPage}/');
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -347,9 +356,9 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
 
   final isApprovedPartner =
       registrationStatus == UserRegistrationStatus.exists &&
-      userProfile != null &&
-      userProfile.userType == UserType.partner &&
-      userProfile.partnerStatus == PartnerStatus.approved;
+          userProfile != null &&
+          userProfile.userType == UserType.partner &&
+          userProfile.partnerStatus == PartnerStatus.approved;
 
   if (isApprovedPartner) {
     if (isInAdminOnboarding || isInAuthFlow || location == Routes.onBoarding || isInUserShell) {

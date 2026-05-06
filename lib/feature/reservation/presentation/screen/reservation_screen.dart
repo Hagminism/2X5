@@ -6,6 +6,7 @@ import 'package:capstone_2026/core/presentation/component/button/primary_button.
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:go_router/go_router.dart';
 
 class ReservationScreen extends StatefulWidget {
   const ReservationScreen({super.key});
@@ -32,12 +33,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
     initializeDateFormatting('ko_KR', null);
   }
 
-  // 🚀 수파베이스 실제 저장 로직
+  // 수파베이스 실제 저장 로직
   Future<void> _submitReservation() async {
     setState(() => _isLoading = true);
 
     try {
-      // DB 저장 (컬럼명은 상준 님 프로젝트의 테이블 구조와 맞는지 확인해 주세요!)
       await supabase.from('reservations').insert({
         'booking_date': _selectedDay!.toIso8601String().split('T')[0],
         'booking_time': _selectedTime,
@@ -46,20 +46,22 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
       if (!mounted) return;
 
-      // 🛠️ 성공 팝업 및 Navigator 복구
       showDialog(
         context: context,
-        barrierDismissible: false, // 확인 버튼을 눌러서만 닫히도록 설정
+        barrierDismissible: false,
         builder: (dialogContext) => AlertDialog(
           title: const Text("예약 성공"),
           content: Text("${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n정상적으로 예약되었습니다!"),
           actions: [
             TextButton(
               onPressed: () {
-                // 1. 다이얼로그 닫기
+                // 1. 다이얼로그 닫기 (다이얼로그는 Navigator 방식 유지)
                 Navigator.pop(dialogContext);
-                // 2. 예약 화면 닫고 상세 페이지로 돌아가기 (Navigator 방식)
-                Navigator.of(context).pop();
+
+                // 🛠️ 2. 예약 화면 닫고 돌아가기 (GoRouter 방식)
+                if (context.canPop()) {
+                  context.pop();
+                }
               },
               child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
             ),
@@ -83,8 +85,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
         title: '날짜와 시간을 선택해 주세요',
         showBackButton: true,
         onTap: () {
-          // 🛠️ 수정: 앱바 뒤로가기 버튼 Navigator 복구
-          Navigator.of(context).pop();
+          // 🛠️ 3. 뒤로가기 버튼 수정
+          context.pop();
         },
       ),
       body: Stack(

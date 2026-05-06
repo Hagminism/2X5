@@ -309,7 +309,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       final rows = await _supabase
           .from('reviews')
           .select(
-        // user_name 컬럼이 현재 DB에 없어 에러를 유발하므로 임시 주석 처리함
+
         'id, store_id, user_id, store_name, rating, content, image_urls, created_at, visit_purpose',
       )
           .eq('store_id', storeId)

@@ -22,6 +22,9 @@ class Routes {
   static const String homeStoreDetail = 'store/:storeId';
   static const String bookmarkStoreDetail = 'store/:storeId';
 
+  // reservation
+  static const String reservation = 'reservation';
+
   // My page nested paths
   static const String profileEdit = 'profile-edit';
   static const String reservationHistory = 'history-reservations';
