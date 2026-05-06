@@ -28,6 +28,65 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
   const factory PartnerStoreManagementAction.changeStoreContact(String value) =
       ChangeStoreContact;
 
+  const factory PartnerStoreManagementAction.changeDepositEnabled(bool value) =
+      ChangeDepositEnabled;
+
+  const factory PartnerStoreManagementAction.changeDepositAmount(String value) =
+      ChangeDepositAmount;
+
+  const factory PartnerStoreManagementAction.tapOpenMenuManager() =
+      TapOpenMenuManager;
+
+  const factory PartnerStoreManagementAction.tapOpenImageManager() =
+      TapOpenImageManager;
+
+  const factory PartnerStoreManagementAction.addMenu() = AddMenu;
+
+  const factory PartnerStoreManagementAction.removeMenu(int index) = RemoveMenu;
+
+  const factory PartnerStoreManagementAction.changeMenuName({
+    required int index,
+    required String value,
+  }) = ChangeMenuName;
+
+  const factory PartnerStoreManagementAction.changeMenuPrice({
+    required int index,
+    required String value,
+  }) = ChangeMenuPrice;
+
+  const factory PartnerStoreManagementAction.changeMenuDescription({
+    required int index,
+    required String value,
+  }) = ChangeMenuDescription;
+
+  const factory PartnerStoreManagementAction.changeMenuImageUrl({
+    required int index,
+    required String value,
+  }) = ChangeMenuImageUrl;
+
+  const factory PartnerStoreManagementAction.toggleMenuAvailable({
+    required int index,
+    required bool value,
+  }) = ToggleMenuAvailable;
+
+  const factory PartnerStoreManagementAction.addStoreImage() = AddStoreImage;
+
+  const factory PartnerStoreManagementAction.removeStoreImage(int index) =
+      RemoveStoreImage;
+
+  const factory PartnerStoreManagementAction.changeStoreImageUrl({
+    required int index,
+    required String value,
+  }) = ChangeStoreImageUrl;
+
+  const factory PartnerStoreManagementAction.changeStoreImageCaption({
+    required int index,
+    required String value,
+  }) = ChangeStoreImageCaption;
+
+  const factory PartnerStoreManagementAction.selectCoverImage(int index) =
+      SelectCoverImage;
+
   const factory PartnerStoreManagementAction.toggleDayOpened({
     required String day,
     required bool isOpened,

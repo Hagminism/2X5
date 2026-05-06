@@ -74,6 +74,38 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         _state = state.copyWith(storeContact: action.value);
         notifyListeners();
         break;
+      case ChangeDepositEnabled():
+        _state = state.copyWith(
+          depositEnabled: action.value,
+          depositAmount: action.value ? state.depositAmount : '0',
+        );
+        notifyListeners();
+        break;
+      case ChangeDepositAmount():
+        _state = state.copyWith(
+          depositAmount: action.value.replaceAll(RegExp(r'[^0-9]'), ''),
+        );
+        notifyListeners();
+        break;
+      case TapOpenMenuManager():
+        _eventController.add(const PartnerStoreManagementEvent.openMenuManager());
+        break;
+      case TapOpenImageManager():
+        _eventController.add(const PartnerStoreManagementEvent.openImageManager());
+        break;
+      case AddMenu():
+      case RemoveMenu():
+      case ChangeMenuName():
+      case ChangeMenuPrice():
+      case ChangeMenuDescription():
+      case ChangeMenuImageUrl():
+      case ToggleMenuAvailable():
+      case AddStoreImage():
+      case RemoveStoreImage():
+      case ChangeStoreImageUrl():
+      case ChangeStoreImageCaption():
+      case SelectCoverImage():
+        break;
       case ToggleDayOpened():
         _updateDayConfig(
           day: action.day,
@@ -143,6 +175,8 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
           latitude: _myStore!.latitude.toStringAsFixed(7),
           longitude: _myStore!.longitude.toStringAsFixed(7),
           storeContact: _myStore!.contact,
+          depositEnabled: _myStore!.depositEnabled,
+          depositAmount: _myStore!.depositAmount.toString(),
           operatingHours: operatingHours,
         );
         notifyListeners();
@@ -193,6 +227,7 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
       final isCreate = _myStore == null;
       final latitude = double.parse(state.latitude);
       final longitude = double.parse(state.longitude);
+      final parsedDepositAmount = int.parse(state.depositAmount.trim());
       final payload = Store(
         id: _myStore?.id ?? '',
         ownerId: _myStore?.ownerId ?? '',
@@ -205,6 +240,8 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         contact: state.storeContact.trim(),
         naverPlaceId: _myStore?.naverPlaceId,
         operatingHours: state.operatingHours,
+        depositEnabled: state.depositEnabled,
+        depositAmount: parsedDepositAmount,
       );
 
       final savedStore = _myStore == null
