@@ -14,11 +14,9 @@ class InformationScreenRoot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 현재는 ViewModel을 사용하지 않으므로 기존 InformationScreen만 리턴합니다.
-    // 나중에 데이터 연동이 필요하면 여기서 ListenableBuilder 등을 사용하면 됩니다.
-    return const InformationScreen(
-      name: "가게 이름", // 임시 데이터
-      subtitle: "가게 설명",
+    return InformationScreen(
+      name: "가게 ID: $storeId",
+      subtitle: "상세 정보를 불러오는 중입니다...",
       rating: 4.5,
     );
   }
