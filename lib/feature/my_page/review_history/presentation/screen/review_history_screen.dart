@@ -70,9 +70,13 @@ class _ReviewHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final storeTitle = review.storeName.isEmpty ? review.storeId : review.storeName;
+    final storeTitle = review.storeName.isEmpty
+        ? review.storeId
+        : review.storeName;
     final dateText = formatDotDate(review.createdAt);
-    final reviewText = review.content.isEmpty ? '작성한 리뷰 내용이 없습니다.' : review.content;
+    final reviewText = review.content.isEmpty
+        ? '작성한 리뷰 내용이 없습니다.'
+        : review.content;
 
     return Material(
       color: Colors.transparent,
@@ -500,7 +504,8 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
                   ...List.generate(5, (index) {
                     final value = index + 1;
                     return IconButton(
-                      onPressed: () => setState(() => _rating = value.toDouble()),
+                      onPressed: () =>
+                          setState(() => _rating = value.toDouble()),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: Icon(

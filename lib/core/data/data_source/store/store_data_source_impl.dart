@@ -26,9 +26,13 @@ class StoreDataSourceImpl implements StoreDataSource {
 
   @override
   Future<StoreDto> createStore(StoreDto storeDto) async {
+    final payload = storeDto.toJson()
+      ..remove('id')
+      ..remove('created_at');
+
     final json = await _supabaseClient
         .from('stores')
-        .insert(storeDto.toJson())
+        .insert(payload)
         .select()
         .single();
 
@@ -37,9 +41,13 @@ class StoreDataSourceImpl implements StoreDataSource {
 
   @override
   Future<StoreDto> updateStoreById(String id, StoreDto storeDto) async {
+    final payload = storeDto.toJson()
+      ..remove('id')
+      ..remove('created_at');
+
     final json = await _supabaseClient
         .from('stores')
-        .update(storeDto.toJson())
+        .update(payload)
         .eq('id', id)
         .select()
         .single();
