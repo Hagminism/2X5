@@ -36,6 +36,8 @@ class Routes {
   static const String partnerHome = '/partner/home';
   static const String partnerStore = '/partner/store';
   static const String partnerAddressSearch = 'address-search';
+  static const String partnerStoreMenus = 'menus';
+  static const String partnerStoreImages = 'images';
   static const String partnerOnboarding = '/partner/onboarding';
   static const String partnerStoreEdit = '/partner/store/edit';
   static const String partnerReservations = '/partner/reservations';
