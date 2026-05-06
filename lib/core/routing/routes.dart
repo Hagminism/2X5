@@ -19,8 +19,11 @@ class Routes {
   // Common nested paths
   static const String search = 'search';
   static const String notifications = 'notifications';
-  static const String homeStoreDetail = 'store/:storeId';
+  static const String homeStoreInformation = 'information/:storeId';
   static const String bookmarkStoreDetail = 'store/:storeId';
+
+  // reservation
+  static const String reservation = 'reservation';
 
   // My page nested paths
   static const String profileEdit = 'profile-edit';
@@ -32,7 +35,7 @@ class Routes {
   static const String terms = 'terms';
   static const String inquiry = 'inquiry';
 
-  // Partner
+// Partner
   static const String partnerHome = '/partner/home';
   static const String partnerStore = '/partner/store';
   static const String partnerAddressSearch = 'address-search';

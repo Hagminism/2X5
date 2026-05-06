@@ -50,6 +50,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 
 GetIt getIt = GetIt.instance;
 
@@ -239,4 +240,8 @@ void diSetup() {
       storeReviewService: getIt<StoreReviewService>(),
     ),
   );
+  getIt.registerFactory<InformationViewModel>(
+        () => InformationViewModel(),
+  );
+
 }
