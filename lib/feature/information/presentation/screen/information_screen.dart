@@ -5,13 +5,14 @@ import 'package:go_router/go_router.dart';
 import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
 
-class StoreDetailScreen extends StatefulWidget {
+// 🛠️ 클래스명을 InformationScreen으로 유지
+class InformationScreen extends StatefulWidget {
   final String name;
   final String subtitle;
   final double rating;
   final String? imageUrl;
 
-  const StoreDetailScreen({
+  const InformationScreen({
     required this.name,
     required this.subtitle,
     required this.rating,
@@ -20,10 +21,11 @@ class StoreDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<StoreDetailScreen> createState() => _StoreDetailScreenState();
+  State<InformationScreen> createState() => _InformationScreenState();
 }
 
-class _StoreDetailScreenState extends State<StoreDetailScreen>
+// 🛠️ State 클래스명도 Information으로 통일
+class _InformationScreenState extends State<InformationScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final PageController _sliderController = PageController();
@@ -44,6 +46,7 @@ class _StoreDetailScreenState extends State<StoreDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 🛠️ 상준 님이 개발하신 이미지 슬라이더 기능 유지
     final List<String?> sliderImages = [widget.imageUrl, null, null];
 
     return Scaffold(

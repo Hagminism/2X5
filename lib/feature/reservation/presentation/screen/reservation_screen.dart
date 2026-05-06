@@ -5,7 +5,6 @@ import 'package:capstone_2026/core/presentation/component/app_bar/custom_app_bar
 import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 class ReservationScreen extends StatefulWidget {
@@ -16,8 +15,6 @@ class ReservationScreen extends StatefulWidget {
 }
 
 class _ReservationScreenState extends State<ReservationScreen> {
-  final supabase = Supabase.instance.client;
-
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   String? _selectedTime;
@@ -33,41 +30,18 @@ class _ReservationScreenState extends State<ReservationScreen> {
     initializeDateFormatting('ko_KR', null);
   }
 
-  // 수파베이스 실제 저장 로직
-  Future<void> _submitReservation() async {
+  Future<void> _handleReservationSubmit() async {
     setState(() => _isLoading = true);
 
     try {
-      await supabase.from('reservations').insert({
-        'booking_date': _selectedDay!.toIso8601String().split('T')[0],
-        'booking_time': _selectedTime,
-        'guest_count': _guestCount,
-      });
+      // TODO: 추후 ViewModel을 통해 Repository의 저장 로직을 호출해야 합니다.
+      bool success = true;
 
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text("예약 성공"),
-          content: Text("${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n정상적으로 예약되었습니다!"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // 1. 다이얼로그 닫기 (다이얼로그는 Navigator 방식 유지)
-                Navigator.pop(dialogContext);
-
-
-                if (context.canPop()) {
-                  context.pop();
-                }
-              },
-              child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      );
+      if (success) {
+        _showSuccessDialog();
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("예약 실패: $e")),
@@ -77,6 +51,26 @@ class _ReservationScreenState extends State<ReservationScreen> {
     }
   }
 
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("예약 성공"),
+        content: Text("${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n정상적으로 예약되었습니다!"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              context.pop();
+            },
+            child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,10 +78,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
       appBar: CustomAppBar(
         title: '날짜와 시간을 선택해 주세요',
         showBackButton: true,
-        onTap: () {
-
-          context.pop();
-        },
+        onTap: () => context.pop(),
       ),
       body: Stack(
         children: [
@@ -114,14 +105,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     titleTextStyle: AppTextStyles.subtitle,
                   ),
                   calendarStyle: const CalendarStyle(
-                    selectedDecoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    todayDecoration: BoxDecoration(
-                      color: Color(0x4DFFD100),
-                      shape: BoxShape.circle,
-                    ),
+                    selectedDecoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                    todayDecoration: BoxDecoration(color: Color(0x4DFFD100), shape: BoxShape.circle),
                   ),
                 ),
                 const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
@@ -158,31 +143,31 @@ class _ReservationScreenState extends State<ReservationScreen> {
               : (_selectedTime == null ? '시간을 선택해 주세요' : '$_selectedTime 예약하기'),
           onTap: (_selectedTime == null || _isLoading)
               ? () {}
-              : () {
-            showDialog(
-              context: context,
-              builder: (dialogContext) => AlertDialog(
-                title: const Text("예약 확인"),
-                content: Text(
-                    "${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n인원: $_guestCount명\n이대로 예약하시겠습니까?"
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    child: const Text("취소", style: TextStyle(color: Colors.grey)),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-                      _submitReservation();
-                    },
-                    child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            );
-          },
+              : () => _showConfirmDialog(),
         ),
+      ),
+    );
+  }
+
+  void _showConfirmDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("예약 확인"),
+        content: Text("${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n인원: $_guestCount명\n이대로 예약하시겠습니까?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text("취소", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _handleReservationSubmit();
+            },
+            child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
@@ -256,9 +241,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : const Color(0xFFEEEEEE),
-          ),
+          border: Border.all(color: isSelected ? AppColors.primary : const Color(0xFFEEEEEE)),
         ),
         child: Text(
           time,

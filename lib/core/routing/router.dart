@@ -41,7 +41,10 @@ import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partn
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
-import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart'; // 🛠️ 추가
+import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
+// 🛠️ Detail 대신 Information 폴더 참조로 변경
+import 'package:capstone_2026/feature/information/presentation/screen/information_screen_root.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -110,21 +113,20 @@ final router = GoRouter(
                   builder: (context, state) => const SearchScreen(),
                 ),
                 GoRoute(
-                  name: 'storeDetail',
+                  name: 'information', // 🛠️ 경로명 변경
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: Routes.homeStoreDetail, // 'store/:storeId'
+                  path: 'information/:storeId', // 🛠️ Routes.homeStoreDetail 대신 명시적 경로 사용 권장
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    return StoreDetailScreenRoot(
-                      viewModel: getIt<StoreDetailViewModel>(),
+                    return InformationScreenRoot( // 🛠️ 클래스명 변경
+                      viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
                     );
                   },
-                  // 예약 화면을 상세 페이지의 하위 경로로 추가
                   routes: [
                     GoRoute(
-                      path: Routes.reservation, // 'reservation'
-                      parentNavigatorKey: _rootNavigatorKey, // 바텀바 숨김 처리
+                      path: Routes.reservation,
+                      parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) => const ReservationScreen(),
                     ),
                   ],
@@ -297,7 +299,6 @@ final router = GoRouter(
   ]),
 );
 
-// 리다이렉트 로직
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final currentUser = getIt<AuthRepository>().getCurrentUser();
   final registrationNotifier = getIt<UserRegistrationStatusNotifier>();

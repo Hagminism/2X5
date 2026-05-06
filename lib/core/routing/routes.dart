@@ -19,7 +19,7 @@ class Routes {
   // Common nested paths
   static const String search = 'search';
   static const String notifications = 'notifications';
-  static const String homeStoreDetail = 'store/:storeId';
+  static const String homeStoreInformation = 'information/:storeId';
   static const String bookmarkStoreDetail = 'store/:storeId';
 
   // reservation
