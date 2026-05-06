@@ -218,7 +218,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       storeName: storeName,
       rating: review.rating,
       content: review.content,
-      imageUrls: const [],
+      imageUrls: List<String>.from(review.imagePaths),
       createdAt: DateTime.now(),
       visitPurpose: review.visitTag,
     );
@@ -230,6 +230,75 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     _mockReviewsByStoreId[storeId] = storeReviews;
 
     return mockReview;
+  }
+
+  @override
+  Future<InternalReview> updateReview({
+    required String reviewId,
+    required ReviewWriteResult review,
+  }) async {
+    for (final entry in _mockReviewsByStoreId.entries) {
+      final reviews = List<InternalReview>.from(entry.value);
+      final index = reviews.indexWhere((item) => item.id == reviewId);
+      if (index == -1) {
+        continue;
+      }
+
+      final current = reviews[index];
+      final updated = InternalReview(
+        id: current.id,
+        storeId: current.storeId,
+        userId: current.userId,
+        userName: current.userName,
+        storeName: current.storeName,
+        rating: review.rating,
+        content: review.content,
+        imageUrls: current.imageUrls,
+        createdAt: current.createdAt,
+        visitPurpose: review.visitTag,
+      );
+
+      reviews[index] = updated;
+      _mockReviewsByStoreId[entry.key] = reviews;
+      return updated;
+    }
+
+    final rows = await _supabase
+        .from('reviews')
+        .update({
+          'rating': review.rating,
+          'content': review.content,
+          'visit_purpose': review.visitTag,
+        })
+        .eq('id', reviewId)
+        .select(
+          'id, store_id, user_id, user_name, store_name, rating, content, image_urls, created_at, visit_purpose',
+        )
+        .limit(1);
+
+    final reviews = _mapReviewRows(rows);
+    if (reviews.isEmpty) {
+      throw StateError('Review not found: $reviewId');
+    }
+
+    return reviews.first;
+  }
+
+  @override
+  Future<void> deleteReview({
+    required String reviewId,
+  }) async {
+    for (final entry in _mockReviewsByStoreId.entries) {
+      final reviews = List<InternalReview>.from(entry.value);
+      final originalLength = reviews.length;
+      reviews.removeWhere((item) => item.id == reviewId);
+      if (reviews.length != originalLength) {
+        _mockReviewsByStoreId[entry.key] = reviews;
+        return;
+      }
+    }
+
+    await _supabase.from('reviews').delete().eq('id', reviewId);
   }
 
   Future<List<InternalReview>> _fetchSupabaseStoreReviews({
