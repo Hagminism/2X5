@@ -49,8 +49,7 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
           child: ElevatedButton(
             onPressed: () {
-              // 🛠️ 수정: 현재 상세페이지 경로 뒤에 'reservation'을 붙여서 이동합니다.
-              // 예: /home/store/123 -> /home/store/123/reservation
+
               final String currentLocation = GoRouterState.of(context).matchedLocation;
               context.push('$currentLocation/${Routes.reservation}');
 

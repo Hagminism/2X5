@@ -118,14 +118,23 @@ final router = GoRouter(
                   builder: (context, state) => const SearchScreen(),
                 ),
                 GoRoute(
-                  name: 'information', 
+                  name: 'information',
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: 'information/:storeId', // 
+                  path: 'information/:storeId',
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    return InformationScreenRoot( 
+
+                    // state.extra가 null일 경우를 대비해 빈 Map을 기본값으로 설정
+                    final Map<String, dynamic> extraData = state.extra as Map<String, dynamic>? ?? {};
+
+                    return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
+                      // 데이터가 없을 경우를 대비해 '이름 없음' 등의 기본 텍스트 설정
+                      name: extraData['name']?.toString() ?? '가게 이름 없음',
+                      subtitle: extraData['subtitle']?.toString() ?? '',
+                      // rating이 int로 들어와도 double로 안전하게 변환
+                      rating: (extraData['rating'] as num?)?.toDouble() ?? 0.0,
                     );
                   },
                   routes: [

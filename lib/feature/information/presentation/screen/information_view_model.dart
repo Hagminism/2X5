@@ -1,5 +1,23 @@
 import 'package:flutter/material.dart';
 
 class InformationViewModel extends ChangeNotifier {
-  // 나중에 데이터 로드 로직이 필요하면 여기에 추가
+  String? _name;
+  String? _subtitle;
+  double? _rating;
+
+  // getter들이 필드 값을 제대로 반환하는지 확인
+  String get name => _name ?? "";
+  String get subtitle => _subtitle ?? "";
+  double get rating => _rating ?? 0.0;
+
+  void setInitialData({
+    required String name,
+    required String subtitle,
+    required double rating,
+  }) {
+    _name = name;
+    _subtitle = subtitle;
+    _rating = rating;
+    notifyListeners(); // 이 부분이 호출되어야 ListenableBuilder가 화면을 다시 그립니다.
+  }
 }
