@@ -167,8 +167,10 @@ class ReviewAiSummaryGenerator {
     final sentimentScore = sentimentTotal == 0
         ? 0.9
         : positiveSignals / sentimentTotal;
-    final positiveRatio = (ratingScore * 0.7 + sentimentScore * 0.3)
-        .clamp(0.05, 0.99);
+    final positiveRatio = (ratingScore * 0.7 + sentimentScore * 0.3).clamp(
+      0.05,
+      0.99,
+    );
 
     return ReviewAiSummary(
       oneLine: _buildOneLine(

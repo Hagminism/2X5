@@ -102,7 +102,7 @@ class _SelectAuthProviderScreenRootState
             switch (action) {
               case TapBackButton():
               case TapSignIn():
-                context.pop();
+                context.go(Routes.signIn);
                 break;
               case TapSignUpWithEmailButton():
                 // 화면 연결 보기 위해 임시로 연결.

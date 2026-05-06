@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -10,12 +11,15 @@ import 'package:url_launcher/url_launcher.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final FirebaseFunctions _firebaseFunctions;
 
   const AuthRepositoryImpl({
     required FirebaseAuth firebaseAuth,
     required GoogleSignIn googleSignIn,
+    required FirebaseFunctions firebaseFunctions,
   }) : _firebaseAuth = firebaseAuth,
-       _googleSignIn = googleSignIn;
+       _googleSignIn = googleSignIn,
+       _firebaseFunctions = firebaseFunctions;
 
   @override
   Future<void> signInWithGoogle() async {
@@ -233,8 +237,17 @@ class AuthRepositoryImpl implements AuthRepository {
       throw Exception('지원하지 않는 인증 수단입니다.');
     }
 
-    // 3. Firebase에서 해당 사용자 삭제
+    // 3. Functions를 통해 Supabase 데이터 삭제
+    final callable = _firebaseFunctions.httpsCallable(
+      'deleteAccountWithDataCleanup',
+    );
+    await callable();
+
+    // 4. Firebase 사용자 삭제
     await currentUser.delete();
+
+    // 5. 로컬 세션 정리
+    await _firebaseAuth.signOut();
   }
 
   @override

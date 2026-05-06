@@ -49,7 +49,8 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     HomeSearchBar(
-                      onTap: () => context.go('${Routes.home}/${Routes.search}'),
+                      onTap: () =>
+                          context.go('${Routes.home}/${Routes.search}'),
                     ),
                     const SizedBox(height: 20),
                     HomeSectionContainer(

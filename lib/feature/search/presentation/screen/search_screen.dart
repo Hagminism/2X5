@@ -64,13 +64,15 @@ class _SearchScreenState extends State<SearchScreen> {
       final response = await supabase
           .from('stores')
           .select()
-          .or('name.ilike.%$query%,address.ilike.%$query%,naver_place_id.ilike.%$query%')
+          .or(
+            'name.ilike.%$query%,address.ilike.%$query%,naver_place_id.ilike.%$query%',
+          )
           .limit(50);
 
       final results = List<Map<String, dynamic>>.from(response);
       final grouped = _groupByCategory(results);
 
-       if (!mounted) return;
+      if (!mounted) return;
 
       setState(() {
         _categorizedResults = grouped;
@@ -108,56 +110,58 @@ class _SearchScreenState extends State<SearchScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _categorizedResults.isEmpty
-              ? const Center(child: Text('검색어를 입력하세요'))
-              : ListView.builder(
-                  itemCount: _categorizedResults.length,
-                  itemBuilder: (context, index) {
-                    final categories = _categorizedResults.keys.toList();
-                    final category = categories[index];
-                    final stores = _categorizedResults[category]!;
-                    final categoryLabel = categoryInfo[category]?['label'] ?? category;
+          ? const Center(child: Text('검색어를 입력하세요'))
+          : ListView.builder(
+              itemCount: _categorizedResults.length,
+              itemBuilder: (context, index) {
+                final categories = _categorizedResults.keys.toList();
+                final category = categories[index];
+                final stores = _categorizedResults[category]!;
+                final categoryLabel =
+                    categoryInfo[category]?['label'] ?? category;
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 카테고리 헤더
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                          child: Text(
-                            '$categoryLabel (${stores.length})',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 카테고리 헤더
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Text(
+                        '$categoryLabel (${stores.length})',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                        // 카테고리 내 가게 리스트
-                        ...stores.map((store) {
-                          final storeName = store['name'] ?? '이름 없음';
-                          final storeAddress = store['address'] ?? '주소 없음';
+                      ),
+                    ),
+                    // 카테고리 내 가게 리스트
+                    ...stores.map((store) {
+                      final storeName = store['name'] ?? '이름 없음';
+                      final storeAddress = store['address'] ?? '주소 없음';
 
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            title: Text(storeName),
-                            subtitle: Text(
-                              storeAddress,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            onTap: () {
-                              // 업장 상세로 이동 (나중에 구현)
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('$storeName 선택됨')),
-                              );
-                            },
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        title: Text(storeName),
+                        subtitle: Text(
+                          storeAddress,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () {
+                          // 업장 상세로 이동 (나중에 구현)
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('$storeName 선택됨')),
                           );
-                        }).toList(),
-                      ],
-                    );
-                  },
-                ),
+                        },
+                      );
+                    }).toList(),
+                  ],
+                );
+              },
+            ),
     );
-  }}
+  }
+}
