@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
 
-// 🛠️ 클래스명을 InformationScreen으로 유지
+
 class InformationScreen extends StatefulWidget {
   final String name;
   final String subtitle;
@@ -24,7 +24,7 @@ class InformationScreen extends StatefulWidget {
   State<InformationScreen> createState() => _InformationScreenState();
 }
 
-// 🛠️ State 클래스명도 Information으로 통일
+
 class _InformationScreenState extends State<InformationScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
@@ -46,7 +46,7 @@ class _InformationScreenState extends State<InformationScreen>
 
   @override
   Widget build(BuildContext context) {
-    // 🛠️ 상준 님이 개발하신 이미지 슬라이더 기능 유지
+
     final List<String?> sliderImages = [widget.imageUrl, null, null];
 
     return Scaffold(

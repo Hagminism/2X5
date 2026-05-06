@@ -94,7 +94,7 @@ class HomeScreen extends StatelessWidget {
                     subtitle: item.subtitle,
                     rating: item.rating,
                     onTap: () {
-                      context.push('${Routes.home}/store/${item.storeId}');
+                      context.push('${Routes.home}/information/${item.storeId}');
                     },
                   );
                 },
