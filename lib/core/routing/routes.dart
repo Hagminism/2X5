@@ -40,4 +40,17 @@ class Routes {
   static const String partnerStoreEdit = '/partner/store/edit';
   static const String partnerReservations = '/partner/reservations';
   static const String partnerMyPage = '/partner/mypage';
+
+  /// Partner 마이페이지 하위 경로 (customer `myPage` 하위와 심볼·세그먼트 분리)
+  static const String partnerMyPageNotifications = 'partner-notifications';
+  static const String partnerMyPageProfileEdit = 'partner-profile-edit';
+  static const String partnerMyPageReservationHistory =
+      'partner-history-reservations';
+  static const String partnerMyPageReviewHistory = 'partner-history-reviews';
+  static const String partnerMyPageAccountSettings = 'partner-account-settings';
+  static const String partnerMyPageNotificationSettings =
+      'partner-settings-notifications';
+  static const String partnerMyPageInquiry = 'partner-inquiry';
+  static const String partnerMyPageNotices = 'partner-notices';
+  static const String partnerMyPageTerms = 'partner-terms';
 }
