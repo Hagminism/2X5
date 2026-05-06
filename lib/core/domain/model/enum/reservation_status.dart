@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 enum ReservationStatus {
   pending,
   confirmed,
@@ -27,12 +29,6 @@ enum ReservationStatus {
       return null;
     }
 
-    for (final status in values) {
-      if (status.dbValue == value) {
-        return status;
-      }
-    }
-
-    return null;
+    return values.firstWhereOrNull((status) => status.dbValue == value);
   }
 }

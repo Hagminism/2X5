@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+
 enum StoreCategory {
   restaurant,
   cafe,
@@ -20,11 +22,8 @@ enum StoreCategory {
   };
 
   static StoreCategory? fromDbValue(String value) {
-    for (final category in StoreCategory.values) {
-      if (category.dbValue == value) {
-        return category;
-      }
-    }
-    return null;
+    return StoreCategory.values.firstWhereOrNull(
+      (category) => category.dbValue == value,
+    );
   }
 }
