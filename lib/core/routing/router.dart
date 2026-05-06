@@ -107,12 +107,16 @@ final router = GoRouter(
                   builder: (context, state) => const SearchScreen(),
                 ),
                 GoRoute(
+                  name: 'storeDetail',
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: Routes.homeStoreDetail,
-                  builder: (context, state) => StoreDetailScreenRoot(
-                    viewModel: getIt<StoreDetailViewModel>(),
-                    storeId: state.pathParameters['storeId'] ?? '',
-                  ),
+                  path: Routes.homeStoreDetail, // 'store/:storeId'
+                  builder: (context, state) {
+                    final storeId = state.pathParameters['storeId'] ?? '';
+                    return StoreDetailScreenRoot(
+                      viewModel: getIt<StoreDetailViewModel>(),
+                      storeId: storeId,
+                    );
+                  },
                 ),
               ],
             ),

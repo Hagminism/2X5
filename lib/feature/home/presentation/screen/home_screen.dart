@@ -5,10 +5,8 @@ import 'package:capstone_2026/feature/home/presentation/component/home_search_ba
 import 'package:capstone_2026/feature/home/presentation/component/home_section_container.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_section_header.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_store_card.dart';
-import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:capstone_2026/feature/detail/presentation/screen/store_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -55,32 +53,24 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     HomeSectionContainer(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('카테고리', style: AppTextStyles.label),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 92,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _categories.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(width: 10),
-                              itemBuilder: (context, index) {
-                                final item = _categories[index];
-                                return HomeCategoryCard(
-                                  title: item.title,
-                                  icon: item.icon,
-                                  onTap: () => _showSoonMessage(
-                                    context,
-                                    '${item.title} 카테고리 상세는 추후 연결됩니다.',
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                      child: SizedBox(
+                        height: 92,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _categories.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 10),
+                          itemBuilder: (context, index) {
+                            final item = _categories[index];
+                            return HomeCategoryCard(
+                              title: item.title,
+                              icon: item.icon,
+                              onTap: () => _showSoonMessage(
+                                context,
+                                '${item.title} 카테고리 상세는 추후 연결됩니다.',
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -102,25 +92,16 @@ class HomeScreen extends StatelessWidget {
                     name: item.name,
                     subtitle: item.subtitle,
                     rating: item.rating,
-                    // 기존 go_router 방식은 나중에 참고용으로 주석 처리해 둡니다.
-                    /*
-                  onTap: () =>
-                   context.go('${Routes.home}/store/${item.storeId}'),
-    */
                     onTap: () {
-                      // 라우터 설정 없이 바로 상세 페이지 띄우기
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => StoreDetailScreen(
-                            name: item.name,
-                            subtitle: item.subtitle,
-                            rating: item.rating,
-                          ),
-                        ),
+                      // ✅ 수정: pushNamed를 사용하여 정확한 경로 파라미터를 전달합니다.
+                      // router.dart에서 해당 경로에 name: 'storeDetail'이 설정되어 있어야 합니다.
+                      context.pushNamed(
+                        'storeDetail',
+                        pathParameters: {'storeId': item.storeId},
                       );
                     },
-                  ); // HomeStoreCard 닫기
-                }, // itemBuilder 닫기,
+                  );
+                },
                 separatorBuilder: (_, _) => const SizedBox(height: 12),
               ),
             ),

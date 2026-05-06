@@ -12,7 +12,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required NaverStoreSearchDataSource naverStoreSearchDataSource,
     required SupabaseClient supabase,
   }) : _naverStoreSearchDataSource = naverStoreSearchDataSource,
-       _supabase = supabase;
+        _supabase = supabase;
 
   final NaverStoreSearchDataSource _naverStoreSearchDataSource;
   final SupabaseClient _supabase;
@@ -123,7 +123,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       return StoreReviewLinkTarget(
         appUri: Uri.parse(
           'nmap://place?id=${Uri.encodeComponent(placeId)}'
-          '&appname=${Uri.encodeComponent(_packageName)}',
+              '&appname=${Uri.encodeComponent(_packageName)}',
         ),
         webUri: Uri.parse(
           'https://m.place.naver.com/place/$placeId/review/visitor',
@@ -147,7 +147,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     return StoreReviewLinkTarget(
       appUri: Uri.parse(
         'nmap://search?query=${Uri.encodeComponent(info.roadAddress)}'
-        '&appname=${Uri.encodeComponent(_packageName)}',
+            '&appname=${Uri.encodeComponent(_packageName)}',
       ),
       webUri: Uri.parse(
         info.link.isNotEmpty ? info.link : fallbackWebUri.toString(),
@@ -240,8 +240,9 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       final rows = await _supabase
           .from('reviews')
           .select(
-            'id, store_id, user_id, user_name, store_name, rating, content, image_urls, created_at, visit_purpose',
-          )
+        // user_name 컬럼이 현재 DB에 없어 에러를 유발하므로 임시 주석 처리함
+        'id, store_id, user_id, store_name, rating, content, image_urls, created_at, visit_purpose',
+      )
           .eq('store_id', storeId)
           .eq('is_visible', true)
           .order('created_at', ascending: false)
@@ -264,8 +265,9 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       final rows = await _supabase
           .from('reviews')
           .select(
-            'id, store_id, user_id, user_name, store_name, rating, content, image_urls, created_at, visit_purpose',
-          )
+        // user_name 컬럼 임시 주석 처리
+        'id, store_id, user_id, /* user_name, */ store_name, rating, content, image_urls, created_at, visit_purpose',
+      )
           .eq('user_id', userId)
           .order('created_at', ascending: false)
           .limit(limit);
@@ -286,7 +288,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
         .whereType<Map>()
         .map(
           (row) => InternalReview.fromSupabase(Map<String, dynamic>.from(row)),
-        )
+    )
         .toList();
   }
 
