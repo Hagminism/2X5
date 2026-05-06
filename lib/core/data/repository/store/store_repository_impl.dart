@@ -1,5 +1,7 @@
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
 import 'package:capstone_2026/core/data/mapper/store/store_mapper.dart';
+import 'package:capstone_2026/core/domain/model/store/store_image.dart';
+import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
@@ -71,6 +73,104 @@ class StoreRepositoryImpl implements StoreRepository {
     return updatedStore.toModel();
   }
 
+  @override
+  Future<List<StoreMenu>> getMyStoreMenus() async {
+    final store = await getMyStore();
+    if (store == null) {
+      return const [];
+    }
+    return _storeDataSource.findMenusByStoreId(store.id);
+  }
+
+  @override
+  Future<List<StoreImage>> getMyStoreImages() async {
+    final store = await getMyStore();
+    if (store == null) {
+      return const [];
+    }
+    return _storeDataSource.findImagesByStoreId(store.id);
+  }
+
+  @override
+  Future<void> syncMyStoreMenus(List<StoreMenu> menus) async {
+    final store = await getMyStore();
+    if (store == null) {
+      throw StateError('업장 정보 저장 후 메뉴를 설정할 수 있습니다.');
+    }
+
+    final normalizedMenus = List<StoreMenu>.generate(
+      menus.length,
+      (index) => menus[index].copyWith(sortOrder: index),
+    );
+    final existingMenus = await _storeDataSource.findMenusByStoreId(store.id);
+    final existingById = {
+      for (final menu in existingMenus)
+        if (menu.id != null) menu.id!: menu,
+    };
+    final nextIds = <String>{};
+
+    for (final menu in normalizedMenus) {
+      _validateMenu(menu);
+      if (menu.id == null || !existingById.containsKey(menu.id)) {
+        await _storeDataSource.createMenu(store.id, menu);
+      } else {
+        nextIds.add(menu.id!);
+        await _storeDataSource.updateMenuById(menu.id!, menu);
+      }
+    }
+
+    final deletedIds = existingById.keys
+        .where((id) => !nextIds.contains(id))
+        .toList();
+    await _storeDataSource.deleteMenusByIds(deletedIds);
+  }
+
+  @override
+  Future<void> syncMyStoreImages(List<StoreImage> images) async {
+    final store = await getMyStore();
+    if (store == null) {
+      throw StateError('업장 정보 저장 후 사진을 설정할 수 있습니다.');
+    }
+
+    final normalizedImages = List<StoreImage>.generate(
+      images.length,
+      (index) => images[index].copyWith(sortOrder: index),
+    );
+    _validateImages(normalizedImages);
+    final existingImages = await _storeDataSource.findImagesByStoreId(store.id);
+    final existingById = {
+      for (final image in existingImages)
+        if (image.id != null) image.id!: image,
+    };
+    final nextIds = <String>{};
+
+    for (final image in normalizedImages) {
+      if (image.id == null || !existingById.containsKey(image.id)) {
+        await _storeDataSource.createImage(store.id, image);
+      } else {
+        nextIds.add(image.id!);
+        await _storeDataSource.updateImageById(image.id!, image);
+      }
+    }
+
+    final deletedIds = existingById.keys
+        .where((id) => !nextIds.contains(id))
+        .toList();
+    await _storeDataSource.deleteImagesByIds(deletedIds);
+  }
+
+  @override
+  Future<String> uploadMyStoreImageFile(String filePath) async {
+    final store = await getMyStore();
+    if (store == null) {
+      throw StateError('업장 정보 저장 후 이미지를 업로드할 수 있습니다.');
+    }
+    return _storeDataSource.uploadImageFile(
+      storeId: store.id,
+      filePath: filePath,
+    );
+  }
+
   String _getCurrentUidOrThrow() {
     final uid = _authRepository.getCurrentUser()?.uid;
     if (uid == null || uid.isEmpty) {
@@ -111,6 +211,40 @@ class StoreRepositoryImpl implements StoreRepository {
 
     if (!_operatingHoursValidator.isValid(store.operatingHours)) {
       throw ArgumentError('운영시간 형식이 올바르지 않습니다.');
+    }
+
+    if (store.depositAmount < 0) {
+      throw ArgumentError('예약금은 0원 이상이어야 합니다.');
+    }
+    if (!store.depositEnabled && store.depositAmount != 0) {
+      throw ArgumentError('예약금을 사용하지 않으면 금액은 0원이어야 합니다.');
+    }
+    if (store.depositEnabled && store.depositAmount <= 0) {
+      throw ArgumentError('예약금을 사용하면 금액은 0원보다 커야 합니다.');
+    }
+  }
+
+  void _validateMenu(StoreMenu menu) {
+    if (menu.name.trim().isEmpty) {
+      throw ArgumentError('메뉴명은 필수입니다.');
+    }
+    if (menu.price < 0) {
+      throw ArgumentError('메뉴 금액은 0원 이상이어야 합니다.');
+    }
+  }
+
+  void _validateImages(List<StoreImage> images) {
+    var coverCount = 0;
+    for (final image in images) {
+      if (image.imageUrl.trim().isEmpty) {
+        throw ArgumentError('사진 URL은 비워둘 수 없습니다.');
+      }
+      if (image.isCover) {
+        coverCount += 1;
+      }
+    }
+    if (coverCount > 1) {
+      throw ArgumentError('대표 사진은 1개만 설정할 수 있습니다.');
     }
   }
 }
