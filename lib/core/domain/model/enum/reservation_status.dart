@@ -3,7 +3,8 @@ enum ReservationStatus {
   confirmed,
   cancelled,
   noShow,
-  completed;
+  completed
+  ;
 
   String get dbValue => switch (this) {
     ReservationStatus.pending => 'pending',

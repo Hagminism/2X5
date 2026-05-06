@@ -48,7 +48,9 @@ class PartnerReservationDateFilterChip extends StatelessWidget {
               Text(
                 isSelected ? formatDate(selectedDate!) : '날짜 선택',
                 style: AppTextStyles.label.copyWith(
-                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
                 ),
               ),
               if (isSelected) ...[

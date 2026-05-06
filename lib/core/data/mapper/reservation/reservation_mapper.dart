@@ -11,7 +11,8 @@ extension ReservationDtoMapper on ReservationDto {
       guestCount: guestCount ?? 1,
       createdAt: _parseDateTime(createdAt),
       customerRequest: customerRequest,
-      status: ReservationStatus.fromDbValue(status) ?? ReservationStatus.pending,
+      status:
+          ReservationStatus.fromDbValue(status) ?? ReservationStatus.pending,
       totalPrice: totalPrice ?? 0,
       updatedAt: _parseDateTime(updatedAt),
       storeId: storeId ?? '',

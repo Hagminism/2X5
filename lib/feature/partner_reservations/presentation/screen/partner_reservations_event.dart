@@ -7,6 +7,7 @@ sealed class PartnerReservationsEvent with _$PartnerReservationsEvent {
   const factory PartnerReservationsEvent.showMessage(String message) =
       ShowMessage;
 
-  const factory PartnerReservationsEvent.openDatePicker(DateTime? selectedDate) =
-      OpenDatePicker;
+  const factory PartnerReservationsEvent.openDatePicker(
+    DateTime? selectedDate,
+  ) = OpenDatePicker;
 }

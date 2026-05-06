@@ -43,7 +43,8 @@ class PartnerMyPageScreen extends StatelessWidget {
                   PartnerMyMenuTile(
                     title: '계정 설정',
                     icon: Icons.person_outline,
-                    onTap: () => onAction(PartnerMyPageAction.tapAccountSettings()),
+                    onTap: () =>
+                        onAction(PartnerMyPageAction.tapAccountSettings()),
                   ),
                   PartnerMyMenuTile(
                     title: '알림 설정',

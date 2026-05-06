@@ -103,7 +103,8 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                   ...List.generate(5, (index) {
                     final value = index + 1;
                     return IconButton(
-                      onPressed: () => setState(() => _rating = value.toDouble()),
+                      onPressed: () =>
+                          setState(() => _rating = value.toDouble()),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: Icon(

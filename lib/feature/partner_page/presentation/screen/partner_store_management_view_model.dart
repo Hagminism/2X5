@@ -129,7 +129,9 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
       _myStore = await myStoreFuture;
 
       if (_myStore != null) {
-        final operatingHours = _normalizeOperatingHours(_myStore!.operatingHours);
+        final operatingHours = _normalizeOperatingHours(
+          _myStore!.operatingHours,
+        );
         _state = state.copyWith(
           isLoadingInitialData: false,
           isFormVisible: true,

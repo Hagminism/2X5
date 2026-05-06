@@ -342,7 +342,9 @@ class PartnerStoreManagementScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '시작 시간과 종료 시간은 같을 수 없습니다.',
-            style: AppTextStyles.bodySecondary.copyWith(color: AppColors.danger),
+            style: AppTextStyles.bodySecondary.copyWith(
+              color: AppColors.danger,
+            ),
           ),
         ],
       ],
@@ -369,40 +371,40 @@ class PartnerStoreManagementScreen extends StatelessWidget {
           onTap: !enabled
               ? null
               : () async {
-            final selected = await showTimePicker(
-              context: context,
-              initialTime: _toInitialTime(value),
-              builder: (context, child) {
-                final baseTheme = Theme.of(context);
-                return Theme(
-                  data: baseTheme.copyWith(
-                    colorScheme: baseTheme.colorScheme.copyWith(
-                      primary: AppColors.primary,
-                      onPrimary: AppColors.white,
-                      surface: AppColors.white,
-                      onSurface: AppColors.textPrimary,
-                    ),
-                    dialogTheme: const DialogThemeData(
-                      backgroundColor: AppColors.white,
-                    ),
-                    timePickerTheme: const TimePickerThemeData(
-                      backgroundColor: AppColors.white,
-                      hourMinuteColor: AppColors.signInTextField,
-                      hourMinuteTextColor: AppColors.textPrimary,
-                      dayPeriodColor: AppColors.signInTextField,
-                      dayPeriodTextColor: AppColors.textPrimary,
-                      dialHandColor: AppColors.primary,
-                      dialBackgroundColor: AppColors.signInTextField,
-                      entryModeIconColor: AppColors.primary,
-                    ),
-                  ),
-                  child: child!,
-                );
-              },
-            );
-            if (selected == null) return;
-            onSelected(_formatTime(selected));
-          },
+                  final selected = await showTimePicker(
+                    context: context,
+                    initialTime: _toInitialTime(value),
+                    builder: (context, child) {
+                      final baseTheme = Theme.of(context);
+                      return Theme(
+                        data: baseTheme.copyWith(
+                          colorScheme: baseTheme.colorScheme.copyWith(
+                            primary: AppColors.primary,
+                            onPrimary: AppColors.white,
+                            surface: AppColors.white,
+                            onSurface: AppColors.textPrimary,
+                          ),
+                          dialogTheme: const DialogThemeData(
+                            backgroundColor: AppColors.white,
+                          ),
+                          timePickerTheme: const TimePickerThemeData(
+                            backgroundColor: AppColors.white,
+                            hourMinuteColor: AppColors.signInTextField,
+                            hourMinuteTextColor: AppColors.textPrimary,
+                            dayPeriodColor: AppColors.signInTextField,
+                            dayPeriodTextColor: AppColors.textPrimary,
+                            dialHandColor: AppColors.primary,
+                            dialBackgroundColor: AppColors.signInTextField,
+                            entryModeIconColor: AppColors.primary,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (selected == null) return;
+                  onSelected(_formatTime(selected));
+                },
           child: Center(
             child: Text(
               value.isEmpty ? label : value,

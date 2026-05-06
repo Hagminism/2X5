@@ -70,7 +70,9 @@ class _SignUpCustomerScreenRootState extends State<SignUpCustomerScreenRoot> {
                 widget.viewModel.onAction(action);
                 break;
               case TapBackButton():
-                context.go('${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}');
+                context.go(
+                  '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
+                );
                 break;
             }
           },
