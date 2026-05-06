@@ -6,7 +6,7 @@ extension ReservationDtoMapper on ReservationDto {
   Reservation toModel() {
     return Reservation(
       id: id ?? '',
-      bookingDate: _parseDate(bookingDate),
+      bookingDate: _parseDateTime(bookingDate),
       bookingTime: bookingTime ?? '',
       guestCount: guestCount ?? 1,
       createdAt: _parseDateTime(createdAt),
@@ -18,14 +18,6 @@ extension ReservationDtoMapper on ReservationDto {
       storeId: storeId ?? '',
       userId: userId ?? '',
     );
-  }
-
-  DateTime _parseDate(String? value) {
-    if (value == null || value.isEmpty) {
-      return DateTime.now();
-    }
-
-    return DateTime.tryParse(value) ?? DateTime.now();
   }
 
   DateTime _parseDateTime(String? value) {
