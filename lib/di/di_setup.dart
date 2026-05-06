@@ -27,6 +27,8 @@ import 'package:capstone_2026/feature/find_password/presentation/screen/find_pas
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
@@ -179,9 +181,19 @@ void diSetup() {
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
   );
-  getIt.registerFactory<PartnerStoreManagementViewModel>(
+  getIt.registerLazySingleton<PartnerStoreManagementViewModel>(
     () => PartnerStoreManagementViewModel(
       ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
+      storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<PartnerStoreMenuViewModel>(
+    () => PartnerStoreMenuViewModel(
+      storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<PartnerStoreImageViewModel>(
+    () => PartnerStoreImageViewModel(
       storeRepository: getIt<StoreRepository>(),
     ),
   );

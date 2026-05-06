@@ -18,6 +18,10 @@ import 'package:capstone_2026/feature/partner_page/core/presentation/component/s
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_screen_root.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_image/core/presentation/component/scope/partner_store_image_scope.dart';
+import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_menu/core/presentation/component/scope/partner_store_menu_scope.dart';
+import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
@@ -265,6 +269,18 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => AddressSearchScreenRoot(
                     viewModel: getIt<AddressSearchViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerStoreMenus,
+                  builder: (context, state) => PartnerStoreMenuScope(
+                    viewModel: getIt<PartnerStoreMenuViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerStoreImages,
+                  builder: (context, state) => PartnerStoreImageScope(
+                    viewModel: getIt<PartnerStoreImageViewModel>(),
                   ),
                 ),
               ],
