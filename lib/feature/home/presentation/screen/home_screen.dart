@@ -93,12 +93,7 @@ class HomeScreen extends StatelessWidget {
                     subtitle: item.subtitle,
                     rating: item.rating,
                     onTap: () {
-                      // ✅ 수정: pushNamed를 사용하여 정확한 경로 파라미터를 전달합니다.
-                      // router.dart에서 해당 경로에 name: 'storeDetail'이 설정되어 있어야 합니다.
-                      context.pushNamed(
-                        'storeDetail',
-                        pathParameters: {'storeId': item.storeId},
-                      );
+                      context.push('${Routes.home}/store/${item.storeId}');
                     },
                   );
                 },

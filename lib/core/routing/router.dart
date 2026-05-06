@@ -120,7 +120,7 @@ final router = GoRouter(
                       storeId: storeId,
                     );
                   },
-                  // 🛠️ 예약 화면을 상세 페이지의 하위 경로로 추가
+                  // 예약 화면을 상세 페이지의 하위 경로로 추가
                   routes: [
                     GoRoute(
                       path: Routes.reservation, // 'reservation'
