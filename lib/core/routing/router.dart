@@ -5,7 +5,8 @@ import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen_root.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
-import 'package:capstone_2026/feature/partner_my_page/presentation/screen/partner_my_page_screen.dart';
+import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_screen_root.dart';
+import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/partner_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
@@ -284,7 +285,86 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.partnerMyPage,
-              builder: (context, state) => const PartnerMyPageScreen(),
+              builder: (context, state) => PartnerMyPageScreenRoot(
+                viewModel: getIt<PartnerMyPageViewModel>(),
+              ),
+              routes: [
+                GoRoute(
+                  path: Routes.partnerMyPageNotifications,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => const Scaffold(
+                    body: SafeArea(
+                      child: Center(child: Text('알림 페이지')),
+                    ),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerMyPageProfileEdit,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => const EditProfileScreen(),
+                ),
+                GoRoute(
+                  path: Routes.partnerMyPageReservationHistory,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => const Scaffold(
+                    body: SafeArea(
+                      child: Center(child: Text('이용 내역 페이지')),
+                    ),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerMyPageReviewHistory,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => ReviewHistoryScreenRoot(
+                    viewModel: getIt<ReviewHistoryViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerMyPageAccountSettings,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) {
+                    return AccountSettingScreenRoot(
+                      viewModel: getIt<AccountSettingViewModel>(),
+                    );
+                  },
+                ),
+                GoRoute(
+                  path: Routes.partnerMyPageNotificationSettings,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => const Scaffold(
+                    body: SafeArea(
+                      child: Center(child: Text('알림 설정 페이지')),
+                    ),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerMyPageInquiry,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => const Scaffold(
+                    body: SafeArea(
+                      child: Center(child: Text('1:1 문의 페이지')),
+                    ),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerMyPageNotices,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => const Scaffold(
+                    body: SafeArea(
+                      child: Center(child: Text('공지사항 페이지')),
+                    ),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerMyPageTerms,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => const Scaffold(
+                    body: SafeArea(
+                      child: Center(child: Text('이용약관 페이지')),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

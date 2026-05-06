@@ -30,6 +30,7 @@ import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_s
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
+import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_view_model.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
@@ -222,6 +223,9 @@ void diSetup() {
   );
   getIt.registerFactory<MyPageViewModel>(
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
+  );
+  getIt.registerFactory<PartnerMyPageViewModel>(
+    () => PartnerMyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<ReviewHistoryViewModel>(
     () => ReviewHistoryViewModel(
