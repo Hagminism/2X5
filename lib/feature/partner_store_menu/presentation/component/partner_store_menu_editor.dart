@@ -28,7 +28,7 @@ class PartnerStoreMenuEditor extends StatelessWidget {
         menu.imageUrl.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(14),
