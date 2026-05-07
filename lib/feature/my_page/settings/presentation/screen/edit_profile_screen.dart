@@ -108,7 +108,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       Row(
                         children: [
                           IconButton(
-                            onPressed: () => context.go(Routes.myPage),
+                            onPressed: () => context.pop(),
                             icon: const Icon(Icons.arrow_back_ios_new_rounded),
                           ),
                           const SizedBox(width: 4),

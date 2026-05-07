@@ -1,16 +1,20 @@
 import 'dart:async';
+import 'dart:math' as math;
 
+import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:capstone_2026/feature/home/presentation/component/home_search_bar.dart';
+import 'package:go_router/go_router.dart';
 import 'package:naver_maps_sdk_flutter/enum/naver_map_map_type_id.dart';
+import 'package:naver_maps_sdk_flutter/event/map_event.dart';
 import 'package:naver_maps_sdk_flutter/event/map_load_status_event.dart';
-import 'package:naver_maps_sdk_flutter/model/map_options.dart';
+import 'package:naver_maps_sdk_flutter/event/marker_event.dart';
 import 'package:naver_maps_sdk_flutter/model/html_icon.dart';
+import 'package:naver_maps_sdk_flutter/model/map_options.dart';
 import 'package:naver_maps_sdk_flutter/model/marker_options.dart';
 import 'package:naver_maps_sdk_flutter/model/n_lat_lng.dart';
 import 'package:naver_maps_sdk_flutter/sdk_app/naver_maps_sdk_flutter_app.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -21,13 +25,16 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   late final NaverMapManager _naverMapManager;
-  late final StreamSubscription _mapStatusSubscription;
+  late final StreamSubscription<MapLoadStatus> _mapStatusSubscription;
+  StreamSubscription<MarkerEvent>? _markerEventSubscription;
+  StreamSubscription<MapEvent>? _mapEventSubscription;
 
-  NLatLng _initialCenter = NLatLng(37.5826, 127.0106);
+  static const _fixedCenter = NLatLng(37.5826, 127.0106);
   int _currentZoom = 15;
-  bool _locationReady = false;
   bool _mapReady = false;
   List<Map<String, dynamic>> _stores = [];
+  String? _selectedCategory;
+  Map<String, dynamic>? _selectedStore;
 
   @override
   void initState() {
@@ -36,54 +43,100 @@ class _MapScreenState extends State<MapScreen> {
     _mapStatusSubscription = _naverMapManager.onMapLoadStatus.listen((status) {
       if (status is MapLoadSuccess) {
         _naverMapManager.addMapCenterChangedEventListener();
+        _naverMapManager.addMapClickEventListener();
         _addMyLocationMarker();
         _mapReady = true;
-        _addStoreMarkers();
+        if (_stores.isNotEmpty) _addStoreMarkers();
       }
     });
-    _loadCurrentLocation();
+    _markerEventSubscription = _naverMapManager.onMarkerEvent.listen((event) {
+      if (event is MarkerClick) {
+        final storeId = event.markerId.replaceFirst('store_', '');
+        final matches = _stores.where((s) => s['id'].toString() == storeId);
+        if (matches.isNotEmpty && mounted) {
+          setState(() => _selectedStore = matches.first);
+        }
+      }
+    });
+    _mapEventSubscription = _naverMapManager.onMapEvent.listen((event) {
+      if (event is MapClick && mounted) {
+        setState(() => _selectedStore = null);
+      }
+    });
     _fetchStores();
   }
 
   Future<void> _fetchStores() async {
-    final response = await Supabase.instance.client
-        .from('stores')
-        .select('id, name, category, latitude, longitude');
-    if (!mounted) return;
-    debugPrint('가게 수: ${response.length}');
-    if (response.isNotEmpty) {
-      debugPrint('첫 번째 가게: ${response.first}');
+    try {
+      final response = await Supabase.instance.client
+          .from('stores')
+          .select('id, name, category, latitude, longitude, address');
+      if (!mounted) return;
+      setState(() => _stores = List<Map<String, dynamic>>.from(response));
+      if (_mapReady) _addStoreMarkers();
+    } catch (e) {
+      debugPrint('stores fetch error: $e');
     }
-    setState(() => _stores = List<Map<String, dynamic>>.from(response));
-    if (_mapReady) _addStoreMarkers();
+  }
+
+  List<Map<String, dynamic>> get _filteredStores {
+    if (_selectedCategory == null) return _stores;
+    return _stores.where((s) => s['category'] == _selectedCategory).toList();
   }
 
   String _categoryColor(String category) {
     switch (category) {
-      case 'restaurant': return '#E53935';
-      case 'cafe':        return '#6D4C41';
-      case 'study_cafe':  return '#1E88E5';
-      case 'salon':       return '#8E24AA';
-      default:            return '#43A047';
+      case 'restaurant':
+        return '#E53935';
+      case 'cafe':
+        return '#6D4C41';
+      case 'study_cafe':
+        return '#1E88E5';
+      case 'salon':
+        return '#8E24AA';
+      default:
+        return '#43A047';
     }
   }
 
   String _categoryEmoji(String category) {
     switch (category) {
-      case 'restaurant': return '🍽';
-      case 'cafe':        return '☕';
-      case 'study_cafe':  return '📚';
-      case 'salon':       return '✂';
-      default:            return '📍';
+      case 'restaurant':
+        return '🍽';
+      case 'cafe':
+        return '☕';
+      case 'study_cafe':
+        return '📚';
+      case 'salon':
+        return '✂';
+      default:
+        return '📍';
+    }
+  }
+
+  String _categoryLabel(String category) {
+    switch (category) {
+      case 'restaurant':
+        return '식당';
+      case 'cafe':
+        return '카페';
+      case 'study_cafe':
+        return '스터디카페';
+      case 'salon':
+        return '미용실';
+      default:
+        return category;
     }
   }
 
   Future<void> _addStoreMarkers() async {
-    for (final store in _stores) {
+    await _naverMapManager.removeMarkerAll();
+    await _addMyLocationMarker();
+    for (final store in _filteredStores) {
       final lat = store['latitude'] as double?;
       final lng = store['longitude'] as double?;
       final category = store['category'] as String? ?? '';
-      final id = store['id'] as String? ?? '';
+      final id = store['id']?.toString() ?? '';
       if (lat == null || lng == null) continue;
 
       final color = _categoryColor(category);
@@ -101,42 +154,26 @@ class _MapScreenState extends State<MapScreen> {
           icon: HtmlIcon(content: html),
         ),
       );
-    }
-  }
-
-  Future<void> _loadCurrentLocation() async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.deniedForever) return;
-
-      final position = await Geolocator.getCurrentPosition();
-      if (mounted) {
-        setState(() {
-          _initialCenter = NLatLng(position.latitude, position.longitude);
-          _locationReady = true;
-        });
-      }
-    } catch (_) {
-      if (mounted) setState(() => _locationReady = true);
+      await _naverMapManager.addMarkerClickEvent(markerId: 'store_$id');
     }
   }
 
   Future<void> _addMyLocationMarker() async {
+    const html =
+        '<div style="background:#1E88E5;border-radius:50%;'
+        'width:18px;height:18px;border:3px solid white;'
+        'box-shadow:0 0 0 2px #1E88E5,0 2px 6px rgba(0,0,0,0.4);"></div>';
     await _naverMapManager.addMarker(
       markerId: 'my_location',
-      markerOptions: MarkerOptions(position: _initialCenter),
+      markerOptions: MarkerOptions(
+        position: _fixedCenter,
+        icon: HtmlIcon(content: html),
+      ),
     );
   }
 
   Future<void> _moveToMyLocation() async {
-    try {
-      final position = await Geolocator.getCurrentPosition();
-      final myLocation = NLatLng(position.latitude, position.longitude);
-      await _naverMapManager.setCenter(center: myLocation);
-    } catch (_) {}
+    await _naverMapManager.setCenter(center: _fixedCenter);
   }
 
   Future<void> _zoomIn() async {
@@ -149,62 +186,467 @@ class _MapScreenState extends State<MapScreen> {
     await _naverMapManager.setZoom(zoom: _currentZoom);
   }
 
+  double? _calcDistance(Map<String, dynamic> store) {
+    final lat = store['latitude'] as double?;
+    final lng = store['longitude'] as double?;
+    if (lat == null || lng == null) return null;
+    return Geolocator.distanceBetween(
+      _fixedCenter.lat,
+      _fixedCenter.lng,
+      lat,
+      lng,
+    );
+  }
+
+  String _formatDistance(double meters) {
+    if (meters < 1000) return '${meters.round()}m';
+    return '${(meters / 1000).toStringAsFixed(1)}km';
+  }
+
+  String _walkingTime(double meters) {
+    final minutes = math.max(1, (meters / 83.3).ceil());
+    return '도보 $minutes분';
+  }
+
   @override
   void dispose() {
     _mapStatusSubscription.cancel();
+    _markerEventSubscription?.cancel();
+    _mapEventSubscription?.cancel();
     _naverMapManager.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_locationReady) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     final mapOptions = MapOptions(
-      center: _initialCenter,
+      center: _fixedCenter,
       zoom: _currentZoom,
       zoomControl: false,
       mapTypeId: NaverMapMapTypeId.normal,
     );
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Material(
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: HomeSearchBar(onTap: () {}),
+      body: Stack(
+        children: [
+          NaverMapWidget(
+            naverMapManager: _naverMapManager,
+            mapOptions: mapOptions,
+            showLoading: true,
+          ),
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SearchBar(onTap: () => context.push('/map/search')),
+                _CategoryChips(
+                  selected: _selectedCategory,
+                  onSelect: (value) {
+                    setState(() {
+                      _selectedCategory = value;
+                      _selectedStore = null;
+                    });
+                    if (_mapReady) _addStoreMarkers();
+                  },
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 16,
+            bottom: _selectedStore != null ? 220 : 24,
+            child: Column(
+              children: [
+                _MapButton(icon: Icons.my_location, onTap: _moveToMyLocation),
+                const SizedBox(height: 8),
+                _MapButton(icon: Icons.add, onTap: _zoomIn),
+                const SizedBox(height: 4),
+                _MapButton(icon: Icons.remove, onTap: _zoomOut),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: _selectedStore != null ? 216 : 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: _SearchAreaButton(
+                onTap: () {
+                  setState(() => _selectedStore = null);
+                  _fetchStores();
+                },
               ),
             ),
-            Expanded(
-              child: Stack(
-                children: [
-                  NaverMapWidget(
-                    naverMapManager: _naverMapManager,
-                    mapOptions: mapOptions,
-                    showLoading: true,
+          ),
+          if (_selectedStore != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _StoreBottomSheet(
+                store: _selectedStore!,
+                categoryLabel: _categoryLabel(
+                  _selectedStore!['category'] as String? ?? '',
+                ),
+                distanceM: _calcDistance(_selectedStore!),
+                formatDistance: _formatDistance,
+                walkingTime: _walkingTime,
+                onClose: () => setState(() => _selectedStore = null),
+                onSwipeUp: () {
+                  final storeId = _selectedStore!['id']?.toString() ?? '';
+                  if (storeId.isNotEmpty) {
+                    context.pushNamed(
+                      'information',
+                      pathParameters: {'storeId': storeId},
+                    );
+                  }
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchBar extends StatelessWidget {
+  final VoidCallback onTap;
+  const _SearchBar({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x1A000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.search_rounded, color: Color(0xFF6B7280)),
+                SizedBox(width: 10),
+                Text(
+                  '업장 검색',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF9CA3AF),
                   ),
-                  Positioned(
-                    right: 16,
-                    bottom: 24,
-                    child: Column(
-                      children: [
-                        _ZoomButton(
-                          icon: Icons.my_location,
-                          onTap: _moveToMyLocation,
-                        ),
-                        const SizedBox(height: 8),
-                        _ZoomButton(icon: Icons.add, onTap: _zoomIn),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryChips extends StatelessWidget {
+  final String? selected;
+  final void Function(String? value) onSelect;
+
+  const _CategoryChips({required this.selected, required this.onSelect});
+
+  static const _items = [
+    (label: '전체', value: null as String?),
+    (label: '식당', value: 'restaurant'),
+    (label: '카페', value: 'cafe'),
+    (label: '스터디카페', value: 'study_cafe'),
+    (label: '미용실', value: 'salon'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.transparent,
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+        children: _items.map((item) {
+          final isSelected = selected == item.value;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => onSelect(item.value),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color:
+                        isSelected ? AppColors.primary : AppColors.border,
+                  ),
+                ),
+                child: Text(
+                  item.label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchAreaButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _SearchAreaButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.refresh_rounded, color: Colors.white, size: 16),
+            SizedBox(width: 6),
+            Text(
+              '현 지도에서 검색',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreBottomSheet extends StatelessWidget {
+  final Map<String, dynamic> store;
+  final String categoryLabel;
+  final double? distanceM;
+  final String Function(double) formatDistance;
+  final String Function(double) walkingTime;
+  final VoidCallback onClose;
+  final VoidCallback onSwipeUp;
+
+  const _StoreBottomSheet({
+    required this.store,
+    required this.categoryLabel,
+    required this.distanceM,
+    required this.formatDistance,
+    required this.walkingTime,
+    required this.onClose,
+    required this.onSwipeUp,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = store['name'] as String? ?? '가게';
+    final rating = store['rating'];
+
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if ((details.primaryVelocity ?? 0) < -300) onSwipeUp();
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x22000000),
+              blurRadius: 16,
+              offset: Offset(0, -4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 드래그 핸들
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD1D5DB),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 가게 아이콘
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.store_outlined,
+                    color: Color(0xFFD1D5DB),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 가게명 + 닫기
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: onClose,
+                            child: const Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      // 카테고리 · 거리 · 시간
+                      Row(
+                        children: [
+                          Text(
+                            categoryLabel,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          if (distanceM != null) ...[
+                            const Text(
+                              ' · ',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            const Icon(
+                              Icons.place_outlined,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              formatDistance(distanceM!),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const Text(
+                              ' · ',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            Text(
+                              walkingTime(distanceM!),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (rating != null) ...[
                         const SizedBox(height: 4),
-                        _ZoomButton(icon: Icons.remove, onTap: _zoomOut),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFFBBF24),
+                              size: 14,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              rating.toString(),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: onSwipeUp,
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                  SizedBox(width: 2),
+                  Text(
+                    '자세히 보기',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF9CA3AF),
                     ),
                   ),
                 ],
@@ -217,11 +659,11 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
-class _ZoomButton extends StatelessWidget {
+class _MapButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _ZoomButton({required this.icon, required this.onTap});
+  const _MapButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
