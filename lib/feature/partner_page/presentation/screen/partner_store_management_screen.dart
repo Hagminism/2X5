@@ -94,269 +94,296 @@ class PartnerStoreManagementScreen extends StatelessWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                child: Text(
-                  state.isEditMode ? '업장 정보 수정' : '업장 정보 등록',
-                  style: AppTextStyles.headline.copyWith(
-                    color: AppColors.textPrimary,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.white,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                    child: Text(
+                      state.isEditMode ? '업장 정보 수정' : '업장 정보 등록',
+                      style: AppTextStyles.headline.copyWith(
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                child: Text(
-                  state.isEditMode
-                      ? '현재 업장 정보를 확인하고\n필요한 항목을 수정해 주세요.'
-                      : '업장 기본 정보를 입력하면\n파트너 관리 기능을 활성화할 수 있어요.',
-                  style: AppTextStyles.bodySecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              PartnerStoreSectionCard(
-                title: '기본 정보',
-                child: Column(
-                  children: [
-                    PartnerFormTextField(
-                      hintText: '업장명',
-                      initialValue: state.storeName,
-                      onChanged: (value) => onAction(
-                        PartnerStoreManagementAction.changeStoreName(value),
-                      ),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                    child: Text(
+                      state.isEditMode
+                          ? '현재 업장 정보를 확인하고\n필요한 항목을 수정해 주세요.'
+                          : '업장 기본 정보를 입력하면\n파트너 관리 기능을 활성화할 수 있어요.',
+                      style: AppTextStyles.bodySecondary,
                     ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      initialValue: state.category.isEmpty
-                          ? null
-                          : StoreCategory.fromDbValue(state.category)?.dbValue,
-                      borderRadius: BorderRadius.circular(12),
-                      dropdownColor: AppColors.white,
-                      decoration: _inputDecoration(hintText: '업종'),
-                      items: StoreCategory.values
-                          .map(
-                            (category) => DropdownMenuItem(
-                              value: category.dbValue,
-                              child: Text(category.displayName),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value == null) return;
-                        onAction(
-                          PartnerStoreManagementAction.changeCategory(value),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    PartnerFormTextField(
-                      hintText: '사업자등록번호',
-                      initialValue: '사업자등록번호: ${state.businessNumber}',
-                      isInteractive: false,
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) => onAction(
-                        PartnerStoreManagementAction.changeBusinessNumber(
-                          value,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    PartnerFormTextField(
-                      hintText: '매장 연락처',
-                      initialValue: state.storeContact,
-                      keyboardType: TextInputType.phone,
-                      onChanged: (value) => onAction(
-                        PartnerStoreManagementAction.changeStoreContact(value),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              PartnerStoreSectionCard(
-                title: '위치 정보',
-                child: Column(
-                  children: [
-                    PartnerFormTextField(
-                      hintText: (state.address == '') ? '주소' : state.address,
-                      initialValue: state.address,
-                      isInteractive: false,
-                      onTap: () => onAction(
-                        const PartnerStoreManagementAction.tapAddressSearch(),
-                      ),
-                      onChanged: (_) {},
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          '주소를 선택하면 좌표는 자동으로 저장됩니다.',
-                          style: AppTextStyles.bodySecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              PartnerStoreSectionCard(
-                title: '예약금 설정',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '기본 정보',
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Text(
-                            '예약금 사용',
-                            style: AppTextStyles.body.copyWith(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w700,
+                        PartnerFormTextField(
+                          hintText: '업장명',
+                          initialValue: state.storeName,
+                          onChanged: (value) => onAction(
+                            PartnerStoreManagementAction.changeStoreName(value),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          initialValue: state.category.isEmpty
+                              ? null
+                              : StoreCategory.fromDbValue(
+                                  state.category,
+                                )?.dbValue,
+                          borderRadius: BorderRadius.circular(12),
+                          dropdownColor: AppColors.white,
+                          decoration: _inputDecoration(hintText: '업종'),
+                          items: StoreCategory.values
+                              .map(
+                                (category) => DropdownMenuItem(
+                                  value: category.dbValue,
+                                  child: Text(category.displayName),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value == null) return;
+                            onAction(
+                              PartnerStoreManagementAction.changeCategory(
+                                value,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        PartnerFormTextField(
+                          hintText: '사업자등록번호',
+                          initialValue: '사업자등록번호: ${state.businessNumber}',
+                          isInteractive: false,
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) => onAction(
+                            PartnerStoreManagementAction.changeBusinessNumber(
+                              value,
                             ),
                           ),
                         ),
-                        Switch(
-                          value: state.depositEnabled,
-                          activeThumbColor: AppColors.primary,
+                        const SizedBox(height: 16),
+                        PartnerFormTextField(
+                          hintText: '매장 연락처',
+                          initialValue: state.storeContact,
+                          keyboardType: TextInputType.phone,
                           onChanged: (value) => onAction(
-                            PartnerStoreManagementAction.changeDepositEnabled(
+                            PartnerStoreManagementAction.changeStoreContact(
                               value,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    PartnerFormTextField(
-                      hintText: '예약금 금액(원)',
-                      initialValue: state.depositAmount,
-                      keyboardType: TextInputType.number,
-                      isInteractive: state.depositEnabled,
-                      onChanged: (value) => onAction(
-                        PartnerStoreManagementAction.changeDepositAmount(value),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.depositEnabled
-                          ? '예약금 사용 시 0원보다 큰 금액을 입력해 주세요.'
-                          : '예약금을 사용하지 않으면 금액은 자동으로 0원으로 저장됩니다.',
-                      style: AppTextStyles.bodySecondary,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              PartnerStoreSectionCard(
-                title: '메뉴 정보',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    PartnerStoreManagementCtaCard(
-                      icon: Icons.restaurant_menu_rounded,
-                      title: '메뉴 관리',
-                      subtitle: '대표 메뉴, 가격, 설명을 등록하고 수정할 수 있어요.',
-                      onTap: () {
-                        onAction(
-                          const PartnerStoreManagementAction.tapOpenMenuManager(),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              PartnerStoreSectionCard(
-                title: '업장 사진',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    PartnerStoreManagementCtaCard(
-                      icon: Icons.add_a_photo_outlined,
-                      title: '업장 사진 관리',
-                      subtitle: '갤러리에서 선택한 사진을 업로드해 노출할 수 있어요.',
-                      onTap: () {
-                        onAction(
-                          const PartnerStoreManagementAction.tapOpenImageManager(),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              PartnerStoreSectionCard(
-                title: '운영 정보',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (final day in WeekDay.values) ...[
-                      PartnerStoreManagementDayOperatingRow(
-                        dayLabel: day.label,
-                        isOpened:
-                            (state.operatingHours[day.dbKey]?['isOpened'] ==
-                            true),
-                        openTime:
-                            (state.operatingHours[day.dbKey]?['openTime']
-                                as String?) ??
-                            '',
-                        closeTime:
-                            (state.operatingHours[day.dbKey]?['closeTime']
-                                as String?) ??
-                            '',
-                        onToggleOpened: (value) => onAction(
-                          PartnerStoreManagementAction.toggleDayOpened(
-                            day: day.dbKey,
-                            isOpened: value,
-                          ),
-                        ),
-                        onSelectOpenTime: (value) => onAction(
-                          PartnerStoreManagementAction.changeDayOpenTime(
-                            day: day.dbKey,
-                            value: value,
-                          ),
-                        ),
-                        onSelectCloseTime: (value) => onAction(
-                          PartnerStoreManagementAction.changeDayCloseTime(
-                            day: day.dbKey,
-                            value: value,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              Opacity(
-                opacity: state.canSubmit ? 1 : 0.45,
-                child: IgnorePointer(
-                  ignoring: !state.canSubmit || state.isLoadingInitialData,
-                  child: PrimaryButton(
-                    text: state.isSubmitting
-                        ? '저장 중...'
-                        : (state.isEditMode ? '수정 저장' : '등록 제출'),
-                    onTap: () {
-                      onAction(const PartnerStoreManagementAction.tapSubmit());
-                    },
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '위치 정보',
+                    child: Column(
+                      children: [
+                        PartnerFormTextField(
+                          hintText: (state.address == '')
+                              ? '주소'
+                              : state.address,
+                          initialValue: state.address,
+                          isInteractive: false,
+                          onTap: () => onAction(
+                            const PartnerStoreManagementAction.tapAddressSearch(),
+                          ),
+                          onChanged: (_) {},
+                        ),
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '주소를 선택하면 좌표는 자동으로 저장됩니다.',
+                              style: AppTextStyles.bodySecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '예약금 설정',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '예약금 사용',
+                                style: AppTextStyles.body.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            Switch(
+                              value: state.depositEnabled,
+                              activeThumbColor: AppColors.primary,
+                              onChanged: (value) => onAction(
+                                PartnerStoreManagementAction.changeDepositEnabled(
+                                  value,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        PartnerFormTextField(
+                          hintText: '예약금 금액(원)',
+                          initialValue: state.depositAmount,
+                          keyboardType: TextInputType.number,
+                          isInteractive: state.depositEnabled,
+                          onChanged: (value) => onAction(
+                            PartnerStoreManagementAction.changeDepositAmount(
+                              value,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          state.depositEnabled
+                              ? '예약금 사용 시 0원보다 큰 금액을 입력해 주세요.'
+                              : '예약금을 사용하지 않으면 금액은 자동으로 0원으로 저장됩니다.',
+                          style: AppTextStyles.bodySecondary,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '메뉴 정보',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PartnerStoreManagementCtaCard(
+                          icon: Icons.restaurant_menu_rounded,
+                          title: '메뉴 관리',
+                          subtitle: '대표 메뉴, 가격, 설명을 등록하고 수정할 수 있어요.',
+                          onTap: () {
+                            onAction(
+                              const PartnerStoreManagementAction.tapOpenMenuManager(),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '업장 사진',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PartnerStoreManagementCtaCard(
+                          icon: Icons.add_a_photo_outlined,
+                          title: '업장 사진 관리',
+                          subtitle: '갤러리에서 선택한 사진을 업로드해 노출할 수 있어요.',
+                          onTap: () {
+                            onAction(
+                              const PartnerStoreManagementAction.tapOpenImageManager(),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '운영 정보',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final day in WeekDay.values) ...[
+                          PartnerStoreManagementDayOperatingRow(
+                            dayLabel: day.label,
+                            isOpened:
+                                (state.operatingHours[day.dbKey]?['isOpened'] ==
+                                true),
+                            openTime:
+                                (state.operatingHours[day.dbKey]?['openTime']
+                                    as String?) ??
+                                '',
+                            closeTime:
+                                (state.operatingHours[day.dbKey]?['closeTime']
+                                    as String?) ??
+                                '',
+                            onToggleOpened: (value) => onAction(
+                              PartnerStoreManagementAction.toggleDayOpened(
+                                day: day.dbKey,
+                                isOpened: value,
+                              ),
+                            ),
+                            onSelectOpenTime: (value) => onAction(
+                              PartnerStoreManagementAction.changeDayOpenTime(
+                                day: day.dbKey,
+                                value: value,
+                              ),
+                            ),
+                            onSelectCloseTime: (value) => onAction(
+                              PartnerStoreManagementAction.changeDayCloseTime(
+                                day: day.dbKey,
+                                value: value,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Opacity(
+                    opacity: state.canSubmit ? 1 : 0.45,
+                    child: IgnorePointer(
+                      ignoring: !state.canSubmit || state.isLoadingInitialData,
+                      child: PrimaryButton(
+                        text: state.isSubmitting
+                            ? '저장 중...'
+                            : (state.isEditMode ? '수정 저장' : '등록 제출'),
+                        onTap: () {
+                          onAction(
+                            const PartnerStoreManagementAction.tapSubmit(),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        if (state.isSubmitting)
+          ModalBarrier(
+            dismissible: false,
+            color: AppColors.black.withValues(alpha: 0.2588),
+          ),
+        if (state.isSubmitting)
+          const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
+            ),
+          ),
+      ],
     );
   }
 
