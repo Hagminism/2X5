@@ -1,8 +1,8 @@
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_state.dart';
 import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
-import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
+import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 
@@ -36,15 +36,21 @@ class ReviewHistoryViewModel extends ChangeNotifier {
     _state = state.copyWith(isLoading: true);
     notifyListeners();
 
-    final reviews = await _storeReviewRepository.fetchUserReviews(
-      userId: user.uid,
-    );
+    try {
+      final reviews = await _storeReviewRepository.fetchUserReviews(
+        userId: user.uid,
+      );
 
-    _state = state.copyWith(
-      isLoading: false,
-      reviews: reviews,
-    );
-    notifyListeners();
+      _state = state.copyWith(
+        isLoading: false,
+        reviews: reviews,
+      );
+      notifyListeners();
+    } catch (_) {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+      rethrow;
+    }
   }
 
   Future<void> updateReview({
@@ -68,7 +74,17 @@ class ReviewHistoryViewModel extends ChangeNotifier {
     required InternalReview review,
   }) async {
     await _storeReviewRepository.deleteReview(reviewId: review.id);
-    await _stampService.revokeStampForDeletedReview(storeId: review.storeId);
+
+    try {
+      await _stampService.revokeStampForDeletedReview(storeId: review.storeId);
+    } catch (_) {
+      final remainingReviews = state.reviews
+          .where((item) => item.id != review.id)
+          .toList();
+      _state = state.copyWith(reviews: remainingReviews);
+      notifyListeners();
+      throw StateError('리뷰는 삭제되었지만 스탬프 회수에 실패했습니다.');
+    }
 
     final remainingReviews = state.reviews
         .where((item) => item.id != review.id)

@@ -19,12 +19,17 @@ class StampHistoryViewModel extends ChangeNotifier {
     _state = state.copyWith(isLoading: true);
     notifyListeners();
 
-    final stampStatuses = await _stampService.loadMyStampStatuses();
+    try {
+      final stampStatuses = await _stampService.loadMyStampStatuses();
 
-    _state = state.copyWith(
-      isLoading: false,
-      stampStatuses: stampStatuses,
-    );
-    notifyListeners();
+      _state = state.copyWith(
+        isLoading: false,
+        stampStatuses: stampStatuses,
+      );
+      notifyListeners();
+    } catch (_) {
+      _state = state.copyWith(isLoading: false);
+      notifyListeners();
+    }
   }
 }
