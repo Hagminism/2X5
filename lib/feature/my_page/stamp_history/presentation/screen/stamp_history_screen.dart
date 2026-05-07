@@ -173,16 +173,21 @@ class _StampHistoryCard extends StatelessWidget {
                 ),
               ),
               if (!status.hasWrittenReview)
-                TextButton(
+                FilledButton(
                   onPressed: () => onTapWriteReview(status),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primary,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                      horizontal: 12,
+                      vertical: 8,
                     ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
                   ),
                   child: const Text(
                     '리뷰 작성하기',
