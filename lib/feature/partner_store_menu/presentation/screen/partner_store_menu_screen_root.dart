@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/par
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PartnerStoreMenuScreenRoot extends StatefulWidget {
   final PartnerStoreMenuViewModel viewModel;
@@ -20,8 +21,10 @@ class PartnerStoreMenuScreenRoot extends StatefulWidget {
       _PartnerStoreMenuScreenRootState();
 }
 
-class _PartnerStoreMenuScreenRootState extends State<PartnerStoreMenuScreenRoot> {
+class _PartnerStoreMenuScreenRootState
+    extends State<PartnerStoreMenuScreenRoot> {
   StreamSubscription<PartnerStoreMenuEvent>? _eventSubscription;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -56,10 +59,13 @@ class _PartnerStoreMenuScreenRootState extends State<PartnerStoreMenuScreenRoot>
               case ChangeMenuName():
               case ChangeMenuPrice():
               case ChangeMenuDescription():
-              case ChangeMenuImageUrl():
+              case RemoveMenuImage():
               case ToggleMenuAvailable():
               case TapSave():
                 widget.viewModel.onAction(action);
+                break;
+              case TapPickMenuImage():
+                _pickMenuImage(action.index);
                 break;
             }
           },
@@ -72,5 +78,16 @@ class _PartnerStoreMenuScreenRootState extends State<PartnerStoreMenuScreenRoot>
   void dispose() {
     _eventSubscription?.cancel();
     super.dispose();
+  }
+
+  Future<void> _pickMenuImage(int index) async {
+    final selected = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (selected == null) {
+      return;
+    }
+    await widget.viewModel.updateMenuImageFromFile(
+      index: index,
+      filePath: selected.path,
+    );
   }
 }

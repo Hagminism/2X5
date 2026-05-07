@@ -18,10 +18,10 @@ sealed class PartnerStoreMenuAction with _$PartnerStoreMenuAction {
     required int index,
     required String value,
   }) = ChangeMenuDescription;
-  const factory PartnerStoreMenuAction.changeMenuImageUrl({
-    required int index,
-    required String value,
-  }) = ChangeMenuImageUrl;
+  const factory PartnerStoreMenuAction.tapPickMenuImage(int index) =
+      TapPickMenuImage;
+  const factory PartnerStoreMenuAction.removeMenuImage(int index) =
+      RemoveMenuImage;
   const factory PartnerStoreMenuAction.toggleMenuAvailable({
     required int index,
     required bool value,

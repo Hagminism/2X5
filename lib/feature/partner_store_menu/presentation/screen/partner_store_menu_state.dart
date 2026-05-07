@@ -9,5 +9,6 @@ abstract class PartnerStoreMenuState with _$PartnerStoreMenuState {
     @Default(false) bool isLoading,
     @Default(false) bool isSaving,
     @Default(<StoreMenu>[]) List<StoreMenu> menus,
+    @Default(<String?>[]) List<String?> localImagePaths,
   }) = _PartnerStoreMenuState;
 }
