@@ -126,7 +126,9 @@ final router = GoRouter(
                   path: 'information/:storeId',
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    final Map<String, dynamic> extraData = state.extra as Map<String, dynamic>? ?? {};
+                    final extraData = state.extra is Map<String, dynamic>
+                        ? state.extra as Map<String, dynamic>
+                        : <String, dynamic>{};
 
                     return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
@@ -152,7 +154,7 @@ final router = GoRouter(
                           path: 'time/:seatNumber',
                           parentNavigatorKey: _rootNavigatorKey, // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
                           builder: (context, state) {
-                            final seatNumber = int.parse(state.pathParameters['seatNumber']!);
+                            final seatNumber = int.tryParse(state.pathParameters['seatNumber'] ?? '') ?? 0;
                             return TimeSelectionScreen(seatNumber: seatNumber);
                           },
                         ),

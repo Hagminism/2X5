@@ -177,8 +177,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           // GoRouter를 사용하여 시간 선택 화면으로 이동
-                          // 라우터 설정에 맞춰 'time_selection' 또는 경로를 입력하세요.
-                          context.push('/study-cafe/seats/time/$selectedSeat');
+                          context.push('time/$selectedSeat');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
