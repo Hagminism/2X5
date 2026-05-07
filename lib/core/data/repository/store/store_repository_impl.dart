@@ -165,9 +165,33 @@ class StoreRepositoryImpl implements StoreRepository {
     if (store == null) {
       throw StateError('업장 정보 저장 후 이미지를 업로드할 수 있습니다.');
     }
-    return _storeDataSource.uploadImageFile(
+    return _storeDataSource.uploadStoreImageFile(
       storeId: store.id,
       filePath: filePath,
+    );
+  }
+
+  @override
+  Future<String> uploadMyStoreMenuImageFile(String filePath) async {
+    final store = await getMyStore();
+    if (store == null) {
+      throw StateError('업장 정보 저장 후 메뉴 이미지를 업로드할 수 있습니다.');
+    }
+    return _storeDataSource.uploadStoreMenuImageFile(
+      storeId: store.id,
+      filePath: filePath,
+    );
+  }
+
+  @override
+  Future<void> deleteMyStoreMenuImageByUrl(String imageUrl) async {
+    final store = await getMyStore();
+    if (store == null) {
+      return;
+    }
+    await _storeDataSource.deleteStoreMenuImageByUrl(
+      storeId: store.id,
+      imageUrl: imageUrl,
     );
   }
 

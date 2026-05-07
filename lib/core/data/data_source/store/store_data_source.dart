@@ -25,8 +25,18 @@ abstract interface class StoreDataSource {
 
   Future<void> deleteImagesByIds(List<String> ids);
 
-  Future<String> uploadImageFile({
+  Future<String> uploadStoreImageFile({
     required String storeId,
     required String filePath,
+  });
+
+  Future<String> uploadStoreMenuImageFile({
+    required String storeId,
+    required String filePath,
+  });
+
+  Future<void> deleteStoreMenuImageByUrl({
+    required String storeId,
+    required String imageUrl,
   });
 }

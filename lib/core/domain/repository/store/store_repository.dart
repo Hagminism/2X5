@@ -18,4 +18,8 @@ abstract interface class StoreRepository {
   Future<void> syncMyStoreImages(List<StoreImage> images);
 
   Future<String> uploadMyStoreImageFile(String filePath);
+
+  Future<String> uploadMyStoreMenuImageFile(String filePath);
+
+  Future<void> deleteMyStoreMenuImageByUrl(String imageUrl);
 }

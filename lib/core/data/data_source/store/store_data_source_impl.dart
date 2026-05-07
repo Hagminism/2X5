@@ -1,17 +1,22 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
 import 'package:capstone_2026/core/data/dto/store/store_dto.dart';
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StoreDataSourceImpl implements StoreDataSource {
   final SupabaseClient _supabaseClient;
+  final FirebaseFunctions _firebaseFunctions;
 
   StoreDataSourceImpl({
     required SupabaseClient supabaseClient,
-  }) : _supabaseClient = supabaseClient;
+    required FirebaseFunctions firebaseFunctions,
+  }) : _supabaseClient = supabaseClient,
+       _firebaseFunctions = firebaseFunctions;
 
   @override
   Future<StoreDto?> findStoreByOwnerId(String ownerId) async {
@@ -231,21 +236,114 @@ class StoreDataSourceImpl implements StoreDataSource {
   }
 
   @override
-  Future<String> uploadImageFile({
+  Future<String> uploadStoreImageFile({
+    required String storeId,
+    required String filePath,
+  }) async {
+    return _uploadToBucket(
+      bucketId: 'store_images',
+      storeId: storeId,
+      filePath: filePath,
+    );
+  }
+
+  @override
+  Future<String> uploadStoreMenuImageFile({
+    required String storeId,
+    required String filePath,
+  }) async {
+    return _uploadToBucket(
+      bucketId: 'store_menu_images',
+      storeId: storeId,
+      filePath: filePath,
+    );
+  }
+
+  @override
+  Future<void> deleteStoreMenuImageByUrl({
+    required String storeId,
+    required String imageUrl,
+  }) async {
+    final objectPath = _extractObjectPathFromPublicUrl(
+      bucketId: 'store_menu_images',
+      imageUrl: imageUrl,
+    );
+    if (objectPath == null) {
+      return;
+    }
+    final callable = _firebaseFunctions.httpsCallable(
+      'deleteStoreImageFromSupabase',
+    );
+    await callable.call({
+      'storeId': storeId,
+      'bucketId': 'store_menu_images',
+      'objectPath': objectPath,
+    });
+  }
+
+  Future<String> _uploadToBucket({
+    required String bucketId,
     required String storeId,
     required String filePath,
   }) async {
     final file = File(filePath);
-    final extension = filePath.contains('.') ? filePath.split('.').last : 'jpg';
-    final objectPath =
-        '$storeId/${DateTime.now().millisecondsSinceEpoch}.$extension';
-
-    await _supabaseClient.storage.from('store-images').upload(
-      objectPath,
-      file,
-      fileOptions: const FileOptions(upsert: true),
+    final extension = filePath.contains('.')
+        ? filePath.split('.').last.toLowerCase()
+        : 'jpg';
+    final bytes = await file.readAsBytes();
+    final callable = _firebaseFunctions.httpsCallable(
+      'uploadStoreImageToSupabase',
     );
+    final response = await callable.call({
+      'storeId': storeId,
+      'bucketId': bucketId,
+      'fileBase64': base64Encode(bytes),
+      'fileExtension': extension,
+      'contentType': _guessContentType(extension),
+    });
 
-    return _supabaseClient.storage.from('store-images').getPublicUrl(objectPath);
+    final data = response.data;
+    if (data is Map && data['publicUrl'] is String) {
+      final publicUrl = (data['publicUrl'] as String).trim();
+      if (publicUrl.isNotEmpty) {
+        return publicUrl;
+      }
+    }
+
+    throw StateError('이미지 업로드 결과가 올바르지 않습니다.');
+  }
+
+  String _guessContentType(String extension) {
+    switch (extension) {
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'gif':
+        return 'image/gif';
+      case 'heic':
+        return 'image/heic';
+      case 'jpeg':
+      case 'jpg':
+      default:
+        return 'image/jpeg';
+    }
+  }
+
+  String? _extractObjectPathFromPublicUrl({
+    required String bucketId,
+    required String imageUrl,
+  }) {
+    final trimmed = imageUrl.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    final marker = '/storage/v1/object/public/$bucketId/';
+    final markerIndex = trimmed.indexOf(marker);
+    if (markerIndex < 0) {
+      return null;
+    }
+    final encodedPath = trimmed.substring(markerIndex + marker.length);
+    return Uri.decodeComponent(encodedPath);
   }
 }
