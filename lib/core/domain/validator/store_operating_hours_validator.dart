@@ -25,7 +25,8 @@ class StoreOperatingHoursValidator {
         if (openTime is! String || closeTime is! String) {
           return false;
         }
-        if (!_timePattern.hasMatch(openTime) || !_timePattern.hasMatch(closeTime)) {
+        if (!_timePattern.hasMatch(openTime) ||
+            !_timePattern.hasMatch(closeTime)) {
           return false;
         }
         if (openTime == closeTime) {

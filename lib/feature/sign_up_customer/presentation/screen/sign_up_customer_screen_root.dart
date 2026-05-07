@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_action.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_event.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
@@ -69,7 +70,9 @@ class _SignUpCustomerScreenRootState extends State<SignUpCustomerScreenRoot> {
                 widget.viewModel.onAction(action);
                 break;
               case TapBackButton():
-                context.pop();
+                context.go(
+                  '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
+                );
                 break;
             }
           },

@@ -186,22 +186,26 @@ class _MapScreenState extends State<MapScreen> {
     await _naverMapManager.setZoom(zoom: _currentZoom);
   }
 
-  String _walkingTime(double distanceM) {
-    final minutes = math.max(1, (distanceM / 83.3).ceil());
-    return '도보 $minutes분';
-  }
-
-  String? _getDistance(Map<String, dynamic> store) {
+  double? _calcDistance(Map<String, dynamic> store) {
     final lat = store['latitude'] as double?;
     final lng = store['longitude'] as double?;
     if (lat == null || lng == null) return null;
-    final d = Geolocator.distanceBetween(
+    return Geolocator.distanceBetween(
       _fixedCenter.lat,
       _fixedCenter.lng,
       lat,
       lng,
     );
-    return _walkingTime(d);
+  }
+
+  String _formatDistance(double meters) {
+    if (meters < 1000) return '${meters.round()}m';
+    return '${(meters / 1000).toStringAsFixed(1)}km';
+  }
+
+  String _walkingTime(double meters) {
+    final minutes = math.max(1, (meters / 83.3).ceil());
+    return '도보 $minutes분';
   }
 
   @override
@@ -284,12 +288,17 @@ class _MapScreenState extends State<MapScreen> {
                 categoryLabel: _categoryLabel(
                   _selectedStore!['category'] as String? ?? '',
                 ),
-                distance: _getDistance(_selectedStore!),
+                distanceM: _calcDistance(_selectedStore!),
+                formatDistance: _formatDistance,
+                walkingTime: _walkingTime,
                 onClose: () => setState(() => _selectedStore = null),
-                onReserve: () {
+                onSwipeUp: () {
                   final storeId = _selectedStore!['id']?.toString() ?? '';
                   if (storeId.isNotEmpty) {
-                    context.push('/home/store/$storeId');
+                    context.pushNamed(
+                      'information',
+                      pathParameters: {'storeId': storeId},
+                    );
                   }
                 },
               ),
@@ -451,130 +460,200 @@ class _SearchAreaButton extends StatelessWidget {
 class _StoreBottomSheet extends StatelessWidget {
   final Map<String, dynamic> store;
   final String categoryLabel;
-  final String? distance;
+  final double? distanceM;
+  final String Function(double) formatDistance;
+  final String Function(double) walkingTime;
   final VoidCallback onClose;
-  final VoidCallback onReserve;
+  final VoidCallback onSwipeUp;
 
   const _StoreBottomSheet({
     required this.store,
     required this.categoryLabel,
-    required this.distance,
+    required this.distanceM,
+    required this.formatDistance,
+    required this.walkingTime,
     required this.onClose,
-    required this.onReserve,
+    required this.onSwipeUp,
   });
 
   @override
   Widget build(BuildContext context) {
     final name = store['name'] as String? ?? '가게';
-    final subtitle = [categoryLabel, distance].whereType<String>().join(' · ');
+    final rating = store['rating'];
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD1D5DB),
-                borderRadius: BorderRadius.circular(2),
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        if ((details.primaryVelocity ?? 0) < -300) onSwipeUp();
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x22000000),
+              blurRadius: 16,
+              offset: Offset(0, -4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 드래그 핸들
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD1D5DB),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 가게 아이콘
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.store_outlined,
+                    color: Color(0xFFD1D5DB),
+                    size: 28,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.store_outlined,
-                  color: Color(0xFFD1D5DB),
-                  size: 32,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 가게명 + 닫기
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: onClose,
-                          child: const Icon(
-                            Icons.close,
-                            size: 20,
-                            color: Color(0xFF9CA3AF),
+                          GestureDetector(
+                            onTap: onClose,
+                            child: const Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Color(0xFF9CA3AF),
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      // 카테고리 · 거리 · 시간
+                      Row(
+                        children: [
+                          Text(
+                            categoryLabel,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          if (distanceM != null) ...[
+                            const Text(
+                              ' · ',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            const Icon(
+                              Icons.place_outlined,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              formatDistance(distanceM!),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const Text(
+                              ' · ',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            Text(
+                              walkingTime(distanceM!),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (rating != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFFBBF24),
+                              size: 14,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              rating.toString(),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: onReserve,
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                '예약하기',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ],
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: onSwipeUp,
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                  SizedBox(width: 2),
+                  Text(
+                    '자세히 보기',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

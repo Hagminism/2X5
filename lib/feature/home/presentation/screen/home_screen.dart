@@ -5,7 +5,6 @@ import 'package:capstone_2026/feature/home/presentation/component/home_search_ba
 import 'package:capstone_2026/feature/home/presentation/component/home_section_container.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_section_header.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_store_card.dart';
-import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -50,36 +49,29 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     HomeSearchBar(
-                      onTap: () => context.go('${Routes.home}/${Routes.search}'),
+                      onTap: () =>
+                          context.go('${Routes.home}/${Routes.search}'),
                     ),
                     const SizedBox(height: 20),
                     HomeSectionContainer(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('카테고리', style: AppTextStyles.label),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 92,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _categories.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(width: 10),
-                              itemBuilder: (context, index) {
-                                final item = _categories[index];
-                                return HomeCategoryCard(
-                                  title: item.title,
-                                  icon: item.icon,
-                                  onTap: () => _showSoonMessage(
-                                    context,
-                                    '${item.title} 카테고리 상세는 추후 연결됩니다.',
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                      child: SizedBox(
+                        height: 92,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _categories.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 10),
+                          itemBuilder: (context, index) {
+                            final item = _categories[index];
+                            return HomeCategoryCard(
+                              title: item.title,
+                              icon: item.icon,
+                              onTap: () => _showSoonMessage(
+                                context,
+                                '${item.title} 카테고리 상세는 추후 연결됩니다.',
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -101,8 +93,9 @@ class HomeScreen extends StatelessWidget {
                     name: item.name,
                     subtitle: item.subtitle,
                     rating: item.rating,
-                    onTap: () =>
-                        context.go('${Routes.home}/store/${item.storeId}'),
+                    onTap: () {
+                      context.push('${Routes.home}/information/${item.storeId}');
+                    },
                   );
                 },
                 separatorBuilder: (_, _) => const SizedBox(height: 12),

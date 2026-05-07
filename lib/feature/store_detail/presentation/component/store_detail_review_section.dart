@@ -1,3 +1,5 @@
+﻿import 'dart:io';
+
 import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summary.dart';
@@ -36,7 +38,7 @@ class StoreDetailReviewSection extends StatelessWidget {
     final summary =
         aiSummary ??
         const ReviewAiSummary(
-          oneLine: '자체 리뷰가 쌓이면 매장의 강점과 방문 포인트를 AI가 짧게 요약해 보여줄 예정입니다.',
+          oneLine: '자체 리뷰가 쌓이면 매장의 강점과 방문 후기를 AI가 간단하게 요약해 보여줄 예정입니다.',
           keywords: ['자체 리뷰', '방문 후기', '스탬프 보상'],
           positiveRatio: 0.92,
         );
@@ -388,13 +390,16 @@ class _InternalReviewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayName = review.userName.isEmpty ? '방문자' : review.userName;
-    final reviewText = review.content.isEmpty ? '등록된 리뷰 내용이 없습니다.' : review.content;
+    final reviewText = review.content.isEmpty
+        ? '등록된 리뷰 내용이 없습니다.'
+        : review.content;
     final visitPurpose = review.visitPurpose?.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
               radius: 18,
@@ -406,35 +411,16 @@ class _InternalReviewItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          displayName,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (visitPurpose != null && visitPurpose.isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            '[$visitPurpose]으로 방문함',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF9CA3AF),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ],
+                  Text(
+                    displayName,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 4),
                   Row(
                     children: List.generate(
                       5,
@@ -450,6 +436,7 @@ class _InternalReviewItem extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Text(
               formatDotDate(review.createdAt),
               style: const TextStyle(
@@ -458,15 +445,6 @@ class _InternalReviewItem extends StatelessWidget {
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 12),
-        Text(
-          reviewText,
-          style: const TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: AppColors.textPrimary,
-          ),
         ),
         if (review.imageUrls.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -479,27 +457,88 @@ class _InternalReviewItem extends StatelessWidget {
               itemBuilder: (context, index) {
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    review.imageUrls[index],
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 80,
-                      height: 80,
-                      color: AppColors.border,
-                      child: const Icon(
-                        Icons.broken_image_outlined,
-                        color: Colors.white,
-                      ),
-                    ),
+                  child: _ReviewImageThumbnail(
+                    imagePath: review.imageUrls[index],
                   ),
                 );
               },
             ),
           ),
         ],
+        if (visitPurpose != null && visitPurpose.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(
+            '[$visitPurpose]으로 방문함',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Text(
+          reviewText,
+          style: const TextStyle(
+            fontSize: 14,
+            height: 1.5,
+            color: AppColors.textPrimary,
+          ),
+        ),
       ],
+    );
+  }
+}
+
+class _ReviewImageThumbnail extends StatelessWidget {
+  const _ReviewImageThumbnail({required this.imagePath});
+
+  final String imagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return Image.network(
+        imagePath,
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildFallback(),
+      );
+    }
+
+    if (_isFilePath(imagePath)) {
+      return Image.file(
+        File(imagePath),
+        width: 80,
+        height: 80,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildFallback(),
+      );
+    }
+
+    return Image.asset(
+      imagePath,
+      width: 80,
+      height: 80,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => _buildFallback(),
+    );
+  }
+
+  bool _isFilePath(String value) {
+    return value.startsWith('/') || RegExp(r'^[A-Za-z]:\\').hasMatch(value);
+  }
+
+  Widget _buildFallback() {
+    return Container(
+      width: 80,
+      height: 80,
+      color: AppColors.border,
+      child: const Icon(
+        Icons.broken_image_outlined,
+        color: Colors.white,
+      ),
     );
   }
 }

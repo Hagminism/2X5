@@ -1,6 +1,8 @@
 import {setGlobalOptions} from "firebase-functions";
 import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
+import {initializeApp} from "firebase-admin/app";
 setGlobalOptions({maxInstances: 10});
+initializeApp();
 
 type SubmitVerificationRequest = {
   representativeName?: string;
@@ -29,7 +31,7 @@ const PARTNER_STATUS_PENDING = "pending";
  */
 async function supabaseRequest<T>(
   path: string,
-  method: "GET" | "POST" | "PATCH",
+  method: "GET" | "POST" | "PATCH" | "DELETE",
   body?: unknown,
 ): Promise<T> {
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -64,6 +66,39 @@ async function supabaseRequest<T>(
   const data = (await response.json()) as T;
   return data;
 }
+
+/**
+ * 회원 탈퇴 시 Supabase 데이터만 삭제한다.
+ * Firebase 사용자 삭제는 앱에서 재인증 직후 직접 수행한다.
+ */
+export const deleteAccountWithDataCleanup = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    await supabaseRequest<unknown[]>(
+      `stores?owner_id=eq.${uid}`,
+      "DELETE",
+    );
+    await supabaseRequest<unknown[]>(
+      `owner_verifications?owner_id=eq.${uid}`,
+      "DELETE",
+    );
+    await supabaseRequest<unknown[]>(
+      `users?id=eq.${uid}`,
+      "DELETE",
+    );
+
+    return {
+      success: true,
+    };
+  },
+);
 
 /**
  * 관리자 사업자 인증 정보를 저장하고 사용자 상태를 pending으로 갱신한다.
