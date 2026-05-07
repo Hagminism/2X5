@@ -145,6 +145,13 @@ final router = GoRouter(
             GoRoute(
               path: Routes.map,
               builder: (context, state) => const MapScreen(),
+              routes: [
+                GoRoute(
+                  parentNavigatorKey: _rootNavigatorKey,
+                  path: Routes.search,
+                  builder: (context, state) => const SearchScreen(),
+                ),
+              ],
             ),
           ],
         ),
