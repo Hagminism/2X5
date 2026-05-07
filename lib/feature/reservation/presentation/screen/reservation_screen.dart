@@ -22,7 +22,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
   bool _isLoading = false;
 
   final List<String> morningSlots = ['10:00', '10:30', '11:00', '11:30'];
-  final List<String> afternoonSlots = ['13:00', '13:30', '14:00', '15:30', '16:00'];
+  final List<String> afternoonSlots = [
+    '13:00',
+    '13:30',
+    '14:00',
+    '15:30',
+    '16:00',
+  ];
 
   @override
   void initState() {
@@ -57,14 +63,19 @@ class _ReservationScreenState extends State<ReservationScreen> {
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         title: const Text("예약 성공"),
-        content: Text("${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n정상적으로 예약되었습니다!"),
+        content: Text(
+          "${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n정상적으로 예약되었습니다!",
+        ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
               context.pop();
             },
-            child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              "확인",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -105,8 +116,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     titleTextStyle: AppTextStyles.subtitle,
                   ),
                   calendarStyle: const CalendarStyle(
-                    selectedDecoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                    todayDecoration: BoxDecoration(color: Color(0x4DFFD100), shape: BoxShape.circle),
+                    selectedDecoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    todayDecoration: BoxDecoration(
+                      color: Color(0x4DFFD100),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
                 const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
@@ -154,7 +171,9 @@ class _ReservationScreenState extends State<ReservationScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text("예약 확인"),
-        content: Text("${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n인원: $_guestCount명\n이대로 예약하시겠습니까?"),
+        content: Text(
+          "${_selectedDay?.month}월 ${_selectedDay?.day}일 $_selectedTime\n인원: $_guestCount명\n이대로 예약하시겠습니까?",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -165,7 +184,10 @@ class _ReservationScreenState extends State<ReservationScreen> {
               Navigator.pop(dialogContext);
               _handleReservationSubmit();
             },
-            child: const Text("확인", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              "확인",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -241,7 +263,9 @@ class _ReservationScreenState extends State<ReservationScreen> {
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? AppColors.primary : const Color(0xFFEEEEEE)),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : const Color(0xFFEEEEEE),
+          ),
         ),
         child: Text(
           time,

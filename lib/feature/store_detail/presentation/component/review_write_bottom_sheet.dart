@@ -439,7 +439,8 @@ class _ReviewImagePickerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canAddMore = imagePaths.length < _ReviewWriteBottomSheetState._maxImageCount;
+    final canAddMore =
+        imagePaths.length < _ReviewWriteBottomSheetState._maxImageCount;
 
     return Wrap(
       spacing: 10,
@@ -484,7 +485,13 @@ class _AddImageTile extends StatelessWidget {
           border: Border.all(color: AppColors.border),
         ),
         child: isLoading
-            ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))
+            ? const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
             : const Icon(
                 Icons.add_a_photo_outlined,
                 color: AppColors.textSecondary,
