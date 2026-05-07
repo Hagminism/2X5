@@ -54,6 +54,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 import '../../studycafe/presentation/screen/seat_selection_screen.dart';
+import '../../studycafe/presentation/screen/time_selection_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -143,9 +144,19 @@ final router = GoRouter(
                       builder: (context, state) => const ReservationScreen(),
                     ),
                     GoRoute(
-                      path: Routes.seat,
-                      parentNavigatorKey: _rootNavigatorKey,
+                      path: Routes.seat, // 'seat'
+                      parentNavigatorKey: _rootNavigatorKey, // 부모가 전체화면 키를 쓰면
                       builder: (context, state) => const SeatSelectionScreen(),
+                      routes: [
+                        GoRoute(
+                          path: 'time/:seatNumber',
+                          parentNavigatorKey: _rootNavigatorKey, // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
+                          builder: (context, state) {
+                            final seatNumber = int.parse(state.pathParameters['seatNumber']!);
+                            return TimeSelectionScreen(seatNumber: seatNumber);
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),

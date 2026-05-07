@@ -124,37 +124,39 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
             ),
 
             // 최종 예약 버튼
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: selectedHours == null
-                        ? null
-                        : () {
-                      // 예약 확정 로직 (Supabase API 연동 등)
-                      _onReservationConfirm();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      disabledBackgroundColor: AppColors.border,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      "예약 확정하기",
-                      style: TextStyle(
-                          color: AppColors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold
-                      ),
-                    ),
+// 최종 예약 버튼
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                // 💡 수정: 시간이 선택되었을 때만 버튼이 활성화되도록 합니다.
+                onPressed: selectedHours == null
+                    ? null
+                    : () {
+                  // 💡 수정: 좌석 화면 이동 로직 대신, 예약 확정 함수를 호출합니다!
+                  _onReservationConfirm();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.border,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  "예약 확정하기",
+                  style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold
                   ),
                 ),
               ),
             ),
+          ),
+        ),
           ],
         ),
       ),
