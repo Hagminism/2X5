@@ -25,6 +25,8 @@ import 'package:capstone_2026/feature/my_page/account_settings/presentation/scre
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
+import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
@@ -41,8 +43,6 @@ import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_m
 import 'package:capstone_2026/feature/map/presentation/screen/map_screen.dart';
 import 'package:capstone_2026/feature/sign_up_customer/core/presentation/component/scope/sign_up_customer_scope.dart';
 import 'package:capstone_2026/feature/sign_up_partner/core/presentation/component/scope/sign_up_partner_scope.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_screen_root.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
@@ -200,6 +200,13 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => ReviewHistoryScreenRoot(
                     viewModel: getIt<ReviewHistoryViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.stampHistory,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => StampHistoryScreenRoot(
+                    viewModel: getIt<StampHistoryViewModel>(),
                   ),
                 ),
                 GoRoute(

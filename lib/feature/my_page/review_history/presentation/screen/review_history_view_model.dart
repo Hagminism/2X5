@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_state.dart';
+import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
@@ -9,11 +10,14 @@ class ReviewHistoryViewModel extends ChangeNotifier {
   ReviewHistoryViewModel({
     required AuthRepository authRepository,
     required StoreReviewRepository storeReviewRepository,
+    required StampService stampService,
   }) : _authRepository = authRepository,
-       _storeReviewRepository = storeReviewRepository;
+       _storeReviewRepository = storeReviewRepository,
+       _stampService = stampService;
 
   final AuthRepository _authRepository;
   final StoreReviewRepository _storeReviewRepository;
+  final StampService _stampService;
 
   ReviewHistoryState _state = const ReviewHistoryState();
 
@@ -64,6 +68,7 @@ class ReviewHistoryViewModel extends ChangeNotifier {
     required InternalReview review,
   }) async {
     await _storeReviewRepository.deleteReview(reviewId: review.id);
+    await _stampService.revokeStampForDeletedReview(storeId: review.storeId);
 
     final remainingReviews = state.reviews
         .where((item) => item.id != review.id)

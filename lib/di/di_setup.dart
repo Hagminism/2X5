@@ -29,6 +29,7 @@ import 'package:capstone_2026/feature/partner_reservations/presentation/screen/p
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
+import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_view_model.dart';
@@ -44,6 +45,9 @@ import 'package:capstone_2026/feature/store_detail/domain/repository/store_detai
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
+import 'package:capstone_2026/feature/stamp/data/repository/stamp_repository_impl.dart';
+import 'package:capstone_2026/feature/stamp/domain/repository/stamp_repository.dart';
+import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -144,6 +148,15 @@ void diSetup() {
       authRepository: getIt<AuthRepository>(),
     ),
   );
+  getIt.registerLazySingleton<StampRepository>(
+    () => StampRepositoryImpl(),
+  );
+  getIt.registerLazySingleton<StampService>(
+    () => StampService(
+      stampRepository: getIt<StampRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
   getIt.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(userDataSource: getIt<UserDataSource>()),
   );
@@ -232,12 +245,17 @@ void diSetup() {
     () => ReviewHistoryViewModel(
       authRepository: getIt<AuthRepository>(),
       storeReviewRepository: getIt<StoreReviewRepository>(),
+      stampService: getIt<StampService>(),
     ),
+  );
+  getIt.registerFactory<StampHistoryViewModel>(
+    () => StampHistoryViewModel(stampService: getIt<StampService>()),
   );
   getIt.registerFactory<StoreDetailViewModel>(
     () => StoreDetailViewModel(
       storeDetailRepository: getIt<StoreDetailRepository>(),
       storeReviewService: getIt<StoreReviewService>(),
+      stampService: getIt<StampService>(),
     ),
   );
   getIt.registerFactory<InformationViewModel>(
