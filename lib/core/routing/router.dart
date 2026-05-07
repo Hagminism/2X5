@@ -273,12 +273,14 @@ final router = GoRouter(
                 ),
                 GoRoute(
                   path: Routes.partnerStoreMenus,
+                  parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => PartnerStoreMenuScope(
                     viewModel: getIt<PartnerStoreMenuViewModel>(),
                   ),
                 ),
                 GoRoute(
                   path: Routes.partnerStoreImages,
+                  parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => PartnerStoreImageScope(
                     viewModel: getIt<PartnerStoreImageViewModel>(),
                   ),

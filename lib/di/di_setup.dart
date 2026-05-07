@@ -113,7 +113,10 @@ void diSetup() {
     ),
   );
   getIt.registerLazySingleton<StoreDataSource>(
-    () => StoreDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
+    () => StoreDataSourceImpl(
+      supabaseClient: getIt<SupabaseClient>(),
+      firebaseFunctions: getIt<FirebaseFunctions>(),
+    ),
   );
   getIt.registerLazySingleton<ReservationDataSource>(
     () => ReservationDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
