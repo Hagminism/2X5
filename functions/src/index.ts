@@ -193,6 +193,159 @@ type RejectPartnerForDemoRequest = {
   demoKey?: string;
 };
 
+type UploadStoreImageRequest = {
+  storeId?: string;
+  bucketId?: string;
+  fileBase64?: string;
+  fileExtension?: string;
+  contentType?: string;
+};
+
+type DeleteStoreImageRequest = {
+  storeId?: string;
+  bucketId?: string;
+  objectPath?: string;
+};
+
+type StoreOwnershipResponse = {
+  id: string;
+};
+
+const STORE_IMAGE_BUCKET = "store_images";
+const STORE_MENU_IMAGE_BUCKET = "store_menu_images";
+
+/**
+ * Storage object path를 URL-safe 형태로 인코딩한다.
+ * @param {string} path 원본 object path
+ * @return {string} 인코딩된 path
+ */
+function encodeStoragePath(path: string): string {
+  return path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+/**
+ * Supabase Storage REST API로 파일을 업로드하고 public URL을 반환한다.
+ * @param {string} bucketId 업로드 대상 버킷
+ * @param {string} objectPath 버킷 내부 object path
+ * @param {Buffer} fileBytes 업로드할 파일 바이트
+ * @param {string} contentType 파일 MIME 타입
+ * @return {Promise<string>} 업로드된 파일의 public URL
+ */
+async function uploadToSupabaseStorage({
+  bucketId,
+  objectPath,
+  fileBytes,
+  contentType,
+}: {
+  bucketId: string;
+  objectPath: string;
+  fileBytes: Buffer;
+  contentType: string;
+}): Promise<string> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new HttpsError(
+      "failed-precondition",
+      "SUPABASE_URL 또는 SUPABASE_SERVICE_ROLE_KEY가 설정되지 않았습니다.",
+    );
+  }
+
+  const encodedPath = encodeStoragePath(objectPath);
+  const fileArrayBuffer = fileBytes.buffer.slice(
+    fileBytes.byteOffset,
+    fileBytes.byteOffset + fileBytes.byteLength,
+  ) as ArrayBuffer;
+
+  const uploadResponse = await fetch(
+    `${supabaseUrl}/storage/v1/object/${bucketId}/${encodedPath}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": contentType,
+        "apikey": serviceRoleKey,
+        "Authorization": `Bearer ${serviceRoleKey}`,
+        "x-upsert": "true",
+      },
+      body: fileArrayBuffer,
+    },
+  );
+
+  if (!uploadResponse.ok) {
+    const responseText = await uploadResponse.text();
+    throw new HttpsError(
+      "internal",
+      `스토리지 업로드 실패: ${uploadResponse.status} ${responseText}`,
+    );
+  }
+
+  return `${supabaseUrl}/storage/v1/object/public/${bucketId}/${encodedPath}`;
+}
+
+/**
+ * Supabase Storage REST API에서 object를 삭제한다.
+ * @param {string} bucketId 삭제 대상 버킷
+ * @param {string} objectPath 버킷 내부 object path
+ * @return {Promise<void>} 삭제 완료
+ */
+async function deleteFromSupabaseStorage({
+  bucketId,
+  objectPath,
+}: {
+  bucketId: string;
+  objectPath: string;
+}): Promise<void> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new HttpsError(
+      "failed-precondition",
+      "SUPABASE_URL 또는 SUPABASE_SERVICE_ROLE_KEY가 설정되지 않았습니다.",
+    );
+  }
+
+  const encodedPath = encodeStoragePath(objectPath);
+  const deleteResponse = await fetch(
+    `${supabaseUrl}/storage/v1/object/${bucketId}/${encodedPath}`,
+    {
+      method: "DELETE",
+      headers: {
+        "apikey": serviceRoleKey,
+        "Authorization": `Bearer ${serviceRoleKey}`,
+      },
+    },
+  );
+  if (!deleteResponse.ok) {
+    const responseText = await deleteResponse.text();
+    throw new HttpsError(
+      "internal",
+      `스토리지 삭제 실패: ${deleteResponse.status} ${responseText}`,
+    );
+  }
+}
+
+/**
+ * 요청 사용자가 해당 업장의 소유자인지 확인한다.
+ * @param {string} storeId 업장 ID
+ * @param {string} uid Firebase UID
+ * @return {Promise<void>} 소유자 검증 완료
+ */
+async function assertStoreOwnership(
+  storeId: string,
+  uid: string,
+): Promise<void> {
+  const stores = await supabaseRequest<StoreOwnershipResponse[]>(
+    `stores?id=eq.${storeId}&owner_id=eq.${uid}&select=id&limit=1`,
+    "GET",
+  );
+  if (stores.length === 0) {
+    throw new HttpsError("permission-denied", "업장 소유자가 아닙니다.");
+  }
+}
+
 /**
  * 데모용으로 특정 partner 사용자를 승인 상태로 변경한다.
  * @param {string} targetUid 승인할 사용자 UID
@@ -358,5 +511,93 @@ export const rejectPartnerForDemo = onRequest(
       beforeStatus: currentStatus,
       afterStatus: updatedUsers[0].partner_status,
     });
+  },
+);
+
+/**
+ * 관리자 업장 이미지를 Firebase Functions 경유로 Supabase Storage에 업로드한다.
+ */
+export const uploadStoreImageToSupabase = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as UploadStoreImageRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const bucketId = (data.bucketId ?? "").trim();
+    const fileBase64 = (data.fileBase64 ?? "").trim();
+    const fileExtension = (data.fileExtension ?? "jpg").trim().toLowerCase();
+    const contentType = (data.contentType ?? "image/jpeg").trim();
+
+    if (!storeId || !bucketId || !fileBase64) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (
+      bucketId !== STORE_IMAGE_BUCKET &&
+      bucketId !== STORE_MENU_IMAGE_BUCKET
+    ) {
+      throw new HttpsError("invalid-argument", "허용되지 않은 버킷입니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    let fileBytes: Buffer;
+    try {
+      fileBytes = Buffer.from(fileBase64, "base64");
+    } catch (_) {
+      throw new HttpsError("invalid-argument", "이미지 데이터 형식이 올바르지 않습니다.");
+    }
+    if (fileBytes.length === 0) {
+      throw new HttpsError("invalid-argument", "이미지 데이터가 비어 있습니다.");
+    }
+
+    const objectPath = `${storeId}/${Date.now()}.${fileExtension || "jpg"}`;
+    const publicUrl = await uploadToSupabaseStorage({
+      bucketId,
+      objectPath,
+      fileBytes,
+      contentType,
+    });
+
+    return {publicUrl};
+  },
+);
+
+/**
+ * 관리자 업장 이미지를 Firebase Functions 경유로 Supabase Storage에서 삭제한다.
+ */
+export const deleteStoreImageFromSupabase = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as DeleteStoreImageRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const bucketId = (data.bucketId ?? "").trim();
+    const objectPath = (data.objectPath ?? "").trim();
+
+    if (!storeId || !bucketId || !objectPath) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (
+      bucketId !== STORE_IMAGE_BUCKET &&
+      bucketId !== STORE_MENU_IMAGE_BUCKET
+    ) {
+      throw new HttpsError("invalid-argument", "허용되지 않은 버킷입니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+    await deleteFromSupabaseStorage({bucketId, objectPath});
+    return {success: true};
   },
 );
