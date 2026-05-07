@@ -1,5 +1,6 @@
+import 'dart:io';
+
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
-import 'package:capstone_2026/feature/partner_page/presentation/component/partner_form_text_field.dart';
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_action.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
@@ -8,12 +9,14 @@ import 'package:flutter/material.dart';
 class PartnerStoreImageEditor extends StatelessWidget {
   final int index;
   final StoreImage image;
+  final String? localImagePath;
   final void Function(PartnerStoreImageAction action) onAction;
 
   const PartnerStoreImageEditor({
     super.key,
     required this.index,
     required this.image,
+    required this.localImagePath,
     required this.onAction,
   });
 
@@ -33,7 +36,9 @@ class PartnerStoreImageEditor extends StatelessWidget {
               Expanded(
                 child: Text(
                   '사진 ${index + 1}',
-                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               TextButton(
@@ -48,29 +53,47 @@ class PartnerStoreImageEditor extends StatelessWidget {
               ),
             ],
           ),
-          PartnerFormTextField(
-            key: ValueKey('image-url-$index-${image.id ?? 'new'}'),
-            hintText: '이미지 URL',
-            initialValue: image.imageUrl,
-            onChanged: (value) => onAction(
-              PartnerStoreImageAction.changeStoreImageUrl(
-                index: index,
-                value: value,
-              ),
+          if ((localImagePath != null && localImagePath!.isNotEmpty) ||
+              image.imageUrl.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: localImagePath != null && localImagePath!.isNotEmpty
+                  ? Image.file(
+                      File(localImagePath!),
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.network(
+                      image.imageUrl,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
             ),
-          ),
-          const SizedBox(height: 8),
-          PartnerFormTextField(
-            key: ValueKey('image-caption-$index-${image.id ?? 'new'}'),
-            hintText: '사진 설명(선택)',
-            initialValue: image.caption,
-            onChanged: (value) => onAction(
-              PartnerStoreImageAction.changeStoreImageCaption(
-                index: index,
-                value: value,
-              ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  localImagePath != null && localImagePath!.isNotEmpty
+                      ? '선택 완료 (저장 시 업로드)'
+                      : '업로드 완료',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
-          ),
+            const SizedBox(height: 8),
+          ],
         ],
       ),
     );
