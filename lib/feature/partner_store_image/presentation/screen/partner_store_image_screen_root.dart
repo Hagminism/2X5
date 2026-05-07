@@ -20,7 +20,8 @@ class PartnerStoreImageScreenRoot extends StatefulWidget {
       _PartnerStoreImageScreenRootState();
 }
 
-class _PartnerStoreImageScreenRootState extends State<PartnerStoreImageScreenRoot> {
+class _PartnerStoreImageScreenRootState
+    extends State<PartnerStoreImageScreenRoot> {
   final ImagePicker _imagePicker = ImagePicker();
   StreamSubscription<PartnerStoreImageEvent>? _eventSubscription;
 

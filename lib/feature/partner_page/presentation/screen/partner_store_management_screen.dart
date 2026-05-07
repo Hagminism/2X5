@@ -303,12 +303,15 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                     for (final day in WeekDay.values) ...[
                       PartnerStoreManagementDayOperatingRow(
                         dayLabel: day.label,
-                        isOpened: (state.operatingHours[day.dbKey]?['isOpened'] ==
+                        isOpened:
+                            (state.operatingHours[day.dbKey]?['isOpened'] ==
                             true),
-                        openTime: (state.operatingHours[day.dbKey]?['openTime']
+                        openTime:
+                            (state.operatingHours[day.dbKey]?['openTime']
                                 as String?) ??
                             '',
-                        closeTime: (state.operatingHours[day.dbKey]?['closeTime']
+                        closeTime:
+                            (state.operatingHours[day.dbKey]?['closeTime']
                                 as String?) ??
                             '',
                         onToggleOpened: (value) => onAction(

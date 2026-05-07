@@ -90,10 +90,10 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
     }
     _state = _state.copyWith(
       images: _withReindexedImages(
-      List<StoreImage>.generate(
-        _state.images.length,
-        (i) => _state.images[i].copyWith(isCover: i == index),
-      ),
+        List<StoreImage>.generate(
+          _state.images.length,
+          (i) => _state.images[i].copyWith(isCover: i == index),
+        ),
       ),
     );
     notifyListeners();
@@ -137,7 +137,9 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
         images: nextImages,
         localImagePaths: List<String?>.filled(nextImages.length, null),
       );
-      _eventController.add(const PartnerStoreImageEvent.showMessage('사진이 저장되었습니다.'));
+      _eventController.add(
+        const PartnerStoreImageEvent.showMessage('사진이 저장되었습니다.'),
+      );
       _eventController.add(const PartnerStoreImageEvent.pop());
     } catch (e) {
       _eventController.add(PartnerStoreImageEvent.showMessage(e.toString()));

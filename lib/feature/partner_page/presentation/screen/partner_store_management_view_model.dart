@@ -88,10 +88,14 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         notifyListeners();
         break;
       case TapOpenMenuManager():
-        _eventController.add(const PartnerStoreManagementEvent.openMenuManager());
+        _eventController.add(
+          const PartnerStoreManagementEvent.openMenuManager(),
+        );
         break;
       case TapOpenImageManager():
-        _eventController.add(const PartnerStoreManagementEvent.openImageManager());
+        _eventController.add(
+          const PartnerStoreManagementEvent.openImageManager(),
+        );
         break;
       case AddMenu():
       case RemoveMenu():

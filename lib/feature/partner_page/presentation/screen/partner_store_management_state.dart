@@ -46,9 +46,7 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
         : parsedDepositAmount != null && parsedDepositAmount == 0;
     final isMenusValid = menus.every(
       (menu) =>
-          menu.name.trim().isNotEmpty &&
-          menu.price >= 0 &&
-          menu.sortOrder >= 0,
+          menu.name.trim().isNotEmpty && menu.price >= 0 && menu.sortOrder >= 0,
     );
     var coverCount = 0;
     final isImagesValid = images.every((image) {
