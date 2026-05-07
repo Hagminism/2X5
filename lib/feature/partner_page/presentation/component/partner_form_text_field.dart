@@ -65,10 +65,13 @@ class PartnerFormTextField extends StatelessWidget {
       return textField;
     }
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AbsorbPointer(child: textField),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: AbsorbPointer(child: textField),
+      ),
     );
   }
 }
