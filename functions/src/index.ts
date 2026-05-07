@@ -213,6 +213,123 @@ type StoreOwnershipResponse = {
 
 const STORE_IMAGE_BUCKET = "store_images";
 const STORE_MENU_IMAGE_BUCKET = "store_menu_images";
+const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+const MIME_TO_EXTENSIONS: Record<string, string[]> = {
+  "image/jpeg": ["jpg", "jpeg"],
+  "image/png": ["png"],
+  "image/webp": ["webp"],
+};
+
+/**
+ * 업로드 바이트의 매직 넘버를 기반으로 이미지 MIME 타입을 추정한다.
+ * @param {Buffer} fileBytes 업로드 파일 바이트
+ * @return {string | null} 추정 MIME 타입
+ */
+function detectImageMimeType(fileBytes: Buffer): string | null {
+  // JPEG: FF D8 FF
+  if (
+    fileBytes.length >= 3 &&
+    fileBytes[0] === 0xff &&
+    fileBytes[1] === 0xd8 &&
+    fileBytes[2] === 0xff
+  ) {
+    return "image/jpeg";
+  }
+
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (
+    fileBytes.length >= 8 &&
+    fileBytes[0] === 0x89 &&
+    fileBytes[1] === 0x50 &&
+    fileBytes[2] === 0x4e &&
+    fileBytes[3] === 0x47 &&
+    fileBytes[4] === 0x0d &&
+    fileBytes[5] === 0x0a &&
+    fileBytes[6] === 0x1a &&
+    fileBytes[7] === 0x0a
+  ) {
+    return "image/png";
+  }
+
+  // WEBP: "RIFF" + .... + "WEBP"
+  if (
+    fileBytes.length >= 12 &&
+    fileBytes[0] === 0x52 &&
+    fileBytes[1] === 0x49 &&
+    fileBytes[2] === 0x46 &&
+    fileBytes[3] === 0x46 &&
+    fileBytes[8] === 0x57 &&
+    fileBytes[9] === 0x45 &&
+    fileBytes[10] === 0x42 &&
+    fileBytes[11] === 0x50
+  ) {
+    return "image/webp";
+  }
+
+  return null;
+}
+
+/**
+ * 사용자 입력 파일 메타데이터를 검증하고 서버 기준 값으로 정규화한다.
+ * @param {string} requestedContentType 사용자 요청 MIME 타입
+ * @param {string} requestedExtension 사용자 요청 확장자
+ * @param {Buffer} fileBytes 업로드 파일 바이트
+ * @return {{contentType: string, fileExtension: string}} 정규화된 메타데이터
+ */
+function validateAndNormalizeImageMetadata({
+  requestedContentType,
+  requestedExtension,
+  fileBytes,
+}: {
+  requestedContentType: string;
+  requestedExtension: string;
+  fileBytes: Buffer;
+}): {
+  contentType: string;
+  fileExtension: string;
+} {
+  const normalizedContentType = requestedContentType.trim().toLowerCase();
+  if (!ALLOWED_IMAGE_MIME_TYPES.has(normalizedContentType)) {
+    throw new HttpsError("invalid-argument", "허용되지 않은 MIME 타입입니다.");
+  }
+
+  const detectedMimeType = detectImageMimeType(fileBytes);
+  if (!detectedMimeType) {
+    throw new HttpsError(
+      "invalid-argument",
+      "지원하지 않는 이미지 형식입니다. (jpg, png, webp만 허용)",
+    );
+  }
+  if (detectedMimeType !== normalizedContentType) {
+    throw new HttpsError(
+      "invalid-argument",
+      "요청한 MIME 타입과 실제 파일 형식이 일치하지 않습니다.",
+    );
+  }
+
+  const normalizedExtension = requestedExtension
+    .trim()
+    .toLowerCase()
+    .replace(".", "");
+  const allowedExtensions = MIME_TO_EXTENSIONS[normalizedContentType];
+  if (!allowedExtensions.includes(normalizedExtension)) {
+    throw new HttpsError(
+      "invalid-argument",
+      `MIME 타입과 확장자 조합이 올바르지 않습니다: ${normalizedContentType}`,
+    );
+  }
+
+  return {
+    contentType: normalizedContentType,
+    fileExtension: allowedExtensions[0],
+  };
+}
 
 /**
  * Storage object path를 URL-safe 형태로 인코딩한다.
@@ -531,8 +648,10 @@ export const uploadStoreImageToSupabase = onCall(
     const storeId = (data.storeId ?? "").trim();
     const bucketId = (data.bucketId ?? "").trim();
     const fileBase64 = (data.fileBase64 ?? "").trim();
-    const fileExtension = (data.fileExtension ?? "jpg").trim().toLowerCase();
-    const contentType = (data.contentType ?? "image/jpeg").trim();
+    const requestedFileExtension = (data.fileExtension ?? "jpg")
+      .trim()
+      .toLowerCase();
+    const requestedContentType = (data.contentType ?? "image/jpeg").trim();
 
     if (!storeId || !bucketId || !fileBase64) {
       throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
@@ -555,13 +674,26 @@ export const uploadStoreImageToSupabase = onCall(
     if (fileBytes.length === 0) {
       throw new HttpsError("invalid-argument", "이미지 데이터가 비어 있습니다.");
     }
+    if (fileBytes.length > MAX_IMAGE_UPLOAD_BYTES) {
+      throw new HttpsError(
+        "invalid-argument",
+        "이미지 파일 크기는 5MB를 초과할 수 없습니다.",
+      );
+    }
 
-    const objectPath = `${storeId}/${Date.now()}.${fileExtension || "jpg"}`;
+    const normalizedMetadata = validateAndNormalizeImageMetadata({
+      requestedContentType,
+      requestedExtension: requestedFileExtension,
+      fileBytes,
+    });
+
+    const objectPath = `${storeId}/${Date.now()}.` +
+      normalizedMetadata.fileExtension;
     const publicUrl = await uploadToSupabaseStorage({
       bucketId,
       objectPath,
       fileBytes,
-      contentType,
+      contentType: normalizedMetadata.contentType,
     });
 
     return {publicUrl};
