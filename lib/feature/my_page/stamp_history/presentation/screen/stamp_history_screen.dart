@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 class StampHistoryScreen extends StatelessWidget {
   const StampHistoryScreen({
     required this.state,
+    required this.onTapWriteReview,
     super.key,
   });
 
   final StampHistoryState state;
+  final void Function(StoreStampStatus status) onTapWriteReview;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +52,10 @@ class StampHistoryScreen extends StatelessWidget {
                     ...state.stampStatuses.map(
                       (status) => Padding(
                         padding: const EdgeInsets.only(bottom: 14),
-                        child: _StampHistoryCard(status: status),
+                        child: _StampHistoryCard(
+                          status: status,
+                          onTapWriteReview: onTapWriteReview,
+                        ),
                       ),
                     ),
                 ],
@@ -61,9 +66,13 @@ class StampHistoryScreen extends StatelessWidget {
 }
 
 class _StampHistoryCard extends StatelessWidget {
-  const _StampHistoryCard({required this.status});
+  const _StampHistoryCard({
+    required this.status,
+    required this.onTapWriteReview,
+  });
 
   final StoreStampStatus status;
+  final void Function(StoreStampStatus status) onTapWriteReview;
 
   @override
   Widget build(BuildContext context) {
@@ -149,15 +158,41 @@ class _StampHistoryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text(
-            status.historyStatusMessage,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: status.hasWrittenReview
-                  ? AppColors.primary
-                  : AppColors.textSecondary,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  status.historyStatusMessage,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: status.hasWrittenReview
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              if (!status.hasWrittenReview)
+                TextButton(
+                  onPressed: () => onTapWriteReview(status),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text(
+                    '리뷰 작성하기',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 6),
           Text(

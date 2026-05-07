@@ -1,6 +1,8 @@
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_screen.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
+import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class StampHistoryScreenRoot extends StatefulWidget {
   const StampHistoryScreenRoot({
@@ -26,7 +28,12 @@ class _StampHistoryScreenRootState extends State<StampHistoryScreenRoot> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, child) {
-        return StampHistoryScreen(state: widget.viewModel.state);
+        return StampHistoryScreen(
+          state: widget.viewModel.state,
+          onTapWriteReview: (status) {
+            context.push('${Routes.home}/information/${status.storeId}');
+          },
+        );
       },
     );
   }
