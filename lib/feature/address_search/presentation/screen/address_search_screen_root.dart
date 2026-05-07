@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_event.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

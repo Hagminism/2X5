@@ -7,6 +7,8 @@ import 'package:capstone_2026/feature/address_search/presentation/screen/address
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_screen_root.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/core/presentation/component/scope/partner_reservation_slot_settings_scope.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/partner_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
@@ -18,6 +20,10 @@ import 'package:capstone_2026/feature/partner_page/core/presentation/component/s
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_screen_root.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_image/core/presentation/component/scope/partner_store_image_scope.dart';
+import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_menu/core/presentation/component/scope/partner_store_menu_scope.dart';
+import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
@@ -118,12 +124,12 @@ final router = GoRouter(
                   builder: (context, state) => const SearchScreen(),
                 ),
                 GoRoute(
-                  name: 'information', 
+                  name: 'information',
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: 'information/:storeId', // 
+                  path: 'information/:storeId', //
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    return InformationScreenRoot( 
+                    return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
                     );
@@ -145,6 +151,13 @@ final router = GoRouter(
             GoRoute(
               path: Routes.map,
               builder: (context, state) => const MapScreen(),
+              routes: [
+                GoRoute(
+                  parentNavigatorKey: _rootNavigatorKey,
+                  path: Routes.search,
+                  builder: (context, state) => const SearchScreen(),
+                ),
+              ],
             ),
           ],
         ),
@@ -288,6 +301,20 @@ final router = GoRouter(
                     viewModel: getIt<AddressSearchViewModel>(),
                   ),
                 ),
+                GoRoute(
+                  path: Routes.partnerStoreMenus,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => PartnerStoreMenuScope(
+                    viewModel: getIt<PartnerStoreMenuViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerStoreImages,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => PartnerStoreImageScope(
+                    viewModel: getIt<PartnerStoreImageViewModel>(),
+                  ),
+                ),
               ],
             ),
           ],
@@ -299,6 +326,17 @@ final router = GoRouter(
               builder: (context, state) => PartnerReservationsScreenRoot(
                 viewModel: getIt<PartnerReservationsViewModel>(),
               ),
+              routes: [
+                GoRoute(
+                  path: Routes.partnerReservationSlotSettings,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) =>
+                      PartnerReservationSlotSettingsScope(
+                        viewModel:
+                            getIt<PartnerReservationSlotSettingsViewModel>(),
+                      ),
+                ),
+              ],
             ),
           ],
         ),
@@ -425,7 +463,7 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final isInSignUpFlow = location.startsWith(
     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
   );
-final isInPartnerOnboarding = location == Routes.partnerOnboarding;
+  final isInPartnerOnboarding = location == Routes.partnerOnboarding;
   final partnerShellBasePaths = [
     Routes.partnerHome,
     Routes.partnerStore,
@@ -437,13 +475,13 @@ final isInPartnerOnboarding = location == Routes.partnerOnboarding;
   );
   final isInUserShell =
       location == Routes.home ||
-          location.startsWith('${Routes.home}/') ||
-          location == Routes.map ||
-          location.startsWith('${Routes.map}/') ||
-          location == Routes.bookmark ||
-          location.startsWith('${Routes.bookmark}/') ||
-          location == Routes.myPage ||
-          location.startsWith('${Routes.myPage}/');
+      location.startsWith('${Routes.home}/') ||
+      location == Routes.map ||
+      location.startsWith('${Routes.map}/') ||
+      location == Routes.bookmark ||
+      location.startsWith('${Routes.bookmark}/') ||
+      location == Routes.myPage ||
+      location.startsWith('${Routes.myPage}/');
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -471,9 +509,9 @@ final isInPartnerOnboarding = location == Routes.partnerOnboarding;
 
   final isApprovedPartner =
       registrationStatus == UserRegistrationStatus.exists &&
-          userProfile != null &&
-          userProfile.userType == UserType.partner &&
-          userProfile.partnerStatus == PartnerStatus.approved;
+      userProfile != null &&
+      userProfile.userType == UserType.partner &&
+      userProfile.partnerStatus == PartnerStatus.approved;
 
   if (isApprovedPartner) {
     if (isInPartnerOnboarding ||
