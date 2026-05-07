@@ -24,6 +24,8 @@ class Routes {
 
   // reservation
   static const String reservation = 'reservation';
+  static const String seat = 'seat';
+  static const String time = 'time/:seatNumber';
 
   // My page nested paths
   static const String profileEdit = 'profile-edit';

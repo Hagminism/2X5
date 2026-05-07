@@ -59,6 +59,9 @@ import 'package:capstone_2026/feature/information/presentation/screen/informatio
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
+import '../../studycafe/presentation/screen/seat_selection_screen.dart';
+import '../../studycafe/presentation/screen/time_selection_screen.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
@@ -126,12 +129,20 @@ final router = GoRouter(
                 GoRoute(
                   name: 'information',
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: 'information/:storeId', //
+                  path: 'information/:storeId',
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
+                    final extraData = state.extra is Map<String, dynamic>
+                        ? state.extra as Map<String, dynamic>
+                        : <String, dynamic>{};
+                    
                     return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
+                      name: extraData['name']?.toString() ?? '가게 이름 없음',
+                      subtitle: extraData['subtitle']?.toString() ?? '',
+                      rating: (extraData['rating'] as num?)?.toDouble() ?? 0.0,
+                      category: extraData['category']?.toString() ?? '',
                     );
                   },
                   routes: [
@@ -139,6 +150,21 @@ final router = GoRouter(
                       path: Routes.reservation,
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) => const ReservationScreen(),
+                    ),
+                    GoRoute(
+                      path: Routes.seat, // 'seat'
+                      parentNavigatorKey: _rootNavigatorKey, // 부모가 전체화면 키를 쓰면
+                      builder: (context, state) => const SeatSelectionScreen(),
+                      routes: [
+                        GoRoute(
+                          path: 'time/:seatNumber',
+                          parentNavigatorKey: _rootNavigatorKey, // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
+                          builder: (context, state) {
+                            final seatNumber = int.tryParse(state.pathParameters['seatNumber'] ?? '') ?? 0;
+                            return TimeSelectionScreen(seatNumber: seatNumber);
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
