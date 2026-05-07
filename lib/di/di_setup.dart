@@ -25,6 +25,7 @@ import 'package:capstone_2026/feature/address_search/data/data_source/address_se
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
@@ -205,6 +206,9 @@ void diSetup() {
     () => PartnerReservationsViewModel(
       reservationRepository: getIt<ReservationRepository>(),
     ),
+  );
+  getIt.registerFactory<PartnerReservationSlotSettingsViewModel>(
+    () => PartnerReservationSlotSettingsViewModel(),
   );
   getIt.registerFactory<AddressSearchViewModel>(
     () => AddressSearchViewModel(

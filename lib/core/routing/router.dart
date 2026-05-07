@@ -7,6 +7,8 @@ import 'package:capstone_2026/feature/address_search/presentation/screen/address
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_screen_root.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/core/presentation/component/scope/partner_reservation_slot_settings_scope.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/partner_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
@@ -308,6 +310,16 @@ final router = GoRouter(
               builder: (context, state) => PartnerReservationsScreenRoot(
                 viewModel: getIt<PartnerReservationsViewModel>(),
               ),
+              routes: [
+                GoRoute(
+                  path: Routes.partnerReservationSlotSettings,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) =>
+                      PartnerReservationSlotSettingsScope(
+                        viewModel: getIt<PartnerReservationSlotSettingsViewModel>(),
+                      ),
+                ),
+              ],
             ),
           ],
         ),

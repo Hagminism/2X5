@@ -44,6 +44,7 @@ class Routes {
   static const String partnerOnboarding = '/partner/onboarding';
   static const String partnerStoreEdit = '/partner/store/edit';
   static const String partnerReservations = '/partner/reservations';
+  static const String partnerReservationSlotSettings = 'slot-settings';
   static const String partnerMyPage = '/partner/mypage';
 
   /// Partner 마이페이지 하위 경로 (customer `myPage` 하위와 심볼·세그먼트 분리)
