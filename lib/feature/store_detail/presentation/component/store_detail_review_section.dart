@@ -4,6 +4,7 @@ import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summary.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
+import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,7 @@ class StoreDetailReviewSection extends StatelessWidget {
     required this.location,
     this.naverPlaceId,
     required this.googleSearchQuery,
+    this.stampStatus,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
     required this.onSubmitReview,
@@ -26,6 +28,7 @@ class StoreDetailReviewSection extends StatelessWidget {
   final String location;
   final String? naverPlaceId;
   final String googleSearchQuery;
+  final StoreStampStatus? stampStatus;
   final VoidCallback onTapNaverReview;
   final VoidCallback onTapGoogleReview;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
@@ -46,6 +49,10 @@ class StoreDetailReviewSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (stampStatus != null) ...[
+          _StampRewardCard(status: stampStatus!),
+          const SizedBox(height: 20),
+        ],
         _AiSummaryBox(summary: summary),
         const SizedBox(height: 32),
         const Text(
@@ -132,6 +139,15 @@ class StoreDetailReviewSection extends StatelessWidget {
   }
 
   Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
+    if (stampStatus != null && !stampStatus!.canWriteReview) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(stampStatus!.reviewEligibilityMessage)),
+        );
+      return;
+    }
+
     final result = await showModalBottomSheet<ReviewWriteResult>(
       context: context,
       isScrollControlled: true,
@@ -147,6 +163,107 @@ class StoreDetailReviewSection extends StatelessWidget {
     }
 
     await onSubmitReview(result);
+  }
+}
+
+class _StampRewardCard extends StatelessWidget {
+  const _StampRewardCard({required this.status});
+
+  final StoreStampStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFAF6),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.workspace_premium_rounded,
+                size: 18,
+                color: AppColors.primary,
+              ),
+              SizedBox(width: 8),
+              Text(
+                '스탬프 적립',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            status.reviewEligibilityMessage,
+            style: const TextStyle(
+              fontSize: 12,
+              height: 1.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${status.storeName} 스탬프',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              Text(
+                status.progressLabel,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: status.progress,
+              minHeight: 8,
+              backgroundColor: const Color(0xFFFFE5DA),
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '보상: ${status.rewardTitle}',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            status.rewardDescription,
+            style: const TextStyle(
+              fontSize: 12,
+              height: 1.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

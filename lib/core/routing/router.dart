@@ -31,6 +31,8 @@ import 'package:capstone_2026/feature/my_page/account_settings/presentation/scre
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
+import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
@@ -211,6 +213,13 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => ReviewHistoryScreenRoot(
                     viewModel: getIt<ReviewHistoryViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.stampHistory,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => StampHistoryScreenRoot(
+                    viewModel: getIt<StampHistoryViewModel>(),
                   ),
                 ),
                 GoRoute(
