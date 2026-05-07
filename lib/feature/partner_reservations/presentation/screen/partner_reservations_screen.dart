@@ -1,16 +1,19 @@
+import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/component/partner_reservation_card.dart';
-import 'package:capstone_2026/feature/partner_reservations/presentation/component/partner_reservation_date_filter_chip.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/component/partner_reservation_empty_view.dart';
+import 'package:capstone_2026/feature/partner_reservations/presentation/component/partner_reservation_settings_entry_card.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/component/partner_reservation_status_filter_chips.dart';
+import 'package:capstone_2026/feature/partner_reservations/presentation/component/partner_reservations_header.dart';
+import 'package:capstone_2026/feature/partner_reservations/presentation/component/partner_reservations_summary_row.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_action.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PartnerReservationsScreen extends StatelessWidget {
   final PartnerReservationsState state;
-  final void Function(PartnerReservationsAction action) onAction;
+  final void Function(PartnerReservationsAction) onAction;
 
   const PartnerReservationsScreen({
     super.key,
@@ -23,66 +26,55 @@ class PartnerReservationsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
-              child: Text(
-                '예약 현황',
-                style: AppTextStyles.headline.copyWith(
-                  color: AppColors.textPrimary,
-                  fontSize: 24,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const PartnerReservationsHeader(),
+              PartnerReservationSettingsEntryCard(
+                onTapSettings: () {
+                  context.push(
+                    '${Routes.partnerReservations}/${Routes.partnerReservationSlotSettings}',
+                  );
+                },
+              ),
+              PartnerReservationStatusFilterChips(
+                selectedStatus: state.selectedStatus,
+                onSelectStatus: (status) => onAction(
+                  PartnerReservationsAction.selectStatus(status),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
-              child: Text(
-                '관리자 매장 예약을 상태별로 확인하고 처리할 수 있어요.',
-                style: AppTextStyles.bodySecondary.copyWith(fontSize: 14),
+              PartnerReservationsSummaryRow(
+                totalCount: state.filteredReservations.length,
+                selectedDate: state.selectedDate,
+                formatDate: _formatDate,
+                onTapDateFilter: () => onAction(
+                  const PartnerReservationsAction.tapDateFilter(),
+                ),
+                onClearDate: () => onAction(
+                  const PartnerReservationsAction.selectDate(null),
+                ),
               ),
-            ),
-            PartnerReservationStatusFilterChips(
-              selectedStatus: state.selectedStatus,
-              onSelectStatus: (status) => onAction(
-                PartnerReservationsAction.selectStatus(status),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '총 ${state.filteredReservations.length}건',
-                    style: AppTextStyles.bodySecondary.copyWith(fontSize: 14),
-                  ),
-                  PartnerReservationDateFilterChip(
-                    selectedDate: state.selectedDate,
-                    formatDate: _formatDate,
-                    onTapDateFilter: () => onAction(
-                      const PartnerReservationsAction.tapDateFilter(),
-                    ),
-                    onClearDate: () => onAction(
-                      const PartnerReservationsAction.selectDate(null),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(child: _buildBody(context)),
-          ],
+              const SizedBox(height: 8),
+              _buildBody(state: state, onAction: onAction),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody({
+    required PartnerReservationsState state,
+    required void Function(PartnerReservationsAction) onAction,
+  }) {
     if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
       );
     }
 
@@ -95,6 +87,8 @@ class PartnerReservationsScreen extends StatelessWidget {
 
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
       itemCount: reservations.length,
       itemBuilder: (context, index) {
         final item = reservations[index];
