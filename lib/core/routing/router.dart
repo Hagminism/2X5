@@ -51,6 +51,9 @@ import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partn
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
+import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_screen_root.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -119,12 +122,23 @@ final router = GoRouter(
                   builder: (context, state) => const SearchScreen(),
                 ),
                 GoRoute(
+                  name: 'information', 
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: Routes.homeStoreDetail,
-                  builder: (context, state) => StoreDetailScreenRoot(
-                    viewModel: getIt<StoreDetailViewModel>(),
-                    storeId: state.pathParameters['storeId'] ?? '',
-                  ),
+                  path: 'information/:storeId', // 
+                  builder: (context, state) {
+                    final storeId = state.pathParameters['storeId'] ?? '';
+                    return InformationScreenRoot( 
+                      viewModel: getIt<InformationViewModel>(),
+                      storeId: storeId,
+                    );
+                  },
+                  routes: [
+                    GoRoute(
+                      path: Routes.reservation,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const ReservationScreen(),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -408,8 +422,6 @@ final router = GoRouter(
   ]),
 );
 
-// 리다이렉트 로직
-// TODO: 회원 탈퇴(deleteAccount) 후 리다이렉션 문제 있는지 추가 확인해야함
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final currentUser = getIt<AuthRepository>().getCurrentUser();
   final registrationNotifier = getIt<UserRegistrationStatusNotifier>();
@@ -418,12 +430,13 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
 
   final isLoggedIn = currentUser != null;
   final location = state.matchedLocation;
+
   final isInAuthFlow =
       location == Routes.signIn || location.startsWith('${Routes.signIn}/');
   final isInSignUpFlow = location.startsWith(
     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
   );
-  final isInPartnerOnboarding = location == Routes.partnerOnboarding;
+final isInPartnerOnboarding = location == Routes.partnerOnboarding;
   final partnerShellBasePaths = [
     Routes.partnerHome,
     Routes.partnerStore,
@@ -435,13 +448,13 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   );
   final isInUserShell =
       location == Routes.home ||
-      location.startsWith('${Routes.home}/') ||
-      location == Routes.map ||
-      location.startsWith('${Routes.map}/') ||
-      location == Routes.bookmark ||
-      location.startsWith('${Routes.bookmark}/') ||
-      location == Routes.myPage ||
-      location.startsWith('${Routes.myPage}/');
+          location.startsWith('${Routes.home}/') ||
+          location == Routes.map ||
+          location.startsWith('${Routes.map}/') ||
+          location == Routes.bookmark ||
+          location.startsWith('${Routes.bookmark}/') ||
+          location == Routes.myPage ||
+          location.startsWith('${Routes.myPage}/');
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -469,9 +482,9 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
 
   final isApprovedPartner =
       registrationStatus == UserRegistrationStatus.exists &&
-      userProfile != null &&
-      userProfile.userType == UserType.partner &&
-      userProfile.partnerStatus == PartnerStatus.approved;
+          userProfile != null &&
+          userProfile.userType == UserType.partner &&
+          userProfile.partnerStatus == PartnerStatus.approved;
 
   if (isApprovedPartner) {
     if (isInPartnerOnboarding ||
