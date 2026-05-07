@@ -57,7 +57,6 @@ class _PartnerStoreImageScreenRootState extends State<PartnerStoreImageScreenRoo
             switch (action) {
               case TapAddImageFromGallery():
               case RemoveStoreImage():
-              case ChangeStoreImageUrl():
               case ChangeStoreImageCaption():
               case SelectCoverImage():
               case TapSave():
@@ -75,16 +74,7 @@ class _PartnerStoreImageScreenRootState extends State<PartnerStoreImageScreenRoo
     if (selected == null) {
       return;
     }
-    try {
-      await widget.viewModel.addImageByFilePath(selected.path);
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.'),
-        ),
-      );
-    }
+    await widget.viewModel.addImageByFilePath(selected.path);
   }
 
   @override

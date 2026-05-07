@@ -8,10 +8,6 @@ sealed class PartnerStoreImageAction with _$PartnerStoreImageAction {
       TapAddImageFromGallery;
   const factory PartnerStoreImageAction.removeStoreImage(int index) =
       RemoveStoreImage;
-  const factory PartnerStoreImageAction.changeStoreImageUrl({
-    required int index,
-    required String value,
-  }) = ChangeStoreImageUrl;
   const factory PartnerStoreImageAction.changeStoreImageCaption({
     required int index,
     required String value,

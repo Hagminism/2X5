@@ -9,5 +9,6 @@ abstract class PartnerStoreImageState with _$PartnerStoreImageState {
     @Default(false) bool isLoading,
     @Default(false) bool isSaving,
     @Default(<StoreImage>[]) List<StoreImage> images,
+    @Default(<String?>[]) List<String?> localImagePaths,
   }) = _PartnerStoreImageState;
 }

@@ -29,9 +29,6 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
       case RemoveStoreImage():
         _removeStoreImage(action.index);
         break;
-      case ChangeStoreImageUrl():
-        _changeStoreImageUrl(action.index, action.value);
-        break;
       case ChangeStoreImageCaption():
         _changeStoreImageCaption(action.index, action.value);
         break;
@@ -52,7 +49,11 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final images = await _storeRepository.getMyStoreImages();
-      _state = _state.copyWith(images: _withReindexedImages(images));
+      final normalized = _withReindexedImages(images);
+      _state = _state.copyWith(
+        images: normalized,
+        localImagePaths: List<String?>.filled(normalized.length, null),
+      );
     } catch (_) {
       _eventController.add(
         const PartnerStoreImageEvent.showMessage('사진 목록을 불러오지 못했습니다.'),
@@ -68,12 +69,15 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
       return;
     }
     final next = List<StoreImage>.from(_state.images)..removeAt(index);
-    _state = _state.copyWith(images: _withReindexedImages(next));
+    final nextLocalPaths = List<String?>.from(_state.localImagePaths);
+    if (index < nextLocalPaths.length) {
+      nextLocalPaths.removeAt(index);
+    }
+    _state = _state.copyWith(
+      images: _withReindexedImages(next),
+      localImagePaths: nextLocalPaths,
+    );
     notifyListeners();
-  }
-
-  void _changeStoreImageUrl(int index, String value) {
-    _updateImageAt(index, (image) => image.copyWith(imageUrl: value));
   }
 
   void _changeStoreImageCaption(int index, String value) {
@@ -96,15 +100,17 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
   }
 
   Future<void> addImageByFilePath(String filePath) async {
-    final uploadedUrl = await _storeRepository.uploadMyStoreImageFile(filePath);
-    _state = _state.copyWith(images: [
-      ..._state.images,
-      StoreImage(
-        imageUrl: uploadedUrl,
-        sortOrder: _state.images.length,
-        isCover: _state.images.isEmpty,
-      ),
-    ]);
+    _state = _state.copyWith(
+      images: [
+        ..._state.images,
+        StoreImage(
+          imageUrl: '',
+          sortOrder: _state.images.length,
+          isCover: _state.images.isEmpty,
+        ),
+      ],
+      localImagePaths: [..._state.localImagePaths, filePath],
+    );
     notifyListeners();
   }
 
@@ -112,8 +118,24 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
     _state = _state.copyWith(isSaving: true);
     notifyListeners();
     try {
-      await _storeRepository.syncMyStoreImages(
-        _withReindexedImages(_state.images),
+      final nextImages = _withReindexedImages(_state.images);
+      final nextLocalPaths = List<String?>.from(_state.localImagePaths);
+
+      for (var i = 0; i < nextImages.length; i++) {
+        final localPath = i < nextLocalPaths.length ? nextLocalPaths[i] : null;
+        if (localPath == null || localPath.isEmpty) {
+          continue;
+        }
+        final uploadedUrl = await _storeRepository.uploadMyStoreImageFile(
+          localPath,
+        );
+        nextImages[i] = nextImages[i].copyWith(imageUrl: uploadedUrl);
+      }
+
+      await _storeRepository.syncMyStoreImages(nextImages);
+      _state = _state.copyWith(
+        images: nextImages,
+        localImagePaths: List<String?>.filled(nextImages.length, null),
       );
       _eventController.add(const PartnerStoreImageEvent.showMessage('사진이 저장되었습니다.'));
       _eventController.add(const PartnerStoreImageEvent.pop());
