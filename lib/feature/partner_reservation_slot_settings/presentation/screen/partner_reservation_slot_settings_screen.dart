@@ -23,6 +23,7 @@ class PartnerReservationSlotSettingsScreen extends StatelessWidget {
       backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.white,
+        surfaceTintColor: AppColors.white,
         elevation: 0,
         title: const Text(
           '시간대 운영 설정',
