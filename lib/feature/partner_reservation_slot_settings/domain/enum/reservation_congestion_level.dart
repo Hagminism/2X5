@@ -3,7 +3,8 @@ enum ReservationCongestionLevel {
   normal('보통'),
   busy('혼잡'),
   saturated('포화'),
-  closed('마감');
+  closed('마감')
+  ;
 
   final String label;
 

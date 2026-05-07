@@ -77,7 +77,9 @@ class PartnerReservationSlotSettingsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<PartnerReservationSlot> _generateMockSlots(ReservationSlotInterval interval) {
+  List<PartnerReservationSlot> _generateMockSlots(
+    ReservationSlotInterval interval,
+  ) {
     final openingHour = 10;
     final closingHour = 20;
     final slots = <PartnerReservationSlot>[];

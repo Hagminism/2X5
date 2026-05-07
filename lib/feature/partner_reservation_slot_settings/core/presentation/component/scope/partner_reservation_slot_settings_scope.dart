@@ -17,7 +17,8 @@ class PartnerReservationSlotSettingsScope extends StatefulWidget {
 
 class _PartnerReservationSlotSettingsScopeState
     extends State<PartnerReservationSlotSettingsScope> {
-  late final PartnerReservationSlotSettingsViewModel viewModel = widget.viewModel;
+  late final PartnerReservationSlotSettingsViewModel viewModel =
+      widget.viewModel;
 
   @override
   Widget build(BuildContext context) {

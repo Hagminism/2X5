@@ -323,7 +323,8 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) =>
                       PartnerReservationSlotSettingsScope(
-                        viewModel: getIt<PartnerReservationSlotSettingsViewModel>(),
+                        viewModel:
+                            getIt<PartnerReservationSlotSettingsViewModel>(),
                       ),
                 ),
               ],

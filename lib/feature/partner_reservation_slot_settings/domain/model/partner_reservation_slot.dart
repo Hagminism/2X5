@@ -18,7 +18,8 @@ abstract class PartnerReservationSlot with _$PartnerReservationSlot {
   factory PartnerReservationSlot.fromJson(Map<String, Object?> json) =>
       _$PartnerReservationSlotFromJson(json);
 
-  int get remainingTeamCount => (maxTeamCount - reservedTeamCount).clamp(0, 9999);
+  int get remainingTeamCount =>
+      (maxTeamCount - reservedTeamCount).clamp(0, 9999);
 
   int get occupancyPercent {
     if (maxTeamCount <= 0) {

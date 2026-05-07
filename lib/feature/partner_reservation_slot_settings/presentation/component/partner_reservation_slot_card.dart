@@ -80,7 +80,9 @@ class PartnerReservationSlotCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
                   '${slot.maxTeamCount}팀',
-                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               PartnerReservationSlotCountButton(
