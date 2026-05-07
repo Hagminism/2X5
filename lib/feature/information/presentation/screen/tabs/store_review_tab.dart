@@ -21,14 +21,12 @@ class StoreReviewTab extends StatelessWidget {
     );
   }
 
-
   Widget _buildReviewItem() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-
             Container(
               width: 40,
               height: 40,
@@ -61,13 +59,22 @@ class StoreReviewTab extends StatelessWidget {
                       Icon(Icons.star_rounded, size: 14, color: Colors.amber),
                       Icon(Icons.star_rounded, size: 14, color: Colors.amber),
                       SizedBox(width: 4),
-                      Text('5.0', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      Text(
+                        '5.0',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
-            const Text('2026.04.30', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            const Text(
+              '2026.04.30',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
           ],
         ),
         const SizedBox(height: 12),

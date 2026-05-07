@@ -120,12 +120,12 @@ final router = GoRouter(
                   builder: (context, state) => const SearchScreen(),
                 ),
                 GoRoute(
-                  name: 'information', 
+                  name: 'information',
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: 'information/:storeId', // 
+                  path: 'information/:storeId', //
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    return InformationScreenRoot( 
+                    return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
                     );
@@ -434,7 +434,7 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final isInSignUpFlow = location.startsWith(
     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
   );
-final isInPartnerOnboarding = location == Routes.partnerOnboarding;
+  final isInPartnerOnboarding = location == Routes.partnerOnboarding;
   final partnerShellBasePaths = [
     Routes.partnerHome,
     Routes.partnerStore,
@@ -446,13 +446,13 @@ final isInPartnerOnboarding = location == Routes.partnerOnboarding;
   );
   final isInUserShell =
       location == Routes.home ||
-          location.startsWith('${Routes.home}/') ||
-          location == Routes.map ||
-          location.startsWith('${Routes.map}/') ||
-          location == Routes.bookmark ||
-          location.startsWith('${Routes.bookmark}/') ||
-          location == Routes.myPage ||
-          location.startsWith('${Routes.myPage}/');
+      location.startsWith('${Routes.home}/') ||
+      location == Routes.map ||
+      location.startsWith('${Routes.map}/') ||
+      location == Routes.bookmark ||
+      location.startsWith('${Routes.bookmark}/') ||
+      location == Routes.myPage ||
+      location.startsWith('${Routes.myPage}/');
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -480,9 +480,9 @@ final isInPartnerOnboarding = location == Routes.partnerOnboarding;
 
   final isApprovedPartner =
       registrationStatus == UserRegistrationStatus.exists &&
-          userProfile != null &&
-          userProfile.userType == UserType.partner &&
-          userProfile.partnerStatus == PartnerStatus.approved;
+      userProfile != null &&
+      userProfile.userType == UserType.partner &&
+      userProfile.partnerStatus == PartnerStatus.approved;
 
   if (isApprovedPartner) {
     if (isInPartnerOnboarding ||

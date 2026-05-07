@@ -256,7 +256,6 @@ void diSetup() {
     ),
   );
   getIt.registerFactory<InformationViewModel>(
-        () => InformationViewModel(),
+    () => InformationViewModel(),
   );
-
 }

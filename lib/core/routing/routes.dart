@@ -35,7 +35,7 @@ class Routes {
   static const String terms = 'terms';
   static const String inquiry = 'inquiry';
 
-// Partner
+  // Partner
   static const String partnerHome = '/partner/home';
   static const String partnerStore = '/partner/store';
   static const String partnerAddressSearch = 'address-search';

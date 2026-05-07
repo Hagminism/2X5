@@ -104,12 +104,9 @@ class StoreDetailScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const ReservationScreen()),
-          );//예약 누르면 예약 페이지로 넘어감
+          ); //예약 누르면 예약 페이지로 넘어감
         },
       ),
-
-
-
     );
   }
 }

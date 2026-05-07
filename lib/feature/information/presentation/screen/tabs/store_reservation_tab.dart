@@ -7,7 +7,8 @@ class StoreReservationStatusTab extends StatefulWidget {
   const StoreReservationStatusTab({super.key});
 
   @override
-  State<StoreReservationStatusTab> createState() => _StoreReservationStatusTabState();
+  State<StoreReservationStatusTab> createState() =>
+      _StoreReservationStatusTabState();
 }
 
 class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
@@ -51,7 +52,9 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
             onPressed: () {
               // 🛠️ 수정: 현재 상세페이지 경로 뒤에 'reservation'을 붙여서 이동합니다.
               // 예: /home/store/123 -> /home/store/123/reservation
-              final String currentLocation = GoRouterState.of(context).matchedLocation;
+              final String currentLocation = GoRouterState.of(
+                context,
+              ).matchedLocation;
               context.push('$currentLocation/${Routes.reservation}');
 
               print('${_selectedDate.toString()} 날짜로 예약 이동');
@@ -60,7 +63,9 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               elevation: 0,
             ),
             child: const Text(
@@ -84,7 +89,10 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
                 ),
                 IconButton(
                   onPressed: _pickDate,
-                  icon: const Icon(Icons.calendar_month, color: AppColors.primary),
+                  icon: const Icon(
+                    Icons.calendar_month,
+                    color: AppColors.primary,
+                  ),
                 ),
               ],
             ),
@@ -114,7 +122,8 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
         itemCount: 7,
         itemBuilder: (context, index) {
           final date = DateTime.now().add(Duration(days: index));
-          final isSelected = date.year == _selectedDate.year &&
+          final isSelected =
+              date.year == _selectedDate.year &&
               date.month == _selectedDate.month &&
               date.day == _selectedDate.day;
 
@@ -167,9 +176,10 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFEEEEEE))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
