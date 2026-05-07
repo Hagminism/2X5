@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:capstone_2026/ui/app_text_styles.dart';
 
 class StoreReviewTab extends StatelessWidget {
   const StoreReviewTab({super.key});

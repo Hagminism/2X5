@@ -99,7 +99,7 @@ class _InformationScreenState extends State<InformationScreen>
                             width: 7, height: 7,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _currentSliderPage == index ? AppColors.primary : AppColors.textSecondary.withOpacity(0.3),
+                              color: _currentSliderPage == index ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
                             ),
                           ),
                         ),

@@ -45,8 +45,6 @@ import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_m
 import 'package:capstone_2026/feature/map/presentation/screen/map_screen.dart';
 import 'package:capstone_2026/feature/sign_up_customer/core/presentation/component/scope/sign_up_customer_scope.dart';
 import 'package:capstone_2026/feature/sign_up_partner/core/presentation/component/scope/sign_up_partner_scope.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_screen_root.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';

@@ -268,8 +268,6 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
     } catch (e) {
       _state = state.copyWith(isSubmitting: false);
       notifyListeners();
-      print('${state.operatingHours}');
-      print('error: $e');
       _eventController.add(
         PartnerStoreManagementEvent.showMessage(
           e is StateError || e is ArgumentError
