@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // 1. Provider 임포트 추가
 import 'information_screen.dart';
 import 'information_view_model.dart';
 
@@ -8,6 +9,7 @@ class InformationScreenRoot extends StatefulWidget {
   final String name;
   final String subtitle;
   final double rating;
+  final String category;
 
   const InformationScreenRoot({
     super.key,
@@ -16,6 +18,7 @@ class InformationScreenRoot extends StatefulWidget {
     required this.name,
     required this.subtitle,
     required this.rating,
+    required this.category,
   });
 
   @override
@@ -26,27 +29,31 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
   @override
   void initState() {
     super.initState();
-    // 화면이 생성될 때 뷰모델에 데이터를 딱 한 번만 전달합니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.viewModel.setInitialData(
         name: widget.name,
         subtitle: widget.subtitle,
         rating: widget.rating,
+        category: widget.category,
       );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: widget.viewModel,
-      builder: (context, _) {
-        return InformationScreen(
-          name: widget.viewModel.name,      // 뷰모델의 데이터를 직접 전달
-          subtitle: widget.viewModel.subtitle,
-          rating: widget.viewModel.rating,
-        );
-      },
+    // 2. ChangeNotifierProvider.value를 사용하여 하위 위젯들에게 뷰모델을 주입합니다.
+    return ChangeNotifierProvider.value(
+      value: widget.viewModel,
+      child: ListenableBuilder(
+        listenable: widget.viewModel,
+        builder: (context, _) {
+          return InformationScreen(
+            name: widget.viewModel.name.isEmpty ? widget.name : widget.viewModel.name,
+            subtitle: widget.viewModel.subtitle.isEmpty ? widget.subtitle : widget.viewModel.subtitle,
+            rating: widget.viewModel.rating == 0.0 ? widget.rating : widget.viewModel.rating,
+          );
+        },
+      ),
     );
   }
 }

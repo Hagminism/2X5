@@ -53,6 +53,8 @@ import 'package:capstone_2026/feature/information/presentation/screen/informatio
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
+import '../../studycafe/presentation/screen/seat_selection_screen.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
@@ -123,18 +125,15 @@ final router = GoRouter(
                   path: 'information/:storeId',
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-
-                    // state.extra가 null일 경우를 대비해 빈 Map을 기본값으로 설정
                     final Map<String, dynamic> extraData = state.extra as Map<String, dynamic>? ?? {};
 
                     return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
-                      // 데이터가 없을 경우를 대비해 '이름 없음' 등의 기본 텍스트 설정
                       name: extraData['name']?.toString() ?? '가게 이름 없음',
                       subtitle: extraData['subtitle']?.toString() ?? '',
-                      // rating이 int로 들어와도 double로 안전하게 변환
                       rating: (extraData['rating'] as num?)?.toDouble() ?? 0.0,
+                      category: extraData['category']?.toString() ?? '',
                     );
                   },
                   routes: [
@@ -142,6 +141,11 @@ final router = GoRouter(
                       path: Routes.reservation,
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) => const ReservationScreen(),
+                    ),
+                    GoRoute(
+                      path: Routes.seat,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => const SeatSelectionScreen(),
                     ),
                   ],
                 ),

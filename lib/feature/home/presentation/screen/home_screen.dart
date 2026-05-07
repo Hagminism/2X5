@@ -94,12 +94,17 @@ class HomeScreen extends StatelessWidget {
                     subtitle: item.subtitle,
                     rating: item.rating,
                     onTap: () {
+                      //스터디 카페 판별 로직
+                      final String detectedCategory = item.subtitle.contains('스터디카페')
+                          ? '스터디카페'
+                          : '일반';
                       context.push(
                         '${Routes.home}/information/${item.storeId}',
                         extra: {
                           'name': item.name,
                           'subtitle': item.subtitle,
                           'rating': item.rating,
+                          'category': detectedCategory,
                         },
                       );
                     },
