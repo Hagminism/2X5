@@ -9,7 +9,8 @@ class StoreReservationStatusTab extends StatefulWidget {
   const StoreReservationStatusTab({super.key});
 
   @override
-  State<StoreReservationStatusTab> createState() => _StoreReservationStatusTabState();
+  State<StoreReservationStatusTab> createState() =>
+      _StoreReservationStatusTabState();
 }
 
 class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
@@ -65,7 +66,9 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               elevation: 0,
             ),
             child: const Text(
@@ -83,7 +86,7 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('방문 예정일 선택', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                 const Text('방문 예정일 선택', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 IconButton(onPressed: _pickDate, icon: const Icon(Icons.calendar_month, color: AppColors.primary)),
               ],
             ),
@@ -115,7 +118,8 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
         itemCount: 7,
         itemBuilder: (context, index) {
           final date = DateTime.now().add(Duration(days: index));
-          final isSelected = date.year == _selectedDate.year &&
+          final isSelected =
+              date.year == _selectedDate.year &&
               date.month == _selectedDate.month &&
               date.day == _selectedDate.day;
 
@@ -151,9 +155,10 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFEEEEEE))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
+import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
@@ -12,11 +15,14 @@ class StoreDetailViewModel extends ChangeNotifier {
   StoreDetailViewModel({
     required StoreDetailRepository storeDetailRepository,
     required StoreReviewService storeReviewService,
+    required StampService stampService,
   }) : _storeDetailRepository = storeDetailRepository,
-       _storeReviewService = storeReviewService;
+       _storeReviewService = storeReviewService,
+       _stampService = stampService;
 
   final StoreDetailRepository _storeDetailRepository;
   final StoreReviewService _storeReviewService;
+  final StampService _stampService;
 
   StoreDetailState _state = const StoreDetailState();
   String _currentStoreId = '';
@@ -38,30 +44,58 @@ class StoreDetailViewModel extends ChangeNotifier {
     );
     notifyListeners();
 
-    final reviews = await _storeReviewService.loadStoreReviews(
-      storeId: storeId,
-    );
+    try {
+      final results = await Future.wait<Object>([
+        _storeReviewService.loadStoreReviews(storeId: storeId),
+        _stampService.loadStoreStampStatus(storeId: storeId),
+      ]);
 
-    _state = state.copyWith(
-      isReviewLoading: false,
-      reviews: reviews,
-    );
-    notifyListeners();
+      final reviews = results[0] as List<InternalReview>;
+      final stampStatus = results[1] as StoreStampStatus;
+
+      _state = state.copyWith(
+        isReviewLoading: false,
+        reviews: reviews,
+        stampStatus: stampStatus,
+      );
+      notifyListeners();
+    } catch (_) {
+      _state = state.copyWith(isReviewLoading: false);
+      notifyListeners();
+      _showSoonMessage('데이터를 불러오는 중 오류가 발생했습니다.');
+    }
   }
 
   Future<void> submitReview(ReviewWriteResult review) async {
-    final createdReview = await _storeReviewService.submitReview(
-      storeId: _currentStoreId,
-      storeName: state.data.name,
-      review: review,
-    );
+    final stampStatus = state.stampStatus;
+    if (stampStatus != null && !stampStatus.canWriteReview) {
+      _showSoonMessage(stampStatus.reviewEligibilityMessage);
+      return;
+    }
 
-    _state = state.copyWith(
-      reviews: [createdReview, ...state.reviews],
-    );
-    notifyListeners();
+    try {
+      final createdReview = await _storeReviewService.submitReview(
+        storeId: _currentStoreId,
+        storeName: state.data.name,
+        review: review,
+      );
+      final updatedStampStatus = await _stampService.accrueStampForReview(
+        storeId: _currentStoreId,
+      );
 
-    _showSoonMessage('리뷰가 등록되었습니다.');
+      _state = state.copyWith(
+        reviews: [createdReview, ...state.reviews],
+        stampStatus: updatedStampStatus,
+      );
+      notifyListeners();
+
+      final message = updatedStampStatus.isRewardUnlocked
+          ? '리뷰가 등록되었습니다. 스탬프 적립이 완료되어 보상을 받을 수 있습니다.'
+          : '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.';
+      _showSoonMessage(message);
+    } catch (_) {
+      _showSoonMessage('리뷰 등록 중 오류가 발생했습니다.');
+    }
   }
 
   void onAction(StoreDetailAction action) {
@@ -85,7 +119,7 @@ class StoreDetailViewModel extends ChangeNotifier {
         _showSoonMessage('전화 연결 기능은 준비 중입니다.');
         break;
       case TapReserve():
-        _showSoonMessage('예약 바텀시트는 다음 단계에서 연결됩니다.');
+        _showSoonMessage('예약 버튼은 다음 단계에서 연결됩니다.');
         break;
       case TapNaverReviewButton():
         _openNaverReview();

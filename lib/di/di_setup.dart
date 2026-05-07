@@ -25,10 +25,14 @@ import 'package:capstone_2026/feature/address_search/data/data_source/address_se
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
+import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_view_model.dart';
@@ -44,6 +48,9 @@ import 'package:capstone_2026/feature/store_detail/domain/repository/store_detai
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
+import 'package:capstone_2026/feature/stamp/data/repository/stamp_repository_impl.dart';
+import 'package:capstone_2026/feature/stamp/domain/repository/stamp_repository.dart';
+import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -112,7 +119,10 @@ void diSetup() {
     ),
   );
   getIt.registerLazySingleton<StoreDataSource>(
-    () => StoreDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
+    () => StoreDataSourceImpl(
+      supabaseClient: getIt<SupabaseClient>(),
+      firebaseFunctions: getIt<FirebaseFunctions>(),
+    ),
   );
   getIt.registerLazySingleton<ReservationDataSource>(
     () => ReservationDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
@@ -141,6 +151,15 @@ void diSetup() {
   getIt.registerLazySingleton<StoreReviewService>(
     () => StoreReviewService(
       storeReviewRepository: getIt<StoreReviewRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
+  getIt.registerLazySingleton<StampRepository>(
+    () => StampRepositoryImpl(),
+  );
+  getIt.registerLazySingleton<StampService>(
+    () => StampService(
+      stampRepository: getIt<StampRepository>(),
       authRepository: getIt<AuthRepository>(),
     ),
   );
@@ -186,10 +205,23 @@ void diSetup() {
       storeRepository: getIt<StoreRepository>(),
     ),
   );
+  getIt.registerFactory<PartnerStoreMenuViewModel>(
+    () => PartnerStoreMenuViewModel(
+      storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<PartnerStoreImageViewModel>(
+    () => PartnerStoreImageViewModel(
+      storeRepository: getIt<StoreRepository>(),
+    ),
+  );
   getIt.registerFactory<PartnerReservationsViewModel>(
     () => PartnerReservationsViewModel(
       reservationRepository: getIt<ReservationRepository>(),
     ),
+  );
+  getIt.registerFactory<PartnerReservationSlotSettingsViewModel>(
+    () => PartnerReservationSlotSettingsViewModel(),
   );
   getIt.registerFactory<AddressSearchViewModel>(
     () => AddressSearchViewModel(
@@ -232,16 +264,20 @@ void diSetup() {
     () => ReviewHistoryViewModel(
       authRepository: getIt<AuthRepository>(),
       storeReviewRepository: getIt<StoreReviewRepository>(),
+      stampService: getIt<StampService>(),
     ),
+  );
+  getIt.registerFactory<StampHistoryViewModel>(
+    () => StampHistoryViewModel(stampService: getIt<StampService>()),
   );
   getIt.registerFactory<StoreDetailViewModel>(
     () => StoreDetailViewModel(
       storeDetailRepository: getIt<StoreDetailRepository>(),
       storeReviewService: getIt<StoreReviewService>(),
+      stampService: getIt<StampService>(),
     ),
   );
   getIt.registerFactory<InformationViewModel>(
-        () => InformationViewModel(),
+    () => InformationViewModel(),
   );
-
 }

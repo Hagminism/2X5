@@ -17,10 +17,16 @@ class AddressSearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('주소 검색')),
+      appBar: AppBar(
+        title: const Text('주소 검색'),
+        surfaceTintColor: AppColors.white,
+        backgroundColor: AppColors.white,
+      ),
+      backgroundColor: AppColors.white,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -45,7 +51,13 @@ class AddressSearchScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 SizedBox(
                   height: 48,
-                  child: FilledButton(
+                  child: MaterialButton(
+                    color: AppColors.primary,
+                    textColor: AppColors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     onPressed: () {
                       onAction(const AddressSearchAction.tapSearch());
                     },
@@ -57,10 +69,15 @@ class AddressSearchScreen extends StatelessWidget {
             const SizedBox(height: 12),
             if (state.isLoading) const LinearProgressIndicator(),
             const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: const Text('검색 결과'),
+            ),
+            const SizedBox(height: 8),
             Expanded(
               child: ListView.separated(
                 itemCount: state.results.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final item = state.results[index];
                   return Material(

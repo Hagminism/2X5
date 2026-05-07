@@ -193,6 +193,276 @@ type RejectPartnerForDemoRequest = {
   demoKey?: string;
 };
 
+type UploadStoreImageRequest = {
+  storeId?: string;
+  bucketId?: string;
+  fileBase64?: string;
+  fileExtension?: string;
+  contentType?: string;
+};
+
+type DeleteStoreImageRequest = {
+  storeId?: string;
+  bucketId?: string;
+  objectPath?: string;
+};
+
+type StoreOwnershipResponse = {
+  id: string;
+};
+
+const STORE_IMAGE_BUCKET = "store_images";
+const STORE_MENU_IMAGE_BUCKET = "store_menu_images";
+const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+const MIME_TO_EXTENSIONS: Record<string, string[]> = {
+  "image/jpeg": ["jpg", "jpeg"],
+  "image/png": ["png"],
+  "image/webp": ["webp"],
+};
+
+/**
+ * 업로드 바이트의 매직 넘버를 기반으로 이미지 MIME 타입을 추정한다.
+ * @param {Buffer} fileBytes 업로드 파일 바이트
+ * @return {string | null} 추정 MIME 타입
+ */
+function detectImageMimeType(fileBytes: Buffer): string | null {
+  // JPEG: FF D8 FF
+  if (
+    fileBytes.length >= 3 &&
+    fileBytes[0] === 0xff &&
+    fileBytes[1] === 0xd8 &&
+    fileBytes[2] === 0xff
+  ) {
+    return "image/jpeg";
+  }
+
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (
+    fileBytes.length >= 8 &&
+    fileBytes[0] === 0x89 &&
+    fileBytes[1] === 0x50 &&
+    fileBytes[2] === 0x4e &&
+    fileBytes[3] === 0x47 &&
+    fileBytes[4] === 0x0d &&
+    fileBytes[5] === 0x0a &&
+    fileBytes[6] === 0x1a &&
+    fileBytes[7] === 0x0a
+  ) {
+    return "image/png";
+  }
+
+  // WEBP: "RIFF" + .... + "WEBP"
+  if (
+    fileBytes.length >= 12 &&
+    fileBytes[0] === 0x52 &&
+    fileBytes[1] === 0x49 &&
+    fileBytes[2] === 0x46 &&
+    fileBytes[3] === 0x46 &&
+    fileBytes[8] === 0x57 &&
+    fileBytes[9] === 0x45 &&
+    fileBytes[10] === 0x42 &&
+    fileBytes[11] === 0x50
+  ) {
+    return "image/webp";
+  }
+
+  return null;
+}
+
+/**
+ * 사용자 입력 파일 메타데이터를 검증하고 서버 기준 값으로 정규화한다.
+ * @param {string} requestedContentType 사용자 요청 MIME 타입
+ * @param {string} requestedExtension 사용자 요청 확장자
+ * @param {Buffer} fileBytes 업로드 파일 바이트
+ * @return {{contentType: string, fileExtension: string}} 정규화된 메타데이터
+ */
+function validateAndNormalizeImageMetadata({
+  requestedContentType,
+  requestedExtension,
+  fileBytes,
+}: {
+  requestedContentType: string;
+  requestedExtension: string;
+  fileBytes: Buffer;
+}): {
+  contentType: string;
+  fileExtension: string;
+} {
+  const normalizedContentType = requestedContentType.trim().toLowerCase();
+  if (!ALLOWED_IMAGE_MIME_TYPES.has(normalizedContentType)) {
+    throw new HttpsError("invalid-argument", "허용되지 않은 MIME 타입입니다.");
+  }
+
+  const detectedMimeType = detectImageMimeType(fileBytes);
+  if (!detectedMimeType) {
+    throw new HttpsError(
+      "invalid-argument",
+      "지원하지 않는 이미지 형식입니다. (jpg, png, webp만 허용)",
+    );
+  }
+  if (detectedMimeType !== normalizedContentType) {
+    throw new HttpsError(
+      "invalid-argument",
+      "요청한 MIME 타입과 실제 파일 형식이 일치하지 않습니다.",
+    );
+  }
+
+  const normalizedExtension = requestedExtension
+    .trim()
+    .toLowerCase()
+    .replace(".", "");
+  const allowedExtensions = MIME_TO_EXTENSIONS[normalizedContentType];
+  if (!allowedExtensions.includes(normalizedExtension)) {
+    throw new HttpsError(
+      "invalid-argument",
+      `MIME 타입과 확장자 조합이 올바르지 않습니다: ${normalizedContentType}`,
+    );
+  }
+
+  return {
+    contentType: normalizedContentType,
+    fileExtension: allowedExtensions[0],
+  };
+}
+
+/**
+ * Storage object path를 URL-safe 형태로 인코딩한다.
+ * @param {string} path 원본 object path
+ * @return {string} 인코딩된 path
+ */
+function encodeStoragePath(path: string): string {
+  return path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+/**
+ * Supabase Storage REST API로 파일을 업로드하고 public URL을 반환한다.
+ * @param {string} bucketId 업로드 대상 버킷
+ * @param {string} objectPath 버킷 내부 object path
+ * @param {Buffer} fileBytes 업로드할 파일 바이트
+ * @param {string} contentType 파일 MIME 타입
+ * @return {Promise<string>} 업로드된 파일의 public URL
+ */
+async function uploadToSupabaseStorage({
+  bucketId,
+  objectPath,
+  fileBytes,
+  contentType,
+}: {
+  bucketId: string;
+  objectPath: string;
+  fileBytes: Buffer;
+  contentType: string;
+}): Promise<string> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new HttpsError(
+      "failed-precondition",
+      "SUPABASE_URL 또는 SUPABASE_SERVICE_ROLE_KEY가 설정되지 않았습니다.",
+    );
+  }
+
+  const encodedPath = encodeStoragePath(objectPath);
+  const fileArrayBuffer = fileBytes.buffer.slice(
+    fileBytes.byteOffset,
+    fileBytes.byteOffset + fileBytes.byteLength,
+  ) as ArrayBuffer;
+
+  const uploadResponse = await fetch(
+    `${supabaseUrl}/storage/v1/object/${bucketId}/${encodedPath}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": contentType,
+        "apikey": serviceRoleKey,
+        "Authorization": `Bearer ${serviceRoleKey}`,
+        "x-upsert": "true",
+      },
+      body: fileArrayBuffer,
+    },
+  );
+
+  if (!uploadResponse.ok) {
+    const responseText = await uploadResponse.text();
+    throw new HttpsError(
+      "internal",
+      `스토리지 업로드 실패: ${uploadResponse.status} ${responseText}`,
+    );
+  }
+
+  return `${supabaseUrl}/storage/v1/object/public/${bucketId}/${encodedPath}`;
+}
+
+/**
+ * Supabase Storage REST API에서 object를 삭제한다.
+ * @param {string} bucketId 삭제 대상 버킷
+ * @param {string} objectPath 버킷 내부 object path
+ * @return {Promise<void>} 삭제 완료
+ */
+async function deleteFromSupabaseStorage({
+  bucketId,
+  objectPath,
+}: {
+  bucketId: string;
+  objectPath: string;
+}): Promise<void> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new HttpsError(
+      "failed-precondition",
+      "SUPABASE_URL 또는 SUPABASE_SERVICE_ROLE_KEY가 설정되지 않았습니다.",
+    );
+  }
+
+  const encodedPath = encodeStoragePath(objectPath);
+  const deleteResponse = await fetch(
+    `${supabaseUrl}/storage/v1/object/${bucketId}/${encodedPath}`,
+    {
+      method: "DELETE",
+      headers: {
+        "apikey": serviceRoleKey,
+        "Authorization": `Bearer ${serviceRoleKey}`,
+      },
+    },
+  );
+  if (!deleteResponse.ok) {
+    const responseText = await deleteResponse.text();
+    throw new HttpsError(
+      "internal",
+      `스토리지 삭제 실패: ${deleteResponse.status} ${responseText}`,
+    );
+  }
+}
+
+/**
+ * 요청 사용자가 해당 업장의 소유자인지 확인한다.
+ * @param {string} storeId 업장 ID
+ * @param {string} uid Firebase UID
+ * @return {Promise<void>} 소유자 검증 완료
+ */
+async function assertStoreOwnership(
+  storeId: string,
+  uid: string,
+): Promise<void> {
+  const stores = await supabaseRequest<StoreOwnershipResponse[]>(
+    `stores?id=eq.${storeId}&owner_id=eq.${uid}&select=id&limit=1`,
+    "GET",
+  );
+  if (stores.length === 0) {
+    throw new HttpsError("permission-denied", "업장 소유자가 아닙니다.");
+  }
+}
+
 /**
  * 데모용으로 특정 partner 사용자를 승인 상태로 변경한다.
  * @param {string} targetUid 승인할 사용자 UID
@@ -358,5 +628,108 @@ export const rejectPartnerForDemo = onRequest(
       beforeStatus: currentStatus,
       afterStatus: updatedUsers[0].partner_status,
     });
+  },
+);
+
+/**
+ * 관리자 업장 이미지를 Firebase Functions 경유로 Supabase Storage에 업로드한다.
+ */
+export const uploadStoreImageToSupabase = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as UploadStoreImageRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const bucketId = (data.bucketId ?? "").trim();
+    const fileBase64 = (data.fileBase64 ?? "").trim();
+    const requestedFileExtension = (data.fileExtension ?? "jpg")
+      .trim()
+      .toLowerCase();
+    const requestedContentType = (data.contentType ?? "image/jpeg").trim();
+
+    if (!storeId || !bucketId || !fileBase64) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (
+      bucketId !== STORE_IMAGE_BUCKET &&
+      bucketId !== STORE_MENU_IMAGE_BUCKET
+    ) {
+      throw new HttpsError("invalid-argument", "허용되지 않은 버킷입니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    let fileBytes: Buffer;
+    try {
+      fileBytes = Buffer.from(fileBase64, "base64");
+    } catch (_) {
+      throw new HttpsError("invalid-argument", "이미지 데이터 형식이 올바르지 않습니다.");
+    }
+    if (fileBytes.length === 0) {
+      throw new HttpsError("invalid-argument", "이미지 데이터가 비어 있습니다.");
+    }
+    if (fileBytes.length > MAX_IMAGE_UPLOAD_BYTES) {
+      throw new HttpsError(
+        "invalid-argument",
+        "이미지 파일 크기는 5MB를 초과할 수 없습니다.",
+      );
+    }
+
+    const normalizedMetadata = validateAndNormalizeImageMetadata({
+      requestedContentType,
+      requestedExtension: requestedFileExtension,
+      fileBytes,
+    });
+
+    const objectPath = `${storeId}/${Date.now()}.` +
+      normalizedMetadata.fileExtension;
+    const publicUrl = await uploadToSupabaseStorage({
+      bucketId,
+      objectPath,
+      fileBytes,
+      contentType: normalizedMetadata.contentType,
+    });
+
+    return {publicUrl};
+  },
+);
+
+/**
+ * 관리자 업장 이미지를 Firebase Functions 경유로 Supabase Storage에서 삭제한다.
+ */
+export const deleteStoreImageFromSupabase = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as DeleteStoreImageRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const bucketId = (data.bucketId ?? "").trim();
+    const objectPath = (data.objectPath ?? "").trim();
+
+    if (!storeId || !bucketId || !objectPath) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (
+      bucketId !== STORE_IMAGE_BUCKET &&
+      bucketId !== STORE_MENU_IMAGE_BUCKET
+    ) {
+      throw new HttpsError("invalid-argument", "허용되지 않은 버킷입니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+    await deleteFromSupabaseStorage({bucketId, objectPath});
+    return {success: true};
   },
 );
