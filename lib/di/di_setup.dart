@@ -186,7 +186,7 @@ void diSetup() {
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
   );
-  getIt.registerLazySingleton<PartnerStoreManagementViewModel>(
+  getIt.registerFactory<PartnerStoreManagementViewModel>(
     () => PartnerStoreManagementViewModel(
       ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
       storeRepository: getIt<StoreRepository>(),
