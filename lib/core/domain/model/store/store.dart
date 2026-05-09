@@ -17,6 +17,7 @@ abstract class Store with _$Store {
     String? naverPlaceId,
     required String contact,
     required Map<String, dynamic> operatingHours,
+    @Default(0) double rating,
     @Default(false) bool depositEnabled,
     @Default(0) int depositAmount,
     DateTime? createdAt,
