@@ -26,7 +26,8 @@ import 'package:capstone_2026/feature/partner_store_menu/core/presentation/compo
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
-import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
+import 'package:capstone_2026/feature/home/core/presentation/component/scope/home_scope.dart';
+import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_screen_root.dart';
@@ -119,7 +120,9 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.home,
-              builder: (context, state) => const HomeScreen(),
+              builder: (context, state) => HomeScope(
+                viewModel: getIt<HomeViewModel>(),
+              ),
               routes: [
                 GoRoute(
                   parentNavigatorKey: _rootNavigatorKey,
