@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // 1. Provider 임포트 추가
+import 'package:provider/provider.dart';
 import 'information_screen.dart';
 import 'information_view_model.dart';
 
@@ -30,26 +30,30 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 1. 홈 화면에서 받은 기본 데이터 먼저 세팅
       widget.viewModel.setInitialData(
         name: widget.name,
         subtitle: widget.subtitle,
         rating: widget.rating,
         category: widget.category,
       );
+
+      // 2. ID를 이용해 DB에서 name, address 직접 조회
+      widget.viewModel.fetchStoreDetails(widget.storeId);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // 2. ChangeNotifierProvider.value를 사용하여 하위 위젯들에게 뷰모델을 주입합니다.
     return ChangeNotifierProvider.value(
       value: widget.viewModel,
       child: ListenableBuilder(
         listenable: widget.viewModel,
         builder: (context, _) {
           return InformationScreen(
+            // DB에서 가져온 값이 있으면 그것을 사용, 없으면 홈에서 받은 값을 우선 사용
             name: widget.viewModel.name.isEmpty ? widget.name : widget.viewModel.name,
-            subtitle: widget.viewModel.subtitle.isEmpty ? widget.subtitle : widget.viewModel.subtitle,
+            subtitle: widget.viewModel.address.isEmpty ? widget.subtitle : widget.viewModel.address,
             rating: widget.viewModel.rating == 0.0 ? widget.rating : widget.viewModel.rating,
           );
         },

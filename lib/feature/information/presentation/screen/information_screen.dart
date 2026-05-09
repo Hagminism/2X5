@@ -52,28 +52,19 @@ class _InformationScreenState extends State<InformationScreen>
         backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textPrimary,
-            size: 20,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: AppColors.textPrimary, size: 20),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.share_outlined,
-              color: AppColors.textPrimary,
-            ),
-            onPressed: () {},
-          ),
+              icon: const Icon(Icons.share_outlined,
+                  color: AppColors.textPrimary),
+              onPressed: () {}),
           IconButton(
-            icon: const Icon(
-              Icons.favorite_border_rounded,
-              color: AppColors.textPrimary,
-            ),
-            onPressed: () {},
-          ),
+              icon: const Icon(Icons.favorite_border_rounded,
+                  color: AppColors.textPrimary),
+              onPressed: () {}),
         ],
       ),
       body: NestedScrollView(
@@ -93,18 +84,13 @@ class _InformationScreenState extends State<InformationScreen>
                         final String? url = sliderImages[index];
                         return Container(
                           width: double.infinity,
-                          decoration: const BoxDecoration(
-                            color: AppColors.surfaceMuted,
-                          ),
+                          decoration:
+                          const BoxDecoration(color: AppColors.surfaceMuted),
                           child: url != null
                               ? Image.network(url, fit: BoxFit.cover)
                               : const Center(
-                                  child: Icon(
-                                    Icons.storefront_rounded,
-                                    size: 64,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
+                              child: Icon(Icons.storefront_rounded,
+                                  size: 64, color: AppColors.textSecondary)),
                         );
                       },
                     ),
@@ -116,7 +102,7 @@ class _InformationScreenState extends State<InformationScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
                           sliderImages.length,
-                          (index) => Container(
+                              (index) => Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             width: 7,
                             height: 7,
@@ -124,9 +110,7 @@ class _InformationScreenState extends State<InformationScreen>
                               shape: BoxShape.circle,
                               color: _currentSliderPage == index
                                   ? AppColors.primary
-                                  : AppColors.textSecondary.withValues(
-                                      alpha: 0.3,
-                                    ),
+                                  : AppColors.textSecondary.withOpacity(0.3),
                             ),
                           ),
                         ),
@@ -147,10 +131,8 @@ class _InformationScreenState extends State<InformationScreen>
                   unselectedLabelColor: AppColors.textSecondary,
                   indicatorColor: AppColors.primary,
                   indicatorWeight: 3,
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
+                  labelStyle:
+                  const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                   tabs: const [
                     Tab(text: '홈'),
                     Tab(text: '메뉴'),
@@ -192,17 +174,12 @@ class _InformationScreenState extends State<InformationScreen>
               borderRadius: BorderRadius.circular(14),
               image: widget.imageUrl != null
                   ? DecorationImage(
-                      image: NetworkImage(widget.imageUrl!),
-                      fit: BoxFit.cover,
-                    )
+                  image: NetworkImage(widget.imageUrl!), fit: BoxFit.cover)
                   : null,
             ),
             child: widget.imageUrl == null
-                ? const Icon(
-                    Icons.storefront_rounded,
-                    size: 32,
-                    color: AppColors.textSecondary,
-                  )
+                ? const Icon(Icons.storefront_rounded,
+                size: 32, color: AppColors.textSecondary)
                 : null,
           ),
           const SizedBox(width: 16),
@@ -213,29 +190,27 @@ class _InformationScreenState extends State<InformationScreen>
                 Text(
                   widget.name,
                   style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 4),
-                Text(widget.subtitle, style: AppTextStyles.subtitle),
+                // Root에서 address가 업데이트되면 subtitle 위치에 주소가 출력됩니다.
+                Text(
+                  widget.subtitle,
+                  style: AppTextStyles.subtitle,
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      size: 18,
-                      color: Colors.amber,
-                    ),
+                    const Icon(Icons.star_rounded, size: 18, color: Colors.amber),
                     const SizedBox(width: 4),
                     Text(
                       widget.rating.toStringAsFixed(1),
                       style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary),
                     ),
                   ],
                 ),
@@ -257,10 +232,7 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => tabBar.preferredSize.height;
   @override
   Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
