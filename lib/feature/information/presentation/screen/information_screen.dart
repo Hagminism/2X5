@@ -1,22 +1,26 @@
-import 'package:flutter/material.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:capstone_2026/ui/app_text_styles.dart';
+import 'package:capstone_2026/feature/information/presentation/component/information_image_slider.dart';
+import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
+import 'package:capstone_2026/feature/information/presentation/component/information_store_header.dart';
+import 'package:capstone_2026/feature/information/presentation/component/tabs/store_home_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/component/tabs/store_info_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/component/tabs/store_menu_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/component/tabs/store_photo_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/component/tabs/store_reservation_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/component/tabs/store_review_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_action.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_state.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'tabs/store_review_tab.dart';
-import 'tabs/store_reservation_tab.dart';
 
 class InformationScreen extends StatefulWidget {
-  final String name;
-  final String subtitle;
-  final double rating;
-  final String? imageUrl;
+  final InformationState state;
+  final void Function(InformationAction) onAction;
 
   const InformationScreen({
-    required this.name,
-    required this.subtitle,
-    required this.rating,
-    this.imageUrl,
     super.key,
+    required this.state,
+    required this.onAction,
   });
 
   @override
@@ -25,26 +29,13 @@ class InformationScreen extends StatefulWidget {
 
 class _InformationScreenState extends State<InformationScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  late final TabController _tabController = TabController(length: 6, vsync: this);
   final PageController _sliderController = PageController();
   int _currentSliderPage = 0;
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 6, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _sliderController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final List<String?> sliderImages = [widget.imageUrl, null, null];
+    final List<String?> sliderImages = [widget.state.imageUrl, null, null];
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -57,7 +48,9 @@ class _InformationScreenState extends State<InformationScreen>
             color: AppColors.textPrimary,
             size: 20,
           ),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            widget.onAction(const InformationAction.tapBack());
+          },
         ),
         actions: [
           IconButton(
@@ -65,14 +58,20 @@ class _InformationScreenState extends State<InformationScreen>
               Icons.share_outlined,
               color: AppColors.textPrimary,
             ),
-            onPressed: () {},
+            onPressed: () {
+              widget.onAction(const InformationAction.tapShare());
+            },
           ),
           IconButton(
-            icon: const Icon(
-              Icons.favorite_border_rounded,
+            icon: Icon(
+              widget.state.isBookmarked
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
               color: AppColors.textPrimary,
             ),
-            onPressed: () {},
+            onPressed: () {
+              widget.onAction(const InformationAction.tapBookmark());
+            },
           ),
         ],
       ),
@@ -80,66 +79,28 @@ class _InformationScreenState extends State<InformationScreen>
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverToBoxAdapter(
-              child: SizedBox(
-                height: 220,
-                child: Stack(
-                  children: [
-                    PageView.builder(
-                      controller: _sliderController,
-                      onPageChanged: (index) =>
-                          setState(() => _currentSliderPage = index),
-                      itemCount: sliderImages.length,
-                      itemBuilder: (context, index) {
-                        final String? url = sliderImages[index];
-                        return Container(
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                            color: AppColors.surfaceMuted,
-                          ),
-                          child: url != null
-                              ? Image.network(url, fit: BoxFit.cover)
-                              : const Center(
-                                  child: Icon(
-                                    Icons.storefront_rounded,
-                                    size: 64,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                        );
-                      },
-                    ),
-                    Positioned(
-                      bottom: 16,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          sliderImages.length,
-                          (index) => Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _currentSliderPage == index
-                                  ? AppColors.primary
-                                  : AppColors.textSecondary.withValues(
-                                      alpha: 0.3,
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              child: InformationImageSlider(
+                controller: _sliderController,
+                currentPage: _currentSliderPage,
+                onPageChanged: (int index) {
+                  setState(() {
+                    _currentSliderPage = index;
+                  });
+                },
+                images: sliderImages,
               ),
             ),
-            SliverToBoxAdapter(child: _buildStoreHeader()),
+            SliverToBoxAdapter(
+              child: InformationStoreHeader(
+                name: widget.state.name,
+                subtitle: widget.state.subtitle,
+                rating: widget.state.rating,
+                imageUrl: widget.state.imageUrl,
+              ),
+            ),
             SliverPersistentHeader(
               pinned: true,
-              delegate: _StickyTabBarDelegate(
+              delegate: InformationStickyTabBarDelegate(
                 TabBar(
                   controller: _tabController,
                   isScrollable: false,
@@ -166,110 +127,30 @@ class _InformationScreenState extends State<InformationScreen>
         },
         body: TabBarView(
           controller: _tabController,
-          children: const [
-            Center(child: Text('홈 탭')),
-            Center(child: Text('메뉴 탭')),
-            Center(child: Text('사진 탭')),
-            StoreReviewTab(),
-            Center(child: Text('정보 탭')),
-            StoreReservationStatusTab(),
+          children: [
+            const StoreHomeTab(),
+            const StoreMenuTab(),
+            const StorePhotoTab(),
+            const StoreReviewTab(),
+            const StoreInfoTab(),
+            StoreReservationStatusTab(
+              onTapReservation: () {
+                final currentLocation = GoRouterState.of(context).matchedLocation;
+                widget.onAction(
+                  InformationAction.tapReservation(currentLocation),
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStoreHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Row(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(14),
-              image: widget.imageUrl != null
-                  ? DecorationImage(
-                      image: NetworkImage(widget.imageUrl!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: widget.imageUrl == null
-                ? const Icon(
-                    Icons.storefront_rounded,
-                    size: 32,
-                    color: AppColors.textSecondary,
-                  )
-                : null,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.name,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(widget.subtitle, style: AppTextStyles.subtitle),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      size: 18,
-                      color: Colors.amber,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      widget.rating.toStringAsFixed(1),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _sliderController.dispose();
+    super.dispose();
   }
-}
-
-class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
-  const _StickyTabBarDelegate(this.tabBar);
-  final TabBar tabBar;
-  @override
-  double get minExtent => tabBar.preferredSize.height;
-  @override
-  double get maxExtent => tabBar.preferredSize.height;
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1)),
-      ),
-      child: tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_StickyTabBarDelegate oldDelegate) => false;
 }

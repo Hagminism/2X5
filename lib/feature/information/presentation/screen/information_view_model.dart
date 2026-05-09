@@ -1,27 +1,84 @@
+import 'dart:async';
+
+import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_action.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_event.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_state.dart';
 import 'package:flutter/material.dart';
 
 class InformationViewModel extends ChangeNotifier {
-  String? _name;
-  String? _subtitle;
-  double? _rating;
-  String? _category;//스터디 카페인지 아닌지 확인하기위한 필드
+  final StoreRepository _storeRepository;
 
-  // getter들이 필드 값을 제대로 반환하는지 확인
-  String get name => _name ?? "";
-  String get subtitle => _subtitle ?? "";
-  double get rating => _rating ?? 0.0;
-  String get category => _category ?? "";
+  InformationViewModel({
+    required StoreRepository storeRepository,
+  }) : _storeRepository = storeRepository;
 
-  void setInitialData({
-    required String name,
-    required String subtitle,
-    required double rating,
-    String? category,
-  }) {
-    _name = name;
-    _subtitle = subtitle;
-    _rating = rating;
-    _category = category;
-    notifyListeners(); // 이 부분이 호출되어야 ListenableBuilder가 화면을 다시 그립니다.
+  InformationState _state = const InformationState();
+
+  InformationState get state => _state;
+
+  final StreamController<InformationEvent> _eventController =
+      StreamController<InformationEvent>.broadcast();
+
+  Stream<InformationEvent> get eventStream => _eventController.stream;
+
+  Future<void> initialize(String storeId) async {
+    final store = await _storeRepository.getStoreById(storeId);
+    if (store == null) {
+      _eventController.add(
+        const InformationEvent.showSnackBar('업장 정보를 불러오지 못했습니다.'),
+      );
+      return;
+    }
+
+    _state = _state.copyWith(
+      storeId: store.id,
+      name: store.name,
+      subtitle:
+          '${StoreCategory.fromDbValue(store.category)?.displayName ?? store.category} · ${store.address}',
+      rating: store.rating,
+      category: store.category,
+    );
+    notifyListeners();
+  }
+
+  void onAction(InformationAction action) {
+    switch (action) {
+      case TapInformationBack():
+        _eventController.add(const InformationEvent.pop());
+        break;
+      case TapInformationShare():
+        _eventController.add(
+          const InformationEvent.showSnackBar('공유 기능은 준비 중입니다.'),
+        );
+        break;
+      case TapInformationBookmark():
+        final isBookmarked = !_state.isBookmarked;
+        _state = _state.copyWith(isBookmarked: isBookmarked);
+        notifyListeners();
+        _eventController.add(
+          InformationEvent.showSnackBar(
+            isBookmarked ? '즐겨찾기에 추가했습니다.' : '즐겨찾기를 해제했습니다.',
+          ),
+        );
+        break;
+      case TapInformationReservation():
+        final isStudyCafe =
+            _state.category == StoreCategory.studyCafe.dbValue ||
+            _state.category == StoreCategory.studyCafe.displayName;
+        final target = isStudyCafe ? Routes.seat : Routes.reservation;
+        _eventController.add(
+          InformationEvent.push('${action.currentLocation}/$target'),
+        );
+        break;
+    }
+  }
+
+  @override
+  void dispose() {
+    _eventController.close();
+    super.dispose();
   }
 }
