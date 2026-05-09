@@ -55,7 +55,7 @@ import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
-import 'package:capstone_2026/feature/information/presentation/screen/information_screen_root.dart';
+import 'package:capstone_2026/feature/information/core/presentation/component/scope/information_scope.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
@@ -135,17 +135,10 @@ final router = GoRouter(
                   path: 'information/:storeId',
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    final extraData = state.extra is Map<String, dynamic>
-                        ? state.extra as Map<String, dynamic>
-                        : <String, dynamic>{};
-                    
-                    return InformationScreenRoot(
+
+                    return InformationScope(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
-                      name: extraData['name']?.toString() ?? '가게 이름 없음',
-                      subtitle: extraData['subtitle']?.toString() ?? '',
-                      rating: (extraData['rating'] as num?)?.toDouble() ?? 0.0,
-                      category: extraData['category']?.toString() ?? '',
                     );
                   },
                   routes: [
