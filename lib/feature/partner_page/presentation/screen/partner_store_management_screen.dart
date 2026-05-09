@@ -269,6 +269,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  if(state.category == 'restaurant' || state.category == 'cafe')
                   PartnerStoreSectionCard(
                     title: '메뉴 정보',
                     child: Column(
