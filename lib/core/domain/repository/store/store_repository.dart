@@ -5,6 +5,8 @@ import 'package:capstone_2026/core/domain/model/store/store.dart';
 abstract interface class StoreRepository {
   Future<List<Store>> getStores();
 
+  Future<Store?> getStoreById(String storeId);
+
   Future<Store?> getMyStore();
 
   Future<Store> createMyStore(Store store);
