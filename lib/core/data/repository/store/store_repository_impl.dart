@@ -26,6 +26,12 @@ class StoreRepositoryImpl implements StoreRepository {
        _operatingHoursValidator = operatingHoursValidator;
 
   @override
+  Future<List<Store>> getStores() async {
+    final storeDtos = await _storeDataSource.findStores();
+    return storeDtos.map((storeDto) => storeDto.toModel()).toList();
+  }
+
+  @override
   Future<Store?> getMyStore() async {
     final uid = _getCurrentUidOrThrow();
     final storeDto = await _storeDataSource.findStoreByOwnerId(uid);
