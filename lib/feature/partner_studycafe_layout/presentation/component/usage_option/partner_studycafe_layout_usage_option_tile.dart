@@ -1,16 +1,16 @@
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_action.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_usage_option_action.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-class PartnerStudyCafeLayoutUsageOptionTile extends StatelessWidget {
+class PartnerStudyCafeUsageOptionTile extends StatelessWidget {
   final int index;
   final int durationMinutes;
   final int price;
   final bool isEnabled;
-  final void Function(PartnerStudyCafeLayoutAction action) onAction;
+  final void Function(PartnerStudyCafeUsageOptionAction action) onAction;
 
-  const PartnerStudyCafeLayoutUsageOptionTile({
+  const PartnerStudyCafeUsageOptionTile({
     super.key,
     required this.index,
     required this.durationMinutes,
@@ -64,7 +64,7 @@ class PartnerStudyCafeLayoutUsageOptionTile extends StatelessWidget {
                     style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
                     decoration: _numericFieldDecoration('이용 시간(분)'),
                     onChanged: (String value) => onAction(
-                      PartnerStudyCafeLayoutAction.changeUsageOptionDuration(
+                      PartnerStudyCafeUsageOptionAction.changeUsageOptionDuration(
                         index: index,
                         value: value,
                       ),
@@ -80,7 +80,7 @@ class PartnerStudyCafeLayoutUsageOptionTile extends StatelessWidget {
                     style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
                     decoration: _numericFieldDecoration('가격(원)'),
                     onChanged: (String value) => onAction(
-                      PartnerStudyCafeLayoutAction.changeUsageOptionPrice(
+                      PartnerStudyCafeUsageOptionAction.changeUsageOptionPrice(
                         index: index,
                         value: value,
                       ),
@@ -102,7 +102,7 @@ class PartnerStudyCafeLayoutUsageOptionTile extends StatelessWidget {
                   activeThumbColor: AppColors.primary,
                   trackOutlineColor: WidgetStateProperty.all(AppColors.border),
                   onChanged: (bool value) => onAction(
-                    PartnerStudyCafeLayoutAction.toggleUsageOptionEnabled(
+                    PartnerStudyCafeUsageOptionAction.toggleUsageOptionEnabled(
                       index: index,
                       value: value,
                     ),
@@ -112,7 +112,7 @@ class PartnerStudyCafeLayoutUsageOptionTile extends StatelessWidget {
                 IconButton(
                   visualDensity: VisualDensity.compact,
                   onPressed: () => onAction(
-                    PartnerStudyCafeLayoutAction.removeUsageOption(index),
+                    PartnerStudyCafeUsageOptionAction.removeUsageOption(index),
                   ),
                   icon: const Icon(Icons.delete_outline_rounded),
                   color: AppColors.textSecondary,

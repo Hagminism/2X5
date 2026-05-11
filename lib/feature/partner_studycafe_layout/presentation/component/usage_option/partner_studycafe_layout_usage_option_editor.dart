@@ -1,15 +1,15 @@
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/usage_option/partner_studycafe_layout_section_card.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/usage_option/partner_studycafe_layout_usage_option_tile.dart';
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_action.dart';
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_state.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_usage_option_action.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_usage_option_state.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-class PartnerStudyCafeLayoutUsageOptionEditor extends StatelessWidget {
-  final PartnerStudyCafeLayoutState state;
-  final void Function(PartnerStudyCafeLayoutAction action) onAction;
+class PartnerStudyCafeUsageOptionEditor extends StatelessWidget {
+  final PartnerStudyCafeUsageOptionState state;
+  final void Function(PartnerStudyCafeUsageOptionAction action) onAction;
 
-  const PartnerStudyCafeLayoutUsageOptionEditor({
+  const PartnerStudyCafeUsageOptionEditor({
     super.key,
     required this.state,
     required this.onAction,
@@ -18,10 +18,10 @@ class PartnerStudyCafeLayoutUsageOptionEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PartnerStudyCafeLayoutSectionCard(
-      title: '이용권 설정',
+      title: '이용권 목록',
       trailing: TextButton.icon(
         onPressed: () => onAction(
-          const PartnerStudyCafeLayoutAction.addUsageOption(),
+          const PartnerStudyCafeUsageOptionAction.addUsageOption(),
         ),
         icon: const Icon(Icons.add_rounded),
         label: const Text('추가'),
@@ -31,7 +31,7 @@ class PartnerStudyCafeLayoutUsageOptionEditor extends StatelessWidget {
           if (state.usageOptions.isEmpty)
             Text('등록된 이용권이 없습니다.', style: AppTextStyles.bodySecondary),
           for (var i = 0; i < state.usageOptions.length; i++) ...[
-            PartnerStudyCafeLayoutUsageOptionTile(
+            PartnerStudyCafeUsageOptionTile(
               index: i,
               durationMinutes: state.usageOptions[i].durationMinutes,
               price: state.usageOptions[i].price,

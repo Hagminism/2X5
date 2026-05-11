@@ -1,6 +1,5 @@
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/canvas/partner_studycafe_layout_seat_canvas.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/toolbar/partner_studycafe_layout_toolbar.dart';
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/usage_option/partner_studycafe_layout_usage_option_editor.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_action.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -67,11 +66,6 @@ class PartnerStudyCafeLayoutScreen extends StatelessWidget {
                       PartnerStudyCafeLayoutToolbar(onAction: onAction),
                       const SizedBox(height: 16),
                       PartnerStudyCafeLayoutSeatCanvas(
-                        state: state,
-                        onAction: onAction,
-                      ),
-                      const SizedBox(height: 20),
-                      PartnerStudyCafeLayoutUsageOptionEditor(
                         state: state,
                         onAction: onAction,
                       ),

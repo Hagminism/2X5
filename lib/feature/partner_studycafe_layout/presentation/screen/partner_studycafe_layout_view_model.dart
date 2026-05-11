@@ -4,7 +4,6 @@ import 'package:capstone_2026/core/domain/model/studycafe/studycafe_detail.dart'
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_element.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_element_type.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat.dart';
-import 'package:capstone_2026/core/domain/model/studycafe/studycafe_usage_option.dart';
 import 'package:capstone_2026/core/domain/repository/studycafe/studycafe_repository.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/domain/model/partner_studycafe_layout_item_type.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/domain/model/partner_studycafe_layout_selected_layout_item.dart';
@@ -39,15 +38,6 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
         storeId: detail.storeId,
         seats: detail.seats,
         elements: detail.elements,
-        usageOptions: detail.usageOptions.isEmpty
-            ? const [
-                StudyCafeUsageOption(
-                  durationMinutes: 120,
-                  price: 0,
-                  isEnabled: true,
-                ),
-              ]
-            : detail.usageOptions,
       );
       notifyListeners();
     } catch (e) {
@@ -158,50 +148,6 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       case AlignSelectedSeatsVertically():
         _alignSelectedItemsVertically();
         break;
-      case AddUsageOption():
-        _state = state.copyWith(
-          usageOptions: [
-            ...state.usageOptions,
-            const StudyCafeUsageOption(
-              durationMinutes: 120,
-              price: 0,
-              isEnabled: true,
-            ),
-          ],
-        );
-        notifyListeners();
-        break;
-      case RemoveUsageOption():
-        if (action.index < 0 || action.index >= state.usageOptions.length) {
-          return;
-        }
-        final next = List<StudyCafeUsageOption>.from(state.usageOptions)
-          ..removeAt(action.index);
-        _state = state.copyWith(usageOptions: next);
-        notifyListeners();
-        break;
-      case ChangeUsageOptionDuration():
-        final duration =
-            int.tryParse(action.value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-        _updateUsageOptionAt(
-          action.index,
-          (option) => option.copyWith(durationMinutes: duration),
-        );
-        break;
-      case ChangeUsageOptionPrice():
-        final price =
-            int.tryParse(action.value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-        _updateUsageOptionAt(
-          action.index,
-          (option) => option.copyWith(price: price),
-        );
-        break;
-      case ToggleUsageOptionEnabled():
-        _updateUsageOptionAt(
-          action.index,
-          (option) => option.copyWith(isEnabled: action.value),
-        );
-        break;
       case TapSave():
         save();
         break;
@@ -212,16 +158,17 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     if (state.isSaving) {
       return;
     }
-    final detail = StudyCafeDetail(
-      id: state.detailId,
-      storeId: state.storeId,
-      seats: state.seats,
-      elements: state.elements,
-      usageOptions: state.usageOptions,
-    );
     _state = state.copyWith(isSaving: true);
     notifyListeners();
     try {
+      final fresh = await _studyCafeRepository.getMyStoreDetail();
+      final detail = StudyCafeDetail(
+        id: fresh.id,
+        storeId: fresh.storeId,
+        seats: state.seats,
+        elements: state.elements,
+        usageOptions: fresh.usageOptions,
+      );
       final saved = await _studyCafeRepository.saveMyStoreDetail(detail);
       _state = state.copyWith(
         isSaving: false,
@@ -229,7 +176,6 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
         storeId: saved.storeId,
         seats: saved.seats,
         elements: saved.elements,
-        usageOptions: saved.usageOptions,
       );
       notifyListeners();
       _eventController.add(
@@ -508,19 +454,6 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
         .map((element) => elementUpdates[element.elementId] ?? element)
         .toList();
     _state = state.copyWith(seats: nextSeats, elements: nextElements);
-    notifyListeners();
-  }
-
-  void _updateUsageOptionAt(
-    int index,
-    StudyCafeUsageOption Function(StudyCafeUsageOption option) update,
-  ) {
-    if (index < 0 || index >= state.usageOptions.length) {
-      return;
-    }
-    final next = List<StudyCafeUsageOption>.from(state.usageOptions);
-    next[index] = update(next[index]);
-    _state = state.copyWith(usageOptions: next);
     notifyListeners();
   }
 

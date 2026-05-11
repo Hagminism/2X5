@@ -310,6 +310,25 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '이용권 관리',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PartnerStoreManagementCtaCard(
+                            icon: Icons.confirmation_number_outlined,
+                            title: '이용권 설정',
+                            subtitle: '이용 시간·가격·판매 여부를 설정할 수 있어요.',
+                            onTap: () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenStudyCafeUsageOptionManager(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                   if (state.category == 'salon') ...[
                     const SizedBox(height: 24),

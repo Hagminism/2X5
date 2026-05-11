@@ -72,25 +72,5 @@ sealed class PartnerStudyCafeLayoutAction with _$PartnerStudyCafeLayoutAction {
   const factory PartnerStudyCafeLayoutAction.alignSelectedSeatsVertically() =
       AlignSelectedSeatsVertically;
 
-  const factory PartnerStudyCafeLayoutAction.addUsageOption() = AddUsageOption;
-
-  const factory PartnerStudyCafeLayoutAction.removeUsageOption(int index) =
-      RemoveUsageOption;
-
-  const factory PartnerStudyCafeLayoutAction.changeUsageOptionDuration({
-    required int index,
-    required String value,
-  }) = ChangeUsageOptionDuration;
-
-  const factory PartnerStudyCafeLayoutAction.changeUsageOptionPrice({
-    required int index,
-    required String value,
-  }) = ChangeUsageOptionPrice;
-
-  const factory PartnerStudyCafeLayoutAction.toggleUsageOptionEnabled({
-    required int index,
-    required bool value,
-  }) = ToggleUsageOptionEnabled;
-
   const factory PartnerStudyCafeLayoutAction.tapSave() = TapSave;
 }
