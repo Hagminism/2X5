@@ -1,19 +1,20 @@
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({
-    required this.userName,
     required this.onNotificationTap,
     super.key,
   });
 
-  final String userName;
   final VoidCallback onNotificationTap;
 
   @override
   Widget build(BuildContext context) {
+    final userName = FirebaseAuth.instance.currentUser?.displayName ?? '사용자';
+
     return Row(
       children: [
         Expanded(

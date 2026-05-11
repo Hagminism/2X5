@@ -41,13 +41,13 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
 
   @override
   Widget build(BuildContext context) {
-    // 2. ChangeNotifierProvider.value를 사용하여 하위 위젯들에게 뷰모델을 주입합니다.
     return ChangeNotifierProvider.value(
       value: widget.viewModel,
       child: ListenableBuilder(
         listenable: widget.viewModel,
         builder: (context, _) {
           return InformationScreen(
+            storeId: widget.storeId,
             name: widget.viewModel.name.isEmpty ? widget.name : widget.viewModel.name,
             subtitle: widget.viewModel.subtitle.isEmpty ? widget.subtitle : widget.viewModel.subtitle,
             rating: widget.viewModel.rating == 0.0 ? widget.rating : widget.viewModel.rating,
