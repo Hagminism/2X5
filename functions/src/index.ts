@@ -211,6 +211,46 @@ type StoreOwnershipResponse = {
   id: string;
 };
 
+type StartStudyCafeUsageRequest = {
+  storeId?: string;
+  seatId?: string;
+  durationMinutes?: number;
+};
+
+type ExtendStudyCafeUsageRequest = {
+  reservationId?: string;
+  additionalMinutes?: number;
+};
+
+type CreateSalonReservationRequest = {
+  storeId?: string;
+  designerId?: string;
+  serviceId?: string;
+  startAt?: string;
+};
+
+type StudyCafeReservationResponse = {
+  id: string;
+  store_id: string;
+  user_id: string;
+  seat_id: string;
+  duration_minutes: number;
+  start_at: string;
+  end_at: string;
+  status: string;
+};
+
+type SalonReservationResponse = {
+  id: string;
+  store_id: string;
+  user_id: string;
+  designer_id: string;
+  service_id: string;
+  start_at: string;
+  end_at: string;
+  status: string;
+};
+
 const STORE_IMAGE_BUCKET = "store_images";
 const STORE_MENU_IMAGE_BUCKET = "store_menu_images";
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -219,6 +259,16 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
   "image/png",
   "image/webp",
 ]);
+
+function normalizeRpcRow<T>(response: T | T[], errorMessage: string): T {
+  if (Array.isArray(response)) {
+    if (response.length === 0) {
+      throw new HttpsError("internal", errorMessage);
+    }
+    return response[0];
+  }
+  return response;
+}
 
 const MIME_TO_EXTENSIONS: Record<string, string[]> = {
   "image/jpeg": ["jpg", "jpeg"],
@@ -462,6 +512,117 @@ async function assertStoreOwnership(
     throw new HttpsError("permission-denied", "업장 소유자가 아닙니다.");
   }
 }
+
+export const startStudyCafeUsage = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as StartStudyCafeUsageRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const seatId = (data.seatId ?? "").trim();
+    const durationMinutes = Number(data.durationMinutes ?? 0);
+
+    if (!storeId || !seatId || !Number.isInteger(durationMinutes)) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (durationMinutes <= 0) {
+      throw new HttpsError("invalid-argument", "이용 시간은 0분보다 커야 합니다.");
+    }
+
+    const reservation = await supabaseRequest<
+      StudyCafeReservationResponse | StudyCafeReservationResponse[]
+    >(
+      "rpc/start_studycafe_usage",
+      "POST",
+      {
+        p_store_id: storeId,
+        p_user_id: uid,
+        p_seat_id: seatId,
+        p_duration_minutes: durationMinutes,
+      },
+    );
+    return normalizeRpcRow(reservation, "스터디카페 이용 시작에 실패했습니다.");
+  },
+);
+
+export const extendStudyCafeUsage = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as ExtendStudyCafeUsageRequest;
+    const reservationId = (data.reservationId ?? "").trim();
+    const additionalMinutes = Number(data.additionalMinutes ?? 0);
+
+    if (!reservationId || !Number.isInteger(additionalMinutes)) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (additionalMinutes <= 0) {
+      throw new HttpsError("invalid-argument", "연장 시간은 0분보다 커야 합니다.");
+    }
+
+    const reservation = await supabaseRequest<
+      StudyCafeReservationResponse | StudyCafeReservationResponse[]
+    >(
+      "rpc/extend_studycafe_usage",
+      "POST",
+      {
+        p_reservation_id: reservationId,
+        p_user_id: uid,
+        p_additional_minutes: additionalMinutes,
+      },
+    );
+    return normalizeRpcRow(reservation, "스터디카페 이용 연장에 실패했습니다.");
+  },
+);
+
+export const createSalonReservation = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as CreateSalonReservationRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const designerId = (data.designerId ?? "").trim();
+    const serviceId = (data.serviceId ?? "").trim();
+    const startAt = (data.startAt ?? "").trim();
+
+    if (!storeId || !designerId || !serviceId || !startAt) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+
+    const reservation = await supabaseRequest<
+      SalonReservationResponse | SalonReservationResponse[]
+    >(
+      "rpc/create_salon_reservation",
+      "POST",
+      {
+        p_store_id: storeId,
+        p_user_id: uid,
+        p_designer_id: designerId,
+        p_service_id: serviceId,
+        p_start_at: startAt,
+      },
+    );
+    return normalizeRpcRow(reservation, "미용실 예약 생성에 실패했습니다.");
+  },
+);
 
 /**
  * 데모용으로 특정 partner 사용자를 승인 상태로 변경한다.
