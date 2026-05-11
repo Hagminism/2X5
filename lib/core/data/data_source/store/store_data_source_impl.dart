@@ -19,6 +19,21 @@ class StoreDataSourceImpl implements StoreDataSource {
        _firebaseFunctions = firebaseFunctions;
 
   @override
+  Future<StoreDto?> findStoreById(String id) async {
+    final json = await _supabaseClient
+        .from('stores')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+
+    if (json == null) {
+      return null;
+    }
+
+    return StoreDto.fromJson(json);
+  }
+
+  @override
   Future<StoreDto?> findStoreByOwnerId(String ownerId) async {
     final json = await _supabaseClient
         .from('stores')

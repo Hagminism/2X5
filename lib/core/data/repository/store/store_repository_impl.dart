@@ -26,6 +26,17 @@ class StoreRepositoryImpl implements StoreRepository {
        _operatingHoursValidator = operatingHoursValidator;
 
   @override
+  Future<Store?> findStoreById(String id) async {
+    final trimmedId = id.trim();
+    if (trimmedId.isEmpty) {
+      return null;
+    }
+
+    final storeDto = await _storeDataSource.findStoreById(trimmedId);
+    return storeDto?.toModel();
+  }
+
+  @override
   Future<Store?> getMyStore() async {
     final uid = _getCurrentUidOrThrow();
     final storeDto = await _storeDataSource.findStoreByOwnerId(uid);

@@ -25,13 +25,55 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   static const List<_StoreCardItem> _stores = [
-    _StoreCardItem(storeId: 's1', name: '돈블랑 여의도점', subtitle: '고깃집 · 도보 5분', rating: 4.47, category: 'restaurant'),
-    _StoreCardItem(storeId: 's2', name: '블루보틀 여의도 카페', subtitle: '스페셜티 커피 · 도보 5분', rating: 4.7, category: 'cafe'),
-    _StoreCardItem(storeId: 's3', name: '아이디헤어 브라이튼여의도점', subtitle: '헤어/메이크업 · 도보 11분', rating: 4.6, category: 'salon'),
-    _StoreCardItem(storeId: 's4', name: '선셋 브런치 키친', subtitle: '브런치 · 도보 6분', rating: 4.9, category: 'restaurant'),
-    _StoreCardItem(storeId: 's5', name: '리프레시 네일 라운지', subtitle: '네일아트 · 도보 9분', rating: 4.7, category: 'salon'),
-    _StoreCardItem(storeId: 's6', name: '다온 스터디 라운지', subtitle: '스터디카페 · 도보 13분', rating: 4.5, category: 'study_cafe'),
-    _StoreCardItem(storeId: 's7', name: '어반 바버샵', subtitle: '남성 헤어 · 도보 10분', rating: 4.6, category: 'salon'),
+    _StoreCardItem(
+      storeId: 's1',
+      name: '돈블랑 여의도점',
+      subtitle: '고깃집 · 도보 5분',
+      rating: 4.47,
+      category: 'restaurant',
+    ),
+    _StoreCardItem(
+      storeId: 's2',
+      name: '블루보틀 여의도 카페',
+      subtitle: '스페셜티 커피 · 도보 5분',
+      rating: 4.7,
+      category: 'cafe',
+    ),
+    _StoreCardItem(
+      storeId: 's3',
+      name: '아이디헤어 브라이튼여의도점',
+      subtitle: '헤어/메이크업 · 도보 11분',
+      rating: 4.6,
+      category: 'salon',
+    ),
+    _StoreCardItem(
+      storeId: 's4',
+      name: '선셋 브런치 키친',
+      subtitle: '브런치 · 도보 6분',
+      rating: 4.9,
+      category: 'restaurant',
+    ),
+    _StoreCardItem(
+      storeId: 's5',
+      name: '리프레시 네일 라운지',
+      subtitle: '네일아트 · 도보 9분',
+      rating: 4.7,
+      category: 'salon',
+    ),
+    _StoreCardItem(
+      storeId: 's6',
+      name: '다온 스터디 라운지',
+      subtitle: '스터디카페 · 도보 13분',
+      rating: 4.5,
+      category: 'study_cafe',
+    ),
+    _StoreCardItem(
+      storeId: 's7',
+      name: '어반 바버샵',
+      subtitle: '남성 헤어 · 도보 10분',
+      rating: 4.6,
+      category: 'salon',
+    ),
   ];
 
   final Map<String, String> _coverImages = {};
@@ -131,10 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     category: item.category,
                     imageUrl: _coverImages[item.storeId],
                     onTap: () {
-                       //스터디 카페 판별 로직
-                      final String detectedCategory = item.subtitle.contains('스터디카페')
-                          ? '스터디카페'
-                          : '일반';
+                      final String detectedCategory =
+                          item.subtitle.contains('스터디카페') ? '스터디카페' : '일반';
                       context.push(
                         '${Routes.home}/information/${item.storeId}',
                         extra: {
