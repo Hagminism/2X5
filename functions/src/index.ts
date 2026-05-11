@@ -229,6 +229,15 @@ type CreateSalonReservationRequest = {
   startAt?: string;
 };
 
+type SaveStudyCafeDetailRequest = {
+  storeId?: string;
+  layoutJson?: {
+    seats?: unknown[];
+    elements?: unknown[];
+  };
+  usageOptions?: unknown[];
+};
+
 type StudyCafeReservationResponse = {
   id: string;
   store_id: string;
@@ -251,6 +260,18 @@ type SalonReservationResponse = {
   status: string;
 };
 
+type StudyCafeDetailResponse = {
+  id: string;
+  store_id: string;
+  layout_json: {
+    seats?: unknown[];
+    elements?: unknown[];
+  };
+  usage_options: unknown[];
+  created_at: string;
+  updated_at: string;
+};
+
 const STORE_IMAGE_BUCKET = "store_images";
 const STORE_MENU_IMAGE_BUCKET = "store_menu_images";
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -260,6 +281,12 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
   "image/webp",
 ]);
 
+/**
+ * RPC 응답이 배열 또는 단일 객체일 수 있어 단일 객체로 정규화한다.
+ * @param {T | T[]} response RPC 응답 본문
+ * @param {string} errorMessage 빈 배열일 때 반환할 에러 메시지
+ * @return {T} 정규화된 단일 응답 객체
+ */
 function normalizeRpcRow<T>(response: T | T[], errorMessage: string): T {
   if (Array.isArray(response)) {
     if (response.length === 0) {
@@ -621,6 +648,69 @@ export const createSalonReservation = onCall(
       },
     );
     return normalizeRpcRow(reservation, "미용실 예약 생성에 실패했습니다.");
+  },
+);
+
+export const saveStudyCafeDetail = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveStudyCafeDetailRequest;
+    const storeId = (data.storeId ?? "").trim();
+    if (!storeId) {
+      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const layoutJson = data.layoutJson ?? {};
+    const seats = Array.isArray(layoutJson.seats) ? layoutJson.seats : [];
+    const elements = Array.isArray(layoutJson.elements) ?
+      layoutJson.elements :
+      [];
+    const usageOptions = Array.isArray(data.usageOptions) ?
+      data.usageOptions :
+      [];
+
+    const nowIso = new Date().toISOString();
+    const payload = {
+      store_id: storeId,
+      layout_json: {
+        seats,
+        elements,
+      },
+      usage_options: usageOptions,
+      updated_at: nowIso,
+    };
+
+    const existingRows = await supabaseRequest<{id: string}[]>(
+      `studycafe_detail?store_id=eq.${storeId}&select=id&limit=1`,
+      "GET",
+    );
+
+    const detailRows = existingRows.length === 0 ?
+      await supabaseRequest<StudyCafeDetailResponse[]>(
+        "studycafe_detail?select=*",
+        "POST",
+        payload,
+      ) :
+      await supabaseRequest<StudyCafeDetailResponse[]>(
+        `studycafe_detail?id=eq.${existingRows[0].id}&select=*`,
+        "PATCH",
+        payload,
+      );
+
+    if (detailRows.length === 0) {
+      throw new HttpsError("internal", "스터디카페 상세 저장에 실패했습니다.");
+    }
+
+    return detailRows[0];
   },
 );
 
