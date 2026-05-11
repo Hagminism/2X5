@@ -1,6 +1,6 @@
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_element.dart';
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/partner_studycafe_layout_element_editor_sheet.dart';
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/partner_studycafe_layout_element_style.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/canvas/partner_studycafe_layout_element_style.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/editor/partner_studycafe_layout_element_editor_sheet.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_action.dart';
 import 'package:flutter/material.dart';
 

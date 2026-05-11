@@ -1,5 +1,5 @@
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/partner_studycafe_layout_section_card.dart';
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/partner_studycafe_layout_usage_option_tile.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/usage_option/partner_studycafe_layout_section_card.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/usage_option/partner_studycafe_layout_usage_option_tile.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_action.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_state.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';

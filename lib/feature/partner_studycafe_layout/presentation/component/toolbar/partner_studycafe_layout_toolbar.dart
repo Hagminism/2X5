@@ -1,5 +1,5 @@
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_element_type.dart';
-import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/partner_studycafe_layout_toolbar_button.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/component/toolbar/partner_studycafe_layout_toolbar_button.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_action.dart';
 import 'package:flutter/material.dart';
 
