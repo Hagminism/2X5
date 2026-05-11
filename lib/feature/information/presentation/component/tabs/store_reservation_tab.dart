@@ -1,12 +1,15 @@
+import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/core/domain/model/enum/week_day.dart';
 import 'package:flutter/material.dart';
 
 class StoreReservationStatusTab extends StatefulWidget {
   final void Function() onTapReservation;
+  final String category;
 
   const StoreReservationStatusTab({
     super.key,
+    required this.category,
     required this.onTapReservation,
   });
 
@@ -46,6 +49,7 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
 
   @override
   Widget build(BuildContext context) {
+    final category = StoreCategory.fromDbValue(widget.category);
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: SafeArea(
@@ -63,7 +67,7 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
               elevation: 0,
             ),
             child: const Text(
-              '예약하기',
+              '예약/이용하기',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
@@ -77,31 +81,63 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '방문 예정일 선택',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                IconButton(
-                  onPressed: _pickDate,
-                  icon: const Icon(
-                    Icons.calendar_month,
-                    color: AppColors.primary,
+                Text(
+                  category == StoreCategory.studyCafe
+                      ? '현재 이용 가능한 좌석'
+                      : '방문 예정일 선택',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                if (category != StoreCategory.studyCafe)
+                  IconButton(
+                    onPressed: _pickDate,
+                    icon: const Icon(
+                      Icons.calendar_month,
+                      color: AppColors.primary,
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
-            _buildDateSelector(),
+            if (category != StoreCategory.studyCafe) _buildDateSelector(),
             const SizedBox(height: 24),
             Text(
-              '${_selectedDate.month}월 ${_selectedDate.day}일 ${_getWeekdayKorean(_selectedDate.weekday)}요일 현황',
+              category == StoreCategory.studyCafe
+                  ? '현재 좌석 이용 현황'
+                  : '${_selectedDate.month}월 ${_selectedDate.day}일 ${_getWeekdayKorean(_selectedDate.weekday)}요일 현황',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            _buildTimeSlot(time: '12:00', status: '여유', color: Colors.green),
-            _buildTimeSlot(time: '13:00', status: '혼잡', color: Colors.orange),
-            _buildTimeSlot(time: '14:00', status: '마감', color: Colors.red),
-            _buildTimeSlot(time: '18:00', status: '보통', color: Colors.blue),
+            if (category == StoreCategory.studyCafe) ...[
+              _buildTimeSlot(
+                time: '좌석 선택',
+                status: '실시간 확인',
+                color: AppColors.primary,
+              ),
+              _buildTimeSlot(
+                time: '이용 시간',
+                status: '2시간/4시간 등',
+                color: Colors.blue,
+              ),
+            ] else if (category == StoreCategory.salon) ...[
+              _buildTimeSlot(
+                time: '디자이너',
+                status: '선택 필요',
+                color: AppColors.primary,
+              ),
+              _buildTimeSlot(
+                time: '시술/시간',
+                status: '슬롯당 1명',
+                color: Colors.blue,
+              ),
+            ] else ...[
+              _buildTimeSlot(time: '12:00', status: '여유', color: Colors.green),
+              _buildTimeSlot(time: '13:00', status: '혼잡', color: Colors.orange),
+              _buildTimeSlot(time: '14:00', status: '마감', color: Colors.red),
+              _buildTimeSlot(time: '18:00', status: '보통', color: Colors.blue),
+            ],
           ],
         ),
       ),
@@ -116,7 +152,8 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
         itemCount: 7,
         itemBuilder: (context, index) {
           final date = DateTime.now().add(Duration(days: index));
-          final isSelected = date.year == _selectedDate.year &&
+          final isSelected =
+              date.year == _selectedDate.year &&
               date.month == _selectedDate.month &&
               date.day == _selectedDate.day;
 
@@ -128,8 +165,9 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
               decoration: BoxDecoration(
                 color: isSelected ? AppColors.primary : const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(16),
-                border:
-                    isSelected ? null : Border.all(color: const Color(0xFFEEEEEE)),
+                border: isSelected
+                    ? null
+                    : Border.all(color: const Color(0xFFEEEEEE)),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

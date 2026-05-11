@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../ui/app_colors.dart';
 
 class SeatSelectionScreen extends StatefulWidget {
-  const SeatSelectionScreen({super.key});
+  final String storeId;
+
+  const SeatSelectionScreen({super.key, required this.storeId});
 
   @override
   State<SeatSelectionScreen> createState() => _SeatSelectionScreenState();
@@ -36,8 +38,11 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           height: 34,
           decoration: BoxDecoration(
             color: isOccupied
-                ? AppColors.authProviderButton // 이용중 (회색)
-                : (isSelected ? AppColors.primary : AppColors.white), // 선택(주황) / 기본(흰색)
+                ? AppColors
+                      .authProviderButton // 이용중 (회색)
+                : (isSelected
+                      ? AppColors.primary
+                      : AppColors.white), // 선택(주황) / 기본(흰색)
             border: Border.all(
               color: isSelected ? AppColors.primary : AppColors.border,
               width: 1,
@@ -72,7 +77,11 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ),
         title: const Text(
           '좌석 선택',
-          style: TextStyle(color: AppColors.black, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Column(
@@ -86,7 +95,11 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 const SizedBox(width: 16),
                 _buildStatusInfo(AppColors.authProviderButton, "이용중"),
                 const Spacer(),
-                const Icon(Icons.help_outline, size: 18, color: AppColors.textSecondary),
+                const Icon(
+                  Icons.help_outline,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
               ],
             ),
           ),
@@ -108,7 +121,10 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.border, width: 1.5),
+                          border: Border.all(
+                            color: AppColors.border,
+                            width: 1.5,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -126,24 +142,48 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     for (int i = 0; i < 4; i++)
                       _buildSeat(number: 7 - i, top: 180 + (i * 45), left: 30),
                     for (int i = 0; i < 3; i++)
-                      _buildSeat(number: 3 - i, top: 400 + (i * 45), left: 30, isOccupied: i == 0),
+                      _buildSeat(
+                        number: 3 - i,
+                        top: 400 + (i * 45),
+                        left: 30,
+                        isOccupied: i == 0,
+                      ),
 
                     // 중앙 왼쪽 라인 (14~21번)
                     for (int i = 0; i < 8; i++)
-                      _buildSeat(number: 21 - i, top: 180 + (i * 45), left: 135),
+                      _buildSeat(
+                        number: 21 - i,
+                        top: 180 + (i * 45),
+                        left: 135,
+                      ),
 
                     // 중앙 오른쪽 라인 (22~29번)
                     for (int i = 0; i < 8; i++)
-                      _buildSeat(number: 22 + i, top: 180 + (i * 45), left: 195),
+                      _buildSeat(
+                        number: 22 + i,
+                        top: 180 + (i * 45),
+                        left: 195,
+                      ),
 
                     // 오른쪽 라인 (8~13번)
                     for (int i = 0; i < 3; i++)
                       _buildSeat(number: 8 + i, top: 225 + (i * 45), left: 310),
                     for (int i = 0; i < 3; i++)
-                      _buildSeat(number: 11 + i, top: 400 + (i * 45), left: 310),
+                      _buildSeat(
+                        number: 11 + i,
+                        top: 400 + (i * 45),
+                        left: 310,
+                      ),
 
                     // 도면 내 텍스트 가이드 (예시)
-                    Positioned(top: 140, left: 135, child: Text("실내대화/촬영/취식금지", style: TextStyle(fontSize: 8, color: AppColors.danger))),
+                    Positioned(
+                      top: 140,
+                      left: 135,
+                      child: Text(
+                        "실내대화/촬영/취식금지",
+                        style: TextStyle(fontSize: 8, color: AppColors.danger),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -156,8 +196,16 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
               ),
               child: SafeArea(
                 child: Row(
@@ -167,8 +215,21 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("${selectedSeat}번 좌석", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                        const Text("개방형 좌석", style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                        Text(
+                          '$selectedSeat번 좌석',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const Text(
+                          "개방형 좌석",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(
@@ -176,17 +237,23 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: () {
-                          // GoRouter를 사용하여 시간 선택 화면으로 이동
-                          context.push('time/$selectedSeat');
+                          // 이용 시간을 선택한 뒤 결제하면 즉시 좌석 이용이 시작됩니다.
+                          context.push('duration/$selectedSeat');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           elevation: 0,
                         ),
                         child: const Text(
                           "선택",
-                          style: TextStyle(color: AppColors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -202,9 +269,19 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   Widget _buildStatusInfo(Color color, String text) {
     return Row(
       children: [
-        Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
         const SizedBox(width: 6),
-        Text(text, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+        ),
       ],
     );
   }

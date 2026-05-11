@@ -28,8 +28,12 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
           onPressed: () => context.pop(),
         ),
         title: const Text(
-          '이용 시간 선택',
-          style: TextStyle(color: AppColors.black, fontSize: 18, fontWeight: FontWeight.bold),
+          '이용권 선택',
+          style: TextStyle(
+            color: AppColors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Padding(
@@ -47,18 +51,24 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_outline, color: AppColors.primary),
+                  const Icon(
+                    Icons.check_circle_outline,
+                    color: AppColors.primary,
+                  ),
                   const SizedBox(width: 12),
                   Text(
                     "선택한 좌석: ",
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 16,
+                    ),
                   ),
                   Text(
                     "${widget.seatNumber}번 좌석",
                     style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
@@ -68,10 +78,10 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
             const Text(
               "이용하실 시간을\n선택해주세요",
               style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  height: 1.3
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+                height: 1.3,
               ),
             ),
             const SizedBox(height: 24),
@@ -90,11 +100,18 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                       onTap: () => setState(() => selectedHours = hour),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 24,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.primary.withOpacity(0.05) : AppColors.white,
+                          color: isSelected
+                              ? AppColors.primary.withValues(alpha: 0.05)
+                              : AppColors.white,
                           border: Border.all(
-                            color: isSelected ? AppColors.primary : AppColors.border,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.border,
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(12),
@@ -106,13 +123,21 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                               "$hour시간 이용권",
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
                               ),
                             ),
                             Icon(
-                              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                              color: isSelected ? AppColors.primary : AppColors.border,
+                              isSelected
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_off,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.border,
                             ),
                           ],
                         ),
@@ -124,39 +149,40 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
             ),
 
             // 최종 예약 버튼
-// 최종 예약 버튼
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                // 💡 수정: 시간이 선택되었을 때만 버튼이 활성화되도록 합니다.
-                onPressed: selectedHours == null
-                    ? null
-                    : () {
-                  // 💡 수정: 좌석 화면 이동 로직 대신, 예약 확정 함수를 호출합니다!
-                  _onReservationConfirm();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.border,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "예약 확정하기",
-                  style: TextStyle(
-                      color: AppColors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold
+            // 최종 예약 버튼
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    // 💡 수정: 시간이 선택되었을 때만 버튼이 활성화되도록 합니다.
+                    onPressed: selectedHours == null
+                        ? null
+                        : () {
+                            _onReservationConfirm();
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      disabledBackgroundColor: AppColors.border,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      "결제하고 이용 시작",
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
           ],
         ),
       ),
@@ -164,13 +190,12 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
   }
 
   void _onReservationConfirm() {
-    // 여기에 실제 예약 로직을 넣으시면 됩니다.
-    // 완료 후 홈화면이나 예약 확인 화면으로 이동
+    // 실제 결제/좌석 선점 RPC 연결 전까지는 완료 흐름만 표시합니다.
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("예약 완료"),
-        content: Text("${widget.seatNumber}번 좌석 $selectedHours시간 예약되었습니다."),
+        title: const Text("이용 시작"),
+        content: Text("${widget.seatNumber}번 좌석을 $selectedHours시간 이용합니다."),
         actions: [
           TextButton(
             onPressed: () => context.go('/'), // 메인 화면으로 이동
