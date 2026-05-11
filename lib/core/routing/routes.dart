@@ -20,6 +20,7 @@ class Routes {
   static const String search = 'search';
   static const String notifications = 'notifications';
   static const String homeStoreInformation = 'information/:storeId';
+  static const String searchStoreInformation = 'search-store-information/:storeId';
   static const String bookmarkStoreDetail = 'store/:storeId';
 
   // reservation

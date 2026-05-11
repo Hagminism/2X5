@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -295,9 +296,8 @@ class _MapScreenState extends State<MapScreen> {
                 onSwipeUp: () {
                   final storeId = _selectedStore!['id']?.toString() ?? '';
                   if (storeId.isNotEmpty) {
-                    context.pushNamed(
-                      'information',
-                      pathParameters: {'storeId': storeId},
+                    context.push(
+                      '${Routes.map}/${Routes.search}/${Routes.searchStoreInformation.replaceAll(':storeId', storeId)}',
                     );
                   }
                 },

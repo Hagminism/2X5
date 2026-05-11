@@ -63,6 +63,8 @@ import 'package:capstone_2026/feature/reservation/presentation/screen/reservatio
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_screen.dart';
 import 'package:capstone_2026/feature/information/core/presentation/component/scope/information_scope.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
+import 'package:capstone_2026/feature/search_store_information/core/presentation/component/scope/search_store_information_scope.dart';
+import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_store_information_view_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -201,6 +203,20 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   path: Routes.search,
                   builder: (context, state) => const SearchScreen(),
+                  routes: [
+                    GoRoute(
+                      parentNavigatorKey: _rootNavigatorKey,
+                      path: Routes.searchStoreInformation,
+                      builder: (context, state) {
+                        final storeId = state.pathParameters['storeId'] ?? '';
+
+                        return SearchStoreInformationScope(
+                          viewModel: getIt<SearchStoreInformationViewModel>(),
+                          storeId: storeId,
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
