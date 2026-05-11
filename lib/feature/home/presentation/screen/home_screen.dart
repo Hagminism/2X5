@@ -1,4 +1,6 @@
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_category_card.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_header.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_search_bar.dart';
@@ -30,6 +32,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userName = getIt<AuthRepository>().getCurrentUserDisplayName();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -42,6 +46,7 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     HomeHeader(
+                      userName: userName,
                       onNotificationTap: () => _showSoonMessage(
                         context,
                         '알림 화면은 다음 단계에서 연결될 예정입니다.',
@@ -94,10 +99,9 @@ class HomeScreen extends StatelessWidget {
                     subtitle: item.subtitle,
                     rating: item.rating,
                     onTap: () {
-                       //스터디 카페 판별 로직
-                      final String detectedCategory = item.subtitle.contains('스터디카페')
-                          ? '스터디카페'
-                          : '일반';
+                      //스터디 카페 판별 로직
+                      final String detectedCategory =
+                          item.subtitle.contains('스터디카페') ? '스터디카페' : '일반';
                       context.push(
                         '${Routes.home}/information/${item.storeId}',
                         extra: {

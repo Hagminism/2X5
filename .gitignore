@@ -87,6 +87,9 @@ ios/Runner/Secrets.xcconfig
 .agents/
 skills-lock.json
 
+# Continue
+.continue/
+
 # Node
 functions/node_modules/
 
