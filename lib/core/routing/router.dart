@@ -26,7 +26,9 @@ import 'package:capstone_2026/feature/partner_store_menu/core/presentation/compo
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:capstone_2026/feature/partner_salon_management/presentation/screen/partner_salon_management_screen.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/core/presentation/component/scope/partner_studycafe_layout_scope.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/core/presentation/component/scope/partner_studycafe_usage_option_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_view_model.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_usage_option_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/core/presentation/component/scope/home_scope.dart';
@@ -363,6 +365,13 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => PartnerStudyCafeLayoutScope(
                     viewModel: getIt<PartnerStudyCafeLayoutViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerStudyCafeUsageOptions,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => PartnerStudyCafeUsageOptionScope(
+                    viewModel: getIt<PartnerStudyCafeUsageOptionViewModel>(),
                   ),
                 ),
                 GoRoute(

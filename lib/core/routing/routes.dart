@@ -46,6 +46,7 @@ class Routes {
   static const String partnerStoreMenus = 'menus';
   static const String partnerStoreImages = 'images';
   static const String partnerStudyCafeLayout = 'study-cafe-layout';
+  static const String partnerStudyCafeUsageOptions = 'study-cafe-usage-options';
   static const String partnerSalonManagement = 'salon-management';
   static const String partnerOnboarding = '/partner/onboarding';
   static const String partnerStoreEdit = '/partner/store/edit';
