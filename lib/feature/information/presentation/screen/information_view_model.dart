@@ -65,10 +65,12 @@ class InformationViewModel extends ChangeNotifier {
         );
         break;
       case TapInformationReservation():
-        final isStudyCafe =
-            _state.category == StoreCategory.studyCafe.dbValue ||
-            _state.category == StoreCategory.studyCafe.displayName;
-        final target = isStudyCafe ? Routes.seat : Routes.reservation;
+        final category = StoreCategory.fromDbValue(_state.category);
+        final target = switch (category) {
+          StoreCategory.studyCafe => Routes.seat,
+          StoreCategory.salon => Routes.salonReservation,
+          _ => Routes.reservation,
+        };
         _eventController.add(
           InformationEvent.push('${action.currentLocation}/$target'),
         );

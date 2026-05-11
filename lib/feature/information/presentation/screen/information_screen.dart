@@ -29,7 +29,10 @@ class InformationScreen extends StatefulWidget {
 
 class _InformationScreenState extends State<InformationScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(length: 6, vsync: this);
+  late final TabController _tabController = TabController(
+    length: 6,
+    vsync: this,
+  );
   final PageController _sliderController = PageController();
   int _currentSliderPage = 0;
 
@@ -134,8 +137,11 @@ class _InformationScreenState extends State<InformationScreen>
             const StoreReviewTab(),
             const StoreInfoTab(),
             StoreReservationStatusTab(
+              category: widget.state.category,
               onTapReservation: () {
-                final currentLocation = GoRouterState.of(context).matchedLocation;
+                final currentLocation = GoRouterState.of(
+                  context,
+                ).matchedLocation;
                 widget.onAction(
                   InformationAction.tapReservation(currentLocation),
                 );
