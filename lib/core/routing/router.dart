@@ -24,6 +24,9 @@ import 'package:capstone_2026/feature/partner_store_image/core/presentation/comp
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_menu/core/presentation/component/scope/partner_store_menu_scope.dart';
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
+import 'package:capstone_2026/feature/partner_salon_management/presentation/screen/partner_salon_management_screen.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/core/presentation/component/scope/partner_studycafe_layout_scope.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/core/presentation/component/scope/home_scope.dart';
@@ -55,6 +58,7 @@ import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
+import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_screen.dart';
 import 'package:capstone_2026/feature/information/core/presentation/component/scope/information_scope.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:go_router/go_router.dart';
@@ -148,15 +152,29 @@ final router = GoRouter(
                       builder: (context, state) => const ReservationScreen(),
                     ),
                     GoRoute(
+                      path: Routes.salonReservation,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => SalonReservationScreen(
+                        storeId: state.pathParameters['storeId'] ?? '',
+                      ),
+                    ),
+                    GoRoute(
                       path: Routes.seat, // 'seat'
                       parentNavigatorKey: _rootNavigatorKey, // 부모가 전체화면 키를 쓰면
-                      builder: (context, state) => const SeatSelectionScreen(),
+                      builder: (context, state) => SeatSelectionScreen(
+                        storeId: state.pathParameters['storeId'] ?? '',
+                      ),
                       routes: [
                         GoRoute(
-                          path: 'time/:seatNumber',
-                          parentNavigatorKey: _rootNavigatorKey, // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
+                          path: Routes.duration,
+                          parentNavigatorKey:
+                              _rootNavigatorKey, // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
                           builder: (context, state) {
-                            final seatNumber = int.tryParse(state.pathParameters['seatNumber'] ?? '') ?? 0;
+                            final seatNumber =
+                                int.tryParse(
+                                  state.pathParameters['seatNumber'] ?? '',
+                                ) ??
+                                0;
                             return TimeSelectionScreen(seatNumber: seatNumber);
                           },
                         ),
@@ -336,6 +354,19 @@ final router = GoRouter(
                   builder: (context, state) => PartnerStoreImageScope(
                     viewModel: getIt<PartnerStoreImageViewModel>(),
                   ),
+                ),
+                GoRoute(
+                  path: Routes.partnerStudyCafeLayout,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => PartnerStudyCafeLayoutScope(
+                    viewModel: getIt<PartnerStudyCafeLayoutViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerSalonManagement,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) =>
+                      const PartnerSalonManagementScreen(),
                 ),
               ],
             ),

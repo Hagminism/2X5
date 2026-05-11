@@ -5,17 +5,25 @@ import 'package:capstone_2026/core/data/data_source/user/user_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source_impl.dart';
+import 'package:capstone_2026/core/data/data_source/salon/salon_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/salon/salon_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/store/store_data_source_impl.dart';
+import 'package:capstone_2026/core/data/data_source/studycafe/studycafe_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/studycafe/studycafe_data_source_impl.dart';
 import 'package:capstone_2026/core/data/repository/auth/auth_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/owner_verification/owner_verification_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/reservation/reservation_repository_impl.dart';
+import 'package:capstone_2026/core/data/repository/salon/salon_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/store/store_repository_impl.dart';
+import 'package:capstone_2026/core/data/repository/studycafe/studycafe_repository_impl.dart';
 import 'package:capstone_2026/core/data/repository/user/user_repository_impl.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/owner_verification/owner_verification_repository.dart';
 import 'package:capstone_2026/core/domain/repository/reservation/reservation_repository.dart';
+import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
+import 'package:capstone_2026/core/domain/repository/studycafe/studycafe_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
 import 'package:capstone_2026/core/domain/service/sign_up_with_email_service.dart';
 import 'package:capstone_2026/core/domain/validator/store_operating_hours_validator.dart';
@@ -31,6 +39,7 @@ import 'package:capstone_2026/feature/partner_reservations/presentation/screen/p
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
@@ -128,6 +137,18 @@ void diSetup() {
   getIt.registerLazySingleton<ReservationDataSource>(
     () => ReservationDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
+  getIt.registerLazySingleton<StudyCafeDataSource>(
+    () => StudyCafeDataSourceImpl(
+      supabaseClient: getIt<SupabaseClient>(),
+      firebaseFunctions: getIt<FirebaseFunctions>(),
+    ),
+  );
+  getIt.registerLazySingleton<SalonDataSource>(
+    () => SalonDataSourceImpl(
+      supabaseClient: getIt<SupabaseClient>(),
+      firebaseFunctions: getIt<FirebaseFunctions>(),
+    ),
+  );
   getIt.registerLazySingleton<AddressSearchDataSource>(
     () => AddressSearchDataSourceImpl(),
   );
@@ -188,6 +209,20 @@ void diSetup() {
       authRepository: getIt<AuthRepository>(),
     ),
   );
+  getIt.registerLazySingleton<StudyCafeRepository>(
+    () => StudyCafeRepositoryImpl(
+      studyCafeDataSource: getIt<StudyCafeDataSource>(),
+      storeDataSource: getIt<StoreDataSource>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
+  getIt.registerLazySingleton<SalonRepository>(
+    () => SalonRepositoryImpl(
+      salonDataSource: getIt<SalonDataSource>(),
+      storeDataSource: getIt<StoreDataSource>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
 
   // ViewModel
   getIt.registerFactory<SignInViewModel>(
@@ -228,6 +263,11 @@ void diSetup() {
   );
   getIt.registerFactory<PartnerReservationSlotSettingsViewModel>(
     () => PartnerReservationSlotSettingsViewModel(),
+  );
+  getIt.registerFactory<PartnerStudyCafeLayoutViewModel>(
+    () => PartnerStudyCafeLayoutViewModel(
+      studyCafeRepository: getIt<StudyCafeRepository>(),
+    ),
   );
   getIt.registerFactory<AddressSearchViewModel>(
     () => AddressSearchViewModel(

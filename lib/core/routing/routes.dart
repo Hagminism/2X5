@@ -25,7 +25,8 @@ class Routes {
   // reservation
   static const String reservation = 'reservation';
   static const String seat = 'seat';
-  static const String time = 'time/:seatNumber';
+  static const String duration = 'duration/:seatNumber';
+  static const String salonReservation = 'salon-reservation';
 
   // My page nested paths
   static const String profileEdit = 'profile-edit';
@@ -44,6 +45,8 @@ class Routes {
   static const String partnerAddressSearch = 'address-search';
   static const String partnerStoreMenus = 'menus';
   static const String partnerStoreImages = 'images';
+  static const String partnerStudyCafeLayout = 'study-cafe-layout';
+  static const String partnerSalonManagement = 'salon-management';
   static const String partnerOnboarding = '/partner/onboarding';
   static const String partnerStoreEdit = '/partner/store/edit';
   static const String partnerReservations = '/partner/reservations';
