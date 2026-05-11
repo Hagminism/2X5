@@ -98,15 +98,7 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    context.push(
-      '${Routes.home}/information/$storeId',
-      extra: {
-        'name': store['name']?.toString() ?? '이름 없음',
-        'subtitle': store['address']?.toString() ?? '주소 없음',
-        'rating': (store['rating'] as num?)?.toDouble() ?? 0.0,
-        'category': store['category']?.toString() ?? '',
-      },
-    );
+    context.push('${Routes.home}/information/$storeId');
   }
 
   @override

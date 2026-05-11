@@ -3,6 +3,8 @@ import 'package:capstone_2026/core/domain/model/store/store_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 
 abstract interface class StoreDataSource {
+  Future<StoreDto?> findStoreById(String id);
+
   Future<StoreDto?> findStoreByOwnerId(String ownerId);
 
   Future<StoreDto> createStore(StoreDto storeDto);
