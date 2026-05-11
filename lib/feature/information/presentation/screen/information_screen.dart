@@ -61,6 +61,7 @@ class _InformationScreenState extends State<InformationScreen>
         ),
         actions: [
           IconButton(
+<<<<<<< HEAD
             icon: const Icon(
               Icons.share_outlined,
               color: AppColors.textPrimary,
@@ -74,6 +75,13 @@ class _InformationScreenState extends State<InformationScreen>
             ),
             onPressed: () {},
           ),
+=======
+              icon: const Icon(Icons.share_outlined, color: AppColors.textPrimary),
+              onPressed: () {}),
+          IconButton(
+              icon: const Icon(Icons.favorite_border_rounded, color: AppColors.textPrimary),
+              onPressed: () {}),
+>>>>>>> 7929117 (상세페이지 store_id로 띄우게금 구현)
         ],
       ),
       body: NestedScrollView(
@@ -93,8 +101,7 @@ class _InformationScreenState extends State<InformationScreen>
                         final String? url = sliderImages[index];
                         return Container(
                           width: double.infinity,
-                          decoration:
-                          const BoxDecoration(color: AppColors.surfaceMuted),
+                          decoration: const BoxDecoration(color: AppColors.surfaceMuted),
                           child: url != null
                               ? Image.network(url, fit: BoxFit.cover)
                               : const Center(
@@ -117,8 +124,7 @@ class _InformationScreenState extends State<InformationScreen>
                           sliderImages.length,
                               (index) => Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: 7,
-                            height: 7,
+                            width: 7, height: 7,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: _currentSliderPage == index
@@ -146,17 +152,17 @@ class _InformationScreenState extends State<InformationScreen>
                   unselectedLabelColor: AppColors.textSecondary,
                   indicatorColor: AppColors.primary,
                   indicatorWeight: 3,
+<<<<<<< HEAD
                   labelStyle: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                   ),
+=======
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+>>>>>>> 7929117 (상세페이지 store_id로 띄우게금 구현)
                   tabs: const [
-                    Tab(text: '홈'),
-                    Tab(text: '메뉴'),
-                    Tab(text: '사진'),
-                    Tab(text: '리뷰'),
-                    Tab(text: '정보'),
-                    Tab(text: '예약'),
+                    Tab(text: '홈'), Tab(text: '메뉴'), Tab(text: '사진'),
+                    Tab(text: '리뷰'), Tab(text: '정보'), Tab(text: '예약'),
                   ],
                 ),
               ),
@@ -184,12 +190,12 @@ class _InformationScreenState extends State<InformationScreen>
       child: Row(
         children: [
           Container(
-            width: 72,
-            height: 72,
+            width: 72, height: 72,
             decoration: BoxDecoration(
               color: AppColors.surfaceMuted,
               borderRadius: BorderRadius.circular(14),
               image: widget.imageUrl != null
+<<<<<<< HEAD
                   ? DecorationImage(
                 image: NetworkImage(widget.imageUrl!),
                 fit: BoxFit.cover,
@@ -202,6 +208,13 @@ class _InformationScreenState extends State<InformationScreen>
               size: 32,
               color: AppColors.textSecondary,
             )
+=======
+                  ? DecorationImage(image: NetworkImage(widget.imageUrl!), fit: BoxFit.cover)
+                  : null,
+            ),
+            child: widget.imageUrl == null
+                ? const Icon(Icons.storefront_rounded, size: 32, color: AppColors.textSecondary)
+>>>>>>> 7929117 (상세페이지 store_id로 띄우게금 구현)
                 : null,
           ),
           const SizedBox(width: 16),
@@ -211,11 +224,15 @@ class _InformationScreenState extends State<InformationScreen>
               children: [
                 Text(
                   widget.name,
+<<<<<<< HEAD
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
+=======
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+>>>>>>> 7929117 (상세페이지 store_id로 띄우게금 구현)
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -230,11 +247,15 @@ class _InformationScreenState extends State<InformationScreen>
                     const SizedBox(width: 4),
                     Text(
                       widget.rating.toStringAsFixed(1),
+<<<<<<< HEAD
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
+=======
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+>>>>>>> 7929117 (상세페이지 store_id로 띄우게금 구현)
                     ),
                   ],
                 ),
@@ -250,7 +271,10 @@ class _InformationScreenState extends State<InformationScreen>
 class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   const _StickyTabBarDelegate(this.tabBar);
   final TabBar tabBar;
+  @override double get minExtent => tabBar.preferredSize.height;
+  @override double get maxExtent => tabBar.preferredSize.height;
   @override
+<<<<<<< HEAD
   double get minExtent => tabBar.preferredSize.height;
   @override
   double get maxExtent => tabBar.preferredSize.height;
@@ -260,6 +284,9 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
       BuildContext context,
       double shrinkOffset,
       bool overlapsContent) {
+=======
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+>>>>>>> 7929117 (상세페이지 store_id로 띄우게금 구현)
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -268,7 +295,5 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
       child: tabBar,
     );
   }
-
-  @override
-  bool shouldRebuild(_StickyTabBarDelegate oldDelegate) => false;
+  @override bool shouldRebuild(_StickyTabBarDelegate oldDelegate) => false;
 }
