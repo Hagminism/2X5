@@ -9,6 +9,8 @@ sealed class PartnerStoreManagementEvent with _$PartnerStoreManagementEvent {
   const factory PartnerStoreManagementEvent.openAddressSearch() =
       OpenAddressSearch;
   const factory PartnerStoreManagementEvent.openMenuManager() = OpenMenuManager;
+  const factory PartnerStoreManagementEvent.openSeatLayoutManager() =
+      OpenSeatLayoutManager;
   const factory PartnerStoreManagementEvent.openImageManager() =
       OpenImageManager;
 }

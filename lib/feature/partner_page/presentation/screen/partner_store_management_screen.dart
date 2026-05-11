@@ -268,26 +268,49 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  if(state.category == 'restaurant' || state.category == 'cafe')
-                  PartnerStoreSectionCard(
-                    title: '메뉴 정보',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PartnerStoreManagementCtaCard(
-                          icon: Icons.restaurant_menu_rounded,
-                          title: '메뉴 관리',
-                          subtitle: '대표 메뉴, 가격, 설명을 등록하고 수정할 수 있어요.',
-                          onTap: () {
-                            onAction(
-                              const PartnerStoreManagementAction.tapOpenMenuManager(),
-                            );
-                          },
-                        ),
-                      ],
+                  if (state.category == 'restaurant' ||
+                      state.category == 'cafe') ...[
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '메뉴 정보',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PartnerStoreManagementCtaCard(
+                            icon: Icons.restaurant_menu_rounded,
+                            title: '메뉴 관리',
+                            subtitle: '대표 메뉴, 가격, 설명을 등록하고 수정할 수 있어요.',
+                            onTap: () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenMenuManager(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
+                  if (state.category == 'study_cafe') ...[
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '좌석 관리',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PartnerStoreManagementCtaCard(
+                            icon: Icons.chair_alt_rounded,
+                            title: '좌석 배치',
+                            subtitle: '스터디카페 좌석 구성을 확인하고 조정할 수 있어요.',
+                            onTap: () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenSeatLayoutManager(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   PartnerStoreSectionCard(
                     title: '업장 사진',

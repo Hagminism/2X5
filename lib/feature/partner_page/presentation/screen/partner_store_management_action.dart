@@ -37,6 +37,9 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
   const factory PartnerStoreManagementAction.tapOpenMenuManager() =
       TapOpenMenuManager;
 
+  const factory PartnerStoreManagementAction.tapOpenSeatLayoutManager() =
+      TapOpenSeatLayoutManager;
+
   const factory PartnerStoreManagementAction.tapOpenImageManager() =
       TapOpenImageManager;
 
