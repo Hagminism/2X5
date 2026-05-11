@@ -149,7 +149,7 @@ class _Toolbar extends StatelessWidget {
           _ToolbarButton(
             icon: Icons.align_horizontal_center_rounded,
             label: '가로 정렬',
-            description: '${state.selectedSeatIds.length}개 좌석',
+            description: '선택 항목',
             onTap: () => onAction(
               const PartnerStudyCafeLayoutAction.alignSelectedSeatsHorizontally(),
             ),
@@ -158,7 +158,7 @@ class _Toolbar extends StatelessWidget {
           _ToolbarButton(
             icon: Icons.align_vertical_center_rounded,
             label: '세로 정렬',
-            description: '${state.selectedSeatIds.length}개 좌석',
+            description: '선택 항목',
             onTap: () => onAction(
               const PartnerStudyCafeLayoutAction.alignSelectedSeatsVertically(),
             ),
@@ -321,6 +321,14 @@ class _SeatCanvasState extends State<_SeatCanvas> {
               height: canvasHeight,
               child: GestureDetector(
                 behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  widget.onAction(
+                    const PartnerStudyCafeLayoutAction.selectSeats([]),
+                  );
+                  widget.onAction(
+                    const PartnerStudyCafeLayoutAction.selectElements([]),
+                  );
+                },
                 onPanStart: (details) {
                   setState(() {
                     _selectionStart = details.localPosition;
@@ -333,7 +341,7 @@ class _SeatCanvasState extends State<_SeatCanvas> {
                   });
                 },
                 onPanEnd: (_) {
-                  _selectSeatsInRect(
+                  _selectItemsInRect(
                     canvasWidth: canvasWidth,
                     canvasHeight: canvasHeight,
                     seatSize: seatSize,
@@ -360,8 +368,9 @@ class _SeatCanvasState extends State<_SeatCanvas> {
                     for (final element in widget.state.elements)
                       _EditableElement(
                         element: element,
-                        isSelected:
-                            element.elementId == widget.state.selectedElementId,
+                        isSelected: widget.state.selectedElementIds.contains(
+                          element.elementId,
+                        ),
                         canvasWidth: canvasWidth,
                         canvasHeight: canvasHeight,
                         onAction: widget.onAction,
@@ -400,7 +409,7 @@ class _SeatCanvasState extends State<_SeatCanvas> {
     );
   }
 
-  void _selectSeatsInRect({
+  void _selectItemsInRect({
     required double canvasWidth,
     required double canvasHeight,
     required double seatSize,
@@ -423,8 +432,31 @@ class _SeatCanvasState extends State<_SeatCanvas> {
         })
         .map((seat) => seat.seatId)
         .toList();
+    final selectedElementIds = widget.state.elements
+        .where((element) {
+          final width = (canvasWidth * element.width)
+              .clamp(16.0, canvasWidth)
+              .toDouble();
+          final height = (canvasHeight * element.height)
+              .clamp(10.0, canvasHeight)
+              .toDouble();
+          final movableWidth = canvasWidth - width;
+          final movableHeight = canvasHeight - height;
+          final elementRect = Rect.fromLTWH(
+            element.x.clamp(0, 1).toDouble() * movableWidth,
+            element.y.clamp(0, 1).toDouble() * movableHeight,
+            width,
+            height,
+          );
+          return rect.overlaps(elementRect);
+        })
+        .map((element) => element.elementId)
+        .toList();
 
     widget.onAction(PartnerStudyCafeLayoutAction.selectSeats(selectedSeatIds));
+    widget.onAction(
+      PartnerStudyCafeLayoutAction.selectElements(selectedElementIds),
+    );
   }
 }
 

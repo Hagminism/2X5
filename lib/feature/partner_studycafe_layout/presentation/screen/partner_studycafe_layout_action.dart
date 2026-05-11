@@ -20,6 +20,10 @@ sealed class PartnerStudyCafeLayoutAction with _$PartnerStudyCafeLayoutAction {
   const factory PartnerStudyCafeLayoutAction.selectElement(String elementId) =
       SelectElement;
 
+  const factory PartnerStudyCafeLayoutAction.selectElements(
+    List<String> elementIds,
+  ) = SelectElements;
+
   const factory PartnerStudyCafeLayoutAction.removeSelectedSeat() =
       RemoveSelectedSeat;
 

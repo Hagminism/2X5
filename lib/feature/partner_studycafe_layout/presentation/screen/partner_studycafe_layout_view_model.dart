@@ -68,6 +68,7 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       case SelectSeat():
         _state = state.copyWith(
           selectedSeatIds: [action.seatId],
+          selectedElementIds: const [],
           selectedElementId: null,
         );
         notifyListeners();
@@ -82,7 +83,17 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       case SelectElement():
         _state = state.copyWith(
           selectedElementId: action.elementId,
+          selectedElementIds: [action.elementId],
           selectedSeatIds: const [],
+        );
+        notifyListeners();
+        break;
+      case SelectElements():
+        _state = state.copyWith(
+          selectedElementId: action.elementIds.isEmpty
+              ? null
+              : action.elementIds.first,
+          selectedElementIds: action.elementIds,
         );
         notifyListeners();
         break;
@@ -140,10 +151,10 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
         );
         break;
       case AlignSelectedSeatsHorizontally():
-        _alignSelectedSeatsHorizontally();
+        _alignSelectedItemsHorizontally();
         break;
       case AlignSelectedSeatsVertically():
-        _alignSelectedSeatsVertically();
+        _alignSelectedItemsVertically();
         break;
       case AddUsageOption():
         _state = state.copyWith(
@@ -242,6 +253,7 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     _state = state.copyWith(
       seats: [...state.seats, seat],
       selectedSeatIds: [seat.seatId],
+      selectedElementIds: const [],
       selectedElementId: null,
     );
     notifyListeners();
@@ -269,6 +281,7 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     _state = state.copyWith(
       elements: [...state.elements, element],
       selectedElementId: element.elementId,
+      selectedElementIds: [element.elementId],
       selectedSeatIds: const [],
     );
     notifyListeners();
@@ -289,15 +302,19 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
   }
 
   void _removeSelectedElement() {
-    final selectedElementId = state.selectedElementId;
-    if (selectedElementId == null) {
+    final selectedElementIds = state.selectedElementIds.toSet();
+    if (selectedElementIds.isEmpty && state.selectedElementId == null) {
       return;
     }
+    final removingIds = selectedElementIds.isEmpty
+        ? {state.selectedElementId!}
+        : selectedElementIds;
     _state = state.copyWith(
       elements: state.elements
-          .where((element) => element.elementId != selectedElementId)
+          .where((element) => !removingIds.contains(element.elementId))
           .toList(),
       selectedElementId: null,
+      selectedElementIds: const [],
     );
     notifyListeners();
   }
@@ -332,35 +349,88 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     required double deltaX,
     required double deltaY,
   }) {
-    _updateElement(
-      elementId,
-      (element) => element.copyWith(
+    final movingElementIds = state.selectedElementIds.contains(elementId)
+        ? state.selectedElementIds.toSet()
+        : {elementId};
+    final updates = <String, StudyCafeLayoutElement>{};
+    for (final element in state.elements) {
+      if (!movingElementIds.contains(element.elementId)) {
+        continue;
+      }
+      updates[element.elementId] = element.copyWith(
         x: (element.x + deltaX).clamp(0, 1).toDouble(),
         y: (element.y + deltaY).clamp(0, 1).toDouble(),
-      ),
-    );
+      );
+    }
+    _updateElementsById(updates);
   }
 
-  void _alignSelectedSeatsHorizontally() {
-    final selected = _selectedSeats();
-    if (selected.length < 2) {
+  void _alignSelectedItemsHorizontally() {
+    final selectedItems = _selectedLayoutItems();
+    if (selectedItems.length < 2) {
       return;
     }
     final targetY =
-        selected.map((seat) => seat.y).reduce((a, b) => a + b) /
-        selected.length;
-    _updateSelectedSeats((seat) => seat.copyWith(y: targetY));
+        selectedItems.map((item) => item.y).reduce((a, b) => a + b) /
+        selectedItems.length;
+    final sortedByX = [...selectedItems]..sort((a, b) => a.x.compareTo(b.x));
+    final minX = sortedByX.first.x;
+    final maxX = sortedByX.last.x;
+    final stepX = (maxX - minX) / (sortedByX.length - 1);
+    final seatUpdates = <String, StudyCafeSeat>{};
+    final elementUpdates = <String, StudyCafeLayoutElement>{};
+
+    for (var index = 0; index < sortedByX.length; index++) {
+      final item = sortedByX[index];
+      final nextX = (minX + (stepX * index)).clamp(0, 1).toDouble();
+      final nextY = targetY.clamp(0, 1).toDouble();
+      switch (item.type) {
+        case _LayoutItemType.seat:
+          seatUpdates[item.id] = item.seat!.copyWith(x: nextX, y: nextY);
+          break;
+        case _LayoutItemType.element:
+          elementUpdates[item.id] = item.element!.copyWith(x: nextX, y: nextY);
+          break;
+      }
+    }
+    _updateSelectedItems(
+      seatUpdates: seatUpdates,
+      elementUpdates: elementUpdates,
+    );
   }
 
-  void _alignSelectedSeatsVertically() {
-    final selected = _selectedSeats();
-    if (selected.length < 2) {
+  void _alignSelectedItemsVertically() {
+    final selectedItems = _selectedLayoutItems();
+    if (selectedItems.length < 2) {
       return;
     }
     final targetX =
-        selected.map((seat) => seat.x).reduce((a, b) => a + b) /
-        selected.length;
-    _updateSelectedSeats((seat) => seat.copyWith(x: targetX));
+        selectedItems.map((item) => item.x).reduce((a, b) => a + b) /
+        selectedItems.length;
+    final sortedByY = [...selectedItems]..sort((a, b) => a.y.compareTo(b.y));
+    final minY = sortedByY.first.y;
+    final maxY = sortedByY.last.y;
+    final stepY = (maxY - minY) / (sortedByY.length - 1);
+    final seatUpdates = <String, StudyCafeSeat>{};
+    final elementUpdates = <String, StudyCafeLayoutElement>{};
+
+    for (var index = 0; index < sortedByY.length; index++) {
+      final item = sortedByY[index];
+      final nextY = (minY + (stepY * index)).clamp(0, 1).toDouble();
+      final nextX = targetX.clamp(0, 1).toDouble();
+      switch (item.type) {
+        case _LayoutItemType.seat:
+          seatUpdates[item.id] = item.seat!.copyWith(x: nextX, y: nextY);
+          break;
+        case _LayoutItemType.element:
+          elementUpdates[item.id] = item.element!.copyWith(x: nextX, y: nextY);
+          break;
+      }
+    }
+    _updateSelectedItems(
+      seatUpdates: seatUpdates,
+      elementUpdates: elementUpdates,
+    );
   }
 
   void _updateSelectedSeats(StudyCafeSeat Function(StudyCafeSeat seat) update) {
@@ -401,8 +471,41 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     _state = state.copyWith(
       elements: next,
       selectedElementId: elementId,
+      selectedElementIds: [elementId],
       selectedSeatIds: const [],
     );
+    notifyListeners();
+  }
+
+  void _updateElementsById(Map<String, StudyCafeLayoutElement> updates) {
+    if (updates.isEmpty) {
+      return;
+    }
+    final next = state.elements
+        .map((element) => updates[element.elementId] ?? element)
+        .toList();
+    _state = state.copyWith(
+      elements: next,
+      selectedElementIds: updates.keys.toList(),
+      selectedElementId: updates.keys.first,
+    );
+    notifyListeners();
+  }
+
+  void _updateSelectedItems({
+    required Map<String, StudyCafeSeat> seatUpdates,
+    required Map<String, StudyCafeLayoutElement> elementUpdates,
+  }) {
+    if (seatUpdates.isEmpty && elementUpdates.isEmpty) {
+      return;
+    }
+    final nextSeats = state.seats
+        .map((seat) => seatUpdates[seat.seatId] ?? seat)
+        .toList();
+    final nextElements = state.elements
+        .map((element) => elementUpdates[element.elementId] ?? element)
+        .toList();
+    _state = state.copyWith(seats: nextSeats, elements: nextElements);
     notifyListeners();
   }
 
@@ -424,6 +527,39 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     return state.seats
         .where((seat) => selectedSeatIds.contains(seat.seatId))
         .toList();
+  }
+
+  List<StudyCafeLayoutElement> _selectedElements() {
+    final selectedElementIds = state.selectedElementIds.toSet();
+    return state.elements
+        .where((element) => selectedElementIds.contains(element.elementId))
+        .toList();
+  }
+
+  List<_SelectedLayoutItem> _selectedLayoutItems() {
+    final selectedSeats = _selectedSeats()
+        .map(
+          (seat) => _SelectedLayoutItem(
+            id: seat.seatId,
+            x: seat.x,
+            y: seat.y,
+            type: _LayoutItemType.seat,
+            seat: seat,
+          ),
+        )
+        .toList();
+    final selectedElements = _selectedElements()
+        .map(
+          (element) => _SelectedLayoutItem(
+            id: element.elementId,
+            x: element.x,
+            y: element.y,
+            type: _LayoutItemType.element,
+            element: element,
+          ),
+        )
+        .toList();
+    return [...selectedSeats, ...selectedElements];
   }
 
   int _nextSeatNumber() {
@@ -466,4 +602,24 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     _eventController.close();
     super.dispose();
   }
+}
+
+enum _LayoutItemType { seat, element }
+
+class _SelectedLayoutItem {
+  final String id;
+  final double x;
+  final double y;
+  final _LayoutItemType type;
+  final StudyCafeSeat? seat;
+  final StudyCafeLayoutElement? element;
+
+  const _SelectedLayoutItem({
+    required this.id,
+    required this.x,
+    required this.y,
+    required this.type,
+    this.seat,
+    this.element,
+  });
 }

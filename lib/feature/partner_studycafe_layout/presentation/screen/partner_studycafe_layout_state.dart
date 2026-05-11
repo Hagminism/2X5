@@ -16,6 +16,7 @@ abstract class PartnerStudyCafeLayoutState with _$PartnerStudyCafeLayoutState {
     @Default(<StudyCafeLayoutElement>[]) List<StudyCafeLayoutElement> elements,
     @Default(<StudyCafeUsageOption>[]) List<StudyCafeUsageOption> usageOptions,
     @Default(<String>[]) List<String> selectedSeatIds,
+    @Default(<String>[]) List<String> selectedElementIds,
     String? selectedElementId,
   }) = _PartnerStudyCafeLayoutState;
 }
