@@ -35,6 +35,9 @@ class _MapScreenState extends State<MapScreen> {
   List<Map<String, dynamic>> _stores = [];
   String? _selectedCategory;
   Map<String, dynamic>? _selectedStore;
+  String? _selectedMarkerId;
+  DateTime? _lastMarkerClickTime;
+  final Set<String> _registeredMarkerIds = {};
 
   @override
   void initState() {
@@ -51,16 +54,36 @@ class _MapScreenState extends State<MapScreen> {
     });
     _markerEventSubscription = _naverMapManager.onMarkerEvent.listen((event) {
       if (event is MarkerClick) {
-        final storeId = event.markerId.replaceFirst('store_', '');
+        final markerId = event.markerId;
+        final storeId = markerId.replaceFirst('store_', '');
         final matches = _stores.where((s) => s['id'].toString() == storeId);
         if (matches.isNotEmpty && mounted) {
-          setState(() => _selectedStore = matches.first);
+          _lastMarkerClickTime = DateTime.now();
+          final prev = _selectedMarkerId;
+          setState(() {
+            _selectedStore = matches.first;
+            _selectedMarkerId = markerId;
+          });
+          if (prev != null && prev != markerId) {
+            _updateMarkerAppearance(prev, isSelected: false);
+          }
+          _updateMarkerAppearance(markerId, isSelected: true);
         }
       }
     });
     _mapEventSubscription = _naverMapManager.onMapEvent.listen((event) {
       if (event is MapClick && mounted) {
-        setState(() => _selectedStore = null);
+        final last = _lastMarkerClickTime;
+        if (last != null &&
+            DateTime.now().difference(last) < const Duration(milliseconds: 600)) {
+          return;
+        }
+        final prev = _selectedMarkerId;
+        setState(() {
+          _selectedStore = null;
+          _selectedMarkerId = null;
+        });
+        if (prev != null) _updateMarkerAppearance(prev, isSelected: false);
       }
     });
     _fetchStores();
@@ -129,9 +152,53 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  String _buildMarkerHtml(String category, {bool isSelected = false}) {
+    final color = _categoryColor(category);
+    final emoji = _categoryEmoji(category);
+    final size = isSelected ? 44 : 32;
+    final fontSize = isSelected ? 22 : 16;
+    final border = isSelected ? 'border:2.5px solid white;' : '';
+    final shadow = isSelected
+        ? 'box-shadow:0 0 0 3px ${color}80,0 3px 8px rgba(0,0,0,0.4);'
+        : 'box-shadow:0 2px 4px rgba(0,0,0,0.3);';
+    return '<div style="background:$color;color:white;border-radius:50%;'
+        'width:${size}px;height:${size}px;display:flex;align-items:center;'
+        'justify-content:center;font-size:${fontSize}px;$border$shadow'
+        'transition:all 0.15s;">'
+        '$emoji</div>';
+  }
+
+  Future<void> _updateMarkerAppearance(String markerId, {required bool isSelected}) async {
+    final storeId = markerId.replaceFirst('store_', '');
+    final matches = _stores.where((s) => s['id'].toString() == storeId);
+    if (matches.isEmpty) return;
+    final store = matches.first;
+    final lat = store['latitude'] as double?;
+    final lng = store['longitude'] as double?;
+    final category = store['category'] as String? ?? '';
+    if (lat == null || lng == null) return;
+    await _naverMapManager.updateMarker(
+      markerId: markerId,
+      markerOptions: MarkerOptions(
+        position: NLatLng(lat, lng),
+        icon: HtmlIcon(content: _buildMarkerHtml(category, isSelected: isSelected)),
+      ),
+    );
+  }
+
   Future<void> _addStoreMarkers() async {
+    // removeMarkerAll() 전에 click event 먼저 해제해야 함
+    // SDK 버그: removeMarkerAll()이 markerEventListeners를 초기화하지 않아서
+    // addMarkerClickEvent()가 "이미 등록됨"으로 보고 skip함
+    for (final id in _registeredMarkerIds) {
+      await _naverMapManager.removeMarkerClickEvent(markerId: id);
+    }
+    _registeredMarkerIds.clear();
+    _selectedMarkerId = null;
+
     await _naverMapManager.removeMarkerAll();
     await _addMyLocationMarker();
+
     for (final store in _filteredStores) {
       final lat = store['latitude'] as double?;
       final lng = store['longitude'] as double?;
@@ -139,22 +206,15 @@ class _MapScreenState extends State<MapScreen> {
       final id = store['id']?.toString() ?? '';
       if (lat == null || lng == null) continue;
 
-      final color = _categoryColor(category);
-      final emoji = _categoryEmoji(category);
-      final html =
-          '<div style="background:$color;color:white;border-radius:50%;'
-          'width:32px;height:32px;display:flex;align-items:center;'
-          'justify-content:center;font-size:16px;box-shadow:0 2px 4px rgba(0,0,0,0.3);">'
-          '$emoji</div>';
-
       await _naverMapManager.addMarker(
         markerId: 'store_$id',
         markerOptions: MarkerOptions(
           position: NLatLng(lat, lng),
-          icon: HtmlIcon(content: html),
+          icon: HtmlIcon(content: _buildMarkerHtml(category)),
         ),
       );
       await _naverMapManager.addMarkerClickEvent(markerId: 'store_$id');
+      _registeredMarkerIds.add('store_$id');
     }
   }
 
@@ -254,7 +314,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
           Positioned(
             right: 16,
-            bottom: _selectedStore != null ? 220 : 24,
+            bottom: _selectedStore != null ? 148 : 24,
             child: Column(
               children: [
                 _MapButton(icon: Icons.my_location, onTap: _moveToMyLocation),
@@ -266,7 +326,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            bottom: _selectedStore != null ? 216 : 20,
+            bottom: _selectedStore != null ? 144 : 20,
             left: 0,
             right: 0,
             child: Center(
@@ -285,6 +345,9 @@ class _MapScreenState extends State<MapScreen> {
               bottom: 0,
               child: _StoreBottomSheet(
                 store: _selectedStore!,
+                categoryEmoji: _categoryEmoji(
+                  _selectedStore!['category'] as String? ?? '',
+                ),
                 categoryLabel: _categoryLabel(
                   _selectedStore!['category'] as String? ?? '',
                 ),
@@ -363,11 +426,11 @@ class _CategoryChips extends StatelessWidget {
   const _CategoryChips({required this.selected, required this.onSelect});
 
   static const _items = [
-    (label: '전체', value: null as String?),
-    (label: '식당', value: 'restaurant'),
-    (label: '카페', value: 'cafe'),
-    (label: '스터디카페', value: 'study_cafe'),
-    (label: '미용실', value: 'salon'),
+    (label: '전체', value: null as String?, emoji: '🗺'),
+    (label: '식당', value: 'restaurant', emoji: '🍽'),
+    (label: '카페', value: 'cafe', emoji: '☕'),
+    (label: '스터디카페', value: 'study_cafe', emoji: '📚'),
+    (label: '미용실', value: 'salon', emoji: '✂'),
   ];
 
   @override
@@ -397,13 +460,20 @@ class _CategoryChips extends StatelessWidget {
                       color: isSelected ? AppColors.primary : AppColors.border,
                     ),
                   ),
-                  child: Text(
-                    item.label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(item.emoji, style: const TextStyle(fontSize: 13)),
+                      const SizedBox(width: 5),
+                      Text(
+                        item.label,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -458,6 +528,7 @@ class _SearchAreaButton extends StatelessWidget {
 
 class _StoreBottomSheet extends StatelessWidget {
   final Map<String, dynamic> store;
+  final String categoryEmoji;
   final String categoryLabel;
   final double? distanceM;
   final String Function(double) formatDistance;
@@ -467,6 +538,7 @@ class _StoreBottomSheet extends StatelessWidget {
 
   const _StoreBottomSheet({
     required this.store,
+    required this.categoryEmoji,
     required this.categoryLabel,
     required this.distanceM,
     required this.formatDistance,
@@ -478,7 +550,6 @@ class _StoreBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = store['name'] as String? ?? '가게';
-    final rating = store['rating'];
 
     return GestureDetector(
       onVerticalDragEnd: (details) {
@@ -500,7 +571,6 @@ class _StoreBottomSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 드래그 핸들
             Center(
               child: Container(
                 width: 36,
@@ -513,120 +583,49 @@ class _StoreBottomSheet extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 가게 아이콘
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.store_outlined,
-                    color: Color(0xFFD1D5DB),
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 14),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 가게명 + 닫기
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: onClose,
-                            child: const Icon(
-                              Icons.close,
-                              size: 20,
-                              color: Color(0xFF9CA3AF),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      // 카테고리 · 거리 · 시간
-                      Row(
-                        children: [
-                          Text(
-                            categoryLabel,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          if (distanceM != null) ...[
-                            const Text(
-                              ' · ',
-                              style: TextStyle(color: AppColors.textSecondary),
-                            ),
-                            const Icon(
-                              Icons.place_outlined,
-                              size: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              formatDistance(distanceM!),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const Text(
-                              ' · ',
-                              style: TextStyle(color: AppColors.textSecondary),
-                            ),
-                            Text(
-                              walkingTime(distanceM!),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      if (rating != null) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              color: Color(0xFFFBBF24),
-                              size: 14,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              rating.toString(),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                GestureDetector(
+                  onTap: onClose,
+                  child: const Icon(Icons.close, size: 20, color: Color(0xFF9CA3AF)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Text(categoryEmoji, style: const TextStyle(fontSize: 13)),
+                const SizedBox(width: 4),
+                Text(
+                  categoryLabel,
+                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                ),
+                if (distanceM != null) ...[
+                  const Text(' · ', style: TextStyle(color: AppColors.textSecondary)),
+                  const Icon(Icons.place_outlined, size: 13, color: AppColors.textSecondary),
+                  const SizedBox(width: 2),
+                  Text(
+                    formatDistance(distanceM!),
+                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                  const Text(' · ', style: TextStyle(color: AppColors.textSecondary)),
+                  Text(
+                    walkingTime(distanceM!),
+                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 12),
@@ -635,18 +634,11 @@ class _StoreBottomSheet extends StatelessWidget {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 16,
-                    color: Color(0xFF9CA3AF),
-                  ),
+                  Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF9CA3AF)),
                   SizedBox(width: 2),
                   Text(
                     '자세히 보기',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF9CA3AF),
-                    ),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
                   ),
                 ],
               ),
