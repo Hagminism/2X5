@@ -215,6 +215,48 @@ final router = GoRouter(
                           storeId: storeId,
                         );
                       },
+                      routes: [
+                        GoRoute(
+                          path: Routes.reservation,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) => const ReservationScreen(),
+                        ),
+                        GoRoute(
+                          path: Routes.salonReservation,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) => SalonReservationScreen(
+                            storeId: state.pathParameters['storeId'] ?? '',
+                          ),
+                        ),
+                        GoRoute(
+                          path: Routes.seat,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) => SeatSelectionScreen(
+                            storeId: state.pathParameters['storeId'] ?? '',
+                          ),
+                          routes: [
+                            GoRoute(
+                              path: Routes.duration,
+                              parentNavigatorKey: _rootNavigatorKey,
+                              builder: (context, state) {
+                                final seatId =
+                                    state.pathParameters['seatId'] ?? '';
+                                final storeId =
+                                    state.uri.queryParameters['storeId'] ??
+                                    '';
+                                final seatLabel =
+                                    state.uri.queryParameters['seatLabel'] ??
+                                    '';
+                                return TimeSelectionScreen(
+                                  storeId: storeId,
+                                  seatId: seatId,
+                                  seatLabel: seatLabel,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),
