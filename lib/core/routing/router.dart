@@ -134,9 +134,8 @@ final router = GoRouter(
                   builder: (context, state) => const SearchScreen(),
                 ),
                 GoRoute(
-                  name: 'information',
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: 'information/:storeId',
+                  path: Routes.homeStoreInformation,
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
 
@@ -167,8 +166,8 @@ final router = GoRouter(
                       routes: [
                         GoRoute(
                           path: Routes.duration,
-                          parentNavigatorKey:
-                              _rootNavigatorKey, // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
+                          parentNavigatorKey: _rootNavigatorKey,
+                          // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
                           builder: (context, state) {
                             final seatId = state.pathParameters['seatId'] ?? '';
                             final storeId =
