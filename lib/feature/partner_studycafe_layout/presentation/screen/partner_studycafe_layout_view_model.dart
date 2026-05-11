@@ -6,6 +6,8 @@ import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_eleme
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_usage_option.dart';
 import 'package:capstone_2026/core/domain/repository/studycafe/studycafe_repository.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/domain/model/partner_studycafe_layout_item_type.dart';
+import 'package:capstone_2026/feature/partner_studycafe_layout/domain/model/partner_studycafe_layout_selected_layout_item.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_action.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_event.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_state.dart';
@@ -35,7 +37,7 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
         isLoading: false,
         detailId: detail.id,
         storeId: detail.storeId,
-        seats: detail.seats.isEmpty ? _defaultSeats() : detail.seats,
+        seats: detail.seats,
         elements: detail.elements,
         usageOptions: detail.usageOptions.isEmpty
             ? const [
@@ -385,10 +387,10 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       final nextX = (minX + (stepX * index)).clamp(0, 1).toDouble();
       final nextY = targetY.clamp(0, 1).toDouble();
       switch (item.type) {
-        case _LayoutItemType.seat:
+        case PartnerStudyCafeLayoutItemType.seat:
           seatUpdates[item.id] = item.seat!.copyWith(x: nextX, y: nextY);
           break;
-        case _LayoutItemType.element:
+        case PartnerStudyCafeLayoutItemType.element:
           elementUpdates[item.id] = item.element!.copyWith(x: nextX, y: nextY);
           break;
       }
@@ -419,10 +421,10 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       final nextY = (minY + (stepY * index)).clamp(0, 1).toDouble();
       final nextX = targetX.clamp(0, 1).toDouble();
       switch (item.type) {
-        case _LayoutItemType.seat:
+        case PartnerStudyCafeLayoutItemType.seat:
           seatUpdates[item.id] = item.seat!.copyWith(x: nextX, y: nextY);
           break;
-        case _LayoutItemType.element:
+        case PartnerStudyCafeLayoutItemType.element:
           elementUpdates[item.id] = item.element!.copyWith(x: nextX, y: nextY);
           break;
       }
@@ -536,25 +538,25 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
         .toList();
   }
 
-  List<_SelectedLayoutItem> _selectedLayoutItems() {
+  List<PartnerStudyCafeLayoutSelectedLayoutItem> _selectedLayoutItems() {
     final selectedSeats = _selectedSeats()
         .map(
-          (seat) => _SelectedLayoutItem(
+          (seat) => PartnerStudyCafeLayoutSelectedLayoutItem(
             id: seat.seatId,
             x: seat.x,
             y: seat.y,
-            type: _LayoutItemType.seat,
+            type: PartnerStudyCafeLayoutItemType.seat,
             seat: seat,
           ),
         )
         .toList();
     final selectedElements = _selectedElements()
         .map(
-          (element) => _SelectedLayoutItem(
+          (element) => PartnerStudyCafeLayoutSelectedLayoutItem(
             id: element.elementId,
             x: element.x,
             y: element.y,
-            type: _LayoutItemType.element,
+            type: PartnerStudyCafeLayoutItemType.element,
             element: element,
           ),
         )
@@ -588,38 +590,9 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     return double.tryParse(normalized) ?? 0;
   }
 
-  List<StudyCafeSeat> _defaultSeats() {
-    return const [
-      StudyCafeSeat(seatId: 'seat_1', label: '1', x: 0.16, y: 0.06),
-      StudyCafeSeat(seatId: 'seat_2', label: '2', x: 0.26, y: 0.06),
-      StudyCafeSeat(seatId: 'seat_3', label: '3', x: 0.16, y: 0.15),
-      StudyCafeSeat(seatId: 'seat_4', label: '4', x: 0.26, y: 0.15),
-    ];
-  }
-
   @override
   void dispose() {
     _eventController.close();
     super.dispose();
   }
-}
-
-enum _LayoutItemType { seat, element }
-
-class _SelectedLayoutItem {
-  final String id;
-  final double x;
-  final double y;
-  final _LayoutItemType type;
-  final StudyCafeSeat? seat;
-  final StudyCafeLayoutElement? element;
-
-  const _SelectedLayoutItem({
-    required this.id,
-    required this.x,
-    required this.y,
-    required this.type,
-    this.seat,
-    this.element,
-  });
 }
