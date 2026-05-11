@@ -311,6 +311,27 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       ),
                     ),
                   ],
+                  if (state.category == 'salon') ...[
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '미용실 관리',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PartnerStoreManagementCtaCard(
+                            icon: Icons.content_cut_rounded,
+                            title: '디자이너/시술 관리',
+                            subtitle: '디자이너, 시술, 근무표와 예약 슬롯 단위를 관리해요.',
+                            onTap: () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenSalonManager(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   PartnerStoreSectionCard(
                     title: '업장 사진',

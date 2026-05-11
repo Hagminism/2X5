@@ -11,6 +11,8 @@ sealed class PartnerStoreManagementEvent with _$PartnerStoreManagementEvent {
   const factory PartnerStoreManagementEvent.openMenuManager() = OpenMenuManager;
   const factory PartnerStoreManagementEvent.openSeatLayoutManager() =
       OpenSeatLayoutManager;
+  const factory PartnerStoreManagementEvent.openSalonManager() =
+      OpenSalonManager;
   const factory PartnerStoreManagementEvent.openImageManager() =
       OpenImageManager;
 }

@@ -52,12 +52,13 @@ class _PartnerStoreManagementScreenRootState
           context.push('${Routes.partnerStore}/${Routes.partnerStoreMenus}');
           break;
         case OpenSeatLayoutManager():
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('좌석 배치 관리는 준비 중입니다.'),
-              duration: Duration(milliseconds: 1400),
-              behavior: SnackBarBehavior.floating,
-            ),
+          context.push(
+            '${Routes.partnerStore}/${Routes.partnerStudyCafeLayout}',
+          );
+          break;
+        case OpenSalonManager():
+          context.push(
+            '${Routes.partnerStore}/${Routes.partnerSalonManagement}',
           );
           break;
         case OpenImageManager():
