@@ -170,12 +170,16 @@ final router = GoRouter(
                           parentNavigatorKey:
                               _rootNavigatorKey, // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
                           builder: (context, state) {
-                            final seatNumber =
-                                int.tryParse(
-                                  state.pathParameters['seatNumber'] ?? '',
-                                ) ??
-                                0;
-                            return TimeSelectionScreen(seatNumber: seatNumber);
+                            final seatId = state.pathParameters['seatId'] ?? '';
+                            final storeId =
+                                state.uri.queryParameters['storeId'] ?? '';
+                            final seatLabel =
+                                state.uri.queryParameters['seatLabel'] ?? '';
+                            return TimeSelectionScreen(
+                              storeId: storeId,
+                              seatId: seatId,
+                              seatLabel: seatLabel,
+                            );
                           },
                         ),
                       ],
