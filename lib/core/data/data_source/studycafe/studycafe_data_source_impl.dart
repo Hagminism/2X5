@@ -1,4 +1,6 @@
 import 'package:capstone_2026/core/data/data_source/studycafe/studycafe_data_source.dart';
+import 'package:capstone_2026/core/data/dto/studycafe/studycafe_detail_dto.dart';
+import 'package:capstone_2026/core/data/mapper/studycafe/studycafe_detail_mapper.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_detail.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_reservation.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -25,30 +27,26 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
     if (json == null) {
       return null;
     }
-    return StudyCafeDetail.fromJson(json);
+    return StudyCafeDetailDto.fromJson(json).toModel();
   }
 
   @override
   Future<StudyCafeDetail> upsertDetail(StudyCafeDetail detail) async {
-    final payload = {
-      'store_id': detail.storeId,
-      'layout_json': {
+    final callable = _firebaseFunctions.httpsCallable('saveStudyCafeDetail');
+    final result = await callable.call({
+      'storeId': detail.storeId,
+      'layoutJson': {
         'seats': detail.seats.map((seat) => seat.toJson()).toList(),
         'elements': detail.elements.map((element) => element.toJson()).toList(),
       },
-      'usage_options': detail.usageOptions
+      'usageOptions': detail.usageOptions
           .map((option) => option.toJson())
           .toList(),
-      'updated_at': DateTime.now().toIso8601String(),
-    };
-
-    final json = await _supabaseClient
-        .from('studycafe_detail')
-        .upsert(payload, onConflict: 'store_id')
-        .select()
-        .single();
-
-    return StudyCafeDetail.fromJson(json);
+    });
+    if (result.data is! Map) {
+      throw StateError('Cloud Functions 응답 형식이 올바르지 않습니다.');
+    }
+    return StudyCafeDetailDto.fromJson(result.data).toModel();
   }
 
   @override
@@ -90,14 +88,12 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
     required int durationMinutes,
   }) async {
     final callable = _firebaseFunctions.httpsCallable('startStudyCafeUsage');
-    final result = await callable.call<Map<String, dynamic>>({
+    final result = await callable.call({
       'storeId': storeId,
       'seatId': seatId,
       'durationMinutes': durationMinutes,
     });
-    return StudyCafeReservation.fromJson(
-      Map<String, Object?>.from(result.data),
-    );
+    return StudyCafeReservation.fromJson(_asJsonMap(result.data));
   }
 
   @override
@@ -107,12 +103,17 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
     required int additionalMinutes,
   }) async {
     final callable = _firebaseFunctions.httpsCallable('extendStudyCafeUsage');
-    final result = await callable.call<Map<String, dynamic>>({
+    final result = await callable.call({
       'reservationId': reservationId,
       'additionalMinutes': additionalMinutes,
     });
-    return StudyCafeReservation.fromJson(
-      Map<String, Object?>.from(result.data),
-    );
+    return StudyCafeReservation.fromJson(_asJsonMap(result.data));
+  }
+
+  Map<String, Object?> _asJsonMap(Object? data) {
+    if (data is Map) {
+      return Map<String, Object?>.from(data);
+    }
+    throw StateError('Cloud Functions 응답 형식이 올바르지 않습니다.');
   }
 }

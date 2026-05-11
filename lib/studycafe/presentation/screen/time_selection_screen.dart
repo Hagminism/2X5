@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/domain/repository/studycafe/studycafe_repository.dart';
+import '../../../di/di_setup.dart';
 import '../../../ui/app_colors.dart';
 
 class TimeSelectionScreen extends StatefulWidget {
-  final int seatNumber; // 이전 화면에서 넘겨받은 좌석 번호
+  final String storeId;
+  final String seatId;
+  final String seatLabel;
 
-  const TimeSelectionScreen({super.key, required this.seatNumber});
+  const TimeSelectionScreen({
+    super.key,
+    required this.storeId,
+    required this.seatId,
+    required this.seatLabel,
+  });
 
   @override
   State<TimeSelectionScreen> createState() => _TimeSelectionScreenState();
 }
 
 class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
-  int? selectedHours; // 선택된 이용 시간 (단위: 시간)
-  final List<int> timeOptions = [2, 4, 6, 8, 12]; // 이용권 옵션
+  final StudyCafeRepository _studyCafeRepository = getIt<StudyCafeRepository>();
+  int? selectedHours;
+  final List<int> timeOptions = [2, 4, 6, 8, 12];
+  bool _isSubmitting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +48,11 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            // 선택한 좌석 요약 정보 카드
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -57,14 +67,14 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    "선택한 좌석: ",
+                    '선택한 좌석: ',
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 16,
                     ),
                   ),
                   Text(
-                    "${widget.seatNumber}번 좌석",
+                    '${widget.seatLabel}번 좌석',
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 18,
@@ -76,7 +86,7 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
             ),
             const SizedBox(height: 32),
             const Text(
-              "이용하실 시간을\n선택해주세요",
+              '이용하실 시간을\n선택해주세요',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -85,15 +95,12 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
-            // 시간 선택 리스트
             Expanded(
               child: ListView.builder(
                 itemCount: timeOptions.length,
                 itemBuilder: (context, index) {
                   final hour = timeOptions[index];
-                  final bool isSelected = selectedHours == hour;
-
+                  final isSelected = selectedHours == hour;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: InkWell(
@@ -120,7 +127,7 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "$hour시간 이용권",
+                              '$hour시간 이용권',
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: isSelected
@@ -147,9 +154,6 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                 },
               ),
             ),
-
-            // 최종 예약 버튼
-            // 최종 예약 버튼
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 20),
@@ -157,12 +161,9 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    // 💡 수정: 시간이 선택되었을 때만 버튼이 활성화되도록 합니다.
-                    onPressed: selectedHours == null
+                    onPressed: selectedHours == null || _isSubmitting
                         ? null
-                        : () {
-                            _onReservationConfirm();
-                          },
+                        : () => _onReservationConfirm(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       disabledBackgroundColor: AppColors.border,
@@ -171,14 +172,23 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      "결제하고 이용 시작",
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.white,
+                            ),
+                          )
+                        : const Text(
+                            '결제하고 이용 시작',
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -189,20 +199,55 @@ class _TimeSelectionScreenState extends State<TimeSelectionScreen> {
     );
   }
 
-  void _onReservationConfirm() {
-    // 실제 결제/좌석 선점 RPC 연결 전까지는 완료 흐름만 표시합니다.
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("이용 시작"),
-        content: Text("${widget.seatNumber}번 좌석을 $selectedHours시간 이용합니다."),
-        actions: [
-          TextButton(
-            onPressed: () => context.go('/'), // 메인 화면으로 이동
-            child: const Text("확인", style: TextStyle(color: AppColors.primary)),
+  Future<void> _onReservationConfirm(BuildContext context) async {
+    final selectedHoursValue = selectedHours;
+    if (selectedHoursValue == null || _isSubmitting) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+    try {
+      await _studyCafeRepository.startUsage(
+        storeId: widget.storeId,
+        seatId: widget.seatId,
+        durationMinutes: selectedHoursValue * 60,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('이용 시작'),
+          content: Text(
+            '${widget.seatLabel}번 좌석을 $selectedHoursValue시간 이용합니다.',
           ),
-        ],
-      ),
-    );
+          actions: [
+            TextButton(
+              onPressed: () => context.go('/'),
+              child: const Text(
+                '확인',
+                style: TextStyle(color: AppColors.primary),
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 }

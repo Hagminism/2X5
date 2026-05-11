@@ -25,7 +25,7 @@ abstract class StudyCafeDetail with _$StudyCafeDetail {
     )
     @Default([])
     List<StudyCafeLayoutElement> elements,
-    @JsonKey(name: 'usage_options')
+    @JsonKey(name: 'usage_options', fromJson: _usageOptionsFromJson)
     @Default([])
     List<StudyCafeUsageOption> usageOptions,
     @JsonKey(name: 'created_at') DateTime? createdAt,
@@ -50,6 +50,23 @@ abstract class StudyCafeDetail with _$StudyCafeDetail {
 
   factory StudyCafeDetail.fromJson(Map<String, Object?> json) =>
       _$StudyCafeDetailFromJson(json);
+}
+
+List<StudyCafeUsageOption> _usageOptionsFromJson(Object? json) {
+  if (json is! List) {
+    return const [];
+  }
+  return json
+      .map((Object? item) {
+        if (item is! Map) {
+          return null;
+        }
+        return StudyCafeUsageOption.fromJson(
+          Map<String, Object?>.from(item),
+        );
+      })
+      .whereType<StudyCafeUsageOption>()
+      .toList();
 }
 
 List<StudyCafeSeat> _seatsFromLayoutJson(Object? json) {
