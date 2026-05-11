@@ -45,8 +45,11 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.read<InformationViewModel>();
-    final bool isStudyCafe = viewModel.category == '스터디카페';
+    // 💡 watch를 사용하여 ViewModel의 데이터(카테고리 등)가 변경되면 위젯을 다시 빌드합니다.
+    final viewModel = context.watch<InformationViewModel>();
+
+    // 💡 오직 'study_cafe'일 때만 true가 되도록 설정 (cafe, salon 등은 false)
+    final bool isStudyCafe = viewModel.category == 'study_cafe';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -56,14 +59,22 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
           child: ElevatedButton(
             onPressed: () {
               final String currentLocation = GoRouterState.of(context).matchedLocation;
+
+              // 디버깅용: 실제 DB에서 어떤 값이 오는지 터미널에서 확인하세요.
+              debugPrint('--- 예약 버튼 클릭됨 ---');
+              debugPrint('현재 DB 카테고리: ${viewModel.category}');
+              debugPrint('이동 경로 판단 (isStudyCafe): $isStudyCafe');
+
               if (isStudyCafe) {
+                // 'study_cafe'인 경우 좌석 선택 페이지로 이동
                 context.push('$currentLocation/${Routes.seat}');
               } else {
+                // 그 외 모든 경우(cafe, salon 포함) 일반 예약 페이지로 이동
                 context.push('$currentLocation/${Routes.reservation}');
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: AppColors.primary, // 상준님이 지정한 0xFFFF3D00 주황색
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 56),
               shape: RoundedRectangleBorder(
@@ -86,12 +97,12 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                 const Text('방문 예정일 선택', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('방문 예정일 선택', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 IconButton(onPressed: _pickDate, icon: const Icon(Icons.calendar_month, color: AppColors.primary)),
               ],
             ),
             const SizedBox(height: 12),
-            _buildDateSelector(), // 날짜 선택기 복구
+            _buildDateSelector(),
             const SizedBox(height: 24),
             Text(
               '${_selectedDate.month}월 ${_selectedDate.day}일 ${_getWeekdayKorean(_selectedDate.weekday)}요일 현황',
@@ -108,7 +119,7 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
     );
   }
 
-  // --- UI 컴포넌트 복구 ---
+  // --- UI 컴포넌트 (동일) ---
 
   Widget _buildDateSelector() {
     return SizedBox(
@@ -120,8 +131,8 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
           final date = DateTime.now().add(Duration(days: index));
           final isSelected =
               date.year == _selectedDate.year &&
-              date.month == _selectedDate.month &&
-              date.day == _selectedDate.day;
+                  date.month == _selectedDate.month &&
+                  date.day == _selectedDate.day;
 
           return GestureDetector(
             onTap: () => setState(() => _selectedDate = date),
