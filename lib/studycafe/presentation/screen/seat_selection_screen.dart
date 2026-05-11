@@ -22,9 +22,7 @@ class SeatSelectionScreen extends StatefulWidget {
 }
 
 class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
-  static const double _canvasWidth = 400;
-  static const double _canvasHeight = 650;
-  static const double _seatSize = 34;
+  static const double _canvasAspectRatio = 650 / 400;
 
   final StudyCafeRepository _studyCafeRepository = getIt<StudyCafeRepository>();
 
@@ -47,6 +45,11 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
       }
     }
     return null;
+  }
+
+  String _seatLabelForDisplay(StudyCafeSeat seat) {
+    final trimmed = seat.label.trim();
+    return trimmed.isNotEmpty ? trimmed : seat.seatId;
   }
 
   @override
@@ -191,38 +194,88 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
       );
     }
 
-    return InteractiveViewer(
-      constrained: false,
-      minScale: 0.8,
-      maxScale: 2.5,
-      child: Container(
-        width: _canvasWidth,
-        height: _canvasHeight,
-        padding: const EdgeInsets.all(20),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Container(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final availableWidth = constraints.maxWidth.isFinite
+              ? constraints.maxWidth
+              : MediaQuery.sizeOf(context).width - 32;
+          final canvasWidth = (availableWidth - 24)
+              .clamp(280.0, 560.0)
+              .toDouble();
+          final canvasHeight = canvasWidth * _canvasAspectRatio;
+          final seatSize = (canvasWidth * 0.085).clamp(30.0, 44.0).toDouble();
+
+          return Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: DecoratedBox(
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.border, width: 1.5),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.surfaceMuted,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: canvasWidth,
+                    height: canvasHeight,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Stack(
+                        clipBehavior: Clip.hardEdge,
+                        children: [
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                border: Border.all(
+                                  color: AppColors.border,
+                                  width: 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          for (final element in _elements)
+                            _buildElement(
+                              element,
+                              canvasWidth: canvasWidth,
+                              canvasHeight: canvasHeight,
+                            ),
+                          for (final seat in _seats)
+                            _buildSeat(
+                              seat,
+                              canvasWidth: canvasWidth,
+                              canvasHeight: canvasHeight,
+                              seatSize: seatSize,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-            for (final element in _elements) _buildElement(element),
-            for (final seat in _seats) _buildSeat(seat),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildElement(StudyCafeLayoutElement element) {
-    final width = (_canvasWidth * element.width).clamp(16.0, _canvasWidth).toDouble();
-    final height =
-        (_canvasHeight * element.height).clamp(10.0, _canvasHeight).toDouble();
-    final movableWidth = _canvasWidth - width;
-    final movableHeight = _canvasHeight - height;
+  Widget _buildElement(
+    StudyCafeLayoutElement element, {
+    required double canvasWidth,
+    required double canvasHeight,
+  }) {
+    final width = (canvasWidth * element.width)
+        .clamp(16.0, canvasWidth)
+        .toDouble();
+    final height = (canvasHeight * element.height)
+        .clamp(10.0, canvasHeight)
+        .toDouble();
+    final movableWidth = canvasWidth - width;
+    final movableHeight = canvasHeight - height;
     final left = element.x.clamp(0, 1).toDouble() * movableWidth;
     final top = element.y.clamp(0, 1).toDouble() * movableHeight;
 
@@ -244,23 +297,54 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ),
     };
 
+    final labelColor = switch (element.type) {
+      StudyCafeLayoutElementType.door => AppColors.primary,
+      StudyCafeLayoutElementType.partition => AppColors.textPrimary,
+      StudyCafeLayoutElementType.fixture => AppColors.textPrimary,
+    };
+    final labelFontSize =
+        (canvasWidth * 0.028).clamp(10.0, 13.0).toDouble();
+
     return Positioned(
       top: top,
       left: left,
       child: Transform.rotate(
         angle: element.rotation * 3.1415926535 / 180,
-        child: Container(width: width, height: height, decoration: decoration),
+        child: Container(
+          width: width,
+          height: height,
+          decoration: decoration,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            element.label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: labelColor,
+              fontSize: labelFontSize,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildSeat(StudyCafeSeat seat) {
-    final movableWidth = _canvasWidth - _seatSize;
-    final movableHeight = _canvasHeight - _seatSize;
+  Widget _buildSeat(
+    StudyCafeSeat seat, {
+    required double canvasWidth,
+    required double canvasHeight,
+    required double seatSize,
+  }) {
+    final movableWidth = canvasWidth - seatSize;
+    final movableHeight = canvasHeight - seatSize;
     final left = seat.x.clamp(0, 1).toDouble() * movableWidth;
     final top = seat.y.clamp(0, 1).toDouble() * movableHeight;
     final isOccupied = _occupiedSeatIds.contains(seat.seatId) || !seat.isEnabled;
     final isSelected = _selectedSeatId == seat.seatId;
+    final seatLabelText = _seatLabelForDisplay(seat);
 
     return Positioned(
       top: top,
@@ -275,8 +359,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           });
         },
         child: Container(
-          width: _seatSize,
-          height: _seatSize,
+          width: seatSize,
+          height: seatSize,
           decoration: BoxDecoration(
             color: isOccupied
                 ? AppColors.authProviderButton
@@ -289,10 +373,12 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           ),
           child: Center(
             child: Text(
-              seat.label,
+              seatLabelText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: isSelected ? AppColors.white : AppColors.textPrimary,
-                fontSize: 12,
+                fontSize: (canvasWidth * 0.03).clamp(10.0, 12.0).toDouble(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -325,7 +411,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${selectedSeat.label}번 좌석',
+                  '${_seatLabelForDisplay(selectedSeat)}번 좌석',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -347,7 +433,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   final seatId = Uri.encodeComponent(selectedSeat.seatId);
-                  final seatLabel = Uri.encodeComponent(selectedSeat.label);
+                  final seatLabel = Uri.encodeComponent(
+                    _seatLabelForDisplay(selectedSeat),
+                  );
                   final storeId = Uri.encodeComponent(widget.storeId);
                   context.push(
                     'duration/$seatId?storeId=$storeId&seatLabel=$seatLabel',
