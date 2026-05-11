@@ -1,5 +1,3 @@
-import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class MyProfileCard extends StatelessWidget {
@@ -18,58 +16,85 @@ class MyProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(24),
+    final displayName = name ?? '사용자';
+    final firstLetter = displayName.isNotEmpty ? displayName[0] : '?';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFF3D00),
+                shape: BoxShape.circle,
+              ),
+              child: photoUrl != null
+                  ? ClipOval(
+                      child: Image.network(
+                        photoUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, e, st) => Center(
+                          child: Text(
+                            firstLetter,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        firstLetter,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
             ),
-            child: (photoUrl == null)
-                ? const Icon(Icons.person_outline_rounded)
-                : ClipOval(
-                    child: Image.network(
-                      photoUrl!,
-                      errorBuilder: (context, error, stackTrace) {
-                        // photoUrl 값이 존재는 하는데, 유효하지 않은 값일 경우 기본 아이콘 표시.
-                        return const Icon(Icons.person_outline_rounded);
-                      },
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${name ?? '사용자'} 님',
-                  style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 3),
+                  Text(
+                    email ?? '',
+                    style: const TextStyle(
+                      color: Color(0xFFAAAAAA),
+                      fontSize: 13,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  email ?? '',
-                  style: AppTextStyles.caption.copyWith(fontSize: 14),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          TextButton(
-            onPressed: onTap,
-            child: const Text('수정'),
-          ),
-        ],
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFFAAAAAA),
+              size: 22,
+            ),
+          ],
+        ),
       ),
     );
   }

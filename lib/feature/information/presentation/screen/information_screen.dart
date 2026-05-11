@@ -1,6 +1,7 @@
+import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
+import 'package:flutter/material.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_image_slider.dart';
-import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_store_header.dart';
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_home_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_info_tab.dart';
@@ -10,7 +11,6 @@ import 'package:capstone_2026/feature/information/presentation/component/tabs/st
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_review_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_action.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_state.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class InformationScreen extends StatefulWidget {
