@@ -2,6 +2,7 @@ import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.
 import 'package:capstone_2026/feature/store_detail/domain/service/review_ai_summary_generator.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
+import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +16,7 @@ class StoreDetailTabSection extends StatelessWidget {
     required this.googleSearchQuery,
     required this.reviews,
     required this.isReviewLoading,
+    required this.stampStatus,
     required this.onSubmitReview,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
@@ -29,6 +31,7 @@ class StoreDetailTabSection extends StatelessWidget {
   final String googleSearchQuery;
   final List<InternalReview> reviews;
   final bool isReviewLoading;
+  final StoreStampStatus? stampStatus;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
   final void Function() onTapNaverReview;
   final void Function() onTapGoogleReview;
@@ -100,6 +103,7 @@ class StoreDetailTabSection extends StatelessWidget {
           location: location,
           naverPlaceId: naverPlaceId,
           googleSearchQuery: googleSearchQuery,
+          stampStatus: stampStatus,
           aiSummary: ReviewAiSummaryGenerator.generate(
             storeName: storeName,
             reviews: reviews,

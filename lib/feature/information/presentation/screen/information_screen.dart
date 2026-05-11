@@ -6,7 +6,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
 
-
 class InformationScreen extends StatefulWidget {
   final String storeId;
   final String name;
@@ -24,7 +23,6 @@ class InformationScreen extends StatefulWidget {
   @override
   State<InformationScreen> createState() => _InformationScreenState();
 }
-
 
 class _InformationScreenState extends State<InformationScreen>
     with SingleTickerProviderStateMixin {
@@ -78,12 +76,28 @@ class _InformationScreenState extends State<InformationScreen>
         backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.share_outlined, color: AppColors.textPrimary), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.favorite_border_rounded, color: AppColors.textPrimary), onPressed: () {}),
+          IconButton(
+            icon: const Icon(
+              Icons.share_outlined,
+              color: AppColors.textPrimary,
+            ),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.favorite_border_rounded,
+              color: AppColors.textPrimary,
+            ),
+            onPressed: () {},
+          ),
         ],
       ),
       body: NestedScrollView(
@@ -102,10 +116,18 @@ class _InformationScreenState extends State<InformationScreen>
                         final url = _images.isEmpty ? null : _images[index];
                         return Container(
                           width: double.infinity,
-                          decoration: const BoxDecoration(color: AppColors.surfaceMuted),
+                          decoration: const BoxDecoration(
+                            color: AppColors.surfaceMuted,
+                          ),
                           child: url != null
                               ? Image.network(url, fit: BoxFit.cover)
-                              : const Center(child: Icon(Icons.storefront_rounded, size: 64, color: AppColors.textSecondary)),
+                              : const Center(
+                                  child: Icon(
+                                    Icons.storefront_rounded,
+                                    size: 64,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
                         );
                       },
                     ),
@@ -119,7 +141,8 @@ class _InformationScreenState extends State<InformationScreen>
                           sliderCount,
                           (index) => Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: 7, height: 7,
+                            width: 7,
+                            height: 7,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: _currentSliderPage == index
@@ -145,10 +168,17 @@ class _InformationScreenState extends State<InformationScreen>
                   unselectedLabelColor: AppColors.textSecondary,
                   indicatorColor: AppColors.primary,
                   indicatorWeight: 3,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
                   tabs: const [
-                    Tab(text: '홈'), Tab(text: '메뉴'), Tab(text: '사진'),
-                    Tab(text: '리뷰'), Tab(text: '정보'), Tab(text: '예약'),
+                    Tab(text: '홈'),
+                    Tab(text: '메뉴'),
+                    Tab(text: '사진'),
+                    Tab(text: '리뷰'),
+                    Tab(text: '정보'),
+                    Tab(text: '예약'),
                   ],
                 ),
               ),
@@ -176,7 +206,8 @@ class _InformationScreenState extends State<InformationScreen>
       child: Row(
         children: [
           Container(
-            width: 72, height: 72,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
               color: AppColors.surfaceMuted,
               borderRadius: BorderRadius.circular(14),
@@ -193,15 +224,33 @@ class _InformationScreenState extends State<InformationScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                Text(
+                  widget.name,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(widget.subtitle, style: AppTextStyles.subtitle),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.star_rounded, size: 18, color: Colors.amber),
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 18,
+                      color: Colors.amber,
+                    ),
                     const SizedBox(width: 4),
-                    Text(widget.rating.toStringAsFixed(1), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                    Text(
+                      widget.rating.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -216,10 +265,16 @@ class _InformationScreenState extends State<InformationScreen>
 class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   const _StickyTabBarDelegate(this.tabBar);
   final TabBar tabBar;
-  @override double get minExtent => tabBar.preferredSize.height;
-  @override double get maxExtent => tabBar.preferredSize.height;
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  double get minExtent => tabBar.preferredSize.height;
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -228,5 +283,6 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
       child: tabBar,
     );
   }
-  @override bool shouldRebuild(_StickyTabBarDelegate oldDelegate) => false;
+  @override
+  bool shouldRebuild(_StickyTabBarDelegate oldDelegate) => false;
 }

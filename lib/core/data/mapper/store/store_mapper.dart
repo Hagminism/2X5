@@ -15,6 +15,8 @@ extension StoreDtoMapper on StoreDto {
       naverPlaceId: naverPlaceId,
       contact: contact ?? '',
       operatingHours: operatingHours ?? const {},
+      depositEnabled: depositEnabled ?? false,
+      depositAmount: depositAmount ?? 0,
       createdAt: _parseDateTime(createdAt),
     );
   }
@@ -42,6 +44,8 @@ extension StoreToDtoMapper on Store {
       naverPlaceId: naverPlaceId,
       contact: contact,
       operatingHours: operatingHours,
+      depositEnabled: depositEnabled,
+      depositAmount: depositAmount,
       createdAt: createdAt?.toIso8601String(),
     );
   }

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:go_router/go_router.dart'; // 🛠️ GoRouter 임포트 추가
+import 'package:go_router/go_router.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:provider/provider.dart';
+import '../information_view_model.dart';
 
 class StoreReservationStatusTab extends StatefulWidget {
   const StoreReservationStatusTab({super.key});
 
   @override
-  State<StoreReservationStatusTab> createState() => _StoreReservationStatusTabState();
+  State<StoreReservationStatusTab> createState() =>
+      _StoreReservationStatusTabState();
 }
 
 class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
@@ -42,6 +45,9 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.read<InformationViewModel>();
+    final bool isStudyCafe = viewModel.category == '스터디카페';
+
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: SafeArea(
@@ -49,18 +55,20 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
           child: ElevatedButton(
             onPressed: () {
-              // 🛠️ 수정: 현재 상세페이지 경로 뒤에 'reservation'을 붙여서 이동합니다.
-              // 예: /home/store/123 -> /home/store/123/reservation
               final String currentLocation = GoRouterState.of(context).matchedLocation;
-              context.push('$currentLocation/${Routes.reservation}');
-
-              print('${_selectedDate.toString()} 날짜로 예약 이동');
+              if (isStudyCafe) {
+                context.push('$currentLocation/${Routes.seat}');
+              } else {
+                context.push('$currentLocation/${Routes.reservation}');
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               elevation: 0,
             ),
             child: const Text(
@@ -78,18 +86,12 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '방문 예정일 선택',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                IconButton(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.calendar_month, color: AppColors.primary),
-                ),
+                 const Text('방문 예정일 선택', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                IconButton(onPressed: _pickDate, icon: const Icon(Icons.calendar_month, color: AppColors.primary)),
               ],
             ),
             const SizedBox(height: 12),
-            _buildDateSelector(),
+            _buildDateSelector(), // 날짜 선택기 복구
             const SizedBox(height: 24),
             Text(
               '${_selectedDate.month}월 ${_selectedDate.day}일 ${_getWeekdayKorean(_selectedDate.weekday)}요일 현황',
@@ -106,6 +108,8 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
     );
   }
 
+  // --- UI 컴포넌트 복구 ---
+
   Widget _buildDateSelector() {
     return SizedBox(
       height: 90,
@@ -114,7 +118,8 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
         itemCount: 7,
         itemBuilder: (context, index) {
           final date = DateTime.now().add(Duration(days: index));
-          final isSelected = date.year == _selectedDate.year &&
+          final isSelected =
+              date.year == _selectedDate.year &&
               date.month == _selectedDate.month &&
               date.day == _selectedDate.day;
 
@@ -126,29 +131,16 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
               decoration: BoxDecoration(
                 color: isSelected ? AppColors.primary : const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(16),
-                border: isSelected
-                    ? null
-                    : Border.all(color: const Color(0xFFEEEEEE)),
+                border: isSelected ? null : Border.all(color: const Color(0xFFEEEEEE)),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    _getWeekdayKorean(date.weekday),
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.grey,
-                      fontSize: 13,
-                    ),
-                  ),
+                  Text(_getWeekdayKorean(date.weekday),
+                      style: TextStyle(color: isSelected ? Colors.white : Colors.grey, fontSize: 13)),
                   const SizedBox(height: 4),
-                  Text(
-                    '${date.day}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : Colors.black,
-                    ),
-                  ),
+                  Text('${date.day}',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.black)),
                 ],
               ),
             ),
@@ -158,37 +150,24 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
     );
   }
 
-  Widget _buildTimeSlot({
-    required String time,
-    required String status,
-    required Color color,
-  }) {
+  Widget _buildTimeSlot({required String time, required String status, required Color color}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFEEEEEE))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            time,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+          Text(time, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           Row(
             children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              ),
+              Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
               const SizedBox(width: 8),
-              Text(
-                status,
-                style: TextStyle(color: color, fontWeight: FontWeight.bold),
-              ),
+              Text(status, style: TextStyle(color: color, fontWeight: FontWeight.bold)),
             ],
           ),
         ],

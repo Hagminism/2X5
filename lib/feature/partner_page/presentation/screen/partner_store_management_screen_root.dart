@@ -48,6 +48,12 @@ class _PartnerStoreManagementScreenRootState
         case OpenAddressSearch():
           _openAddressSearch();
           break;
+        case OpenMenuManager():
+          context.push('${Routes.partnerStore}/${Routes.partnerStoreMenus}');
+          break;
+        case OpenImageManager():
+          context.push('${Routes.partnerStore}/${Routes.partnerStoreImages}');
+          break;
       }
     });
   }
