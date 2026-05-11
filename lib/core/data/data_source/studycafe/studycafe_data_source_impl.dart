@@ -1,6 +1,8 @@
 import 'package:capstone_2026/core/data/data_source/studycafe/studycafe_data_source.dart';
 import 'package:capstone_2026/core/data/dto/studycafe/studycafe_detail_dto.dart';
+import 'package:capstone_2026/core/data/dto/studycafe/studycafe_reservation_dto.dart';
 import 'package:capstone_2026/core/data/mapper/studycafe/studycafe_detail_mapper.dart';
+import 'package:capstone_2026/core/data/mapper/studycafe/studycafe_reservation_mapper.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_detail.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_reservation.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -61,7 +63,9 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
         .eq('status', 'confirmed')
         .gt('end_at', now);
 
-    return jsonList.map((json) => StudyCafeReservation.fromJson(json)).toList();
+    return jsonList
+        .map((json) => StudyCafeReservationDto.fromJson(json).toModel())
+        .toList();
   }
 
   @override
@@ -74,7 +78,7 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
         .eq('store_id', storeId)
         .map(
           (jsonList) => jsonList
-              .map((json) => StudyCafeReservation.fromJson(json))
+              .map((json) => StudyCafeReservationDto.fromJson(json).toModel())
               .where((reservation) => reservation.isActive)
               .toList(),
         );
@@ -93,7 +97,7 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
       'seatId': seatId,
       'durationMinutes': durationMinutes,
     });
-    return StudyCafeReservation.fromJson(_asJsonMap(result.data));
+    return _reservationFromData(result.data);
   }
 
   @override
@@ -107,13 +111,13 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
       'reservationId': reservationId,
       'additionalMinutes': additionalMinutes,
     });
-    return StudyCafeReservation.fromJson(_asJsonMap(result.data));
+    return _reservationFromData(result.data);
   }
 
-  Map<String, Object?> _asJsonMap(Object? data) {
-    if (data is Map) {
-      return Map<String, Object?>.from(data);
+  StudyCafeReservation _reservationFromData(Object? data) {
+    if (data is! Map) {
+      throw StateError('Cloud Functions 응답 형식이 올바르지 않습니다.');
     }
-    throw StateError('Cloud Functions 응답 형식이 올바르지 않습니다.');
+    return StudyCafeReservationDto.fromJson(data).toModel();
   }
 }
