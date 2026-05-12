@@ -42,9 +42,9 @@ class _SearchStoreInformationScreenState extends State<SearchStoreInformationScr
     final List<String?> sliderImages = [widget.state.imageUrl, null, null];
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.surface,
+        surfaceTintColor: AppColors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(
