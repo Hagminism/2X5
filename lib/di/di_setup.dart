@@ -355,6 +355,7 @@ void diSetup() {
   getIt.registerFactory<SeatSelectionViewModel>(
     () => SeatSelectionViewModel(
       studyCafeRepository: getIt<StudyCafeRepository>(),
+      authRepository: getIt<AuthRepository>(),
     ),
   );
   getIt.registerFactory<TimeSelectionViewModel>(
@@ -366,6 +367,7 @@ void diSetup() {
   getIt.registerFactory<MapStudycafeSeatSelectionViewModel>(
     () => MapStudycafeSeatSelectionViewModel(
       studyCafeRepository: getIt<StudyCafeRepository>(),
+      authRepository: getIt<AuthRepository>(),
     ),
   );
   getIt.registerFactory<MapStudycafePassSelectionViewModel>(
@@ -377,6 +379,7 @@ void diSetup() {
   getIt.registerFactory<SearchStudycafeSeatSelectionViewModel>(
     () => SearchStudycafeSeatSelectionViewModel(
       studyCafeRepository: getIt<StudyCafeRepository>(),
+      authRepository: getIt<AuthRepository>(),
     ),
   );
   getIt.registerFactory<SearchStudycafePassSelectionViewModel>(
