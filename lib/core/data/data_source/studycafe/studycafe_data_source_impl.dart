@@ -1,10 +1,13 @@
 import 'package:capstone_2026/core/data/data_source/studycafe/studycafe_data_source.dart';
 import 'package:capstone_2026/core/data/dto/studycafe/studycafe_detail_dto.dart';
 import 'package:capstone_2026/core/data/dto/studycafe/studycafe_reservation_dto.dart';
+import 'package:capstone_2026/core/data/dto/studycafe/studycafe_seat_hold_dto.dart';
 import 'package:capstone_2026/core/data/mapper/studycafe/studycafe_detail_mapper.dart';
 import 'package:capstone_2026/core/data/mapper/studycafe/studycafe_reservation_mapper.dart';
+import 'package:capstone_2026/core/data/mapper/studycafe/studycafe_seat_hold_mapper.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_detail.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_reservation.dart';
+import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_hold.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -85,6 +88,64 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
   }
 
   @override
+  Future<List<StudyCafeSeatHold>> findActiveSeatHoldsByStoreId(
+    String storeId,
+  ) async {
+    final now = DateTime.now().toIso8601String();
+    final jsonList = await _supabaseClient
+        .from('studycafe_seat_holds')
+        .select()
+        .eq('store_id', storeId)
+        .eq('status', 'active')
+        .gt('expires_at', now);
+
+    return jsonList
+        .map((json) => StudyCafeSeatHoldDto.fromJson(json).toModel())
+        .toList();
+  }
+
+  @override
+  Stream<List<StudyCafeSeatHold>> watchActiveSeatHoldsByStoreId(
+    String storeId,
+  ) {
+    return _supabaseClient
+        .from('studycafe_seat_holds')
+        .stream(primaryKey: ['id'])
+        .eq('store_id', storeId)
+        .map(
+          (jsonList) => jsonList
+              .map((json) => StudyCafeSeatHoldDto.fromJson(json).toModel())
+              .where((StudyCafeSeatHold h) => h.isActive)
+              .toList(),
+        );
+  }
+
+  @override
+  Future<StudyCafeSeatHold> acquireSeatHold({
+    required String storeId,
+    required String seatId,
+    int holdMinutes = 10,
+  }) async {
+    final callable = _firebaseFunctions.httpsCallable(
+      'acquireStudycafeSeatHold',
+    );
+    final result = await callable.call({
+      'storeId': storeId,
+      'seatId': seatId,
+      'holdMinutes': holdMinutes,
+    });
+    return _seatHoldFromCallableData(result.data);
+  }
+
+  @override
+  Future<void> releaseSeatHold({required String holdId}) async {
+    final callable = _firebaseFunctions.httpsCallable(
+      'releaseStudycafeSeatHold',
+    );
+    await callable.call({'holdId': holdId});
+  }
+
+  @override
   Future<StudyCafeReservation> startUsage({
     required String storeId,
     required String userId,
@@ -119,5 +180,12 @@ class StudyCafeDataSourceImpl implements StudyCafeDataSource {
       throw StateError('Cloud Functions 응답 형식이 올바르지 않습니다.');
     }
     return StudyCafeReservationDto.fromJson(data).toModel();
+  }
+
+  StudyCafeSeatHold _seatHoldFromCallableData(Object? data) {
+    if (data is! Map) {
+      throw StateError('Cloud Functions 응답 형식이 올바르지 않습니다.');
+    }
+    return StudyCafeSeatHoldDto.fromJson(data).toModel();
   }
 }

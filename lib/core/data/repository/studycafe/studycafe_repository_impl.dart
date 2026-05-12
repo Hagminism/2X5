@@ -5,6 +5,7 @@ import 'package:capstone_2026/core/data/data_source/studycafe/studycafe_data_sou
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_detail.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_coordinate_normalizer.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_reservation.dart';
+import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_hold.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/studycafe/studycafe_repository.dart';
 
@@ -62,6 +63,34 @@ class StudyCafeRepositoryImpl implements StudyCafeRepository {
     String storeId,
   ) {
     return _studyCafeDataSource.watchActiveReservationsByStoreId(storeId);
+  }
+
+  @override
+  Future<List<StudyCafeSeatHold>> getActiveSeatHoldsByStoreId(String storeId) {
+    return _studyCafeDataSource.findActiveSeatHoldsByStoreId(storeId);
+  }
+
+  @override
+  Stream<List<StudyCafeSeatHold>> watchActiveSeatHoldsByStoreId(String storeId) {
+    return _studyCafeDataSource.watchActiveSeatHoldsByStoreId(storeId);
+  }
+
+  @override
+  Future<StudyCafeSeatHold> acquireSeatHold({
+    required String storeId,
+    required String seatId,
+    int holdMinutes = 10,
+  }) {
+    return _studyCafeDataSource.acquireSeatHold(
+      storeId: storeId,
+      seatId: seatId,
+      holdMinutes: holdMinutes,
+    );
+  }
+
+  @override
+  Future<void> releaseSeatHold({required String holdId}) {
+    return _studyCafeDataSource.releaseSeatHold(holdId: holdId);
   }
 
   @override
