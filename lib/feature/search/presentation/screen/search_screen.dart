@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,6 +20,9 @@ class _SearchScreenState extends State<SearchScreen> {
   Map<String, List<Map<String, dynamic>>> _categorizedResults = {};
   bool _isLoading = false;
   bool _hasSearched = false;
+
+  static const double _baseLatitude = 37.5826;
+  static const double _baseLongitude = 127.0106;
 
   static const Map<String, String> categoryLabels = {
     'restaurant': '식당',
@@ -101,6 +107,29 @@ class _SearchScreenState extends State<SearchScreen> {
     context.push('${Routes.home}/information/$storeId');
   }
 
+  double? _calcDistance(Map<String, dynamic> store) {
+    final lat = (store['latitude'] as num?)?.toDouble();
+    final lng = (store['longitude'] as num?)?.toDouble();
+    if (lat == null || lng == null) return null;
+
+    return Geolocator.distanceBetween(
+      _baseLatitude,
+      _baseLongitude,
+      lat,
+      lng,
+    );
+  }
+
+  String _formatDistance(double meters) {
+    if (meters < 1000) return '${meters.round()}m';
+    return '${(meters / 1000).toStringAsFixed(1)}km';
+  }
+
+  String _walkingTime(double meters) {
+    final minutes = math.max(1, (meters / 83.3).ceil());
+    return '도보 $minutes분';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,17 +197,25 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            ...stores.map(
-              (store) => Padding(
+            ...stores.map((store) {
+              final distance = _calcDistance(store);
+
+              return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _SearchResultCard(
                   store: store,
                   categoryLabel:
                       categoryLabels[store['category']?.toString()] ?? '',
+                  distanceLabel: distance == null
+                      ? null
+                      : _formatDistance(distance),
+                  walkingTimeLabel: distance == null
+                      ? null
+                      : _walkingTime(distance),
                   onTap: () => _openStoreDetail(store),
                 ),
-              ),
-            ),
+              );
+            }),
           ],
         );
       },
@@ -249,18 +286,26 @@ class _SearchResultCard extends StatelessWidget {
   const _SearchResultCard({
     required this.store,
     required this.categoryLabel,
+    required this.distanceLabel,
+    required this.walkingTimeLabel,
     required this.onTap,
   });
 
   final Map<String, dynamic> store;
   final String categoryLabel;
+  final String? distanceLabel;
+  final String? walkingTimeLabel;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final storeName = store['name']?.toString() ?? '이름 없음';
-    final storeAddress = store['address']?.toString() ?? '주소 없음';
     final rating = (store['rating'] as num?)?.toDouble();
+    final hasMeta =
+        categoryLabel.isNotEmpty ||
+        distanceLabel != null ||
+        walkingTimeLabel != null ||
+        rating != null;
 
     return InkWell(
       onTap: onTap,
@@ -308,21 +353,19 @@ class _SearchResultCard extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    storeAddress,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.caption.copyWith(fontSize: 13),
-                  ),
-                  if (categoryLabel.isNotEmpty || rating != null) ...[
+                  if (hasMeta) ...[
                     const SizedBox(height: 7),
-                    Row(
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         if (categoryLabel.isNotEmpty)
                           _MetaChip(label: categoryLabel),
-                        if (categoryLabel.isNotEmpty && rating != null)
-                          const SizedBox(width: 6),
+                        if (distanceLabel != null)
+                          _MetaChip(label: distanceLabel!),
+                        if (walkingTimeLabel != null)
+                          _MetaChip(label: walkingTimeLabel!),
                         if (rating != null)
                           Row(
                             mainAxisSize: MainAxisSize.min,
