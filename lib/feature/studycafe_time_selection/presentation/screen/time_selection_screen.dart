@@ -20,74 +20,92 @@ class TimeSelectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.black),
-          onPressed: () {
-            onAction(const TimeSelectionAction.tapBack());
-          },
-        ),
-        title: const Text(
-          '이용권 선택',
-          style: TextStyle(
-            color: AppColors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.white,
+          appBar: AppBar(
+            surfaceTintColor: AppColors.white,
+            backgroundColor: AppColors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: AppColors.black),
+              onPressed: () {
+                onAction(const TimeSelectionAction.tapBack());
+              },
+            ),
+            title: const Text(
+              '이용권 선택',
+              style: TextStyle(
+                color: AppColors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            TimeSelectionSeatSummaryCard(seatLabel: state.seatLabel),
-            if (state.seatTakenByOther) ...[
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.authProviderButton.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  '이 좌석은 다른 사용자가 먼저 이용 중입니다. 뒤로 가서 다른 좌석을 선택해 주세요.',
-                  style: TextStyle(
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                TimeSelectionSeatSummaryCard(seatLabel: state.seatLabel),
+                if (state.seatTakenByOther) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.authProviderButton.withValues(
+                        alpha: 0.12,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      '이 좌석은 다른 사용자가 먼저 이용 중입니다. 뒤로 가서 다른 좌석을 선택해 주세요.',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 32),
+                Text(
+                  _headlineText(),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
-                    fontSize: 14,
-                    height: 1.35,
+                    height: 1.3,
                   ),
                 ),
-              ),
-            ],
-            const SizedBox(height: 32),
-            Text(
-              _headlineText(),
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-                height: 1.3,
-              ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: _buildContent(context),
+                ),
+                TimeSelectionSubmitBar(
+                  enabled: canSubmit,
+                  isSubmitting: state.isSubmitting,
+                  onAction: onAction,
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: _buildContent(context),
-            ),
-            TimeSelectionSubmitBar(
-              enabled: canSubmit,
-              isSubmitting: state.isSubmitting,
-              onAction: onAction,
-            ),
-          ],
+          ),
         ),
-      ),
+        if (state.isSubmitting)
+          ModalBarrier(
+            dismissible: false,
+            color: AppColors.black.withValues(alpha: 0.2588),
+          ),
+        if (state.isSubmitting)
+          const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
+            ),
+          ),
+      ],
     );
   }
 

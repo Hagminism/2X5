@@ -44,7 +44,7 @@ class TimeSelectionViewModel extends ChangeNotifier {
         !s.isSubmitting;
   }
 
-  Future<void> startScreen({
+  void initialize({
     required String storeId,
     required String seatId,
     required String seatLabel,

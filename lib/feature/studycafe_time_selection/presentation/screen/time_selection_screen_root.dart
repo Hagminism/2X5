@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/component/time_selection_usage_option_labels.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_action.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_screen.dart';
@@ -10,16 +11,12 @@ import 'package:go_router/go_router.dart';
 
 class TimeSelectionScreenRoot extends StatefulWidget {
   final TimeSelectionViewModel viewModel;
-  final String storeId;
-  final String seatId;
-  final String seatLabel;
+  final Map<String, String> seatInfo;
 
   const TimeSelectionScreenRoot({
     super.key,
     required this.viewModel,
-    required this.storeId,
-    required this.seatId,
-    required this.seatLabel,
+    required this.seatInfo,
   });
 
   @override
@@ -31,12 +28,10 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
   @override
   void initState() {
     super.initState();
-    unawaited(
-      widget.viewModel.startScreen(
-        storeId: widget.storeId,
-        seatId: widget.seatId,
-        seatLabel: widget.seatLabel,
-      ),
+    widget.viewModel.initialize(
+      storeId: widget.seatInfo['storeId'] ?? '',
+      seatId: widget.seatInfo['seatId'] ?? '',
+      seatLabel: widget.seatInfo['seatLabel'] ?? '',
     );
   }
 
@@ -83,21 +78,17 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
           title: const Text('예약 확인'),
           content: Text(
             '${widget.viewModel.state.seatLabel}번 좌석, '
-            '${timeSelectionUsageOptionTitle(selected)} '
-            '(${timeSelectionUsageOptionPriceLabel(selected)})으로\n'
-            '이용을 시작할까요?',
+                '${timeSelectionUsageOptionTitle(selected)} '
+                '(${timeSelectionUsageOptionPriceLabel(selected)})으로\n'
+                '이용을 시작할까요?',
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false);
-              },
+              onPressed: () => context.pop(false),
               child: const Text('취소'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
+              onPressed: () => context.pop(true),
               child: const Text(
                 '확인',
                 style: TextStyle(color: AppColors.primary),
@@ -137,15 +128,20 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
           content: Text(
             hours != null
                 ? '${widget.viewModel.state.seatLabel}번 좌석을 '
-                    '$hours시간 이용합니다.'
+                '$hours시간 이용합니다.'
                 : '${widget.viewModel.state.seatLabel}번 좌석을 '
-                    '${selected.durationMinutes}분 이용합니다.',
+                '${selected.durationMinutes}분 이용합니다.',
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(dialogContext).pop();
-                context.go('/');
+                context.pop();
+                // TODO: 검색 쪽과 홈 쪽 라우트 분리
+                context.go(
+                  '${Routes.map}/${Routes
+                      .search}/search-store-information/${widget
+                      .seatInfo['storeId']}',
+                );
               },
               child: const Text(
                 '확인',

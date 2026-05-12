@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_action.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_screen.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
@@ -44,12 +45,16 @@ class _SeatSelectionScreenRootState extends State<SeatSelectionScreenRoot> {
                 widget.viewModel.onAction(action);
                 break;
               case TapConfirmSelection(:final seatId, :final seatLabel):
-                final encodedSeatId = Uri.encodeComponent(seatId);
-                final encodedSeatLabel = Uri.encodeComponent(seatLabel);
-                final encodedStoreId =
-                    Uri.encodeComponent(widget.viewModel.state.storeId);
                 context.push(
-                  'duration/$encodedSeatId?storeId=$encodedStoreId&seatLabel=$encodedSeatLabel',
+                  Uri(
+                    path:
+                        '${Routes.map}/${Routes.search}/search-store-information/${widget.viewModel.state.storeId}/seat/${Routes.duration}',
+                    queryParameters: {
+                      'storeId': widget.viewModel.state.storeId,
+                      'seatId': seatId,
+                      'seatLabel': seatLabel,
+                    },
+                  ).toString(),
                 );
                 break;
               case TapBack():

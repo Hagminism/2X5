@@ -33,6 +33,7 @@ import 'package:capstone_2026/feature/address_search/data/data_source/address_se
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.dart';
+import 'package:capstone_2026/feature/map_store_information/presentation/screen/map_store_information_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
@@ -339,6 +340,11 @@ void diSetup() {
   );
   getIt.registerFactory<SearchStoreInformationViewModel>(
     () => SearchStoreInformationViewModel(
+      storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<MapStoreInformationViewModel>(
+    () => MapStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
     ),
   );

@@ -4,16 +4,12 @@ import 'package:flutter/material.dart';
 
 class TimeSelectionScope extends StatefulWidget {
   final TimeSelectionViewModel viewModel;
-  final String storeId;
-  final String seatId;
-  final String seatLabel;
+  final Map<String, String> seatInfo;
 
   const TimeSelectionScope({
     super.key,
     required this.viewModel,
-    required this.storeId,
-    required this.seatId,
-    required this.seatLabel,
+    required this.seatInfo,
   });
 
   @override
@@ -27,9 +23,7 @@ class _TimeSelectionScopeState extends State<TimeSelectionScope> {
   Widget build(BuildContext context) {
     return TimeSelectionScreenRoot(
       viewModel: _viewModel,
-      storeId: widget.storeId,
-      seatId: widget.seatId,
-      seatLabel: widget.seatLabel,
+      seatInfo: widget.seatInfo,
     );
   }
 

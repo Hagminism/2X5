@@ -20,13 +20,14 @@ class Routes {
   static const String search = 'search';
   static const String notifications = 'notifications';
   static const String homeStoreInformation = 'information/:storeId';
+  static const String mapStoreInformation = 'information/:storeId';
   static const String searchStoreInformation = 'search-store-information/:storeId';
   static const String bookmarkStoreDetail = 'store/:storeId';
 
   // reservation
   static const String reservation = 'reservation';
   static const String seat = 'seat';
-  static const String duration = 'duration/:seatId';
+  static const String duration = 'duration';
   static const String salonReservation = 'salon-reservation';
 
   // My page nested paths
