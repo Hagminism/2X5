@@ -45,12 +45,13 @@ class _SeatSelectionScreenRootState extends State<SeatSelectionScreenRoot> {
                 widget.viewModel.onAction(action);
                 break;
               case TapConfirmSelection(:final seatId, :final seatLabel):
+                final String storeId = widget.viewModel.state.storeId;
                 context.push(
                   Uri(
                     path:
-                        '${Routes.map}/${Routes.search}/search-store-information/${widget.viewModel.state.storeId}/seat/${Routes.duration}',
+                        '${Routes.home}/information/$storeId/seat/${Routes.duration}',
                     queryParameters: {
-                      'storeId': widget.viewModel.state.storeId,
+                      'storeId': storeId,
                       'seatId': seatId,
                       'seatLabel': seatLabel,
                     },

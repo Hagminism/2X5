@@ -53,7 +53,7 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
                 context.pop();
                 break;
               case TapSubmit():
-                unawaited(_onTapSubmit(context));
+                _onTapSubmit();
                 break;
             }
           },
@@ -62,7 +62,11 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
     );
   }
 
-  Future<void> _onTapSubmit(BuildContext context) async {
+  Future<void> _onTapSubmit() async {
+    if (!mounted) {
+      return;
+    }
+
     if (!widget.viewModel.canSubmit) {
       return;
     }
@@ -84,11 +88,11 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
           ),
           actions: [
             TextButton(
-              onPressed: () => context.pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('취소'),
             ),
             TextButton(
-              onPressed: () => context.pop(true),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
               child: const Text(
                 '확인',
                 style: TextStyle(color: AppColors.primary),
@@ -99,12 +103,12 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
       },
     );
 
-    if (confirmed != true || !context.mounted) {
+    if (confirmed != true || !mounted) {
       return;
     }
 
     final bool ok = await widget.viewModel.submitUsage();
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
 
@@ -135,13 +139,12 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
           actions: [
             TextButton(
               onPressed: () {
-                context.pop();
-                // TODO: 검색 쪽과 홈 쪽 라우트 분리
-                context.go(
-                  '${Routes.map}/${Routes
-                      .search}/search-store-information/${widget
-                      .seatInfo['storeId']}',
-                );
+                Navigator.of(dialogContext).pop();
+                final String? storeId = widget.seatInfo['storeId'];
+                if (storeId == null || storeId.isEmpty) {
+                  return;
+                }
+                context.go('${Routes.home}/information/$storeId');
               },
               child: const Text(
                 '확인',
