@@ -222,6 +222,27 @@ type ExtendStudyCafeUsageRequest = {
   additionalMinutes?: number;
 };
 
+type AcquireStudycafeSeatHoldRequest = {
+  storeId?: string;
+  seatId?: string;
+  holdMinutes?: number;
+};
+
+type ReleaseStudycafeSeatHoldRequest = {
+  holdId?: string;
+};
+
+type StudyCafeSeatHoldResponse = {
+  id: string;
+  store_id: string;
+  user_id: string;
+  seat_id: string;
+  expires_at: string;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
 type CreateSalonReservationRequest = {
   storeId?: string;
   designerId?: string;
@@ -562,19 +583,30 @@ export const startStudyCafeUsage = onCall(
       throw new HttpsError("invalid-argument", "이용 시간은 0분보다 커야 합니다.");
     }
 
-    const reservation = await supabaseRequest<
-      StudyCafeReservationResponse | StudyCafeReservationResponse[]
-    >(
-      "rpc/start_studycafe_usage",
-      "POST",
-      {
-        p_store_id: storeId,
-        p_user_id: uid,
-        p_seat_id: seatId,
-        p_duration_minutes: durationMinutes,
-      },
-    );
-    return normalizeRpcRow(reservation, "스터디카페 이용 시작에 실패했습니다.");
+    try {
+      const reservation = await supabaseRequest<
+        StudyCafeReservationResponse | StudyCafeReservationResponse[]
+      >(
+        "rpc/start_studycafe_usage",
+        "POST",
+        {
+          p_store_id: storeId,
+          p_user_id: uid,
+          p_seat_id: seatId,
+          p_duration_minutes: durationMinutes,
+        },
+      );
+      return normalizeRpcRow(reservation, "스터디카페 이용 시작에 실패했습니다.");
+    } catch (e) {
+      const message = e instanceof HttpsError ? e.message : "";
+      if (message.includes("seat_held_by_other")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "다른 사용자가 해당 좌석을 선택 중입니다.",
+        );
+      }
+      throw e;
+    }
   },
 );
 
@@ -611,6 +643,95 @@ export const extendStudyCafeUsage = onCall(
       },
     );
     return normalizeRpcRow(reservation, "스터디카페 이용 연장에 실패했습니다.");
+  },
+);
+
+export const acquireStudycafeSeatHold = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as AcquireStudycafeSeatHoldRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const seatId = (data.seatId ?? "").trim();
+    const holdMinutes = Number(data.holdMinutes ?? 10);
+
+    if (!storeId || !seatId || !Number.isInteger(holdMinutes)) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (holdMinutes < 1 || holdMinutes > 60) {
+      throw new HttpsError(
+        "invalid-argument",
+        "홀드 시간은 1분 이상 60분 이하여야 합니다.",
+      );
+    }
+
+    try {
+      const hold = await supabaseRequest<
+        StudyCafeSeatHoldResponse | StudyCafeSeatHoldResponse[]
+      >(
+        "rpc/acquire_studycafe_seat_hold",
+        "POST",
+        {
+          p_store_id: storeId,
+          p_user_id: uid,
+          p_seat_id: seatId,
+          p_hold_minutes: holdMinutes,
+        },
+      );
+      return normalizeRpcRow(
+        hold,
+        "스터디카페 좌석 홀드를 획득하지 못했습니다.",
+      );
+    } catch (e) {
+      const message = e instanceof HttpsError ? e.message : "";
+      if (message.includes("seat_held_by_other")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "다른 사용자가 해당 좌석을 선택 중입니다.",
+        );
+      }
+      if (message.includes("seat_already_reserved")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "이미 예약된 좌석입니다.",
+        );
+      }
+      throw e;
+    }
+  },
+);
+
+export const releaseStudycafeSeatHold = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as ReleaseStudycafeSeatHoldRequest;
+    const holdId = (data.holdId ?? "").trim();
+    if (!holdId) {
+      throw new HttpsError("invalid-argument", "holdId가 필요합니다.");
+    }
+
+    await supabaseRequest<boolean>(
+      "rpc/release_studycafe_seat_hold",
+      "POST",
+      {
+        p_hold_id: holdId,
+        p_user_id: uid,
+      },
+    );
+    return {success: true};
   },
 );
 
