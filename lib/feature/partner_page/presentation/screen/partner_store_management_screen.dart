@@ -218,56 +218,58 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  PartnerStoreSectionCard(
-                    title: '예약금 설정',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '예약금 사용',
-                                style: AppTextStyles.body.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w700,
+                  if (state.category != 'study_cafe') ...[
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '예약금 설정',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '예약금 사용',
+                                  style: AppTextStyles.body.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Switch(
-                              value: state.depositEnabled,
-                              activeThumbColor: AppColors.primary,
-                              onChanged: (value) => onAction(
-                                PartnerStoreManagementAction.changeDepositEnabled(
-                                  value,
+                              Switch(
+                                value: state.depositEnabled,
+                                activeThumbColor: AppColors.primary,
+                                onChanged: (value) => onAction(
+                                  PartnerStoreManagementAction.changeDepositEnabled(
+                                    value,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        PartnerFormTextField(
-                          hintText: '예약금 금액(원)',
-                          initialValue: state.depositAmount,
-                          keyboardType: TextInputType.number,
-                          isInteractive: state.depositEnabled,
-                          onChanged: (value) => onAction(
-                            PartnerStoreManagementAction.changeDepositAmount(
-                              value,
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          PartnerFormTextField(
+                            hintText: '예약금 금액(원)',
+                            initialValue: state.depositAmount,
+                            keyboardType: TextInputType.number,
+                            isInteractive: state.depositEnabled,
+                            onChanged: (value) => onAction(
+                              PartnerStoreManagementAction.changeDepositAmount(
+                                value,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          state.depositEnabled
-                              ? '예약금 사용 시 0원보다 큰 금액을 입력해 주세요.'
-                              : '예약금을 사용하지 않으면 금액은 자동으로 0원으로 저장됩니다.',
-                          style: AppTextStyles.bodySecondary,
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            state.depositEnabled
+                                ? '예약금 사용 시 0원보다 큰 금액을 입력해 주세요.'
+                                : '예약금을 사용하지 않으면 금액은 자동으로 0원으로 저장됩니다.',
+                            style: AppTextStyles.bodySecondary,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                   if (state.category == 'restaurant' ||
                       state.category == 'cafe') ...[
                     const SizedBox(height: 24),
