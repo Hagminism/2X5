@@ -68,10 +68,10 @@ import 'package:capstone_2026/feature/search_store_information/core/presentation
 import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_store_information_view_model.dart';
 import 'package:capstone_2026/feature/seat_selection/core/presentation/component/scope/seat_selection_scope.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
+import 'package:capstone_2026/feature/studycafe_time_selection/core/presentation/component/scope/time_selection_scope.dart';
+import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_view_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-
-import '../../studycafe/presentation/screen/time_selection_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -176,12 +176,17 @@ final router = GoRouter(
                           parentNavigatorKey: _rootNavigatorKey,
                           // 👈 자식(time)에게도 똑같이 이 키를 붙여줘야 합니다!
                           builder: (context, state) {
-                            final seatId = state.pathParameters['seatId'] ?? '';
-                            final storeId =
-                                state.uri.queryParameters['storeId'] ?? '';
-                            final seatLabel =
-                                state.uri.queryParameters['seatLabel'] ?? '';
-                            return TimeSelectionScreen(
+                            final seatId = Uri.decodeComponent(
+                              state.pathParameters['seatId'] ?? '',
+                            );
+                            final storeId = Uri.decodeComponent(
+                              state.uri.queryParameters['storeId'] ?? '',
+                            );
+                            final seatLabel = Uri.decodeComponent(
+                              state.uri.queryParameters['seatLabel'] ?? '',
+                            );
+                            return TimeSelectionScope(
+                              viewModel: getIt<TimeSelectionViewModel>(),
                               storeId: storeId,
                               seatId: seatId,
                               seatLabel: seatLabel,
@@ -244,15 +249,20 @@ final router = GoRouter(
                               path: Routes.duration,
                               parentNavigatorKey: _rootNavigatorKey,
                               builder: (context, state) {
-                                final seatId =
-                                    state.pathParameters['seatId'] ?? '';
-                                final storeId =
-                                    state.uri.queryParameters['storeId'] ??
-                                    '';
-                                final seatLabel =
-                                    state.uri.queryParameters['seatLabel'] ??
-                                    '';
-                                return TimeSelectionScreen(
+                                final seatId = Uri.decodeComponent(
+                                  state.pathParameters['seatId'] ?? '',
+                                );
+                                final storeId = Uri.decodeComponent(
+                                  state.uri.queryParameters['storeId'] ??
+                                      '',
+                                );
+                                final seatLabel = Uri.decodeComponent(
+                                  state.uri.queryParameters['seatLabel'] ??
+                                      '',
+                                );
+                                return TimeSelectionScope(
+                                  viewModel:
+                                      getIt<TimeSelectionViewModel>(),
                                   storeId: storeId,
                                   seatId: seatId,
                                   seatLabel: seatLabel,
