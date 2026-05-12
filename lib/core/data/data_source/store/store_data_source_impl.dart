@@ -41,6 +41,22 @@ class StoreDataSourceImpl implements StoreDataSource {
   }
 
   @override
+  Future<StoreDto?> findStoreById(String id) async {
+
+    final json = await _supabaseClient
+        .from('stores')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+
+    if (json == null) {
+      return null;
+    }
+
+    return StoreDto.fromJson(json);
+  }
+
+  @override
   Future<StoreDto> createStore(StoreDto storeDto) async {
     final payload = storeDto.toJson()
       ..remove('id')

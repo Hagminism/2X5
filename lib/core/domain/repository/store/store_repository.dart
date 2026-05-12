@@ -24,4 +24,6 @@ abstract interface class StoreRepository {
   Future<String> uploadMyStoreMenuImageFile(String filePath);
 
   Future<void> deleteMyStoreMenuImageByUrl(String imageUrl);
+
+  Future<Store> getStoreById(String storeId);
 }

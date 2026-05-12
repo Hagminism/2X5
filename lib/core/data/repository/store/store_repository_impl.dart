@@ -32,6 +32,17 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
+  Future<Store> getStoreById(String storeId) async {
+    final storeDto = await _storeDataSource.findStoreById(storeId);
+
+    if (storeDto == null) {
+      throw StateError('해당 가게 정보를 찾을 수 없습니다. (ID: $storeId)');
+    }
+
+    return storeDto.toModel();
+  }
+
+  @override
   Future<Store?> getMyStore() async {
     final uid = _getCurrentUidOrThrow();
     final storeDto = await _storeDataSource.findStoreByOwnerId(uid);
