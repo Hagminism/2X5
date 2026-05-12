@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_detail.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_element.dart';
@@ -20,10 +21,12 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
   }) : _studyCafeRepository = studyCafeRepository;
 
   PartnerStudyCafeLayoutState _state = const PartnerStudyCafeLayoutState();
+
   PartnerStudyCafeLayoutState get state => _state;
 
   final StreamController<PartnerStudyCafeLayoutEvent> _eventController =
       StreamController<PartnerStudyCafeLayoutEvent>.broadcast();
+
   Stream<PartnerStudyCafeLayoutEvent> get eventStream =>
       _eventController.stream;
 
@@ -148,6 +151,9 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       case AlignSelectedSeatsVertically():
         _alignSelectedItemsVertically();
         break;
+      case DuplicateSelectedSeats():
+        _duplicateSelectedSeats();
+        break;
       case TapSave():
         save();
         break;
@@ -205,6 +211,105 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       selectedElementId: null,
     );
     notifyListeners();
+  }
+
+  void _duplicateSelectedSeats() {
+    final selectedIds = state.selectedSeatIds.toSet();
+    if (selectedIds.isEmpty) {
+      _eventController.add(
+        const PartnerStudyCafeLayoutEvent.showMessage('복사할 좌석을 선택해 주세요.'),
+      );
+      return;
+    }
+    final selected = state.seats
+        .where((StudyCafeSeat s) => selectedIds.contains(s.seatId))
+        .toList();
+    if (selected.isEmpty) {
+      return;
+    }
+    final xs = selected.map((StudyCafeSeat s) => s.x).toList();
+    final ys = selected.map((StudyCafeSeat s) => s.y).toList();
+
+    const candidates = <List<double>>[
+      [0.06, 0.06],
+      [-0.06, 0.06],
+      [0.06, -0.06],
+      [-0.06, -0.06],
+      [0.08, 0],
+      [-0.08, 0],
+      [0, 0.08],
+      [0, -0.08],
+      [0.04, 0.04],
+      [-0.04, -0.04],
+    ];
+    double? dx;
+    double? dy;
+    for (final List<double> pair in candidates) {
+      final double cdx = _clampGroupAxisDelta(xs, pair[0]);
+      final double cdy = _clampGroupAxisDelta(ys, pair[1]);
+      if (cdx != 0 || cdy != 0) {
+        dx = cdx;
+        dy = cdy;
+        break;
+      }
+    }
+    if (dx == null || dy == null) {
+      _eventController.add(
+        const PartnerStudyCafeLayoutEvent.showMessage(
+          '캔버스 안에 복사본을 놓을 공간이 없습니다.',
+        ),
+      );
+      return;
+    }
+    final double useDx = dx;
+    final double useDy = dy;
+
+    var idCounter = _maxSeatNumericSuffixFromIds() + 1;
+    var labelCounter = _nextSeatNumber();
+    final newSeats = <StudyCafeSeat>[];
+    final newSeatIds = <String>[];
+    for (final StudyCafeSeat s in selected) {
+      final newId = 'seat_$idCounter';
+      idCounter++;
+      newSeatIds.add(newId);
+      newSeats.add(
+        s.copyWith(
+          seatId: newId,
+          label: '$labelCounter',
+          x: s.x + useDx,
+          y: s.y + useDy,
+        ),
+      );
+      labelCounter++;
+    }
+    _state = state.copyWith(
+      seats: [...state.seats, ...newSeats],
+      selectedSeatIds: newSeatIds,
+      selectedElementIds: const [],
+      selectedElementId: null,
+    );
+    notifyListeners();
+    _eventController.add(
+      PartnerStudyCafeLayoutEvent.showMessage(
+        '${newSeats.length}개 좌석을 복사했습니다.',
+      ),
+    );
+  }
+
+  int _maxSeatNumericSuffixFromIds() {
+    var maxV = 0;
+    for (final StudyCafeSeat s in state.seats) {
+      final String id = s.seatId;
+      if (!id.startsWith('seat_')) {
+        continue;
+      }
+      final String tail = id.substring(5);
+      final int? v = int.tryParse(tail);
+      if (v != null && v > maxV) {
+        maxV = v;
+      }
+    }
+    return maxV;
   }
 
   void _addElement(StudyCafeLayoutElementType type) {
@@ -272,24 +377,19 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     required double deltaX,
     required double deltaY,
   }) {
-    final movingSeatIds = state.selectedSeatIds.contains(seatId)
-        ? state.selectedSeatIds.toSet()
-        : {seatId};
-    final next = state.seats.map((seat) {
-      if (!movingSeatIds.contains(seat.seatId)) {
-        return seat;
-      }
-      return seat.copyWith(
-        x: (seat.x + deltaX).clamp(0, 1).toDouble(),
-        y: (seat.y + deltaY).clamp(0, 1).toDouble(),
-      );
-    }).toList();
-    _state = state.copyWith(
-      seats: next,
-      selectedSeatIds: movingSeatIds.toList(),
-      selectedElementId: null,
+    final inSeatSelection = state.selectedSeatIds.contains(seatId);
+    final seatIds = inSeatSelection ? state.selectedSeatIds.toSet() : {seatId};
+    final elementIds = inSeatSelection && state.selectedElementIds.isNotEmpty
+        ? state.selectedElementIds.toSet()
+        : <String>{};
+    _applyRigidTranslation(
+      seatIds: seatIds,
+      elementIds: elementIds,
+      deltaX: deltaX,
+      deltaY: deltaY,
+      adhoc: inSeatSelection ? _SelectionAdhoc.none : _SelectionAdhoc.seat,
+      primarySeatId: seatId,
     );
-    notifyListeners();
   }
 
   void _moveElement({
@@ -297,20 +397,120 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     required double deltaX,
     required double deltaY,
   }) {
-    final movingElementIds = state.selectedElementIds.contains(elementId)
+    final inElementSelection = state.selectedElementIds.contains(elementId);
+    final elementIds = inElementSelection
         ? state.selectedElementIds.toSet()
         : {elementId};
-    final updates = <String, StudyCafeLayoutElement>{};
-    for (final element in state.elements) {
-      if (!movingElementIds.contains(element.elementId)) {
-        continue;
-      }
-      updates[element.elementId] = element.copyWith(
-        x: (element.x + deltaX).clamp(0, 1).toDouble(),
-        y: (element.y + deltaY).clamp(0, 1).toDouble(),
-      );
+    final seatIds = inElementSelection && state.selectedSeatIds.isNotEmpty
+        ? state.selectedSeatIds.toSet()
+        : <String>{};
+    _applyRigidTranslation(
+      seatIds: seatIds,
+      elementIds: elementIds,
+      deltaX: deltaX,
+      deltaY: deltaY,
+      adhoc: inElementSelection
+          ? _SelectionAdhoc.none
+          : _SelectionAdhoc.element,
+      primaryElementId: elementId,
+    );
+  }
+
+  void _applyRigidTranslation({
+    required Set<String> seatIds,
+    required Set<String> elementIds,
+    required double deltaX,
+    required double deltaY,
+    required _SelectionAdhoc adhoc,
+    String? primarySeatId,
+    String? primaryElementId,
+  }) {
+    if (seatIds.isEmpty && elementIds.isEmpty) {
+      return;
     }
-    _updateElementsById(updates);
+    final xs = <double>[];
+    final ys = <double>[];
+    for (final seat in state.seats) {
+      if (seatIds.contains(seat.seatId)) {
+        xs.add(seat.x);
+        ys.add(seat.y);
+      }
+    }
+    for (final element in state.elements) {
+      if (elementIds.contains(element.elementId)) {
+        xs.add(element.x);
+        ys.add(element.y);
+      }
+    }
+    if (xs.isEmpty && ys.isEmpty) {
+      return;
+    }
+    final dx = _clampGroupAxisDelta(xs, deltaX);
+    final dy = _clampGroupAxisDelta(ys, deltaY);
+    if (dx == 0 && dy == 0) {
+      return;
+    }
+    final nextSeats = state.seats.map((seat) {
+      if (!seatIds.contains(seat.seatId)) {
+        return seat;
+      }
+      return seat.copyWith(
+        x: seat.x + dx,
+        y: seat.y + dy,
+      );
+    }).toList();
+    final nextElements = state.elements.map((element) {
+      if (!elementIds.contains(element.elementId)) {
+        return element;
+      }
+      return element.copyWith(
+        x: element.x + dx,
+        y: element.y + dy,
+      );
+    }).toList();
+
+    final List<String> nextSelectedSeatIds;
+    final List<String> nextSelectedElementIds;
+    final String? nextSelectedElementId;
+    switch (adhoc) {
+      case _SelectionAdhoc.none:
+        nextSelectedSeatIds = state.selectedSeatIds;
+        nextSelectedElementIds = state.selectedElementIds;
+        nextSelectedElementId = state.selectedElementId;
+        break;
+      case _SelectionAdhoc.seat:
+        nextSelectedSeatIds = [primarySeatId!];
+        nextSelectedElementIds = const [];
+        nextSelectedElementId = null;
+        break;
+      case _SelectionAdhoc.element:
+        nextSelectedSeatIds = const [];
+        nextSelectedElementIds = [primaryElementId!];
+        nextSelectedElementId = primaryElementId;
+        break;
+    }
+
+    _state = state.copyWith(
+      seats: nextSeats,
+      elements: nextElements,
+      selectedSeatIds: nextSelectedSeatIds,
+      selectedElementIds: nextSelectedElementIds,
+      selectedElementId: nextSelectedElementId,
+    );
+    notifyListeners();
+  }
+
+  /// [origins]는 이동할 항목들의 x 또는 y (0~1). 같은 [delta]를 모두에 적용할 때 축 방향으로 가능한 범위로만 자른다.
+  double _clampGroupAxisDelta(List<double> origins, double delta) {
+    if (origins.isEmpty || delta == 0) {
+      return 0;
+    }
+    if (delta > 0) {
+      final cap = origins.map((double v) => 1 - v).reduce(math.min);
+      return math.min(delta, cap);
+    }
+    final floor = origins.map((double v) => -v).reduce(math.max);
+    return math.max(delta, floor);
   }
 
   void _alignSelectedItemsHorizontally() {
@@ -425,21 +625,6 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _updateElementsById(Map<String, StudyCafeLayoutElement> updates) {
-    if (updates.isEmpty) {
-      return;
-    }
-    final next = state.elements
-        .map((element) => updates[element.elementId] ?? element)
-        .toList();
-    _state = state.copyWith(
-      elements: next,
-      selectedElementIds: updates.keys.toList(),
-      selectedElementId: updates.keys.first,
-    );
-    notifyListeners();
-  }
-
   void _updateSelectedItems({
     required Map<String, StudyCafeSeat> seatUpdates,
     required Map<String, StudyCafeLayoutElement> elementUpdates,
@@ -529,3 +714,5 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
+
+enum _SelectionAdhoc { none, seat, element }

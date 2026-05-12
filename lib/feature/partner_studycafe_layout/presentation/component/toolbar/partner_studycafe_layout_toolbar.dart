@@ -79,6 +79,15 @@ class PartnerStudyCafeLayoutToolbar extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           PartnerStudyCafeLayoutToolbarButton(
+            icon: Icons.copy_all_outlined,
+            label: '좌석 복사',
+            description: '선택한 좌석',
+            onTap: () => onAction(
+              const PartnerStudyCafeLayoutAction.duplicateSelectedSeats(),
+            ),
+          ),
+          const SizedBox(width: 10),
+          PartnerStudyCafeLayoutToolbarButton(
             icon: Icons.delete_outline_rounded,
             label: '삭제',
             description: '선택 항목',

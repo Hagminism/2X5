@@ -72,5 +72,8 @@ sealed class PartnerStudyCafeLayoutAction with _$PartnerStudyCafeLayoutAction {
   const factory PartnerStudyCafeLayoutAction.alignSelectedSeatsVertically() =
       AlignSelectedSeatsVertically;
 
+  const factory PartnerStudyCafeLayoutAction.duplicateSelectedSeats() =
+      DuplicateSelectedSeats;
+
   const factory PartnerStudyCafeLayoutAction.tapSave() = TapSave;
 }
