@@ -5,7 +5,11 @@ import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen_root.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
+import 'package:capstone_2026/feature/map_store_information/core/presentation/component/scope/map_studycafe_pass_selection_scope.dart';
+import 'package:capstone_2026/feature/map_store_information/core/presentation/component/scope/map_studycafe_seat_selection_scope.dart';
 import 'package:capstone_2026/feature/map_store_information/core/presentation/component/scope/map_store_information_scope.dart';
+import 'package:capstone_2026/feature/map_store_information/presentation/screen/map_studycafe_pass_selection_view_model.dart';
+import 'package:capstone_2026/feature/map_store_information/presentation/screen/map_studycafe_seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/map_store_information/presentation/screen/map_store_information_view_model.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_screen_root.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
@@ -66,7 +70,11 @@ import 'package:capstone_2026/feature/reservation/presentation/screen/reservatio
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_screen.dart';
 import 'package:capstone_2026/feature/information/core/presentation/component/scope/information_scope.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
+import 'package:capstone_2026/feature/search_store_information/core/presentation/component/scope/search_studycafe_pass_selection_scope.dart';
+import 'package:capstone_2026/feature/search_store_information/core/presentation/component/scope/search_studycafe_seat_selection_scope.dart';
 import 'package:capstone_2026/feature/search_store_information/core/presentation/component/scope/search_store_information_scope.dart';
+import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_studycafe_pass_selection_view_model.dart';
+import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_studycafe_seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_store_information_view_model.dart';
 import 'package:capstone_2026/feature/seat_selection/core/presentation/component/scope/seat_selection_scope.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
@@ -166,8 +174,8 @@ final router = GoRouter(
                       ),
                     ),
                     GoRoute(
-                      path: Routes.seat, // 'seat'
-                      parentNavigatorKey: _rootNavigatorKey, // 부모가 전체화면 키를 쓰면
+                      path: Routes.seat,
+                      parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) => SeatSelectionScope(
                         viewModel: getIt<SeatSelectionViewModel>(),
                         storeId: state.pathParameters['storeId'] ?? '',
@@ -226,10 +234,12 @@ final router = GoRouter(
                     GoRoute(
                       path: Routes.seat,
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => SeatSelectionScope(
-                        viewModel: getIt<SeatSelectionViewModel>(),
-                        storeId: state.pathParameters['storeId'] ?? '',
-                      ),
+                      builder: (context, state) =>
+                          MapStudycafeSeatSelectionScope(
+                            viewModel:
+                                getIt<MapStudycafeSeatSelectionViewModel>(),
+                            storeId: state.pathParameters['storeId'] ?? '',
+                          ),
                       routes: [
                         GoRoute(
                           path: Routes.duration,
@@ -237,8 +247,9 @@ final router = GoRouter(
                           builder: (context, state) {
                             final seatInfo = state.uri.queryParameters;
 
-                            return TimeSelectionScope(
-                              viewModel: getIt<TimeSelectionViewModel>(),
+                            return MapStudycafePassSelectionScope(
+                              viewModel:
+                                  getIt<MapStudycafePassSelectionViewModel>(),
                               seatInfo: seatInfo,
                             );
                           },
@@ -280,10 +291,14 @@ final router = GoRouter(
                         GoRoute(
                           path: Routes.seat,
                           parentNavigatorKey: _rootNavigatorKey,
-                          builder: (context, state) => SeatSelectionScope(
-                            viewModel: getIt<SeatSelectionViewModel>(),
-                            storeId: state.pathParameters['storeId'] ?? '',
-                          ),
+                          builder: (context, state) =>
+                              SearchStudycafeSeatSelectionScope(
+                                viewModel:
+                                    getIt<
+                                      SearchStudycafeSeatSelectionViewModel
+                                    >(),
+                                storeId: state.pathParameters['storeId'] ?? '',
+                              ),
                           routes: [
                             GoRoute(
                               path: Routes.duration,
@@ -291,8 +306,11 @@ final router = GoRouter(
                               builder: (context, state) {
                                 final seatInfo = state.uri.queryParameters;
 
-                                return TimeSelectionScope(
-                                  viewModel: getIt<TimeSelectionViewModel>(),
+                                return SearchStudycafePassSelectionScope(
+                                  viewModel:
+                                      getIt<
+                                        SearchStudycafePassSelectionViewModel
+                                      >(),
                                   seatInfo: seatInfo,
                                 );
                               },

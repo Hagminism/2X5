@@ -33,6 +33,8 @@ import 'package:capstone_2026/feature/address_search/data/data_source/address_se
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.dart';
+import 'package:capstone_2026/feature/map_store_information/presentation/screen/map_studycafe_pass_selection_view_model.dart';
+import 'package:capstone_2026/feature/map_store_information/presentation/screen/map_studycafe_seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/map_store_information/presentation/screen/map_store_information_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
@@ -70,6 +72,8 @@ import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
+import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_studycafe_pass_selection_view_model.dart';
+import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_studycafe_seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_store_information_view_model.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_view_model.dart';
@@ -355,6 +359,28 @@ void diSetup() {
   );
   getIt.registerFactory<TimeSelectionViewModel>(
     () => TimeSelectionViewModel(
+      studyCafeRepository: getIt<StudyCafeRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
+  getIt.registerFactory<MapStudycafeSeatSelectionViewModel>(
+    () => MapStudycafeSeatSelectionViewModel(
+      studyCafeRepository: getIt<StudyCafeRepository>(),
+    ),
+  );
+  getIt.registerFactory<MapStudycafePassSelectionViewModel>(
+    () => MapStudycafePassSelectionViewModel(
+      studyCafeRepository: getIt<StudyCafeRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
+  getIt.registerFactory<SearchStudycafeSeatSelectionViewModel>(
+    () => SearchStudycafeSeatSelectionViewModel(
+      studyCafeRepository: getIt<StudyCafeRepository>(),
+    ),
+  );
+  getIt.registerFactory<SearchStudycafePassSelectionViewModel>(
+    () => SearchStudycafePassSelectionViewModel(
       studyCafeRepository: getIt<StudyCafeRepository>(),
       authRepository: getIt<AuthRepository>(),
     ),
