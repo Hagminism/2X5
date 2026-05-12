@@ -70,6 +70,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_store_information_view_model.dart';
+import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
 
 GetIt getIt = GetIt.instance;
 
@@ -338,6 +339,11 @@ void diSetup() {
   getIt.registerFactory<SearchStoreInformationViewModel>(
     () => SearchStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<SeatSelectionViewModel>(
+    () => SeatSelectionViewModel(
+      studyCafeRepository: getIt<StudyCafeRepository>(),
     ),
   );
 }

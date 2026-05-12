@@ -66,10 +66,11 @@ import 'package:capstone_2026/feature/information/core/presentation/component/sc
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:capstone_2026/feature/search_store_information/core/presentation/component/scope/search_store_information_scope.dart';
 import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_store_information_view_model.dart';
+import 'package:capstone_2026/feature/seat_selection/core/presentation/component/scope/seat_selection_scope.dart';
+import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
-import '../../studycafe/presentation/screen/seat_selection_screen.dart';
 import '../../studycafe/presentation/screen/time_selection_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -165,7 +166,8 @@ final router = GoRouter(
                     GoRoute(
                       path: Routes.seat, // 'seat'
                       parentNavigatorKey: _rootNavigatorKey, // 부모가 전체화면 키를 쓰면
-                      builder: (context, state) => SeatSelectionScreen(
+                      builder: (context, state) => SeatSelectionScope(
+                        viewModel: getIt<SeatSelectionViewModel>(),
                         storeId: state.pathParameters['storeId'] ?? '',
                       ),
                       routes: [
@@ -232,8 +234,10 @@ final router = GoRouter(
                         GoRoute(
                           path: Routes.seat,
                           parentNavigatorKey: _rootNavigatorKey,
-                          builder: (context, state) => SeatSelectionScreen(
-                            storeId: state.pathParameters['storeId'] ?? '',
+                          builder: (context, state) => SeatSelectionScope(
+                            viewModel: getIt<SeatSelectionViewModel>(),
+                            storeId:
+                                state.pathParameters['storeId'] ?? '',
                           ),
                           routes: [
                             GoRoute(
