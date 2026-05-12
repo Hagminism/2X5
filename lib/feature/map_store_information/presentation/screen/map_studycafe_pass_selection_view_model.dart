@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_reservation.dart';
+import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_block_resolver.dart';
+import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_hold.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_usage_option.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/studycafe/studycafe_repository.dart';
@@ -13,14 +15,14 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
   MapStudycafePassSelectionViewModel({
     required StudyCafeRepository studyCafeRepository,
     required AuthRepository authRepository,
-  })  : _studyCafeRepository = studyCafeRepository,
-        _authRepository = authRepository,
-        _state = MapStudycafePassSelectionState(
-          storeId: '',
-          seatId: '',
-          seatLabel: '',
-          isLoadingDetail: true,
-        );
+  }) : _studyCafeRepository = studyCafeRepository,
+       _authRepository = authRepository,
+       _state = MapStudycafePassSelectionState(
+         storeId: '',
+         seatId: '',
+         seatLabel: '',
+         isLoadingDetail: true,
+       );
 
   final StudyCafeRepository _studyCafeRepository;
   final AuthRepository _authRepository;
@@ -30,9 +32,16 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
   MapStudycafePassSelectionState get state => _state;
 
   StreamSubscription<List<StudyCafeReservation>>? _reservationSubscription;
+  StreamSubscription<List<StudyCafeSeatHold>>? _holdSubscription;
 
   String _routeStoreId = '';
   String _routeSeatId = '';
+
+  List<StudyCafeReservation> _lastReservationSnapshot = [];
+  List<StudyCafeSeatHold> _lastHoldSnapshot = [];
+
+  String? _activeHoldId;
+  bool _submitSucceeded = false;
 
   bool get canSubmit {
     final MapStudycafePassSelectionState s = _state;
@@ -51,9 +60,13 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
   }) async {
     _routeStoreId = storeId;
     _routeSeatId = seatId;
+    _activeHoldId = null;
+    _submitSucceeded = false;
 
     await _reservationSubscription?.cancel();
+    await _holdSubscription?.cancel();
     _reservationSubscription = null;
+    _holdSubscription = null;
 
     _state = MapStudycafePassSelectionState(
       storeId: storeId,
@@ -69,14 +82,18 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
     );
     notifyListeners();
 
-    await _loadDetail();
     _listenReservations(storeId);
+    _listenSeatHolds(storeId);
+
+    await _loadDetail();
+    await _primeSeatConflictCheck();
+    await _tryAcquireHold();
   }
 
   void onAction(MapStudycafePassSelectionAction action) {
     switch (action) {
       case MapStudycafePassTapRetry():
-        unawaited(_loadDetail());
+        unawaited(_retryAfterFailure());
         break;
       case MapStudycafePassTapSelectUsageOption(:final durationMinutes):
         _selectDuration(durationMinutes);
@@ -85,6 +102,13 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
       case MapStudycafePassTapSubmit():
         break;
     }
+  }
+
+  Future<void> _retryAfterFailure() async {
+    await _loadDetail();
+    await _primeSeatConflictCheck();
+    await _tryAcquireHold();
+    notifyListeners();
   }
 
   Future<void> _loadDetail() async {
@@ -117,7 +141,6 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
         usageOptions: options,
         selectedDurationMinutes: stillValid ? selected : null,
       );
-      _recomputeSeatTaken(_lastReservationSnapshot);
       notifyListeners();
     } catch (e) {
       _state = _state.copyWith(
@@ -128,39 +151,73 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
     }
   }
 
-  List<StudyCafeReservation> _lastReservationSnapshot = [];
+  Future<void> _primeSeatConflictCheck() async {
+    _lastReservationSnapshot = await _studyCafeRepository
+        .getActiveReservationsByStoreId(_routeStoreId);
+    _lastHoldSnapshot = await _studyCafeRepository.getActiveSeatHoldsByStoreId(
+      _routeStoreId,
+    );
+    _recomputeSeatTakenFromSnapshots();
+  }
 
   void _listenReservations(String storeId) {
     _reservationSubscription = _studyCafeRepository
         .watchActiveReservationsByStoreId(storeId)
         .listen((List<StudyCafeReservation> list) {
       _lastReservationSnapshot = list;
-      _recomputeSeatTaken(list);
+      _recomputeSeatTakenFromSnapshots();
       notifyListeners();
     });
   }
 
-  void _recomputeSeatTaken(List<StudyCafeReservation> reservations) {
+  void _listenSeatHolds(String storeId) {
+    _holdSubscription = _studyCafeRepository
+        .watchActiveSeatHoldsByStoreId(storeId)
+        .listen((List<StudyCafeSeatHold> list) {
+      _lastHoldSnapshot = list;
+      _recomputeSeatTakenFromSnapshots();
+      notifyListeners();
+    });
+  }
+
+  void _recomputeSeatTakenFromSnapshots() {
     final User? user = _authRepository.getCurrentUser();
     final String? uid = user?.uid;
-    if (uid == null || uid.isEmpty) {
-      _state = _state.copyWith(seatTakenByOther: false);
+    final bool taken = StudyCafeSeatBlockResolver.isRouteSeatTakenByOther(
+      routeSeatId: _routeSeatId,
+      reservations: _lastReservationSnapshot,
+      holds: _lastHoldSnapshot,
+      currentUserId: uid,
+    );
+    _state = _state.copyWith(seatTakenByOther: taken);
+  }
+
+  Future<void> _tryAcquireHold() async {
+    final User? user = _authRepository.getCurrentUser();
+    if (user == null || user.uid.isEmpty) {
+      _state = _state.copyWith(
+        loadError: '로그인이 필요합니다.',
+        seatTakenByOther: false,
+      );
+      notifyListeners();
       return;
     }
-    var takenByOther = false;
-    for (final StudyCafeReservation r in reservations) {
-      if (!r.isActive) {
-        continue;
-      }
-      if (r.seatId != _routeSeatId) {
-        continue;
-      }
-      if (r.userId != uid) {
-        takenByOther = true;
-        break;
-      }
+    try {
+      final hold = await _studyCafeRepository.acquireSeatHold(
+        storeId: _routeStoreId,
+        seatId: _routeSeatId,
+        holdMinutes: 15,
+      );
+      _activeHoldId = hold.id;
+      _state = _state.copyWith(loadError: null);
+      notifyListeners();
+    } catch (e) {
+      _state = _state.copyWith(
+        loadError: e.toString(),
+        seatTakenByOther: true,
+      );
+      notifyListeners();
     }
-    _state = _state.copyWith(seatTakenByOther: takenByOther);
   }
 
   void _selectDuration(int durationMinutes) {
@@ -192,6 +249,7 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
         seatId: _routeSeatId,
         durationMinutes: durationMinutes,
       );
+      _submitSucceeded = true;
       return true;
     } catch (e) {
       _state = _state.copyWith(submitError: e.toString());
@@ -217,7 +275,15 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    final String? holdIdToRelease =
+        _submitSucceeded ? null : _activeHoldId;
     _reservationSubscription?.cancel();
+    _holdSubscription?.cancel();
     super.dispose();
+    if (holdIdToRelease != null && holdIdToRelease.isNotEmpty) {
+      unawaited(
+        _studyCafeRepository.releaseSeatHold(holdId: holdIdToRelease),
+      );
+    }
   }
 }

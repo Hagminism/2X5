@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_detail.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_reservation.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat.dart';
+import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_block_resolver.dart';
+import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_hold.dart';
+import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/studycafe/studycafe_repository.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_action.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_state.dart';
@@ -11,10 +14,13 @@ import 'package:flutter/foundation.dart';
 class SeatSelectionViewModel extends ChangeNotifier {
   SeatSelectionViewModel({
     required StudyCafeRepository studyCafeRepository,
-  })  : _studyCafeRepository = studyCafeRepository,
-        _state = const SeatSelectionState(storeId: '');
+    required AuthRepository authRepository,
+  }) : _studyCafeRepository = studyCafeRepository,
+       _authRepository = authRepository,
+       _state = const SeatSelectionState(storeId: '');
 
   final StudyCafeRepository _studyCafeRepository;
+  final AuthRepository _authRepository;
 
   String _storeId = '';
 
@@ -23,10 +29,18 @@ class SeatSelectionViewModel extends ChangeNotifier {
   SeatSelectionState get state => _state;
 
   StreamSubscription<List<StudyCafeReservation>>? _reservationSubscription;
+  StreamSubscription<List<StudyCafeSeatHold>>? _holdSubscription;
+
+  List<StudyCafeReservation> _lastReservations = [];
+  List<StudyCafeSeatHold> _lastHolds = [];
+
+  String? get _currentUid => _authRepository.getCurrentUser()?.uid;
 
   Future<void> initialize(String storeId) async {
     await _reservationSubscription?.cancel();
+    await _holdSubscription?.cancel();
     _reservationSubscription = null;
+    _holdSubscription = null;
     _storeId = storeId;
     _state = SeatSelectionState(storeId: storeId);
     await _initialize();
@@ -52,18 +66,26 @@ class SeatSelectionViewModel extends ChangeNotifier {
     notifyListeners();
 
     await _reservationSubscription?.cancel();
+    await _holdSubscription?.cancel();
     _reservationSubscription = null;
+    _holdSubscription = null;
 
     try {
       final detail = await _studyCafeRepository.getDetailByStoreId(_storeId);
       final normalizedDetail = detail ?? StudyCafeDetail.empty(_storeId);
       final activeReservations = await _studyCafeRepository
           .getActiveReservationsByStoreId(_storeId);
+      final activeHolds = await _studyCafeRepository.getActiveSeatHoldsByStoreId(
+        _storeId,
+      );
 
-      final occupiedSeatIds = activeReservations
-          .map((e) => e.seatId)
-          .toSet()
-          .toList();
+      _lastReservations = activeReservations;
+      _lastHolds = activeHolds;
+      final occupiedSeatIds = StudyCafeSeatBlockResolver.displayBlockedSeatIds(
+        reservations: _lastReservations,
+        holds: _lastHolds,
+        currentUserId: _currentUid,
+      );
 
       _state = _state.copyWith(
         isLoading: false,
@@ -80,6 +102,9 @@ class SeatSelectionViewModel extends ChangeNotifier {
       _reservationSubscription = _studyCafeRepository
           .watchActiveReservationsByStoreId(_storeId)
           .listen(_onReservationsUpdated);
+      _holdSubscription = _studyCafeRepository
+          .watchActiveSeatHoldsByStoreId(_storeId)
+          .listen(_onHoldsUpdated);
     } catch (e) {
       _state = _state.copyWith(
         isLoading: false,
@@ -90,8 +115,21 @@ class SeatSelectionViewModel extends ChangeNotifier {
   }
 
   void _onReservationsUpdated(List<StudyCafeReservation> reservations) {
-    final occupiedSeatIds =
-        reservations.map((StudyCafeReservation e) => e.seatId).toSet().toList();
+    _lastReservations = reservations;
+    _applyOccupiedFromSnapshots();
+  }
+
+  void _onHoldsUpdated(List<StudyCafeSeatHold> holds) {
+    _lastHolds = holds;
+    _applyOccupiedFromSnapshots();
+  }
+
+  void _applyOccupiedFromSnapshots() {
+    final occupiedSeatIds = StudyCafeSeatBlockResolver.displayBlockedSeatIds(
+      reservations: _lastReservations,
+      holds: _lastHolds,
+      currentUserId: _currentUid,
+    );
     final selectedId = _state.selectedSeatId;
     _state = _state.copyWith(
       occupiedSeatIds: occupiedSeatIds,
@@ -133,6 +171,7 @@ class SeatSelectionViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _reservationSubscription?.cancel();
+    _holdSubscription?.cancel();
     super.dispose();
   }
 }
