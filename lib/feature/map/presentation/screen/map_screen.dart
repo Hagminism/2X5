@@ -360,7 +360,7 @@ class _MapScreenState extends State<MapScreen> {
                   final storeId = _selectedStore!['id']?.toString() ?? '';
                   if (storeId.isNotEmpty) {
                     context.push(
-                      '${Routes.map}/${Routes.search}/${Routes.searchStoreInformation.replaceAll(':storeId', storeId)}',
+                      '${Routes.map}/${Routes.mapStoreInformation.replaceAll(':storeId', storeId)}',
                     );
                   }
                 },

@@ -98,7 +98,7 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    context.push('${Routes.home}/information/$storeId');
+    context.push('${Routes.map}/${Routes.search}/search-store-information/$storeId');
   }
 
   @override
