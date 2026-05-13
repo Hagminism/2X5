@@ -34,6 +34,8 @@ import 'package:capstone_2026/feature/partner_salon_designer_management/core/pre
 import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_salon_management/core/presentation/component/scope/partner_salon_management_scope.dart';
 import 'package:capstone_2026/feature/partner_salon_management/presentation/screen/partner_salon_management_view_model.dart';
+import 'package:capstone_2026/feature/partner_salon_schedule_management/core/presentation/component/scope/partner_salon_schedule_management_scope.dart';
+import 'package:capstone_2026/feature/partner_salon_schedule_management/presentation/screen/partner_salon_schedule_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_salon_service_management/core/presentation/component/scope/partner_salon_service_management_scope.dart';
 import 'package:capstone_2026/feature/partner_salon_service_management/presentation/screen/partner_salon_service_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/core/presentation/component/scope/partner_studycafe_layout_scope.dart';
@@ -523,6 +525,17 @@ final router = GoRouter(
                           PartnerSalonServiceManagementScope(
                             viewModel:
                                 getIt<PartnerSalonServiceManagementViewModel>(),
+                          ),
+                    ),
+                    GoRoute(
+                      path: Routes.partnerSalonSchedules,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) =>
+                          PartnerSalonScheduleManagementScope(
+                            viewModel:
+                                getIt<
+                                  PartnerSalonScheduleManagementViewModel
+                                >(),
                           ),
                     ),
                   ],

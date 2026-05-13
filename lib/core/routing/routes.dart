@@ -53,6 +53,7 @@ class Routes {
   static const String partnerSalonManagement = 'salon-management';
   static const String partnerSalonDesigners = 'designers';
   static const String partnerSalonServices = 'services';
+  static const String partnerSalonSchedules = 'schedules';
   static const String partnerOnboarding = '/partner/onboarding';
   static const String partnerStoreEdit = '/partner/store/edit';
   static const String partnerReservations = '/partner/reservations';
