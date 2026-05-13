@@ -4,6 +4,7 @@ import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_reservation.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
+import 'package:capstone_2026/core/domain/model/salon/salon_settings.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 
@@ -21,7 +22,25 @@ class SalonRepositoryImpl implements SalonRepository {
        _authRepository = authRepository;
 
   @override
+  Future<SalonSettings> getSettingsByStoreId(String storeId) async {
+    return await _salonDataSource.findSettingsByStoreId(storeId) ??
+        SalonSettings.defaultForStore(storeId);
+  }
+
+  @override
+  Future<SalonSettings> getMyStoreSettings() async {
+    final storeId = await _getMyStoreIdOrThrow();
+    return getSettingsByStoreId(storeId);
+  }
+
+  @override
   Future<List<SalonDesigner>> getDesignersByStoreId(String storeId) {
+    return _salonDataSource.findDesignersByStoreId(storeId);
+  }
+
+  @override
+  Future<List<SalonDesigner>> getMyStoreDesigners() async {
+    final storeId = await _getMyStoreIdOrThrow();
     return _salonDataSource.findDesignersByStoreId(storeId);
   }
 
@@ -31,10 +50,37 @@ class SalonRepositoryImpl implements SalonRepository {
   }
 
   @override
+  Future<List<SalonService>> getMyStoreServices() async {
+    final storeId = await _getMyStoreIdOrThrow();
+    return _salonDataSource.findServicesByStoreId(storeId);
+  }
+
+  @override
   Future<List<SalonDesignerSchedule>> getSchedulesByDesignerId(
     String designerId,
   ) {
     return _salonDataSource.findSchedulesByDesignerId(designerId);
+  }
+
+  @override
+  Future<List<SalonReservation>> getReservationsByDesignerAndDate({
+    required String storeId,
+    required String designerId,
+    required DateTime date,
+  }) {
+    return _salonDataSource.findReservationsByDesignerAndDate(
+      storeId: storeId,
+      designerId: designerId,
+      date: date,
+    );
+  }
+
+  @override
+  Future<SalonSettings> saveMyStoreSettings(SalonSettings settings) async {
+    final storeId = await _getMyStoreIdOrThrow();
+    return _salonDataSource.upsertSettings(
+      settings.copyWith(storeId: storeId),
+    );
   }
 
   @override
@@ -55,6 +101,25 @@ class SalonRepositoryImpl implements SalonRepository {
     return _salonDataSource.upsertServices(
       services.map((service) => service.copyWith(storeId: storeId)).toList(),
     );
+  }
+
+  @override
+  Future<List<SalonDesignerSchedule>> saveMyStoreSchedules(
+    List<SalonDesignerSchedule> schedules,
+  ) async {
+    final storeId = await _getMyStoreIdOrThrow();
+    if (schedules.isEmpty) {
+      return const [];
+    }
+    final designerIds = schedules
+        .map((schedule) => schedule.designerId)
+        .toSet();
+    final designers = await _salonDataSource.findDesignersByStoreId(storeId);
+    final ownedDesignerIds = designers.map((designer) => designer.id).toSet();
+    if (!ownedDesignerIds.containsAll(designerIds)) {
+      throw StateError('내 업장의 디자이너 근무표만 저장할 수 있습니다.');
+    }
+    return _salonDataSource.upsertSchedules(schedules);
   }
 
   @override
