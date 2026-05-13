@@ -39,6 +39,7 @@ import 'package:capstone_2026/feature/map_store_information/presentation/screen/
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
+import 'package:capstone_2026/feature/partner_salon_management/presentation/screen/partner_salon_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
@@ -51,6 +52,7 @@ import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_pa
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_view_model.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_view_model.dart';
+import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
@@ -283,6 +285,12 @@ void diSetup() {
       studyCafeRepository: getIt<StudyCafeRepository>(),
     ),
   );
+  getIt.registerFactory<PartnerSalonManagementViewModel>(
+    () => PartnerSalonManagementViewModel(
+      salonRepository: getIt<SalonRepository>(),
+      storeRepository: getIt<StoreRepository>(),
+    ),
+  );
   getIt.registerFactory<AddressSearchViewModel>(
     () => AddressSearchViewModel(
       addressSearchDataSource: getIt<AddressSearchDataSource>(),
@@ -386,6 +394,11 @@ void diSetup() {
     () => SearchStudycafePassSelectionViewModel(
       studyCafeRepository: getIt<StudyCafeRepository>(),
       authRepository: getIt<AuthRepository>(),
+    ),
+  );
+  getIt.registerFactory<SalonReservationViewModel>(
+    () => SalonReservationViewModel(
+      salonRepository: getIt<SalonRepository>(),
     ),
   );
 }

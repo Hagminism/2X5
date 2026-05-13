@@ -21,7 +21,8 @@ class Routes {
   static const String notifications = 'notifications';
   static const String homeStoreInformation = 'information/:storeId';
   static const String mapStoreInformation = 'map-store-information/:storeId';
-  static const String searchStoreInformation = 'search-store-information/:storeId';
+  static const String searchStoreInformation =
+      'search-store-information/:storeId';
   static const String bookmarkStoreDetail = 'store/:storeId';
 
   // reservation
@@ -50,6 +51,8 @@ class Routes {
   static const String partnerStudyCafeLayout = 'study-cafe-layout';
   static const String partnerStudyCafeUsageOptions = 'study-cafe-usage-options';
   static const String partnerSalonManagement = 'salon-management';
+  static const String partnerSalonDesigners = 'designers';
+  static const String partnerSalonServices = 'services';
   static const String partnerOnboarding = '/partner/onboarding';
   static const String partnerStoreEdit = '/partner/store/edit';
   static const String partnerReservations = '/partner/reservations';

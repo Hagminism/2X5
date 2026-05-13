@@ -30,7 +30,8 @@ import 'package:capstone_2026/feature/partner_store_image/core/presentation/comp
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_menu/core/presentation/component/scope/partner_store_menu_scope.dart';
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
-import 'package:capstone_2026/feature/partner_salon_management/presentation/screen/partner_salon_management_screen.dart';
+import 'package:capstone_2026/feature/partner_salon_management/core/presentation/component/scope/partner_salon_management_scope.dart';
+import 'package:capstone_2026/feature/partner_salon_management/presentation/screen/partner_salon_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/core/presentation/component/scope/partner_studycafe_layout_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/core/presentation/component/scope/partner_studycafe_usage_option_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_view_model.dart';
@@ -67,7 +68,8 @@ import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
-import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_screen.dart';
+import 'package:capstone_2026/feature/salon_reservation/core/presentation/component/scope/salon_reservation_scope.dart';
+import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_view_model.dart';
 import 'package:capstone_2026/feature/information/core/presentation/component/scope/information_scope.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:capstone_2026/feature/search_store_information/core/presentation/component/scope/search_studycafe_pass_selection_scope.dart';
@@ -169,7 +171,8 @@ final router = GoRouter(
                     GoRoute(
                       path: Routes.salonReservation,
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => SalonReservationScreen(
+                      builder: (context, state) => SalonReservationScope(
+                        viewModel: getIt<SalonReservationViewModel>(),
                         storeId: state.pathParameters['storeId'] ?? '',
                       ),
                     ),
@@ -227,7 +230,8 @@ final router = GoRouter(
                     GoRoute(
                       path: Routes.salonReservation,
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => SalonReservationScreen(
+                      builder: (context, state) => SalonReservationScope(
+                        viewModel: getIt<SalonReservationViewModel>(),
                         storeId: state.pathParameters['storeId'] ?? '',
                       ),
                     ),
@@ -284,7 +288,8 @@ final router = GoRouter(
                         GoRoute(
                           path: Routes.salonReservation,
                           parentNavigatorKey: _rootNavigatorKey,
-                          builder: (context, state) => SalonReservationScreen(
+                          builder: (context, state) => SalonReservationScope(
+                            viewModel: getIt<SalonReservationViewModel>(),
                             storeId: state.pathParameters['storeId'] ?? '',
                           ),
                         ),
@@ -492,8 +497,27 @@ final router = GoRouter(
                 GoRoute(
                   path: Routes.partnerSalonManagement,
                   parentNavigatorKey: _rootNavigatorKey,
-                  builder: (context, state) =>
-                      const PartnerSalonManagementScreen(),
+                  builder: (context, state) => PartnerSalonManagementScope(
+                    viewModel: getIt<PartnerSalonManagementViewModel>(),
+                  ),
+                  routes: [
+                    GoRoute(
+                      path: Routes.partnerSalonDesigners,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) =>
+                          PartnerSalonDesignerManagementScope(
+                            viewModel: getIt<PartnerSalonManagementViewModel>(),
+                          ),
+                    ),
+                    GoRoute(
+                      path: Routes.partnerSalonServices,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) =>
+                          PartnerSalonServiceManagementScope(
+                            viewModel: getIt<PartnerSalonManagementViewModel>(),
+                          ),
+                    ),
+                  ],
                 ),
               ],
             ),
