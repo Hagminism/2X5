@@ -39,7 +39,9 @@ import 'package:capstone_2026/feature/map_store_information/presentation/screen/
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
+import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_salon_management/presentation/screen/partner_salon_management_view_model.dart';
+import 'package:capstone_2026/feature/partner_salon_service_management/presentation/screen/partner_salon_service_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
@@ -288,7 +290,17 @@ void diSetup() {
   getIt.registerFactory<PartnerSalonManagementViewModel>(
     () => PartnerSalonManagementViewModel(
       salonRepository: getIt<SalonRepository>(),
+    ),
+  );
+  getIt.registerFactory<PartnerSalonDesignerManagementViewModel>(
+    () => PartnerSalonDesignerManagementViewModel(
+      salonRepository: getIt<SalonRepository>(),
       storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<PartnerSalonServiceManagementViewModel>(
+    () => PartnerSalonServiceManagementViewModel(
+      salonRepository: getIt<SalonRepository>(),
     ),
   );
   getIt.registerFactory<AddressSearchViewModel>(

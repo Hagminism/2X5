@@ -30,8 +30,12 @@ import 'package:capstone_2026/feature/partner_store_image/core/presentation/comp
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_menu/core/presentation/component/scope/partner_store_menu_scope.dart';
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
+import 'package:capstone_2026/feature/partner_salon_designer_management/core/presentation/component/scope/partner_salon_designer_management_scope.dart';
+import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_salon_management/core/presentation/component/scope/partner_salon_management_scope.dart';
 import 'package:capstone_2026/feature/partner_salon_management/presentation/screen/partner_salon_management_view_model.dart';
+import 'package:capstone_2026/feature/partner_salon_service_management/core/presentation/component/scope/partner_salon_service_management_scope.dart';
+import 'package:capstone_2026/feature/partner_salon_service_management/presentation/screen/partner_salon_service_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/core/presentation/component/scope/partner_studycafe_layout_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/core/presentation/component/scope/partner_studycafe_usage_option_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_view_model.dart';
@@ -506,7 +510,10 @@ final router = GoRouter(
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) =>
                           PartnerSalonDesignerManagementScope(
-                            viewModel: getIt<PartnerSalonManagementViewModel>(),
+                            viewModel:
+                                getIt<
+                                  PartnerSalonDesignerManagementViewModel
+                                >(),
                           ),
                     ),
                     GoRoute(
@@ -514,7 +521,8 @@ final router = GoRouter(
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) =>
                           PartnerSalonServiceManagementScope(
-                            viewModel: getIt<PartnerSalonManagementViewModel>(),
+                            viewModel:
+                                getIt<PartnerSalonServiceManagementViewModel>(),
                           ),
                     ),
                   ],
