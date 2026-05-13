@@ -12,7 +12,6 @@ abstract class SalonDesignerSchedule with _$SalonDesignerSchedule {
     @JsonKey(name: 'is_working') @Default(true) bool isWorking,
     @JsonKey(name: 'start_time') @Default('10:00') String startTime,
     @JsonKey(name: 'end_time') @Default('19:00') String endTime,
-    @JsonKey(name: 'slot_minutes') @Default(30) int slotMinutes,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _SalonDesignerSchedule;

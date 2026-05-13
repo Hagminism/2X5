@@ -13,6 +13,7 @@ abstract class SalonService with _$SalonService {
     @JsonKey(name: 'duration_minutes') required int durationMinutes,
     required int price,
     @JsonKey(name: 'is_active') @Default(true) bool isActive,
+    @JsonKey(name: 'sort_order') @Default(0) int sortOrder,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _SalonService;

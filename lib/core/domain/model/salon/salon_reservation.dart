@@ -5,6 +5,8 @@ part 'salon_reservation.g.dart';
 
 @freezed
 abstract class SalonReservation with _$SalonReservation {
+  const SalonReservation._();
+
   const factory SalonReservation({
     required String id,
     @JsonKey(name: 'store_id') required String storeId,
@@ -13,10 +15,13 @@ abstract class SalonReservation with _$SalonReservation {
     @JsonKey(name: 'service_id') required String serviceId,
     @JsonKey(name: 'start_at') required DateTime startAt,
     @JsonKey(name: 'end_at') required DateTime endAt,
+    @JsonKey(name: 'slot_minutes') @Default(30) int slotMinutes,
     @Default('confirmed') String status,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _SalonReservation;
+
+  bool get isConfirmed => status == 'confirmed';
 
   factory SalonReservation.fromJson(Map<String, Object?> json) =>
       _$SalonReservationFromJson(json);

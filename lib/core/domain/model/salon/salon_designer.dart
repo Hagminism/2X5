@@ -12,6 +12,7 @@ abstract class SalonDesigner with _$SalonDesigner {
     @Default('') String introduction,
     @JsonKey(name: 'image_url') @Default('') String imageUrl,
     @JsonKey(name: 'is_active') @Default(true) bool isActive,
+    @JsonKey(name: 'sort_order') @Default(0) int sortOrder,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _SalonDesigner;
