@@ -21,12 +21,13 @@ class PartnerStudyCafeLayoutElementStyle {
   ) {
     final selectedBorder = isSelected ? AppColors.primary : AppColors.border;
     return switch (type) {
-      StudyCafeLayoutElementType.partition => PartnerStudyCafeLayoutElementStyle(
-        backgroundColor: AppColors.textSecondary.withValues(alpha: 0.18),
-        borderColor: selectedBorder,
-        textColor: AppColors.textPrimary,
-        borderRadius: 4,
-      ),
+      StudyCafeLayoutElementType.partition =>
+        PartnerStudyCafeLayoutElementStyle(
+          backgroundColor: AppColors.textSecondary.withValues(alpha: 0.18),
+          borderColor: selectedBorder,
+          textColor: AppColors.textPrimary,
+          borderRadius: 4,
+        ),
       StudyCafeLayoutElementType.door => PartnerStudyCafeLayoutElementStyle(
         backgroundColor: AppColors.primary.withValues(alpha: 0.12),
         borderColor: AppColors.primary,

@@ -22,8 +22,7 @@ class MapStoreInformationViewModel extends ChangeNotifier {
   final StreamController<MapStoreInformationEvent> _eventController =
       StreamController<MapStoreInformationEvent>.broadcast();
 
-  Stream<MapStoreInformationEvent> get eventStream =>
-      _eventController.stream;
+  Stream<MapStoreInformationEvent> get eventStream => _eventController.stream;
 
   Future<void> initialize(String storeId) async {
     final store = await _storeRepository.getStoreById(storeId);

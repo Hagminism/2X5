@@ -71,7 +71,9 @@ class StudyCafeRepositoryImpl implements StudyCafeRepository {
   }
 
   @override
-  Stream<List<StudyCafeSeatHold>> watchActiveSeatHoldsByStoreId(String storeId) {
+  Stream<List<StudyCafeSeatHold>> watchActiveSeatHoldsByStoreId(
+    String storeId,
+  ) {
     return _studyCafeDataSource.watchActiveSeatHoldsByStoreId(storeId);
   }
 

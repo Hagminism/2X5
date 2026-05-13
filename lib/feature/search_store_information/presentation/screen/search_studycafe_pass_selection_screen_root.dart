@@ -133,9 +133,9 @@ class _SearchStudycafePassSelectionScreenRootState
           content: Text(
             hours != null
                 ? '${widget.viewModel.state.seatLabel}번 좌석을 '
-                    '$hours시간 이용합니다.'
+                      '$hours시간 이용합니다.'
                 : '${widget.viewModel.state.seatLabel}번 좌석을 '
-                    '${selected.durationMinutes}분 이용합니다.',
+                      '${selected.durationMinutes}분 이용합니다.',
           ),
           actions: [
             TextButton(

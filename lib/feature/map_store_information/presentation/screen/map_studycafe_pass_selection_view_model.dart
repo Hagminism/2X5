@@ -120,18 +120,21 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final detail =
-          await _studyCafeRepository.getDetailByStoreId(_routeStoreId);
-      final options = (detail?.usageOptions ?? [])
-          .where((StudyCafeUsageOption o) => o.isEnabled)
-          .toList()
-        ..sort(
-          (StudyCafeUsageOption a, StudyCafeUsageOption b) =>
-              a.durationMinutes.compareTo(b.durationMinutes),
-        );
+      final detail = await _studyCafeRepository.getDetailByStoreId(
+        _routeStoreId,
+      );
+      final options =
+          (detail?.usageOptions ?? [])
+              .where((StudyCafeUsageOption o) => o.isEnabled)
+              .toList()
+            ..sort(
+              (StudyCafeUsageOption a, StudyCafeUsageOption b) =>
+                  a.durationMinutes.compareTo(b.durationMinutes),
+            );
 
       final selected = _state.selectedDurationMinutes;
-      final bool stillValid = selected != null &&
+      final bool stillValid =
+          selected != null &&
           options.any(
             (StudyCafeUsageOption o) => o.durationMinutes == selected,
           );
@@ -164,20 +167,20 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
     _reservationSubscription = _studyCafeRepository
         .watchActiveReservationsByStoreId(storeId)
         .listen((List<StudyCafeReservation> list) {
-      _lastReservationSnapshot = list;
-      _recomputeSeatTakenFromSnapshots();
-      notifyListeners();
-    });
+          _lastReservationSnapshot = list;
+          _recomputeSeatTakenFromSnapshots();
+          notifyListeners();
+        });
   }
 
   void _listenSeatHolds(String storeId) {
     _holdSubscription = _studyCafeRepository
         .watchActiveSeatHoldsByStoreId(storeId)
         .listen((List<StudyCafeSeatHold> list) {
-      _lastHoldSnapshot = list;
-      _recomputeSeatTakenFromSnapshots();
-      notifyListeners();
-    });
+          _lastHoldSnapshot = list;
+          _recomputeSeatTakenFromSnapshots();
+          notifyListeners();
+        });
   }
 
   void _recomputeSeatTakenFromSnapshots() {
@@ -275,8 +278,7 @@ class MapStudycafePassSelectionViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    final String? holdIdToRelease =
-        _submitSucceeded ? null : _activeHoldId;
+    final String? holdIdToRelease = _submitSucceeded ? null : _activeHoldId;
     _reservationSubscription?.cancel();
     _holdSubscription?.cancel();
     super.dispose();

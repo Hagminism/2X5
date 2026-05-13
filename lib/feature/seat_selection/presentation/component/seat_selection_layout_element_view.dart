@@ -17,32 +17,33 @@ class SeatSelectionLayoutElementView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double width =
-        (canvasWidth * element.width).clamp(16.0, canvasWidth).toDouble();
-    final double height =
-        (canvasHeight * element.height).clamp(10.0, canvasHeight).toDouble();
+    final double width = (canvasWidth * element.width)
+        .clamp(16.0, canvasWidth)
+        .toDouble();
+    final double height = (canvasHeight * element.height)
+        .clamp(10.0, canvasHeight)
+        .toDouble();
     final double movableWidth = canvasWidth - width;
     final double movableHeight = canvasHeight - height;
-    final double left =
-        element.x.clamp(0, 1).toDouble() * movableWidth;
+    final double left = element.x.clamp(0, 1).toDouble() * movableWidth;
     final double top = element.y.clamp(0, 1).toDouble() * movableHeight;
 
     final BoxDecoration decoration = switch (element.type) {
       StudyCafeLayoutElementType.partition => BoxDecoration(
-          color: AppColors.textSecondary.withValues(alpha: 0.2),
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(4),
-        ),
+        color: AppColors.textSecondary.withValues(alpha: 0.2),
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(4),
+      ),
       StudyCafeLayoutElementType.door => BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.12),
-          border: Border.all(color: AppColors.primary),
-          borderRadius: BorderRadius.circular(999),
-        ),
+        color: AppColors.primary.withValues(alpha: 0.12),
+        border: Border.all(color: AppColors.primary),
+        borderRadius: BorderRadius.circular(999),
+      ),
       StudyCafeLayoutElementType.fixture => BoxDecoration(
-          color: AppColors.surfaceMuted,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(10),
-        ),
+        color: AppColors.surfaceMuted,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(10),
+      ),
     };
 
     final Color labelColor = switch (element.type) {
@@ -50,8 +51,9 @@ class SeatSelectionLayoutElementView extends StatelessWidget {
       StudyCafeLayoutElementType.partition => AppColors.textPrimary,
       StudyCafeLayoutElementType.fixture => AppColors.textPrimary,
     };
-    final double labelFontSize =
-        (canvasWidth * 0.028).clamp(10.0, 13.0).toDouble();
+    final double labelFontSize = (canvasWidth * 0.028)
+        .clamp(10.0, 13.0)
+        .toDouble();
 
     return Positioned(
       top: top,

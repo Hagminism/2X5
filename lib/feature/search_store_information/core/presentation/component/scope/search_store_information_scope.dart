@@ -17,7 +17,8 @@ class SearchStoreInformationScope extends StatefulWidget {
       _SearchStoreInformationScopeState();
 }
 
-class _SearchStoreInformationScopeState extends State<SearchStoreInformationScope> {
+class _SearchStoreInformationScopeState
+    extends State<SearchStoreInformationScope> {
   late final SearchStoreInformationViewModel _viewModel = widget.viewModel;
 
   @override

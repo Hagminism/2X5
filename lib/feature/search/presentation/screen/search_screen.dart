@@ -111,7 +111,9 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    context.push('${Routes.map}/${Routes.search}/search-store-information/$storeId');
+    context.push(
+      '${Routes.map}/${Routes.search}/search-store-information/$storeId',
+    );
   }
 
   double? _calcDistance(Map<String, dynamic> store) {

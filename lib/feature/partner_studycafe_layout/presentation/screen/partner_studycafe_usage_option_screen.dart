@@ -35,8 +35,8 @@ class PartnerStudyCafeUsageOptionScreen extends StatelessWidget {
                 onPressed: state.isSaving
                     ? null
                     : () => onAction(
-                          const PartnerStudyCafeUsageOptionAction.tapSave(),
-                        ),
+                        const PartnerStudyCafeUsageOptionAction.tapSave(),
+                      ),
                 child: const Text('저장'),
               ),
             ],

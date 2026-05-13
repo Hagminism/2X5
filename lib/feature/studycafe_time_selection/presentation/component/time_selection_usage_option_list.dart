@@ -45,8 +45,7 @@ class TimeSelectionUsageOptionList extends StatelessWidget {
                     ? AppColors.primary.withValues(alpha: 0.05)
                     : AppColors.white,
                 border: Border.all(
-                  color:
-                      isSelected ? AppColors.primary : AppColors.border,
+                  color: isSelected ? AppColors.primary : AppColors.border,
                   width: isSelected ? 2 : 1,
                 ),
                 borderRadius: BorderRadius.circular(12),
@@ -88,8 +87,7 @@ class TimeSelectionUsageOptionList extends StatelessWidget {
                     isSelected
                         ? Icons.radio_button_checked
                         : Icons.radio_button_off,
-                    color:
-                        isSelected ? AppColors.primary : AppColors.border,
+                    color: isSelected ? AppColors.primary : AppColors.border,
                   ),
                 ],
               ),

@@ -46,9 +46,9 @@ class _SearchStudycafeSeatSelectionScreenRootState
                 widget.viewModel.onAction(action);
                 break;
               case SearchStudycafeSeatTapConfirmSelection(
-                  :final seatId,
-                  :final seatLabel,
-                ):
+                :final seatId,
+                :final seatLabel,
+              ):
                 final String storeId = widget.viewModel.state.storeId;
                 context.push(
                   Uri(

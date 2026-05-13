@@ -75,9 +75,10 @@ class MapStudycafeSeatSelectionViewModel extends ChangeNotifier {
       final normalizedDetail = detail ?? StudyCafeDetail.empty(_storeId);
       final activeReservations = await _studyCafeRepository
           .getActiveReservationsByStoreId(_storeId);
-      final activeHolds = await _studyCafeRepository.getActiveSeatHoldsByStoreId(
-        _storeId,
-      );
+      final activeHolds = await _studyCafeRepository
+          .getActiveSeatHoldsByStoreId(
+            _storeId,
+          );
 
       _lastReservations = activeReservations;
       _lastHolds = activeHolds;

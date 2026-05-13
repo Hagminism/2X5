@@ -36,8 +36,9 @@ class SeatSelectionLayoutCanvas extends StatelessWidget {
               .clamp(280.0, 560.0)
               .toDouble();
           final double canvasHeight = canvasWidth * _kCanvasAspectRatio;
-          final double seatSize =
-              (canvasWidth * 0.085).clamp(30.0, 44.0).toDouble();
+          final double seatSize = (canvasWidth * 0.085)
+              .clamp(30.0, 44.0)
+              .toDouble();
 
           return Center(
             child: SingleChildScrollView(
@@ -81,7 +82,8 @@ class SeatSelectionLayoutCanvas extends StatelessWidget {
                               canvasWidth: canvasWidth,
                               canvasHeight: canvasHeight,
                               seatSize: seatSize,
-                              isOccupied: occupiedSeatIds.contains(seat.seatId) ||
+                              isOccupied:
+                                  occupiedSeatIds.contains(seat.seatId) ||
                                   !seat.isEnabled,
                               isSelected: selectedSeatId == seat.seatId,
                               onSeatTap: onSeatTap,

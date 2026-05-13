@@ -15,7 +15,8 @@ class PartnerStudyCafeUsageOptionViewModel extends ChangeNotifier {
     required StudyCafeRepository studyCafeRepository,
   }) : _studyCafeRepository = studyCafeRepository;
 
-  PartnerStudyCafeUsageOptionState _state = const PartnerStudyCafeUsageOptionState();
+  PartnerStudyCafeUsageOptionState _state =
+      const PartnerStudyCafeUsageOptionState();
   PartnerStudyCafeUsageOptionState get state => _state;
 
   final StreamController<PartnerStudyCafeUsageOptionEvent> _eventController =

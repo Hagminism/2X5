@@ -4,7 +4,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'partner_studycafe_usage_option_state.freezed.dart';
 
 @freezed
-abstract class PartnerStudyCafeUsageOptionState with _$PartnerStudyCafeUsageOptionState {
+abstract class PartnerStudyCafeUsageOptionState
+    with _$PartnerStudyCafeUsageOptionState {
   const factory PartnerStudyCafeUsageOptionState({
     @Default(false) bool isLoading,
     @Default(false) bool isSaving,

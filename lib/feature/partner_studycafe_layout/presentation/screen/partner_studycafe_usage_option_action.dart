@@ -27,5 +27,6 @@ sealed class PartnerStudyCafeUsageOptionAction
     required bool value,
   }) = UsageOptionToggleEnabled;
 
-  const factory PartnerStudyCafeUsageOptionAction.tapSave() = UsageOptionTapSave;
+  const factory PartnerStudyCafeUsageOptionAction.tapSave() =
+      UsageOptionTapSave;
 }

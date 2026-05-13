@@ -76,7 +76,8 @@ class _MapScreenState extends State<MapScreen> {
       if (event is MapClick && mounted) {
         final last = _lastMarkerClickTime;
         if (last != null &&
-            DateTime.now().difference(last) < const Duration(milliseconds: 600)) {
+            DateTime.now().difference(last) <
+                const Duration(milliseconds: 600)) {
           return;
         }
         final prev = _selectedMarkerId;
@@ -169,7 +170,10 @@ class _MapScreenState extends State<MapScreen> {
         '$emoji</div>';
   }
 
-  Future<void> _updateMarkerAppearance(String markerId, {required bool isSelected}) async {
+  Future<void> _updateMarkerAppearance(
+    String markerId, {
+    required bool isSelected,
+  }) async {
     final storeId = markerId.replaceFirst('store_', '');
     final matches = _stores.where((s) => s['id'].toString() == storeId);
     if (matches.isEmpty) return;
@@ -182,7 +186,9 @@ class _MapScreenState extends State<MapScreen> {
       markerId: markerId,
       markerOptions: MarkerOptions(
         position: NLatLng(lat, lng),
-        icon: HtmlIcon(content: _buildMarkerHtml(category, isSelected: isSelected)),
+        icon: HtmlIcon(
+          content: _buildMarkerHtml(category, isSelected: isSelected),
+        ),
       ),
     );
   }
@@ -470,7 +476,9 @@ class _CategoryChips extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                          color: isSelected
+                              ? Colors.white
+                              : AppColors.textPrimary,
                         ),
                       ),
                     ],
@@ -599,7 +607,11 @@ class _StoreBottomSheet extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: onClose,
-                  child: const Icon(Icons.close, size: 20, color: Color(0xFF9CA3AF)),
+                  child: const Icon(
+                    Icons.close,
+                    size: 20,
+                    color: Color(0xFF9CA3AF),
+                  ),
                 ),
               ],
             ),
@@ -610,20 +622,39 @@ class _StoreBottomSheet extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   categoryLabel,
-                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 if (distanceM != null) ...[
-                  const Text(' · ', style: TextStyle(color: AppColors.textSecondary)),
-                  const Icon(Icons.place_outlined, size: 13, color: AppColors.textSecondary),
+                  const Text(
+                    ' · ',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                  const Icon(
+                    Icons.place_outlined,
+                    size: 13,
+                    color: AppColors.textSecondary,
+                  ),
                   const SizedBox(width: 2),
                   Text(
                     formatDistance(distanceM!),
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                  const Text(' · ', style: TextStyle(color: AppColors.textSecondary)),
+                  const Text(
+                    ' · ',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
                   Text(
                     walkingTime(distanceM!),
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ],
@@ -634,7 +665,11 @@ class _StoreBottomSheet extends StatelessWidget {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF9CA3AF)),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: Color(0xFF9CA3AF),
+                  ),
                   SizedBox(width: 2),
                   Text(
                     '자세히 보기',

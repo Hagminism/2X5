@@ -82,9 +82,9 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
           title: const Text('예약 확인'),
           content: Text(
             '${widget.viewModel.state.seatLabel}번 좌석, '
-                '${timeSelectionUsageOptionTitle(selected)} '
-                '(${timeSelectionUsageOptionPriceLabel(selected)})으로\n'
-                '이용을 시작할까요?',
+            '${timeSelectionUsageOptionTitle(selected)} '
+            '(${timeSelectionUsageOptionPriceLabel(selected)})으로\n'
+            '이용을 시작할까요?',
           ),
           actions: [
             TextButton(
@@ -132,9 +132,9 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
           content: Text(
             hours != null
                 ? '${widget.viewModel.state.seatLabel}번 좌석을 '
-                '$hours시간 이용합니다.'
+                      '$hours시간 이용합니다.'
                 : '${widget.viewModel.state.seatLabel}번 좌석을 '
-                '${selected.durationMinutes}분 이용합니다.',
+                      '${selected.durationMinutes}분 이용합니다.',
           ),
           actions: [
             TextButton(

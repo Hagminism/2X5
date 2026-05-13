@@ -118,7 +118,9 @@ class SearchStudycafeSeatSelectionScreen extends StatelessWidget {
   }
 }
 
-StudyCafeSeat? selectedSeatForSearchState(SearchStudycafeSeatSelectionState state) {
+StudyCafeSeat? selectedSeatForSearchState(
+  SearchStudycafeSeatSelectionState state,
+) {
   final selectedSeatId = state.selectedSeatId;
   if (selectedSeatId == null) {
     return null;

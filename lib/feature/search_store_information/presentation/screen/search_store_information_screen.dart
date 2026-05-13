@@ -28,7 +28,8 @@ class SearchStoreInformationScreen extends StatefulWidget {
       _SearchStoreInformationScreenState();
 }
 
-class _SearchStoreInformationScreenState extends State<SearchStoreInformationScreen>
+class _SearchStoreInformationScreenState
+    extends State<SearchStoreInformationScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController = TabController(
     length: 6,

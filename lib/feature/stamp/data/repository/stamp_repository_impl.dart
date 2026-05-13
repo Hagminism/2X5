@@ -5,10 +5,8 @@ import 'package:capstone_2026/feature/stamp/domain/repository/stamp_repository.d
 class StampRepositoryImpl implements StampRepository {
   static const String _defaultEligibilityMessage =
       '예약 완료 후 리뷰 작성 시 스탬프가 적립됩니다.';
-  static const String _reviewPromptMessage =
-      '스탬프 적립을 위해 리뷰를 작성 해 주세요!';
-  static const String _reviewCompletedMessage =
-      '리뷰 작성이 완료된 매장입니다.';
+  static const String _reviewPromptMessage = '스탬프 적립을 위해 리뷰를 작성 해 주세요!';
+  static const String _reviewCompletedMessage = '리뷰 작성이 완료된 매장입니다.';
 
   final Map<String, StampRewardPolicy> _policies = const {
     's1': StampRewardPolicy(

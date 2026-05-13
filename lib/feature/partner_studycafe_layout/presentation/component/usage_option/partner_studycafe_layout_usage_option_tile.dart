@@ -22,7 +22,9 @@ class PartnerStudyCafeUsageOptionTile extends StatelessWidget {
   static InputDecoration _numericFieldDecoration(String labelText) {
     return InputDecoration(
       labelText: labelText,
-      labelStyle: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+      labelStyle: AppTextStyles.caption.copyWith(
+        color: AppColors.textSecondary,
+      ),
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       filled: true,
       fillColor: AppColors.surfaceMuted,
@@ -61,7 +63,9 @@ class PartnerStudyCafeUsageOptionTile extends StatelessWidget {
                     key: ValueKey('duration-$index-$durationMinutes'),
                     initialValue: durationMinutes.toString(),
                     keyboardType: TextInputType.number,
-                    style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
                     decoration: _numericFieldDecoration('이용 시간(분)'),
                     onChanged: (String value) => onAction(
                       PartnerStudyCafeUsageOptionAction.changeUsageOptionDuration(
@@ -77,7 +81,9 @@ class PartnerStudyCafeUsageOptionTile extends StatelessWidget {
                     key: ValueKey('price-$index-$price'),
                     initialValue: price.toString(),
                     keyboardType: TextInputType.number,
-                    style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
                     decoration: _numericFieldDecoration('가격(원)'),
                     onChanged: (String value) => onAction(
                       PartnerStudyCafeUsageOptionAction.changeUsageOptionPrice(
@@ -94,7 +100,9 @@ class PartnerStudyCafeUsageOptionTile extends StatelessWidget {
               children: [
                 Text(
                   '활성화',
-                  style: AppTextStyles.body.copyWith(color: AppColors.textPrimary),
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Switch(
