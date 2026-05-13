@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class PartnerSalonSlotMinutesSelector extends StatelessWidget {
+class PartnerReservationSlotMinutesSelector extends StatelessWidget {
   final int selectedSlotMinutes;
   final void Function(int minutes) onChanged;
 
-  const PartnerSalonSlotMinutesSelector({
+  const PartnerReservationSlotMinutesSelector({
     super.key,
     required this.selectedSlotMinutes,
     required this.onChanged,
