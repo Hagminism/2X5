@@ -250,11 +250,6 @@ type CreateSalonReservationRequest = {
   startAt?: string;
 };
 
-type SaveSalonSettingsRequest = {
-  storeId?: string;
-  slotMinutes?: number;
-};
-
 type SalonDesignerPayload = {
   id?: string;
   name?: string;
@@ -328,13 +323,6 @@ type SalonReservationResponse = {
   end_at: string;
   slot_minutes?: number;
   status: string;
-};
-
-type SalonSettingsResponse = {
-  store_id: string;
-  slot_minutes: number;
-  created_at?: string;
-  updated_at?: string;
 };
 
 type SalonDesignerResponse = {
@@ -885,56 +873,6 @@ export const createSalonReservation = onCall(
       }
       throw e;
     }
-  },
-);
-
-export const saveSalonSettings = onCall(
-  {
-    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
-  },
-  async (request) => {
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
-    }
-
-    const data = (request.data ?? {}) as SaveSalonSettingsRequest;
-    const storeId = (data.storeId ?? "").trim();
-    const slotMinutes = Number(data.slotMinutes ?? 30);
-    if (!storeId || !Number.isInteger(slotMinutes)) {
-      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
-    }
-    if (slotMinutes !== 30 && slotMinutes !== 60) {
-      throw new HttpsError("invalid-argument", "슬롯은 30분 또는 60분만 가능합니다.");
-    }
-
-    await assertStoreOwnership(storeId, uid);
-
-    const existingRows = await supabaseRequest<{store_id: string}[]>(
-      `salon_settings?store_id=eq.${storeId}&select=store_id&limit=1`,
-      "GET",
-    );
-    const payload = {
-      store_id: storeId,
-      slot_minutes: slotMinutes,
-      updated_at: new Date().toISOString(),
-    };
-    const rows = existingRows.length === 0 ?
-      await supabaseRequest<SalonSettingsResponse[]>(
-        "salon_settings?select=*",
-        "POST",
-        payload,
-      ) :
-      await supabaseRequest<SalonSettingsResponse[]>(
-        `salon_settings?store_id=eq.${storeId}&select=*`,
-        "PATCH",
-        payload,
-      );
-
-    if (rows.length === 0) {
-      throw new HttpsError("internal", "미용실 설정 저장에 실패했습니다.");
-    }
-    return rows[0];
   },
 );
 
