@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
+import 'tabs/store_photo_tab.dart';
 import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
 
@@ -9,13 +10,13 @@ class InformationScreen extends StatefulWidget {
   final String name;
   final String subtitle;
   final double rating;
-  final String? imageUrl;
+  final List<String> imageUrls;
 
   const InformationScreen({
     required this.name,
     required this.subtitle,
     required this.rating,
-    this.imageUrl,
+    this.imageUrls = const [],
     super.key,
   });
 
@@ -42,9 +43,23 @@ class _InformationScreenState extends State<InformationScreen>
     super.dispose();
   }
 
+  List<String> _sliderUrlsForTop() {
+    final taken = widget.imageUrls.take(10).toList();
+    if (taken.isEmpty) {
+      return const [''];
+    }
+    return taken;
+  }
+
+  String? _headerThumbnailUrl() {
+    if (widget.imageUrls.isEmpty) return null;
+    final u = widget.imageUrls.first.trim();
+    return u.isEmpty ? null : u;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<String?> sliderImages = [widget.imageUrl, null, null];
+    final sliderUrls = _sliderUrlsForTop();
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -88,15 +103,27 @@ class _InformationScreenState extends State<InformationScreen>
                       controller: _sliderController,
                       onPageChanged: (index) =>
                           setState(() => _currentSliderPage = index),
-                      itemCount: sliderImages.length,
+                      itemCount: sliderUrls.length,
                       itemBuilder: (context, index) {
-                        final String? url = sliderImages[index];
+                        final url = sliderUrls[index].trim();
+                        final hasUrl = url.isNotEmpty;
                         return Container(
                           width: double.infinity,
-                          decoration:
-                              const BoxDecoration(color: AppColors.surfaceMuted),
-                          child: url != null
-                              ? Image.network(url, fit: BoxFit.cover)
+                          decoration: const BoxDecoration(
+                            color: AppColors.surfaceMuted,
+                          ),
+                          child: hasUrl
+                              ? Image.network(
+                                  url,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Center(
+                                    child: Icon(
+                                      Icons.storefront_rounded,
+                                      size: 64,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                )
                               : const Center(
                                   child: Icon(
                                     Icons.storefront_rounded,
@@ -114,7 +141,7 @@ class _InformationScreenState extends State<InformationScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
-                          sliderImages.length,
+                          sliderUrls.length,
                           (index) => Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             width: 7,
@@ -165,13 +192,13 @@ class _InformationScreenState extends State<InformationScreen>
         },
         body: TabBarView(
           controller: _tabController,
-          children: const [
-            Center(child: Text('홈 탭')),
-            Center(child: Text('메뉴 탭')),
-            Center(child: Text('사진 탭')),
-            StoreReviewTab(),
-            Center(child: Text('정보 탭')),
-            StoreReservationStatusTab(),
+          children: [
+            const Center(child: Text('홈 탭')),
+            const Center(child: Text('메뉴 탭')),
+            StorePhotoTab(imageUrls: widget.imageUrls),
+            const StoreReviewTab(),
+            const Center(child: Text('정보 탭')),
+            const StoreReservationStatusTab(),
           ],
         ),
       ),
@@ -179,6 +206,8 @@ class _InformationScreenState extends State<InformationScreen>
   }
 
   Widget _buildStoreHeader() {
+    final thumb = _headerThumbnailUrl();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Row(
@@ -189,14 +218,14 @@ class _InformationScreenState extends State<InformationScreen>
             decoration: BoxDecoration(
               color: AppColors.surfaceMuted,
               borderRadius: BorderRadius.circular(14),
-              image: widget.imageUrl != null
+              image: thumb != null
                   ? DecorationImage(
-                      image: NetworkImage(widget.imageUrl!),
+                      image: NetworkImage(thumb),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child: widget.imageUrl == null
+            child: thumb == null
                 ? const Icon(
                     Icons.storefront_rounded,
                     size: 32,

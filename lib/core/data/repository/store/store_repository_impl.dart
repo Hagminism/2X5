@@ -32,6 +32,12 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
+Future<List<StoreImage>> getStoreImagesByStoreId(String storeId) {
+  return _storeDataSource.findImagesByStoreId(storeId);
+} //이미지 불러오기
+
+
+  @override
   Future<Store> getStoreById(String storeId) async {
     final storeDto = await _storeDataSource.findStoreById(storeId);
 

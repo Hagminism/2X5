@@ -48,6 +48,7 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
             name: widget.viewModel.name,
             subtitle: widget.viewModel.address, // 주소 데이터를 subtitle로 전달
             rating: widget.viewModel.rating,
+            imageUrls: widget.viewModel.imageUrls,
           );
         },
       ),
