@@ -24,6 +24,13 @@ class _SearchScreenState extends State<SearchScreen> {
   static const double _baseLatitude = 37.5826;
   static const double _baseLongitude = 127.0106;
 
+  static const Map<String, String> categoryEmojis = {
+    'restaurant': '🍽',
+    'cafe': '☕',
+    'study_cafe': '📚',
+    'salon': '✂',
+  };
+
   static const Map<String, String> categoryLabels = {
     'restaurant': '식당',
     'cafe': '카페',
@@ -130,6 +137,13 @@ class _SearchScreenState extends State<SearchScreen> {
     return '도보 $minutes분';
   }
 
+  String _categoryDisplayLabel(String category) {
+    final label = categoryLabels[category] ?? category;
+    final emoji = categoryEmojis[category];
+    if (emoji == null || emoji.isEmpty) return label;
+    return '$emoji $label';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,7 +198,7 @@ class _SearchScreenState extends State<SearchScreen> {
       itemBuilder: (context, index) {
         final category = categories[index];
         final stores = _categorizedResults[category]!;
-        final categoryLabel = categoryLabels[category] ?? category;
+        final categoryLabel = _categoryDisplayLabel(category);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,8 +218,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _SearchResultCard(
                   store: store,
-                  categoryLabel:
-                      categoryLabels[store['category']?.toString()] ?? '',
+                  categoryLabel: _categoryDisplayLabel(
+                    store['category']?.toString() ?? '',
+                  ),
                   distanceLabel: distance == null
                       ? null
                       : _formatDistance(distance),
@@ -451,7 +466,7 @@ class _SearchEmptyState extends StatelessWidget {
               child: const Icon(
                 Icons.search_rounded,
                 size: 34,
-                color: AppColors.textSecondary,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 16),
