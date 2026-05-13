@@ -35,10 +35,6 @@ class _PartnerSalonManagementScreenRootState
           state: widget.viewModel.state,
           onAction: (PartnerSalonManagementAction action) {
             switch (action) {
-              case PartnerSalonManagementTapRetry():
-              case PartnerSalonManagementSelectSlotMinutes():
-                widget.viewModel.onAction(action);
-                break;
               case PartnerSalonManagementTapBack():
                 context.pop();
                 break;
