@@ -250,6 +250,54 @@ type CreateSalonReservationRequest = {
   startAt?: string;
 };
 
+type SaveSalonSettingsRequest = {
+  storeId?: string;
+  slotMinutes?: number;
+};
+
+type SalonDesignerPayload = {
+  id?: string;
+  name?: string;
+  introduction?: string;
+  imageUrl?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+};
+
+type SaveSalonDesignersRequest = {
+  storeId?: string;
+  designers?: SalonDesignerPayload[];
+};
+
+type SalonServicePayload = {
+  id?: string;
+  name?: string;
+  description?: string;
+  durationMinutes?: number;
+  price?: number;
+  isActive?: boolean;
+  sortOrder?: number;
+};
+
+type SaveSalonServicesRequest = {
+  storeId?: string;
+  services?: SalonServicePayload[];
+};
+
+type SalonDesignerSchedulePayload = {
+  id?: string;
+  designerId?: string;
+  dayOfWeek?: number;
+  isWorking?: boolean;
+  startTime?: string;
+  endTime?: string;
+};
+
+type SaveSalonDesignerSchedulesRequest = {
+  storeId?: string;
+  schedules?: SalonDesignerSchedulePayload[];
+};
+
 type SaveStudyCafeDetailRequest = {
   storeId?: string;
   layoutJson?: {
@@ -278,7 +326,51 @@ type SalonReservationResponse = {
   service_id: string;
   start_at: string;
   end_at: string;
+  slot_minutes?: number;
   status: string;
+};
+
+type SalonSettingsResponse = {
+  store_id: string;
+  slot_minutes: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type SalonDesignerResponse = {
+  id: string;
+  store_id: string;
+  name: string;
+  introduction: string;
+  image_url: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type SalonServiceResponse = {
+  id: string;
+  store_id: string;
+  name: string;
+  description: string;
+  duration_minutes: number;
+  price: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type SalonDesignerScheduleResponse = {
+  id: string;
+  designer_id: string;
+  day_of_week: number;
+  is_working: boolean;
+  start_time: string;
+  end_time: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 type StudyCafeDetailResponse = {
@@ -295,6 +387,7 @@ type StudyCafeDetailResponse = {
 
 const STORE_IMAGE_BUCKET = "store_images";
 const STORE_MENU_IMAGE_BUCKET = "store_menu_images";
+const SALON_DESIGNER_IMAGE_BUCKET = "salon_designer_images";
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_MIME_TYPES = new Set([
   "image/jpeg",
@@ -755,20 +848,288 @@ export const createSalonReservation = onCall(
       throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
     }
 
-    const reservation = await supabaseRequest<
-      SalonReservationResponse | SalonReservationResponse[]
-    >(
-      "rpc/create_salon_reservation",
-      "POST",
-      {
-        p_store_id: storeId,
-        p_user_id: uid,
-        p_designer_id: designerId,
-        p_service_id: serviceId,
-        p_start_at: startAt,
-      },
+    try {
+      const reservation = await supabaseRequest<
+        SalonReservationResponse | SalonReservationResponse[]
+      >(
+        "rpc/create_salon_reservation",
+        "POST",
+        {
+          p_store_id: storeId,
+          p_user_id: uid,
+          p_designer_id: designerId,
+          p_service_id: serviceId,
+          p_start_at: startAt,
+        },
+      );
+      return normalizeRpcRow(reservation, "미용실 예약 생성에 실패했습니다.");
+    } catch (e) {
+      const message = e instanceof HttpsError ? e.message : "";
+      if (message.includes("salon_slot_already_reserved")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "이미 예약된 시간입니다.",
+        );
+      }
+      if (message.includes("salon_designer_not_working")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시간에는 디자이너가 근무하지 않습니다.",
+        );
+      }
+      if (message.includes("salon_start_time")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시간이 예약 슬롯과 맞지 않습니다.",
+        );
+      }
+      throw e;
+    }
+  },
+);
+
+export const saveSalonSettings = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveSalonSettingsRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const slotMinutes = Number(data.slotMinutes ?? 30);
+    if (!storeId || !Number.isInteger(slotMinutes)) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (slotMinutes !== 30 && slotMinutes !== 60) {
+      throw new HttpsError("invalid-argument", "슬롯은 30분 또는 60분만 가능합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const existingRows = await supabaseRequest<{store_id: string}[]>(
+      `salon_settings?store_id=eq.${storeId}&select=store_id&limit=1`,
+      "GET",
     );
-    return normalizeRpcRow(reservation, "미용실 예약 생성에 실패했습니다.");
+    const payload = {
+      store_id: storeId,
+      slot_minutes: slotMinutes,
+      updated_at: new Date().toISOString(),
+    };
+    const rows = existingRows.length === 0 ?
+      await supabaseRequest<SalonSettingsResponse[]>(
+        "salon_settings?select=*",
+        "POST",
+        payload,
+      ) :
+      await supabaseRequest<SalonSettingsResponse[]>(
+        `salon_settings?store_id=eq.${storeId}&select=*`,
+        "PATCH",
+        payload,
+      );
+
+    if (rows.length === 0) {
+      throw new HttpsError("internal", "미용실 설정 저장에 실패했습니다.");
+    }
+    return rows[0];
+  },
+);
+
+export const saveSalonDesigners = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveSalonDesignersRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const designers = Array.isArray(data.designers) ? data.designers : [];
+    if (!storeId) {
+      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const saved: SalonDesignerResponse[] = [];
+    for (const designer of designers) {
+      const id = (designer.id ?? "").trim();
+      const name = (designer.name ?? "").trim();
+      if (!name) {
+        throw new HttpsError("invalid-argument", "디자이너 이름이 필요합니다.");
+      }
+      const payload = {
+        store_id: storeId,
+        name,
+        introduction: (designer.introduction ?? "").trim(),
+        image_url: (designer.imageUrl ?? "").trim(),
+        is_active: designer.isActive ?? true,
+        sort_order: Number.isInteger(designer.sortOrder) ?
+          designer.sortOrder :
+          0,
+        updated_at: new Date().toISOString(),
+      };
+      const rows = id ?
+        await supabaseRequest<SalonDesignerResponse[]>(
+          `salon_designers?id=eq.${id}&store_id=eq.${storeId}&select=*`,
+          "PATCH",
+          payload,
+        ) :
+        await supabaseRequest<SalonDesignerResponse[]>(
+          "salon_designers?select=*",
+          "POST",
+          payload,
+        );
+      if (rows.length === 0) {
+        throw new HttpsError("permission-denied", "디자이너 저장 권한이 없습니다.");
+      }
+      saved.push(rows[0]);
+    }
+    return saved;
+  },
+);
+
+export const saveSalonServices = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveSalonServicesRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const services = Array.isArray(data.services) ? data.services : [];
+    if (!storeId) {
+      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const saved: SalonServiceResponse[] = [];
+    for (const service of services) {
+      const id = (service.id ?? "").trim();
+      const name = (service.name ?? "").trim();
+      const durationMinutes = Number(service.durationMinutes ?? 0);
+      const price = Number(service.price ?? 0);
+      if (!name || !Number.isInteger(durationMinutes) || durationMinutes <= 0) {
+        throw new HttpsError("invalid-argument", "시술 정보가 올바르지 않습니다.");
+      }
+      if (!Number.isInteger(price) || price < 0) {
+        throw new HttpsError("invalid-argument", "시술 가격이 올바르지 않습니다.");
+      }
+      const payload = {
+        store_id: storeId,
+        name,
+        description: (service.description ?? "").trim(),
+        duration_minutes: durationMinutes,
+        price,
+        is_active: service.isActive ?? true,
+        sort_order: Number.isInteger(service.sortOrder) ? service.sortOrder : 0,
+        updated_at: new Date().toISOString(),
+      };
+      const rows = id ?
+        await supabaseRequest<SalonServiceResponse[]>(
+          `salon_services?id=eq.${id}&store_id=eq.${storeId}&select=*`,
+          "PATCH",
+          payload,
+        ) :
+        await supabaseRequest<SalonServiceResponse[]>(
+          "salon_services?select=*",
+          "POST",
+          payload,
+        );
+      if (rows.length === 0) {
+        throw new HttpsError("permission-denied", "시술 저장 권한이 없습니다.");
+      }
+      saved.push(rows[0]);
+    }
+    return saved;
+  },
+);
+
+export const saveSalonDesignerSchedules = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveSalonDesignerSchedulesRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const schedules = Array.isArray(data.schedules) ? data.schedules : [];
+    if (!storeId) {
+      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const saved: SalonDesignerScheduleResponse[] = [];
+    for (const schedule of schedules) {
+      const id = (schedule.id ?? "").trim();
+      const designerId = (schedule.designerId ?? "").trim();
+      const dayOfWeek = Number(schedule.dayOfWeek ?? -1);
+      if (!designerId || !Number.isInteger(dayOfWeek) || dayOfWeek < 0 ||
+        dayOfWeek > 6) {
+        throw new HttpsError("invalid-argument", "근무표 정보가 올바르지 않습니다.");
+      }
+
+      const designers = await supabaseRequest<{id: string}[]>(
+        `salon_designers?id=eq.${designerId}&store_id=eq.${storeId}` +
+          "&select=id&limit=1",
+        "GET",
+      );
+      if (designers.length === 0) {
+        throw new HttpsError("permission-denied", "디자이너 저장 권한이 없습니다.");
+      }
+
+      const payload = {
+        designer_id: designerId,
+        day_of_week: dayOfWeek,
+        is_working: schedule.isWorking ?? true,
+        start_time: (schedule.startTime ?? "10:00").trim(),
+        end_time: (schedule.endTime ?? "19:00").trim(),
+        updated_at: new Date().toISOString(),
+      };
+
+      let targetId = id;
+      if (!targetId) {
+        const existingRows = await supabaseRequest<{id: string}[]>(
+          `salon_designer_schedules?designer_id=eq.${designerId}` +
+            `&day_of_week=eq.${dayOfWeek}&select=id&limit=1`,
+          "GET",
+        );
+        targetId = existingRows[0]?.id ?? "";
+      }
+
+      const rows = targetId ?
+        await supabaseRequest<SalonDesignerScheduleResponse[]>(
+          `salon_designer_schedules?id=eq.${targetId}&select=*`,
+          "PATCH",
+          payload,
+        ) :
+        await supabaseRequest<SalonDesignerScheduleResponse[]>(
+          "salon_designer_schedules?select=*",
+          "POST",
+          payload,
+        );
+      if (rows.length === 0) {
+        throw new HttpsError("internal", "근무표 저장에 실패했습니다.");
+      }
+      saved.push(rows[0]);
+    }
+    return saved;
   },
 );
 
@@ -1030,7 +1391,8 @@ export const uploadStoreImageToSupabase = onCall(
     }
     if (
       bucketId !== STORE_IMAGE_BUCKET &&
-      bucketId !== STORE_MENU_IMAGE_BUCKET
+      bucketId !== STORE_MENU_IMAGE_BUCKET &&
+      bucketId !== SALON_DESIGNER_IMAGE_BUCKET
     ) {
       throw new HttpsError("invalid-argument", "허용되지 않은 버킷입니다.");
     }
@@ -1095,7 +1457,8 @@ export const deleteStoreImageFromSupabase = onCall(
     }
     if (
       bucketId !== STORE_IMAGE_BUCKET &&
-      bucketId !== STORE_MENU_IMAGE_BUCKET
+      bucketId !== STORE_MENU_IMAGE_BUCKET &&
+      bucketId !== SALON_DESIGNER_IMAGE_BUCKET
     ) {
       throw new HttpsError("invalid-argument", "허용되지 않은 버킷입니다.");
     }
