@@ -1,6 +1,3 @@
-import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
-import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
-import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_settings.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -14,10 +11,5 @@ abstract class PartnerSalonManagementState with _$PartnerSalonManagementState {
     String? errorMessage,
     String? saveMessage,
     @Default(SalonSettings(storeId: '')) SalonSettings settings,
-    @Default([]) List<SalonDesigner> designers,
-    @Default([]) List<String?> localDesignerImagePaths,
-    @Default([]) List<SalonService> services,
-    @Default([]) List<SalonDesignerSchedule> schedules,
-    String? selectedDesignerId,
   }) = _PartnerSalonManagementState;
 }
