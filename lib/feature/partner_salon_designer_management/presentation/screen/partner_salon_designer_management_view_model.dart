@@ -161,11 +161,9 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
     );
     notifyListeners();
     try {
-      final settings = await _salonRepository.getMyStoreSettings();
       final designers = await _salonRepository.getMyStoreDesigners();
       _state = _state.copyWith(
         isLoading: false,
-        settings: settings,
         designers: designers,
         localDesignerImagePaths: List<String?>.filled(designers.length, null),
       );
@@ -184,7 +182,7 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
         ..._state.designers,
         SalonDesigner(
           id: '',
-          storeId: _state.settings.storeId,
+          storeId: '',
           name: '',
           sortOrder: _state.designers.length,
         ),
