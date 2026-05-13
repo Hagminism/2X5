@@ -22,8 +22,9 @@ class SalonDataSourceImpl implements SalonDataSource {
         .from('salon_designers')
         .select()
         .eq('store_id', storeId)
-        .order('sort_order')
-        .order('created_at');
+        .eq('is_deleted', false)
+        .order('created_at', ascending: true)
+        .order('id', ascending: true);
     return jsonList.map((json) => SalonDesigner.fromJson(json)).toList();
   }
 
@@ -90,7 +91,7 @@ class SalonDataSourceImpl implements SalonDataSource {
               'introduction': designer.introduction,
               'imageUrl': designer.imageUrl,
               'isActive': designer.isActive,
-              'sortOrder': designer.sortOrder,
+              'isDeleted': designer.isDeleted,
             },
           )
           .toList(),

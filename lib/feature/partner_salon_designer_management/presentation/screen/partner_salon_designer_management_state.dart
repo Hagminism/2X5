@@ -12,6 +12,7 @@ abstract class PartnerSalonDesignerManagementState
     String? errorMessage,
     String? saveMessage,
     @Default([]) List<SalonDesigner> designers,
+    @Default([]) List<SalonDesigner> pendingDeletedDesigners,
     @Default([]) List<String?> localDesignerImagePaths,
   }) = _PartnerSalonDesignerManagementState;
 }

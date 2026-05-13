@@ -256,7 +256,7 @@ type SalonDesignerPayload = {
   introduction?: string;
   imageUrl?: string;
   isActive?: boolean;
-  sortOrder?: number;
+  isDeleted?: boolean;
 };
 
 type SaveSalonDesignersRequest = {
@@ -332,7 +332,7 @@ type SalonDesignerResponse = {
   introduction: string;
   image_url: string;
   is_active: boolean;
-  sort_order: number;
+  is_deleted: boolean;
   created_at?: string;
   updated_at?: string;
 };
@@ -898,6 +898,45 @@ export const saveSalonDesigners = onCall(
     const saved: SalonDesignerResponse[] = [];
     for (const designer of designers) {
       const id = (designer.id ?? "").trim();
+      const isDeleted = designer.isDeleted ?? false;
+      if (isDeleted) {
+        if (!id) {
+          continue;
+        }
+        const reservations = await supabaseRequest<SupabaseInsertResponse[]>(
+          `salon_reservations?designer_id=eq.${id}&select=id&limit=1`,
+          "GET",
+        );
+        if (reservations.length === 0) {
+          const deletedRows = await supabaseRequest<SupabaseInsertResponse[]>(
+            `salon_designers?id=eq.${id}&store_id=eq.${storeId}&select=id`,
+            "DELETE",
+          );
+          if (deletedRows.length === 0) {
+            throw new HttpsError(
+              "permission-denied",
+              "디자이너 삭제 권한이 없습니다.",
+            );
+          }
+        } else {
+          const rows = await supabaseRequest<SalonDesignerResponse[]>(
+            `salon_designers?id=eq.${id}&store_id=eq.${storeId}&select=*`,
+            "PATCH",
+            {
+              is_active: false,
+              is_deleted: true,
+              updated_at: new Date().toISOString(),
+            },
+          );
+          if (rows.length === 0) {
+            throw new HttpsError(
+              "permission-denied",
+              "디자이너 삭제 권한이 없습니다.",
+            );
+          }
+        }
+        continue;
+      }
       const name = (designer.name ?? "").trim();
       if (!name) {
         throw new HttpsError("invalid-argument", "디자이너 이름이 필요합니다.");
@@ -908,9 +947,7 @@ export const saveSalonDesigners = onCall(
         introduction: (designer.introduction ?? "").trim(),
         image_url: (designer.imageUrl ?? "").trim(),
         is_active: designer.isActive ?? true,
-        sort_order: Number.isInteger(designer.sortOrder) ?
-          designer.sortOrder :
-          0,
+        is_deleted: false,
         updated_at: new Date().toISOString(),
       };
       const rows = id ?

@@ -105,7 +105,7 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
     _state = _state.copyWith(isSaving: true, saveMessage: null);
     notifyListeners();
     try {
-      final nextDesigners = _withReindexedDesigners(_state.designers);
+      final nextDesigners = List<SalonDesigner>.from(_state.designers);
       final nextLocalPaths = List<String?>.from(_state.localDesignerImagePaths);
 
       for (var i = 0; i < nextDesigners.length; i++) {
@@ -120,8 +120,22 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
 
       final validDesigners = nextDesigners
           .where((designer) => designer.name.trim().isNotEmpty)
+          .map((designer) => designer.copyWith(isDeleted: false))
           .toList();
-      final saved = await _salonRepository.saveMyStoreDesigners(validDesigners);
+      final deletedDesigners = _state.pendingDeletedDesigners
+          .map(
+            (designer) => designer.copyWith(isActive: false, isDeleted: true),
+          )
+          .toList();
+      final shouldSave =
+          validDesigners.isNotEmpty || deletedDesigners.isNotEmpty;
+      if (shouldSave) {
+        await _salonRepository.saveMyStoreDesigners([
+          ...validDesigners,
+          ...deletedDesigners,
+        ]);
+      }
+      final saved = await _salonRepository.getMyStoreDesigners();
       final protectedUrls = saved
           .map((designer) => designer.imageUrl.trim())
           .where((url) => url.isNotEmpty)
@@ -135,6 +149,7 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
       _pendingDeleteDesignerImageUrls.clear();
       _state = _state.copyWith(
         designers: saved,
+        pendingDeletedDesigners: const [],
         localDesignerImagePaths: List<String?>.filled(saved.length, null),
         isSaving: false,
         saveMessage: null,
@@ -165,6 +180,7 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
       _state = _state.copyWith(
         isLoading: false,
         designers: designers,
+        pendingDeletedDesigners: const [],
         localDesignerImagePaths: List<String?>.filled(designers.length, null),
       );
     } catch (e) {
@@ -184,7 +200,6 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
           id: '',
           storeId: '',
           name: '',
-          sortOrder: _state.designers.length,
         ),
       ],
       localDesignerImagePaths: [..._state.localDesignerImagePaths, null],
@@ -198,6 +213,7 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
       return;
     }
     _collectDeleteDesignerImageTarget(_state.designers[index].imageUrl);
+    final removedDesigner = _state.designers[index];
     final nextDesigners = List<SalonDesigner>.from(_state.designers)
       ..removeAt(index);
     final nextLocalPaths = List<String?>.from(_state.localDesignerImagePaths);
@@ -205,7 +221,8 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
       nextLocalPaths.removeAt(index);
     }
     _state = _state.copyWith(
-      designers: _withReindexedDesigners(nextDesigners),
+      designers: nextDesigners,
+      pendingDeletedDesigners: _withPendingDeletedDesigner(removedDesigner),
       localDesignerImagePaths: nextLocalPaths,
       saveMessage: null,
     );
@@ -235,18 +252,20 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
     }
     final next = List<SalonDesigner>.from(_state.designers);
     next[index] = update(next[index]);
-    _state = _state.copyWith(
-      designers: _withReindexedDesigners(next),
-      saveMessage: null,
-    );
+    _state = _state.copyWith(designers: next, saveMessage: null);
     notifyListeners();
   }
 
-  List<SalonDesigner> _withReindexedDesigners(List<SalonDesigner> designers) {
-    return List<SalonDesigner>.generate(
-      designers.length,
-      (index) => designers[index].copyWith(sortOrder: index),
-    );
+  List<SalonDesigner> _withPendingDeletedDesigner(SalonDesigner designer) {
+    if (designer.id.trim().isEmpty) {
+      return _state.pendingDeletedDesigners;
+    }
+    return [
+      ..._state.pendingDeletedDesigners.where(
+        (pendingDesigner) => pendingDesigner.id != designer.id,
+      ),
+      designer.copyWith(isActive: false, isDeleted: true),
+    ];
   }
 
   void _collectDeleteDesignerImageTarget(String imageUrl) {
