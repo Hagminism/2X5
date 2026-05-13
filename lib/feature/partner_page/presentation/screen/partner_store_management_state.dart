@@ -33,6 +33,7 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
     @Default('') String storeContact,
     @Default(false) bool depositEnabled,
     @Default('0') String depositAmount,
+    @Default(30) int reservationSlotMinutes,
     @Default(<StoreMenu>[]) List<StoreMenu> menus,
     @Default(<StoreImage>[]) List<StoreImage> images,
     @Default(_defaultOperatingHours)
@@ -41,6 +42,8 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
 
   bool get canSubmit {
     final parsedDepositAmount = int.tryParse(depositAmount.trim());
+    final isReservationSlotValid =
+        reservationSlotMinutes == 30 || reservationSlotMinutes == 60;
     final isDepositValid = depositEnabled
         ? parsedDepositAmount != null && parsedDepositAmount > 0
         : parsedDepositAmount != null && parsedDepositAmount == 0;
@@ -80,6 +83,7 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
         latitude.trim().isNotEmpty &&
         longitude.trim().isNotEmpty &&
         storeContact.trim().isNotEmpty &&
+        isReservationSlotValid &&
         isDepositValid &&
         isMenusValid &&
         isImagesValid &&

@@ -34,6 +34,10 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
   const factory PartnerStoreManagementAction.changeDepositAmount(String value) =
       ChangeDepositAmount;
 
+  const factory PartnerStoreManagementAction.changeReservationSlotMinutes(
+    int minutes,
+  ) = ChangeReservationSlotMinutes;
+
   const factory PartnerStoreManagementAction.tapOpenMenuManager() =
       TapOpenMenuManager;
 

@@ -2,6 +2,7 @@ import 'package:capstone_2026/core/presentation/component/button/primary_button.
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/enum/week_day.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_form_text_field.dart';
+import 'package:capstone_2026/feature/partner_page/presentation/component/partner_reservation_slot_minutes_selector.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_store_management_cta_card.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_store_management_day_operating_row.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_store_section_card.dart';
@@ -368,6 +369,30 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                               const PartnerStoreManagementAction.tapOpenImageManager(),
                             );
                           },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '예약 슬롯 설정',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PartnerReservationSlotMinutesSelector(
+                          selectedSlotMinutes: state.reservationSlotMinutes,
+                          onChanged: (minutes) {
+                            onAction(
+                              PartnerStoreManagementAction.changeReservationSlotMinutes(
+                                minutes,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '선택한 슬롯 단위는 저장 버튼을 눌렀을 때 반영됩니다.',
+                          style: AppTextStyles.bodySecondary,
                         ),
                       ],
                     ),
