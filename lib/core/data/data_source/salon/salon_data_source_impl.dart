@@ -3,7 +3,6 @@ import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_reservation.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
-import 'package:capstone_2026/core/domain/model/salon/salon_settings.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,19 +15,6 @@ class SalonDataSourceImpl implements SalonDataSource {
     required FirebaseFunctions firebaseFunctions,
   }) : _supabaseClient = supabaseClient,
        _firebaseFunctions = firebaseFunctions;
-
-  @override
-  Future<SalonSettings?> findSettingsByStoreId(String storeId) async {
-    final json = await _supabaseClient
-        .from('salon_settings')
-        .select()
-        .eq('store_id', storeId)
-        .maybeSingle();
-    if (json == null) {
-      return null;
-    }
-    return SalonSettings.fromJson(json);
-  }
 
   @override
   Future<List<SalonDesigner>> findDesignersByStoreId(String storeId) async {
@@ -84,16 +70,6 @@ class SalonDataSourceImpl implements SalonDataSource {
         .lt('start_at', end.toIso8601String())
         .order('start_at');
     return jsonList.map((json) => SalonReservation.fromJson(json)).toList();
-  }
-
-  @override
-  Future<SalonSettings> upsertSettings(SalonSettings settings) async {
-    final callable = _firebaseFunctions.httpsCallable('saveSalonSettings');
-    final result = await callable.call<Map<String, dynamic>>({
-      'storeId': settings.storeId,
-      'slotMinutes': settings.slotMinutes,
-    });
-    return SalonSettings.fromJson(Map<String, Object?>.from(result.data));
   }
 
   @override

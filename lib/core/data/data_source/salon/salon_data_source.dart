@@ -2,11 +2,8 @@ import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_reservation.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
-import 'package:capstone_2026/core/domain/model/salon/salon_settings.dart';
 
 abstract interface class SalonDataSource {
-  Future<SalonSettings?> findSettingsByStoreId(String storeId);
-
   Future<List<SalonDesigner>> findDesignersByStoreId(String storeId);
 
   Future<List<SalonService>> findServicesByStoreId(String storeId);
@@ -20,8 +17,6 @@ abstract interface class SalonDataSource {
     required String designerId,
     required DateTime date,
   });
-
-  Future<SalonSettings> upsertSettings(SalonSettings settings);
 
   Future<List<SalonDesigner>> upsertDesigners(List<SalonDesigner> designers);
 

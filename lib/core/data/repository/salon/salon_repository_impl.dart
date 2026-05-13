@@ -4,7 +4,6 @@ import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_reservation.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
-import 'package:capstone_2026/core/domain/model/salon/salon_settings.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 
@@ -20,18 +19,6 @@ class SalonRepositoryImpl implements SalonRepository {
   }) : _salonDataSource = salonDataSource,
        _storeDataSource = storeDataSource,
        _authRepository = authRepository;
-
-  @override
-  Future<SalonSettings> getSettingsByStoreId(String storeId) async {
-    return await _salonDataSource.findSettingsByStoreId(storeId) ??
-        SalonSettings.defaultForStore(storeId);
-  }
-
-  @override
-  Future<SalonSettings> getMyStoreSettings() async {
-    final storeId = await _getMyStoreIdOrThrow();
-    return getSettingsByStoreId(storeId);
-  }
 
   @override
   Future<List<SalonDesigner>> getDesignersByStoreId(String storeId) {
@@ -72,14 +59,6 @@ class SalonRepositoryImpl implements SalonRepository {
       storeId: storeId,
       designerId: designerId,
       date: date,
-    );
-  }
-
-  @override
-  Future<SalonSettings> saveMyStoreSettings(SalonSettings settings) async {
-    final storeId = await _getMyStoreIdOrThrow();
-    return _salonDataSource.upsertSettings(
-      settings.copyWith(storeId: storeId),
     );
   }
 
