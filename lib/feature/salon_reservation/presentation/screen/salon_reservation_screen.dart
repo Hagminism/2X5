@@ -111,7 +111,7 @@ class SalonReservationScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '${state.settings.slotMinutes}분 단위로 예약을 받으며, 같은 시작 시간에는 디자이너별로 1명만 예약할 수 있어요.',
+          '${state.reservationSlotMinutes}분 단위로 예약을 받으며, 같은 시작 시간에는 디자이너별로 1명만 예약할 수 있어요.',
           style: AppTextStyles.bodySecondary,
         ),
         const SizedBox(height: 24),

@@ -4,16 +4,20 @@ import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_reservation.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
+import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_action.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_state.dart';
 import 'package:flutter/foundation.dart';
 
 class SalonReservationViewModel extends ChangeNotifier {
   final SalonRepository _salonRepository;
+  final StoreRepository _storeRepository;
 
   SalonReservationViewModel({
     required SalonRepository salonRepository,
+    required StoreRepository storeRepository,
   }) : _salonRepository = salonRepository,
+       _storeRepository = storeRepository,
        _state = const SalonReservationState(storeId: '');
 
   SalonReservationState _state;
@@ -137,9 +141,10 @@ class SalonReservationViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final settings = await _salonRepository.getSettingsByStoreId(
-        _state.storeId,
-      );
+      final store = await _storeRepository.getStoreById(_state.storeId);
+      if (store == null) {
+        throw StateError('업장 정보를 찾을 수 없습니다.');
+      }
       final designers = (await _salonRepository.getDesignersByStoreId(
         _state.storeId,
       )).where((designer) => designer.isActive).toList();
@@ -153,7 +158,7 @@ class SalonReservationViewModel extends ChangeNotifier {
       final selectedServiceId = services.isNotEmpty ? services.first.id : null;
 
       _state = _state.copyWith(
-        settings: settings,
+        reservationSlotMinutes: store.reservationSlotMinutes,
         designers: designers,
         services: services,
         selectedDesignerId: selectedDesignerId,
@@ -289,7 +294,7 @@ class SalonReservationViewModel extends ChangeNotifier {
           isPast: cursor.isBefore(now),
         ),
       );
-      cursor = cursor.add(Duration(minutes: _state.settings.slotMinutes));
+      cursor = cursor.add(Duration(minutes: _state.reservationSlotMinutes));
     }
 
     final selectedStartAt = _state.selectedStartAt;
