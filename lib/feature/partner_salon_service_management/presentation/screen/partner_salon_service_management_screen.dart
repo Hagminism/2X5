@@ -1,4 +1,3 @@
-import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
 import 'package:capstone_2026/feature/partner_salon_service_management/presentation/component/partner_salon_management_tile.dart';
 import 'package:capstone_2026/feature/partner_salon_service_management/presentation/screen/partner_salon_service_management_action.dart';
@@ -95,37 +94,6 @@ class PartnerSalonServiceManagementScreen extends StatelessWidget {
           ...state.services.map(
             (service) => _ServiceTile(service: service, onAction: onAction),
           ),
-        const SizedBox(height: 24),
-        _SectionHeader(title: '근무표', actionLabel: null, onTap: null),
-        const SizedBox(height: 10),
-        if (state.designers.isNotEmpty) ...[
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: state.designers
-                .map(
-                  (designer) => ChoiceChip(
-                    label: Text(designer.name),
-                    selected: state.selectedDesignerId == designer.id,
-                    onSelected: (_) {
-                      onAction(
-                        PartnerSalonServiceManagementAction.selectDesigner(
-                          designer.id,
-                        ),
-                      );
-                    },
-                  ),
-                )
-                .toList(),
-          ),
-          const SizedBox(height: 10),
-        ],
-        if (state.selectedDesignerId == null)
-          const _EmptyText('근무표를 설정할 디자이너를 먼저 등록해 주세요.')
-        else
-          ...state.schedules.map(
-            (schedule) => _ScheduleTile(schedule: schedule, onAction: onAction),
-          ),
         if (state.saveMessage != null) ...[
           const SizedBox(height: 20),
           Text(state.saveMessage!, style: AppTextStyles.bodySecondary),
@@ -165,41 +133,6 @@ class _ServiceTile extends StatelessWidget {
         onAction(PartnerSalonServiceManagementAction.tapEditService(service));
       },
     );
-  }
-}
-
-class _ScheduleTile extends StatelessWidget {
-  final SalonDesignerSchedule schedule;
-  final void Function(PartnerSalonServiceManagementAction action) onAction;
-
-  const _ScheduleTile({
-    required this.schedule,
-    required this.onAction,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return PartnerSalonManagementTile(
-      title: _dayLabel(schedule.dayOfWeek),
-      description: schedule.isWorking
-          ? '${schedule.startTime} - ${schedule.endTime}'
-          : '휴무',
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () {
-        onAction(PartnerSalonServiceManagementAction.tapEditSchedule(schedule));
-      },
-      onEdit: () {
-        onAction(PartnerSalonServiceManagementAction.tapEditSchedule(schedule));
-      },
-    );
-  }
-
-  String _dayLabel(int dayOfWeek) {
-    const labels = ['일', '월', '화', '수', '목', '금', '토'];
-    if (dayOfWeek < 0 || dayOfWeek >= labels.length) {
-      return '요일';
-    }
-    return '${labels[dayOfWeek]}요일';
   }
 }
 

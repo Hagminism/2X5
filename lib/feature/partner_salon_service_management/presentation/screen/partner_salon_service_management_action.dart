@@ -1,4 +1,3 @@
-import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -13,10 +12,6 @@ sealed class PartnerSalonServiceManagementAction
   const factory PartnerSalonServiceManagementAction.tapRetry() =
       PartnerSalonServiceManagementTapRetry;
 
-  const factory PartnerSalonServiceManagementAction.selectDesigner(
-    String designerId,
-  ) = PartnerSalonServiceManagementSelectDesigner;
-
   const factory PartnerSalonServiceManagementAction.tapAddService() =
       PartnerSalonServiceManagementTapAddService;
 
@@ -27,8 +22,4 @@ sealed class PartnerSalonServiceManagementAction
   const factory PartnerSalonServiceManagementAction.tapToggleService(
     SalonService service,
   ) = PartnerSalonServiceManagementTapToggleService;
-
-  const factory PartnerSalonServiceManagementAction.tapEditSchedule(
-    SalonDesignerSchedule schedule,
-  ) = PartnerSalonServiceManagementTapEditSchedule;
 }

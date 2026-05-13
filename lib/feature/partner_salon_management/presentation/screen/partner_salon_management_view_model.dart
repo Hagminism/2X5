@@ -32,6 +32,7 @@ class PartnerSalonManagementViewModel extends ChangeNotifier {
       case PartnerSalonManagementTapBack():
       case PartnerSalonManagementOpenDesignerManagement():
       case PartnerSalonManagementOpenServiceManagement():
+      case PartnerSalonManagementOpenScheduleManagement():
         break;
     }
   }

@@ -52,6 +52,11 @@ class _PartnerSalonManagementScreenRootState
                   '${Routes.partnerStore}/${Routes.partnerSalonManagement}/${Routes.partnerSalonServices}',
                 );
                 break;
+              case PartnerSalonManagementOpenScheduleManagement():
+                context.push(
+                  '${Routes.partnerStore}/${Routes.partnerSalonManagement}/${Routes.partnerSalonSchedules}',
+                );
+                break;
             }
           },
         );

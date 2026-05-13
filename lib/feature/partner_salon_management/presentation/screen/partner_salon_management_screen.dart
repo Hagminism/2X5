@@ -100,6 +100,17 @@ class PartnerSalonManagementScreen extends StatelessWidget {
             );
           },
         ),
+        const SizedBox(height: 12),
+        PartnerSalonManagementNavigationCard(
+          icon: Icons.calendar_month_rounded,
+          title: '근무 편성',
+          description: '디자이너별 근무일과 근무 시간을 관리합니다.',
+          onTap: () {
+            onAction(
+              const PartnerSalonManagementAction.openScheduleManagement(),
+            );
+          },
+        ),
         if (state.saveMessage != null) ...[
           const SizedBox(height: 20),
           Text(state.saveMessage!, style: AppTextStyles.bodySecondary),

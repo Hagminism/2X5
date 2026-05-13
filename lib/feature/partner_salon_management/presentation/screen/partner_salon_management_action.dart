@@ -18,4 +18,7 @@ sealed class PartnerSalonManagementAction with _$PartnerSalonManagementAction {
 
   const factory PartnerSalonManagementAction.openServiceManagement() =
       PartnerSalonManagementOpenServiceManagement;
+
+  const factory PartnerSalonManagementAction.openScheduleManagement() =
+      PartnerSalonManagementOpenScheduleManagement;
 }

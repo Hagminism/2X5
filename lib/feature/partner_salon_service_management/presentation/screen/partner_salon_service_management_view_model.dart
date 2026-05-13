@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/feature/partner_salon_service_management/presentation/screen/partner_salon_service_management_action.dart';
@@ -28,14 +27,10 @@ class PartnerSalonServiceManagementViewModel extends ChangeNotifier {
       case PartnerSalonServiceManagementTapRetry():
         unawaited(_load());
         break;
-      case PartnerSalonServiceManagementSelectDesigner(:final designerId):
-        unawaited(selectDesigner(designerId));
-        break;
       case PartnerSalonServiceManagementTapBack():
       case PartnerSalonServiceManagementTapAddService():
       case PartnerSalonServiceManagementTapEditService():
       case PartnerSalonServiceManagementTapToggleService():
-      case PartnerSalonServiceManagementTapEditSchedule():
         break;
     }
   }
@@ -75,28 +70,6 @@ class PartnerSalonServiceManagementViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveSchedule(SalonDesignerSchedule schedule) async {
-    _state = _state.copyWith(isSaving: true, saveMessage: null);
-    notifyListeners();
-    try {
-      await _salonRepository.saveMyStoreSchedules([schedule]);
-      await _loadSchedules(schedule.designerId);
-      _state = _state.copyWith(
-        isSaving: false,
-        saveMessage: '근무표를 저장했습니다.',
-      );
-    } catch (e) {
-      _state = _state.copyWith(isSaving: false, saveMessage: e.toString());
-    }
-    notifyListeners();
-  }
-
-  Future<void> selectDesigner(String designerId) async {
-    _state = _state.copyWith(selectedDesignerId: designerId);
-    notifyListeners();
-    await _loadSchedules(designerId);
-  }
-
   Future<void> _load() async {
     _state = _state.copyWith(
       isLoading: true,
@@ -106,22 +79,13 @@ class PartnerSalonServiceManagementViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final settings = await _salonRepository.getMyStoreSettings();
-      final designers = await _salonRepository.getMyStoreDesigners();
       final services = await _salonRepository.getMyStoreServices();
-      final selectedDesignerId = designers.isNotEmpty
-          ? designers.first.id
-          : null;
       _state = _state.copyWith(
         isLoading: false,
         settings: settings,
-        designers: designers,
         services: services,
-        selectedDesignerId: selectedDesignerId,
       );
       notifyListeners();
-      if (selectedDesignerId != null) {
-        await _loadSchedules(selectedDesignerId);
-      }
     } catch (e) {
       _state = _state.copyWith(isLoading: false, errorMessage: e.toString());
       notifyListeners();
@@ -131,34 +95,6 @@ class PartnerSalonServiceManagementViewModel extends ChangeNotifier {
   Future<void> _loadServices() async {
     final services = await _salonRepository.getMyStoreServices();
     _state = _state.copyWith(services: services);
-  }
-
-  Future<void> _loadSchedules(String designerId) async {
-    final schedules = await _salonRepository.getSchedulesByDesignerId(
-      designerId,
-    );
-    if (schedules.isEmpty) {
-      final saved = await _salonRepository.saveMyStoreSchedules(
-        _defaultSchedules(designerId),
-      );
-      _state = _state.copyWith(schedules: saved);
-      notifyListeners();
-      return;
-    }
-    _state = _state.copyWith(schedules: schedules);
-    notifyListeners();
-  }
-
-  List<SalonDesignerSchedule> _defaultSchedules(String designerId) {
-    return List.generate(
-      7,
-      (day) => SalonDesignerSchedule(
-        id: '',
-        designerId: designerId,
-        dayOfWeek: day,
-        isWorking: day != 0,
-      ),
-    );
   }
 
   SalonService? _findService(String id) {
