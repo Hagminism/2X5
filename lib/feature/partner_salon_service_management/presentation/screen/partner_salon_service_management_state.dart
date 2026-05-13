@@ -1,5 +1,4 @@
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
-import 'package:capstone_2026/core/domain/model/salon/salon_settings.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'partner_salon_service_management_state.freezed.dart';
@@ -12,7 +11,6 @@ abstract class PartnerSalonServiceManagementState
     @Default(false) bool isSaving,
     String? errorMessage,
     String? saveMessage,
-    @Default(SalonSettings(storeId: '')) SalonSettings settings,
     @Default([]) List<SalonService> services,
   }) = _PartnerSalonServiceManagementState;
 }

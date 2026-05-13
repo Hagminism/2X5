@@ -50,7 +50,7 @@ class PartnerSalonServiceManagementViewModel extends ChangeNotifier {
       await _salonRepository.saveMyStoreServices([
         SalonService(
           id: id,
-          storeId: _state.settings.storeId,
+          storeId: '',
           name: name,
           description: description,
           durationMinutes: durationMinutes,
@@ -78,11 +78,9 @@ class PartnerSalonServiceManagementViewModel extends ChangeNotifier {
     );
     notifyListeners();
     try {
-      final settings = await _salonRepository.getMyStoreSettings();
       final services = await _salonRepository.getMyStoreServices();
       _state = _state.copyWith(
         isLoading: false,
-        settings: settings,
         services: services,
       );
       notifyListeners();
