@@ -4,6 +4,7 @@ import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_action.dart';
+import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_event.dart';
 import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_state.dart';
 import 'package:flutter/foundation.dart';
 
@@ -22,6 +23,11 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
   PartnerSalonDesignerManagementState _state;
 
   PartnerSalonDesignerManagementState get state => _state;
+
+  final StreamController<PartnerSalonDesignerManagementEvent> _eventController =
+      StreamController<PartnerSalonDesignerManagementEvent>.broadcast();
+  Stream<PartnerSalonDesignerManagementEvent> get eventStream =>
+      _eventController.stream;
 
   Future<void> initialize() async {
     await _load();
@@ -68,8 +74,12 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
       case PartnerSalonDesignerManagementTapSaveDesigners():
         unawaited(saveDesigners());
         break;
+      case PartnerSalonDesignerManagementTapPickDesignerImage(:final index):
+        _eventController.add(
+          PartnerSalonDesignerManagementEvent.openGallery(index),
+        );
+        break;
       case PartnerSalonDesignerManagementTapBack():
-      case PartnerSalonDesignerManagementTapPickDesignerImage():
         break;
     }
   }
@@ -127,10 +137,18 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
         designers: saved,
         localDesignerImagePaths: List<String?>.filled(saved.length, null),
         isSaving: false,
-        saveMessage: '디자이너 정보를 저장했습니다.',
+        saveMessage: null,
+      );
+      _eventController.add(
+        const PartnerSalonDesignerManagementEvent.popWithMessage(
+          '디자이너 정보를 저장했습니다.',
+        ),
       );
     } catch (e) {
-      _state = _state.copyWith(isSaving: false, saveMessage: e.toString());
+      _state = _state.copyWith(isSaving: false);
+      _eventController.add(
+        PartnerSalonDesignerManagementEvent.showMessage(e.toString()),
+      );
     }
     notifyListeners();
   }
@@ -153,6 +171,9 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
       );
     } catch (e) {
       _state = _state.copyWith(isLoading: false, errorMessage: e.toString());
+      _eventController.add(
+        PartnerSalonDesignerManagementEvent.showMessage(e.toString()),
+      );
     }
     notifyListeners();
   }
@@ -236,5 +257,11 @@ class PartnerSalonDesignerManagementViewModel extends ChangeNotifier {
       return;
     }
     _pendingDeleteDesignerImageUrls.add(normalized);
+  }
+
+  @override
+  void dispose() {
+    _eventController.close();
+    super.dispose();
   }
 }

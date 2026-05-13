@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_action.dart';
+import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_event.dart';
 import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_screen.dart';
 import 'package:capstone_2026/feature/partner_salon_designer_management/presentation/screen/partner_salon_designer_management_view_model.dart';
 import 'package:flutter/material.dart';
@@ -21,11 +24,35 @@ class PartnerSalonDesignerManagementScreenRoot extends StatefulWidget {
 class _PartnerSalonDesignerManagementScreenRootState
     extends State<PartnerSalonDesignerManagementScreenRoot> {
   final ImagePicker _imagePicker = ImagePicker();
+  StreamSubscription<PartnerSalonDesignerManagementEvent>? _eventSubscription;
 
   @override
   void initState() {
     super.initState();
     widget.viewModel.initialize();
+    _eventSubscription = widget.viewModel.eventStream.listen((event) async {
+      if (!mounted) {
+        return;
+      }
+      switch (event) {
+        case PartnerSalonDesignerManagementShowMessage(:final message):
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+          break;
+        case PartnerSalonDesignerManagementOpenGallery(:final index):
+          await _pickDesignerImage(index);
+          break;
+        case PartnerSalonDesignerManagementPop():
+          context.pop();
+          break;
+        case PartnerSalonDesignerManagementPopWithMessage(:final message):
+          final messenger = ScaffoldMessenger.of(context);
+          context.pop();
+          messenger.showSnackBar(SnackBar(content: Text(message)));
+          break;
+      }
+    });
   }
 
   @override
@@ -45,15 +72,11 @@ class _PartnerSalonDesignerManagementScreenRootState
               case PartnerSalonDesignerManagementRemoveDesignerImage():
               case PartnerSalonDesignerManagementToggleDesignerActive():
               case PartnerSalonDesignerManagementTapSaveDesigners():
+              case PartnerSalonDesignerManagementTapPickDesignerImage():
                 widget.viewModel.onAction(action);
                 break;
               case PartnerSalonDesignerManagementTapBack():
                 context.pop();
-                break;
-              case PartnerSalonDesignerManagementTapPickDesignerImage(
-                :final index,
-              ):
-                _pickDesignerImage(index);
                 break;
             }
           },
@@ -71,5 +94,11 @@ class _PartnerSalonDesignerManagementScreenRootState
       index: index,
       filePath: selected.path,
     );
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription?.cancel();
+    super.dispose();
   }
 }
