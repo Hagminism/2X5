@@ -45,7 +45,12 @@ class PartnerSalonManagementNavigationCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(description, style: AppTextStyles.bodySecondary),
+                    Text(
+                      description,
+                      style: AppTextStyles.bodySecondary.copyWith(
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
               ),

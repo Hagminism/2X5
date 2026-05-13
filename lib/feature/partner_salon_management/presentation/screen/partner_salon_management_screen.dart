@@ -93,7 +93,7 @@ class PartnerSalonManagementScreen extends StatelessWidget {
         PartnerSalonManagementNavigationCard(
           icon: Icons.spa_rounded,
           title: '시술 관리',
-          description: '시술명, 소요 시간, 가격, 안내 문구를 관리합니다.',
+          description: '각 시술의 세부 정보를 관리합니다.',
           onTap: () {
             onAction(
               const PartnerSalonManagementAction.openServiceManagement(),
