@@ -289,9 +289,7 @@ void diSetup() {
     ),
   );
   getIt.registerFactory<PartnerSalonManagementViewModel>(
-    () => PartnerSalonManagementViewModel(
-      salonRepository: getIt<SalonRepository>(),
-    ),
+    () => PartnerSalonManagementViewModel(),
   );
   getIt.registerFactory<PartnerSalonDesignerManagementViewModel>(
     () => PartnerSalonDesignerManagementViewModel(
@@ -417,6 +415,7 @@ void diSetup() {
   getIt.registerFactory<SalonReservationViewModel>(
     () => SalonReservationViewModel(
       salonRepository: getIt<SalonRepository>(),
+      storeRepository: getIt<StoreRepository>(),
     ),
   );
 }
