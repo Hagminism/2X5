@@ -18,6 +18,7 @@ extension StoreDtoMapper on StoreDto {
       rating: rating ?? 0,
       depositEnabled: depositEnabled ?? false,
       depositAmount: depositAmount ?? 0,
+      reservationSlotMinutes: reservationSlotMinutes ?? 30,
       createdAt: _parseDateTime(createdAt),
     );
   }
@@ -48,6 +49,7 @@ extension StoreToDtoMapper on Store {
       rating: rating,
       depositEnabled: depositEnabled,
       depositAmount: depositAmount,
+      reservationSlotMinutes: reservationSlotMinutes,
       createdAt: createdAt?.toIso8601String(),
     );
   }

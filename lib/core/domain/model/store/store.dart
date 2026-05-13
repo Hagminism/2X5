@@ -20,6 +20,7 @@ abstract class Store with _$Store {
     @Default(0) double rating,
     @Default(false) bool depositEnabled,
     @Default(0) int depositAmount,
+    @Default(30) int reservationSlotMinutes,
     DateTime? createdAt,
   }) = _Store;
 
