@@ -196,12 +196,36 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
+  Future<String> uploadMySalonDesignerImageFile(String filePath) async {
+    final store = await getMyStore();
+    if (store == null) {
+      throw StateError('업장 정보 저장 후 디자이너 이미지를 업로드할 수 있습니다.');
+    }
+    return _storeDataSource.uploadSalonDesignerImageFile(
+      storeId: store.id,
+      filePath: filePath,
+    );
+  }
+
+  @override
   Future<void> deleteMyStoreMenuImageByUrl(String imageUrl) async {
     final store = await getMyStore();
     if (store == null) {
       return;
     }
     await _storeDataSource.deleteStoreMenuImageByUrl(
+      storeId: store.id,
+      imageUrl: imageUrl,
+    );
+  }
+
+  @override
+  Future<void> deleteMySalonDesignerImageByUrl(String imageUrl) async {
+    final store = await getMyStore();
+    if (store == null) {
+      return;
+    }
+    await _storeDataSource.deleteSalonDesignerImageByUrl(
       storeId: store.id,
       imageUrl: imageUrl,
     );

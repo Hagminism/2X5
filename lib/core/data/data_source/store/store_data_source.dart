@@ -39,7 +39,17 @@ abstract interface class StoreDataSource {
     required String filePath,
   });
 
+  Future<String> uploadSalonDesignerImageFile({
+    required String storeId,
+    required String filePath,
+  });
+
   Future<void> deleteStoreMenuImageByUrl({
+    required String storeId,
+    required String imageUrl,
+  });
+
+  Future<void> deleteSalonDesignerImageByUrl({
     required String storeId,
     required String imageUrl,
   });
