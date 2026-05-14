@@ -187,13 +187,13 @@ class _InformationScreenState extends State<InformationScreen>
         },
         body: TabBarView(
           controller: _tabController,
-          children: const [
+          children: [
             Center(child: Text('홈 탭')),
             Center(child: Text('메뉴 탭')),
             Center(child: Text('사진 탭')),
-            StoreReviewTab(),
+            StoreReviewTab(storeId: widget.storeId),
             Center(child: Text('정보 탭')),
-            StoreReservationStatusTab(),
+            const StoreReservationStatusTab(),
           ],
         ),
       ),

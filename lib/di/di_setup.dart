@@ -155,7 +155,7 @@ void diSetup() {
     ),
   );
   getIt.registerLazySingleton<StampRepository>(
-    () => StampRepositoryImpl(),
+    () => StampRepositoryImpl(supabase: getIt<SupabaseClient>()),
   );
   getIt.registerLazySingleton<StampService>(
     () => StampService(

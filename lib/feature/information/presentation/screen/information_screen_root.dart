@@ -73,9 +73,9 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
 
           return InformationScreen(
             storeId: widget.storeId,
-            name: widget.viewModel.name,
-            subtitle: widget.viewModel.subtitle,
-            rating: widget.viewModel.rating,
+            name: widget.viewModel.name.isEmpty ? widget.name : widget.viewModel.name,
+            subtitle: widget.viewModel.subtitle.isEmpty ? widget.subtitle : widget.viewModel.subtitle,
+            rating: widget.viewModel.rating == 0.0 ? widget.rating : widget.viewModel.rating,
           );
         },
       ),
