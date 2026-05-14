@@ -364,16 +364,19 @@ void diSetup() {
   getIt.registerFactory<InformationViewModel>(
     () => InformationViewModel(
       storeRepository: getIt<StoreRepository>(),
+      salonRepository: getIt<SalonRepository>(),
     ),
   );
   getIt.registerFactory<SearchStoreInformationViewModel>(
     () => SearchStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
+      salonRepository: getIt<SalonRepository>(),
     ),
   );
   getIt.registerFactory<MapStoreInformationViewModel>(
     () => MapStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
+      salonRepository: getIt<SalonRepository>(),
     ),
   );
   getIt.registerFactory<SeatSelectionViewModel>(

@@ -42,19 +42,19 @@ class SalonReservationViewModel extends ChangeNotifier {
         enabledSlot;
   }
 
-  Future<void> initialize(String storeId) async {
+  Future<void> initialize(String storeId, {String? initialDesignerId}) async {
     _state = SalonReservationState(
       storeId: storeId,
       selectedDate: _dateOnly(DateTime.now()),
     );
     notifyListeners();
-    await _loadInitialData();
+    await _loadInitialData(initialDesignerId: initialDesignerId);
   }
 
   void onAction(SalonReservationAction action) {
     switch (action) {
       case SalonReservationTapRetry():
-        unawaited(_loadInitialData());
+        unawaited(_loadInitialData(initialDesignerId: null));
         break;
       case SalonReservationSelectDesigner(:final designerId):
         unawaited(_selectDesigner(designerId));
@@ -90,7 +90,7 @@ class SalonReservationViewModel extends ChangeNotifier {
       await _salonRepository.createReservation(
         storeId: _state.storeId,
         designerId: _state.selectedDesignerId!,
-        serviceId: _state.selectedServiceId!,
+        serviceIds: [_state.selectedServiceId!],
         startAt: _state.selectedStartAt!,
       );
       await _loadReservationsAndRecomputeSlots();
@@ -131,7 +131,7 @@ class SalonReservationViewModel extends ChangeNotifier {
     return null;
   }
 
-  Future<void> _loadInitialData() async {
+  Future<void> _loadInitialData({String? initialDesignerId}) async {
     _state = _state.copyWith(
       isLoading: true,
       loadError: null,
@@ -152,9 +152,10 @@ class SalonReservationViewModel extends ChangeNotifier {
         _state.storeId,
       )).where((service) => service.isActive).toList();
 
-      final selectedDesignerId = designers.isNotEmpty
-          ? designers.first.id
-          : null;
+      final selectedDesignerId = _pickInitialDesignerId(
+        designers: designers,
+        initialDesignerId: initialDesignerId,
+      );
       final selectedServiceId = services.isNotEmpty ? services.first.id : null;
 
       _state = _state.copyWith(
@@ -310,6 +311,20 @@ class SalonReservationViewModel extends ChangeNotifier {
       selectedStartAt: stillSelectable ? selectedStartAt : null,
     );
     notifyListeners();
+  }
+
+  String? _pickInitialDesignerId({
+    required List<SalonDesigner> designers,
+    required String? initialDesignerId,
+  }) {
+    if (designers.isEmpty) {
+      return null;
+    }
+    if (initialDesignerId != null &&
+        designers.any((designer) => designer.id == initialDesignerId)) {
+      return initialDesignerId;
+    }
+    return designers.first.id;
   }
 
   DateTime _dateOnly(DateTime date) {

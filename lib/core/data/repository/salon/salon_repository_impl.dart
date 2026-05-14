@@ -105,14 +105,14 @@ class SalonRepositoryImpl implements SalonRepository {
   Future<SalonReservation> createReservation({
     required String storeId,
     required String designerId,
-    required String serviceId,
+    required List<String> serviceIds,
     required DateTime startAt,
   }) {
     return _salonDataSource.createReservation(
       storeId: storeId,
       userId: _getCurrentUidOrThrow(),
       designerId: designerId,
-      serviceId: serviceId,
+      serviceIds: serviceIds,
       startAt: startAt,
     );
   }

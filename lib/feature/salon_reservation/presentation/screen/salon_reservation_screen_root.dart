@@ -9,11 +9,13 @@ import 'package:intl/intl.dart';
 class SalonReservationScreenRoot extends StatefulWidget {
   final SalonReservationViewModel viewModel;
   final String storeId;
+  final String? initialDesignerId;
 
   const SalonReservationScreenRoot({
     super.key,
     required this.viewModel,
     required this.storeId,
+    this.initialDesignerId,
   });
 
   @override
@@ -26,7 +28,10 @@ class _SalonReservationScreenRootState
   @override
   void initState() {
     super.initState();
-    widget.viewModel.initialize(widget.storeId);
+    widget.viewModel.initialize(
+      widget.storeId,
+      initialDesignerId: widget.initialDesignerId,
+    );
   }
 
   @override

@@ -1,27 +1,262 @@
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
-import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/enum/week_day.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class StoreReservationStatusTab extends StatefulWidget {
-  final void Function() onTapReservation;
+class StoreReservationStatusTab extends StatelessWidget {
   final String category;
+  final List<SalonDesigner> salonDesigners;
+  final void Function() onTapReservation;
+  final void Function(String designerId)? onTapSalonDesigner;
 
   const StoreReservationStatusTab({
     super.key,
     required this.category,
+    this.salonDesigners = const [],
     required this.onTapReservation,
+    this.onTapSalonDesigner,
   });
 
   @override
-  State<StoreReservationStatusTab> createState() =>
-      _StoreReservationStatusTabState();
+  Widget build(BuildContext context) {
+    final storeCategory = StoreCategory.fromDbValue(category);
+    return Scaffold(
+      backgroundColor: Colors.white,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+          child: ElevatedButton(
+            onPressed: onTapReservation,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 56),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+            ),
+            child: const Text(
+              '예약/이용하기',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: switch (storeCategory) {
+          StoreCategory.studyCafe => const _StudyCafeReservationBody(),
+          StoreCategory.salon => _SalonDesignerReservationBody(
+            salonDesigners: salonDesigners,
+            onTapSalonDesigner: onTapSalonDesigner,
+          ),
+          _ => _DefaultReservationAvailabilityBody(category: category),
+        },
+      ),
+    );
+  }
 }
 
-class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
+class _StudyCafeReservationBody extends StatelessWidget {
+  const _StudyCafeReservationBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(
+          title: '현재 이용 가능한 좌석',
+          showCalendarButton: false,
+          onPickDate: null,
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          '현재 좌석 이용 현황',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        _TimeSlotRow(
+          time: '좌석 선택',
+          status: '실시간 확인',
+          color: AppColors.primary,
+        ),
+        _TimeSlotRow(
+          time: '이용 시간',
+          status: '2시간/4시간 등',
+          color: Colors.blue,
+        ),
+      ],
+    );
+  }
+}
+
+class _SalonDesignerReservationBody extends StatelessWidget {
+  final List<SalonDesigner> salonDesigners;
+  final void Function(String designerId)? onTapSalonDesigner;
+
+  const _SalonDesignerReservationBody({
+    required this.salonDesigners,
+    required this.onTapSalonDesigner,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '디자이너 선택',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '카드를 눌러 예약 일정을 잡을 수 있습니다.',
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+        ),
+        const SizedBox(height: 16),
+        if (salonDesigners.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Text(
+              '등록된 디자이너가 없습니다. 아래 버튼으로 예약 화면으로 이동해 주세요.',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade800),
+            ),
+          )
+        else
+          ...salonDesigners.map(
+            (designer) {
+              final void Function(String designerId)? handler =
+                  onTapSalonDesigner;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _SalonDesignerCard(
+                  designer: designer,
+                  onTap: handler == null
+                      ? null
+                      : () {
+                          handler(designer.id);
+                        },
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+}
+
+class _SalonDesignerCard extends StatelessWidget {
+  final SalonDesigner designer;
+  final void Function()? onTap;
+
+  const _SalonDesignerCard({required this.designer, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = designer.imageUrl.trim();
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFEEEEEE)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    width: 72,
+                    height: 72,
+                    child: imageUrl.isNotEmpty
+                        ? Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return ColoredBox(
+                                color: const Color(0xFFF0F0F0),
+                                child: Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.grey.shade500,
+                                ),
+                              );
+                            },
+                          )
+                        : ColoredBox(
+                            color: const Color(0xFFF0F0F0),
+                            child: Icon(
+                              Icons.person,
+                              size: 40,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        designer.name,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (designer.introduction.trim().isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          designer.introduction,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.35,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (onTap != null)
+                  Icon(Icons.chevron_right, color: Colors.grey.shade400),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DefaultReservationAvailabilityBody extends StatefulWidget {
+  final String category;
+
+  const _DefaultReservationAvailabilityBody({required this.category});
+
+  @override
+  State<_DefaultReservationAvailabilityBody> createState() =>
+      _DefaultReservationAvailabilityBodyState();
+}
+
+class _DefaultReservationAvailabilityBodyState
+    extends State<_DefaultReservationAvailabilityBody> {
   DateTime _selectedDate = DateTime.now();
 
-  String _getWeekdayKorean(int weekday) {
+  String _weekdayKorean(int weekday) {
     return WeekDay.values[weekday - 1].label;
   }
 
@@ -49,102 +284,99 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
 
   @override
   Widget build(BuildContext context) {
-    final category = StoreCategory.fromDbValue(widget.category);
-    return Scaffold(
-      backgroundColor: Colors.white,
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-          child: ElevatedButton(
-            onPressed: widget.onTapReservation,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-            ),
-            child: const Text(
-              '예약/이용하기',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionTitle(
+          title: '방문 예정일 선택',
+          showCalendarButton: true,
+          onPickDate: _pickDate,
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  category == StoreCategory.studyCafe
-                      ? '현재 이용 가능한 좌석'
-                      : '방문 예정일 선택',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (category != StoreCategory.studyCafe)
-                  IconButton(
-                    onPressed: _pickDate,
-                    icon: const Icon(
-                      Icons.calendar_month,
-                      color: AppColors.primary,
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (category != StoreCategory.studyCafe) _buildDateSelector(),
-            const SizedBox(height: 24),
-            Text(
-              category == StoreCategory.studyCafe
-                  ? '현재 좌석 이용 현황'
-                  : '${_selectedDate.month}월 ${_selectedDate.day}일 ${_getWeekdayKorean(_selectedDate.weekday)}요일 현황',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            if (category == StoreCategory.studyCafe) ...[
-              _buildTimeSlot(
-                time: '좌석 선택',
-                status: '실시간 확인',
-                color: AppColors.primary,
-              ),
-              _buildTimeSlot(
-                time: '이용 시간',
-                status: '2시간/4시간 등',
-                color: Colors.blue,
-              ),
-            ] else if (category == StoreCategory.salon) ...[
-              _buildTimeSlot(
-                time: '디자이너',
-                status: '선택 필요',
-                color: AppColors.primary,
-              ),
-              _buildTimeSlot(
-                time: '시술/시간',
-                status: '슬롯당 1명',
-                color: Colors.blue,
-              ),
-            ] else ...[
-              _buildTimeSlot(time: '12:00', status: '여유', color: Colors.green),
-              _buildTimeSlot(time: '13:00', status: '혼잡', color: Colors.orange),
-              _buildTimeSlot(time: '14:00', status: '마감', color: Colors.red),
-              _buildTimeSlot(time: '18:00', status: '보통', color: Colors.blue),
-            ],
-          ],
+        const SizedBox(height: 12),
+        _WeekDateStrip(
+          selectedDate: _selectedDate,
+          onSelect: (date) {
+            setState(() {
+              _selectedDate = date;
+            });
+          },
         ),
-      ),
+        const SizedBox(height: 24),
+        Text(
+          '${_selectedDate.month}월 ${_selectedDate.day}일 ${_weekdayKorean(_selectedDate.weekday)}요일 현황',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        _TimeSlotRow(
+          time: '12:00',
+          status: '여유',
+          color: Colors.green,
+        ),
+        _TimeSlotRow(
+          time: '13:00',
+          status: '혼잡',
+          color: Colors.orange,
+        ),
+        _TimeSlotRow(
+          time: '14:00',
+          status: '마감',
+          color: Colors.red,
+        ),
+        _TimeSlotRow(
+          time: '18:00',
+          status: '보통',
+          color: Colors.blue,
+        ),
+      ],
     );
   }
+}
 
-  Widget _buildDateSelector() {
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final bool showCalendarButton;
+  final Future<void> Function()? onPickDate;
+
+  const _SectionTitle({
+    required this.title,
+    required this.showCalendarButton,
+    required this.onPickDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        if (showCalendarButton && onPickDate != null)
+          IconButton(
+            onPressed: onPickDate,
+            icon: const Icon(Icons.calendar_month, color: AppColors.primary),
+          ),
+      ],
+    );
+  }
+}
+
+class _WeekDateStrip extends StatelessWidget {
+  final DateTime selectedDate;
+  final void Function(DateTime date) onSelect;
+
+  const _WeekDateStrip({
+    required this.selectedDate,
+    required this.onSelect,
+  });
+
+  String _weekdayKorean(int weekday) {
+    return WeekDay.values[weekday - 1].label;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 90,
       child: ListView.builder(
@@ -153,12 +385,12 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
         itemBuilder: (context, index) {
           final date = DateTime.now().add(Duration(days: index));
           final isSelected =
-              date.year == _selectedDate.year &&
-              date.month == _selectedDate.month &&
-              date.day == _selectedDate.day;
+              date.year == selectedDate.year &&
+              date.month == selectedDate.month &&
+              date.day == selectedDate.day;
 
           return GestureDetector(
-            onTap: () => setState(() => _selectedDate = date),
+            onTap: () => onSelect(date),
             child: Container(
               width: 65,
               margin: const EdgeInsets.only(right: 10),
@@ -173,7 +405,7 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _getWeekdayKorean(date.weekday),
+                    _weekdayKorean(date.weekday),
                     style: TextStyle(
                       color: isSelected ? Colors.white : Colors.grey,
                       fontSize: 13,
@@ -196,12 +428,21 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
       ),
     );
   }
+}
 
-  Widget _buildTimeSlot({
-    required String time,
-    required String status,
-    required Color color,
-  }) {
+class _TimeSlotRow extends StatelessWidget {
+  final String time;
+  final String status;
+  final Color color;
+
+  const _TimeSlotRow({
+    required this.time,
+    required this.status,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(18),

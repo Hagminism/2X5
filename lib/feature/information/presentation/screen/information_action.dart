@@ -12,4 +12,9 @@ sealed class InformationAction with _$InformationAction {
 
   const factory InformationAction.tapReservation(String currentLocation) =
       TapInformationReservation;
+
+  const factory InformationAction.tapSalonDesignerReservation({
+    required String currentLocation,
+    required String designerId,
+  }) = TapSalonDesignerReservation;
 }

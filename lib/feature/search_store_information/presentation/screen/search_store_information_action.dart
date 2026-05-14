@@ -16,4 +16,9 @@ sealed class SearchStoreInformationAction with _$SearchStoreInformationAction {
   const factory SearchStoreInformationAction.tapReservation(
     String currentLocation,
   ) = TapSearchStoreInformationReservation;
+
+  const factory SearchStoreInformationAction.tapSalonDesignerReservation({
+    required String currentLocation,
+    required String designerId,
+  }) = TapSearchStoreInformationSalonDesignerReservation;
 }

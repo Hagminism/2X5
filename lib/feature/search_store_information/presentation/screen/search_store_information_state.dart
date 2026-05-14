@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'search_store_information_state.freezed.dart';
@@ -12,5 +13,6 @@ abstract class SearchStoreInformationState with _$SearchStoreInformationState {
     @Default('') String category,
     String? imageUrl,
     @Default(false) bool isBookmarked,
+    @Default([]) List<SalonDesigner> salonDesigners,
   }) = _SearchStoreInformationState;
 }

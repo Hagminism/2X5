@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_store_information_action.dart';
@@ -10,10 +11,13 @@ import 'package:flutter/material.dart';
 
 class SearchStoreInformationViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
+  final SalonRepository _salonRepository;
 
   SearchStoreInformationViewModel({
     required StoreRepository storeRepository,
-  }) : _storeRepository = storeRepository;
+    required SalonRepository salonRepository,
+  }) : _storeRepository = storeRepository,
+       _salonRepository = salonRepository;
 
   SearchStoreInformationState _state = const SearchStoreInformationState();
 
@@ -42,6 +46,12 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
       rating: store.rating,
       category: store.category,
     );
+    if (StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
+      final designers = (await _salonRepository.getDesignersByStoreId(store.id))
+          .where((designer) => designer.isActive && !designer.isDeleted)
+          .toList();
+      _state = _state.copyWith(salonDesigners: designers);
+    }
     notifyListeners();
   }
 
@@ -75,6 +85,16 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         _eventController.add(
           SearchStoreInformationEvent.push('$currentLocation/$target'),
         );
+        break;
+      case TapSearchStoreInformationSalonDesignerReservation(
+        :final currentLocation,
+        :final designerId,
+      ):
+        final uri = Uri(
+          path: '$currentLocation/${Routes.salonReservation}',
+          queryParameters: {'designerId': designerId},
+        );
+        _eventController.add(SearchStoreInformationEvent.push(uri.toString()));
         break;
     }
   }

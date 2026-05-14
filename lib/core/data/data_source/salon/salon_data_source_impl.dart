@@ -162,14 +162,14 @@ class SalonDataSourceImpl implements SalonDataSource {
     required String storeId,
     required String userId,
     required String designerId,
-    required String serviceId,
+    required List<String> serviceIds,
     required DateTime startAt,
   }) async {
     final callable = _firebaseFunctions.httpsCallable('createSalonReservation');
     final result = await callable.call<Map<String, dynamic>>({
       'storeId': storeId,
       'designerId': designerId,
-      'serviceId': serviceId,
+      'serviceIds': serviceIds,
       'startAt': startAt.toIso8601String(),
     });
     return SalonReservation.fromJson(Map<String, Object?>.from(result.data));

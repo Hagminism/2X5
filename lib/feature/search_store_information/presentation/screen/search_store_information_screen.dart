@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_image_slider.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_store_header.dart';
@@ -137,10 +138,11 @@ class _SearchStoreInformationScreenState
             const StoreHomeTab(),
             const StoreMenuTab(),
             const StorePhotoTab(),
-            const StoreReviewTab(),
+            StoreReviewTab(storeId: widget.state.storeId),
             const StoreInfoTab(),
             StoreReservationStatusTab(
               category: widget.state.category,
+              salonDesigners: widget.state.salonDesigners,
               onTapReservation: () {
                 final currentLocation = GoRouterState.of(
                   context,
@@ -149,6 +151,21 @@ class _SearchStoreInformationScreenState
                   SearchStoreInformationAction.tapReservation(currentLocation),
                 );
               },
+              onTapSalonDesigner:
+                  StoreCategory.fromDbValue(widget.state.category) ==
+                      StoreCategory.salon
+                  ? (String designerId) {
+                      final currentLocation = GoRouterState.of(
+                        context,
+                      ).matchedLocation;
+                      widget.onAction(
+                        SearchStoreInformationAction.tapSalonDesignerReservation(
+                          currentLocation: currentLocation,
+                          designerId: designerId,
+                        ),
+                      );
+                    }
+                  : null,
             ),
           ],
         ),

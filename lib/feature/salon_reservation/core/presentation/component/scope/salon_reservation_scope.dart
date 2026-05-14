@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 class SalonReservationScope extends StatefulWidget {
   final SalonReservationViewModel viewModel;
   final String storeId;
+  final String? initialDesignerId;
 
   const SalonReservationScope({
     super.key,
     required this.viewModel,
     required this.storeId,
+    this.initialDesignerId,
   });
 
   @override
@@ -24,6 +26,7 @@ class _SalonReservationScopeState extends State<SalonReservationScope> {
     return SalonReservationScreenRoot(
       viewModel: _viewModel,
       storeId: widget.storeId,
+      initialDesignerId: widget.initialDesignerId,
     );
   }
 

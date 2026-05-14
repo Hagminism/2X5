@@ -246,7 +246,7 @@ type StudyCafeSeatHoldResponse = {
 type CreateSalonReservationRequest = {
   storeId?: string;
   designerId?: string;
-  serviceId?: string;
+  serviceIds?: unknown;
   startAt?: string;
 };
 
@@ -318,7 +318,7 @@ type SalonReservationResponse = {
   store_id: string;
   user_id: string;
   designer_id: string;
-  service_id: string;
+  service_ids: string[];
   start_at: string;
   end_at: string;
   slot_minutes?: number;
@@ -829,10 +829,13 @@ export const createSalonReservation = onCall(
     const data = (request.data ?? {}) as CreateSalonReservationRequest;
     const storeId = (data.storeId ?? "").trim();
     const designerId = (data.designerId ?? "").trim();
-    const serviceId = (data.serviceId ?? "").trim();
+    const rawServiceIds = Array.isArray(data.serviceIds) ? data.serviceIds : [];
+    const serviceIds = rawServiceIds
+      .map((id) => String(id ?? "").trim())
+      .filter((id) => id.length > 0);
     const startAt = (data.startAt ?? "").trim();
 
-    if (!storeId || !designerId || !serviceId || !startAt) {
+    if (!storeId || !designerId || serviceIds.length === 0 || !startAt) {
       throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
     }
 
@@ -846,7 +849,7 @@ export const createSalonReservation = onCall(
           p_store_id: storeId,
           p_user_id: uid,
           p_designer_id: designerId,
-          p_service_id: serviceId,
+          p_service_ids: serviceIds,
           p_start_at: startAt,
         },
       );
@@ -869,6 +872,12 @@ export const createSalonReservation = onCall(
         throw new HttpsError(
           "failed-precondition",
           "선택한 시간이 예약 슬롯과 맞지 않습니다.",
+        );
+      }
+      if (message.includes("salon_end_time_out_of_schedule")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시술 시간이 디자이너 근무 시간을 넘어갑니다.",
         );
       }
       throw e;

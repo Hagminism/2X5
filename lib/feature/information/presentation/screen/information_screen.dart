@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -139,6 +140,7 @@ class _InformationScreenState extends State<InformationScreen>
             const StoreInfoTab(),
             StoreReservationStatusTab(
               category: widget.state.category,
+              salonDesigners: widget.state.salonDesigners,
               onTapReservation: () {
                 final currentLocation = GoRouterState.of(
                   context,
@@ -147,6 +149,21 @@ class _InformationScreenState extends State<InformationScreen>
                   InformationAction.tapReservation(currentLocation),
                 );
               },
+              onTapSalonDesigner:
+                  StoreCategory.fromDbValue(widget.state.category) ==
+                      StoreCategory.salon
+                  ? (String designerId) {
+                      final currentLocation = GoRouterState.of(
+                        context,
+                      ).matchedLocation;
+                      widget.onAction(
+                        InformationAction.tapSalonDesignerReservation(
+                          currentLocation: currentLocation,
+                          designerId: designerId,
+                        ),
+                      );
+                    }
+                  : null,
             ),
           ],
         ),

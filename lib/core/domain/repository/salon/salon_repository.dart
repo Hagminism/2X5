@@ -35,7 +35,7 @@ abstract interface class SalonRepository {
   Future<SalonReservation> createReservation({
     required String storeId,
     required String designerId,
-    required String serviceId,
+    required List<String> serviceIds,
     required DateTime startAt,
   });
 }

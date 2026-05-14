@@ -12,7 +12,7 @@ abstract class SalonReservation with _$SalonReservation {
     @JsonKey(name: 'store_id') required String storeId,
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(name: 'designer_id') required String designerId,
-    @JsonKey(name: 'service_id') required String serviceId,
+    @JsonKey(name: 'service_ids') @Default([]) List<String> serviceIds,
     @JsonKey(name: 'start_at') required DateTime startAt,
     @JsonKey(name: 'end_at') required DateTime endAt,
     @JsonKey(name: 'slot_minutes') @Default(30) int slotMinutes,

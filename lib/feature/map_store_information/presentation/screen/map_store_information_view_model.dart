@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/map_store_information/presentation/screen/map_store_information_action.dart';
@@ -10,10 +11,13 @@ import 'package:flutter/material.dart';
 
 class MapStoreInformationViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
+  final SalonRepository _salonRepository;
 
   MapStoreInformationViewModel({
     required StoreRepository storeRepository,
-  }) : _storeRepository = storeRepository;
+    required SalonRepository salonRepository,
+  }) : _storeRepository = storeRepository,
+       _salonRepository = salonRepository;
 
   MapStoreInformationState _state = const MapStoreInformationState();
 
@@ -41,6 +45,12 @@ class MapStoreInformationViewModel extends ChangeNotifier {
       rating: store.rating,
       category: store.category,
     );
+    if (StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
+      final designers = (await _salonRepository.getDesignersByStoreId(store.id))
+          .where((designer) => designer.isActive && !designer.isDeleted)
+          .toList();
+      _state = _state.copyWith(salonDesigners: designers);
+    }
     notifyListeners();
   }
 
@@ -74,6 +84,16 @@ class MapStoreInformationViewModel extends ChangeNotifier {
         _eventController.add(
           MapStoreInformationEvent.push('$currentLocation/$target'),
         );
+        break;
+      case TapMapStoreInformationSalonDesignerReservation(
+        :final currentLocation,
+        :final designerId,
+      ):
+        final uri = Uri(
+          path: '$currentLocation/${Routes.salonReservation}',
+          queryParameters: {'designerId': designerId},
+        );
+        _eventController.add(MapStoreInformationEvent.push(uri.toString()));
         break;
     }
   }

@@ -180,6 +180,8 @@ final router = GoRouter(
                       builder: (context, state) => SalonReservationScope(
                         viewModel: getIt<SalonReservationViewModel>(),
                         storeId: state.pathParameters['storeId'] ?? '',
+                        initialDesignerId:
+                            state.uri.queryParameters['designerId'],
                       ),
                     ),
                     GoRoute(
@@ -239,6 +241,8 @@ final router = GoRouter(
                       builder: (context, state) => SalonReservationScope(
                         viewModel: getIt<SalonReservationViewModel>(),
                         storeId: state.pathParameters['storeId'] ?? '',
+                        initialDesignerId:
+                            state.uri.queryParameters['designerId'],
                       ),
                     ),
                     GoRoute(
@@ -297,6 +301,8 @@ final router = GoRouter(
                           builder: (context, state) => SalonReservationScope(
                             viewModel: getIt<SalonReservationViewModel>(),
                             storeId: state.pathParameters['storeId'] ?? '',
+                            initialDesignerId:
+                                state.uri.queryParameters['designerId'],
                           ),
                         ),
                         GoRoute(

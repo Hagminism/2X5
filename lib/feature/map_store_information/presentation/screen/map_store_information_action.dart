@@ -16,4 +16,9 @@ sealed class MapStoreInformationAction with _$MapStoreInformationAction {
   const factory MapStoreInformationAction.tapReservation(
     String currentLocation,
   ) = TapMapStoreInformationReservation;
+
+  const factory MapStoreInformationAction.tapSalonDesignerReservation({
+    required String currentLocation,
+    required String designerId,
+  }) = TapMapStoreInformationSalonDesignerReservation;
 }
