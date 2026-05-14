@@ -205,16 +205,6 @@ class _InformationScreenState extends State<InformationScreen>
         body: TabBarView(
           controller: _tabController,
           children: [
-            Center(child: Text('홈 탭')),
-            Center(child: Text('메뉴 탭')),
-            Center(child: Text('사진 탭')),
-            StoreReviewTab(
-              storeId: widget.storeId,
-              storeName: widget.name,
-              location: widget.subtitle,
-              naverPlaceId: widget.naverPlaceId,
-            ),
-            Center(child: Text('정보 탭')),
             StoreHomeTab(
               address: widget.address,
               displayPhone: widget.displayPhone,
@@ -223,7 +213,12 @@ class _InformationScreenState extends State<InformationScreen>
             ),
             StoreMenuTab(menus: widget.menus),
             StorePhotoTab(imageUrls: widget.imageUrls),
-            StoreReviewTab(storeId: widget.storeId),
+            StoreReviewTab(
+              storeId: widget.storeId,
+              storeName: widget.name,
+              location: widget.address.isEmpty ? widget.subtitle : widget.address,
+              naverPlaceId: widget.naverPlaceId,
+            ),
             const Center(child: Text('정보 탭')),
             const StoreReservationStatusTab(),
           ],

@@ -45,10 +45,14 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
 
           return InformationScreen(
             storeId: widget.storeId,
-            name: widget.viewModel.name.isEmpty ? widget.name : widget.viewModel.name,
-            subtitle: widget.viewModel.subtitle.isEmpty ? widget.subtitle : widget.viewModel.subtitle,
-            rating: widget.viewModel.rating == 0.0 ? widget.rating : widget.viewModel.rating,
+            name: widget.viewModel.name,
+            subtitle: widget.viewModel.categorySubtitleLabel,
+            address: widget.viewModel.address,
+            displayPhone: widget.viewModel.displayPhone,
+            rating: widget.viewModel.rating,
             naverPlaceId: widget.viewModel.naverPlaceId,
+            imageUrls: widget.viewModel.imageUrls,
+            menus: widget.viewModel.menus,
           );
         },
       ),

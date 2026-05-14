@@ -19,14 +19,15 @@ class InformationViewModel extends ChangeNotifier {
   double? _rating;
   String? _category;
   String? _naverPlaceId;
-  bool _isLoading = false;
-  String? _errorMessage;
+  List<StoreImage> _images = [];
+  List<StoreMenu> _menus = [];
+  bool _isLoading = true;
 
   String get name => _name ?? '';
   String get address => _address ?? '';
   String get contact => _contact ?? '';
   double get rating => _rating ?? 0.0;
-  String get category => _category ?? "";
+  String get category => _category ?? '';
   String? get naverPlaceId => _naverPlaceId;
   bool get isLoading => _isLoading;
 
@@ -87,6 +88,7 @@ class InformationViewModel extends ChangeNotifier {
       _phone = store.phone;
       _rating = store.rating;
       _category = store.category;
+      _naverPlaceId = store.naverPlaceId;
       _images = images;
       _menus = menus;
     } catch (e) {
@@ -99,11 +101,4 @@ class InformationViewModel extends ChangeNotifier {
     }
   }
 
-  void _applyStore(Store store) {
-    _name = store.name;
-    _subtitle = store.address;
-    _rating = 0.0;
-    _category = store.category;
-    _naverPlaceId = store.naverPlaceId;
-  }
 }
