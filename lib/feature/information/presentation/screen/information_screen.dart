@@ -6,12 +6,14 @@ import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
 
 class InformationScreen extends StatefulWidget {
+  final String storeId;
   final String name;
   final String subtitle;
   final double rating;
   final String? imageUrl;
 
   const InformationScreen({
+    required this.storeId,
     required this.name,
     required this.subtitle,
     required this.rating,
@@ -166,13 +168,13 @@ class _InformationScreenState extends State<InformationScreen>
         },
         body: TabBarView(
           controller: _tabController,
-          children: const [
+          children: [
             Center(child: Text('홈 탭')),
             Center(child: Text('메뉴 탭')),
             Center(child: Text('사진 탭')),
-            StoreReviewTab(),
+            StoreReviewTab(storeId: widget.storeId),
             Center(child: Text('정보 탭')),
-            StoreReservationStatusTab(),
+            const StoreReservationStatusTab(),
           ],
         ),
       ),
