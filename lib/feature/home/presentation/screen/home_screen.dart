@@ -77,12 +77,6 @@ class HomeScreen extends StatelessWidget {
                       onStoreTap: (HomeStoreItem store) {
                         context.push(
                           '${Routes.home}/information/${store.storeId}',
-                          extra: {
-                            'name': store.name,
-                            'subtitle': store.subtitle,
-                            'rating': store.rating,
-                            'category': store.category,
-                          },
                         );
                       },
                     ),

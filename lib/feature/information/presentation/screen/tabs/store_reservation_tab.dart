@@ -60,11 +60,6 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
             onPressed: () {
               final String currentLocation = GoRouterState.of(context).matchedLocation;
 
-              // 디버깅용: 실제 DB에서 어떤 값이 오는지 터미널에서 확인하세요.
-              debugPrint('--- 예약 버튼 클릭됨 ---');
-              debugPrint('현재 DB 카테고리: ${viewModel.category}');
-              debugPrint('이동 경로 판단 (isStudyCafe): $isStudyCafe');
-
               if (isStudyCafe) {
                 // 'study_cafe'인 경우 좌석 선택 페이지로 이동
                 context.push('$currentLocation/${Routes.seat}');
