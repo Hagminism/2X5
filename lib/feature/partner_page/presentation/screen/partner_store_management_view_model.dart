@@ -244,6 +244,7 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         contact: state.storeContact.trim(),
         naverPlaceId: _myStore?.naverPlaceId,
         operatingHours: state.operatingHours,
+        rating: _myStore?.rating ?? 0,
         depositEnabled: state.depositEnabled,
         depositAmount: parsedDepositAmount,
       );

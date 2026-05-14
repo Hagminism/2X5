@@ -26,6 +26,12 @@ class StoreRepositoryImpl implements StoreRepository {
        _operatingHoursValidator = operatingHoursValidator;
 
   @override
+  Future<List<Store>> getStores() async {
+    final storeDtos = await _storeDataSource.findStores();
+    return storeDtos.map((storeDto) => storeDto.toModel()).toList();
+  }
+
+  @override
   Future<Store?> findStoreById(String id) async {
     final trimmedId = id.trim();
     if (trimmedId.isEmpty) {
@@ -56,6 +62,11 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
+  Future<List<StoreImage>> getStoreImagesByStoreId(String storeId) {
+    return _storeDataSource.findImagesByStoreId(storeId);
+  }
+
+  @override
   Future<Store> updateMyStore(Store store) async {
     final uid = await _validateAndGetApprovedUid();
     _validateStoreInput(store);
@@ -82,6 +93,11 @@ class StoreRepositoryImpl implements StoreRepository {
     );
 
     return updatedStore.toModel();
+  }
+
+  @override
+  Future<List<StoreMenu>> getStoreMenusByStoreId(String storeId) {
+    return _storeDataSource.findMenusByStoreId(storeId);
   }
 
   @override
@@ -174,7 +190,7 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<String> uploadMyStoreImageFile(String filePath) async {
     final store = await getMyStore();
     if (store == null) {
-      throw StateError('업장 정보 저장 후 이미지를 업로드할 수 있습니다.');
+      throw StateError('업장 정보 저장 후 이미지를 업로드할 수 없습니다.');
     }
     return _storeDataSource.uploadStoreImageFile(
       storeId: store.id,
@@ -186,7 +202,7 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<String> uploadMyStoreMenuImageFile(String filePath) async {
     final store = await getMyStore();
     if (store == null) {
-      throw StateError('업장 정보 저장 후 메뉴 이미지를 업로드할 수 있습니다.');
+      throw StateError('업장 정보 저장 후 메뉴 이미지를 업로드할 수 없습니다.');
     }
     return _storeDataSource.uploadStoreMenuImageFile(
       storeId: store.id,
@@ -204,6 +220,17 @@ class StoreRepositoryImpl implements StoreRepository {
       storeId: store.id,
       imageUrl: imageUrl,
     );
+  }
+
+  @override
+  Future<Store> getStoreById(String storeId) async {
+    final storeDto = await _storeDataSource.findStoreById(storeId);
+
+    if (storeDto == null) {
+      throw StateError('해당 가게 정보를 찾을 수 없습니다. (ID: $storeId)');
+    }
+
+    return storeDto.toModel();
   }
 
   String _getCurrentUidOrThrow() {

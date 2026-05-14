@@ -3,13 +3,21 @@ import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
 
 abstract interface class StoreRepository {
+
+  Future<List<Store>> getStores();
+
   Future<Store?> findStoreById(String id);
+
 
   Future<Store?> getMyStore();
 
   Future<Store> createMyStore(Store store);
 
+  Future<List<StoreImage>> getStoreImagesByStoreId(String storeId); //이미 조회
+  
   Future<Store> updateMyStore(Store store);
+
+  Future<List<StoreMenu>> getStoreMenusByStoreId(String storeId);//메뉴 조회
 
   Future<List<StoreMenu>> getMyStoreMenus();
 
@@ -24,4 +32,6 @@ abstract interface class StoreRepository {
   Future<String> uploadMyStoreMenuImageFile(String filePath);
 
   Future<void> deleteMyStoreMenuImageByUrl(String imageUrl);
+
+  Future<Store> getStoreById(String storeId);
 }

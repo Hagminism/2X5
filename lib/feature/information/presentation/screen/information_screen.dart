@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'tabs/store_home_tab.dart';
+import 'tabs/store_menu_tab.dart';
+import 'tabs/store_photo_tab.dart';
 import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
 
@@ -10,15 +13,24 @@ class InformationScreen extends StatefulWidget {
   final String storeId;
   final String name;
   final String subtitle;
+  final String address;
+  /// `phone` 우선·없으면 `contact` (뷰모델 `displayPhone`).
+  final String displayPhone;
   final double rating;
   final String? naverPlaceId;
+  final List<String> imageUrls;
+  final List<StoreMenu> menus;
 
   const InformationScreen({
     required this.storeId,
     required this.name,
     required this.subtitle,
+    this.address = '',
+    this.displayPhone = '',
     required this.rating,
     this.naverPlaceId,
+    this.imageUrls = const [],
+    this.menus = const [],
     super.key,
   });
 
@@ -31,34 +43,11 @@ class _InformationScreenState extends State<InformationScreen>
   late TabController _tabController;
   final PageController _sliderController = PageController();
   int _currentSliderPage = 0;
-  List<String> _images = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
-    _fetchImages();
-  }
-
-  Future<void> _fetchImages() async {
-    try {
-      final response = await Supabase.instance.client
-          .from('store_images')
-          .select('image_url')
-          .eq('store_id', widget.storeId)
-          .order('is_cover', ascending: false)
-          .order('sort_order')
-          .order('created_at');
-      if (mounted) {
-        setState(() {
-          _images = (response as List)
-              .map((e) => e['image_url'] as String)
-              .toList();
-        });
-      }
-    } catch (e) {
-      debugPrint('store_images fetch error: $e');
-    }
   }
 
   @override
@@ -68,9 +57,23 @@ class _InformationScreenState extends State<InformationScreen>
     super.dispose();
   }
 
+  List<String> _sliderUrlsForTop() {
+    final taken = widget.imageUrls.take(10).toList();
+    if (taken.isEmpty) {
+      return const [''];
+    }
+    return taken;
+  }
+
+  String? _headerThumbnailUrl() {
+    if (widget.imageUrls.isEmpty) return null;
+    final u = widget.imageUrls.first.trim();
+    return u.isEmpty ? null : u;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final sliderCount = _images.isEmpty ? 1 : _images.length;
+    final sliderUrls = _sliderUrlsForTop();
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -112,17 +115,29 @@ class _InformationScreenState extends State<InformationScreen>
                   children: [
                     PageView.builder(
                       controller: _sliderController,
-                      onPageChanged: (index) => setState(() => _currentSliderPage = index),
-                      itemCount: sliderCount,
+                      onPageChanged: (index) =>
+                          setState(() => _currentSliderPage = index),
+                      itemCount: sliderUrls.length,
                       itemBuilder: (context, index) {
-                        final url = _images.isEmpty ? null : _images[index];
+                        final url = sliderUrls[index].trim();
+                        final hasUrl = url.isNotEmpty;
                         return Container(
                           width: double.infinity,
                           decoration: const BoxDecoration(
                             color: AppColors.surfaceMuted,
                           ),
-                          child: url != null
-                              ? Image.network(url, fit: BoxFit.cover)
+                          child: hasUrl
+                              ? Image.network(
+                                  url,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Center(
+                                    child: Icon(
+                                      Icons.storefront_rounded,
+                                      size: 64,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                )
                               : const Center(
                                   child: Icon(
                                     Icons.storefront_rounded,
@@ -140,7 +155,7 @@ class _InformationScreenState extends State<InformationScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
-                          sliderCount,
+                          sliderUrls.length,
                           (index) => Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             width: 7,
@@ -200,6 +215,16 @@ class _InformationScreenState extends State<InformationScreen>
               naverPlaceId: widget.naverPlaceId,
             ),
             Center(child: Text('정보 탭')),
+            StoreHomeTab(
+              address: widget.address,
+              displayPhone: widget.displayPhone,
+              menus: widget.menus,
+              onViewMoreMenus: () => _tabController.animateTo(1),
+            ),
+            StoreMenuTab(menus: widget.menus),
+            StorePhotoTab(imageUrls: widget.imageUrls),
+            StoreReviewTab(storeId: widget.storeId),
+            const Center(child: Text('정보 탭')),
             const StoreReservationStatusTab(),
           ],
         ),
@@ -208,6 +233,8 @@ class _InformationScreenState extends State<InformationScreen>
   }
 
   Widget _buildStoreHeader() {
+    final thumb = _headerThumbnailUrl();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Row(
@@ -218,12 +245,19 @@ class _InformationScreenState extends State<InformationScreen>
             decoration: BoxDecoration(
               color: AppColors.surfaceMuted,
               borderRadius: BorderRadius.circular(14),
-              image: _images.isNotEmpty
-                  ? DecorationImage(image: NetworkImage(_images.first), fit: BoxFit.cover)
+              image: thumb != null
+                  ? DecorationImage(
+                      image: NetworkImage(thumb),
+                      fit: BoxFit.cover,
+                    )
                   : null,
             ),
-            child: _images.isEmpty
-                ? const Icon(Icons.storefront_rounded, size: 32, color: AppColors.textSecondary)
+            child: thumb == null
+                ? const Icon(
+                    Icons.storefront_rounded,
+                    size: 32,
+                    color: AppColors.textSecondary,
+                  )
                 : null,
           ),
           const SizedBox(width: 16),
@@ -240,7 +274,10 @@ class _InformationScreenState extends State<InformationScreen>
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(widget.subtitle, style: AppTextStyles.subtitle),
+                Text(
+                  widget.subtitle,
+                  style: AppTextStyles.subtitle,
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -271,25 +308,31 @@ class _InformationScreenState extends State<InformationScreen>
 
 class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   const _StickyTabBarDelegate(this.tabBar);
+
   final TabBar tabBar;
+
   @override
   double get minExtent => tabBar.preferredSize.height;
+
   @override
   double get maxExtent => tabBar.preferredSize.height;
+
   @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1)),
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0xFFEEEEEE),
+            width: 1,
+          ),
+        ),
       ),
       child: tabBar,
     );
   }
+
   @override
   bool shouldRebuild(_StickyTabBarDelegate oldDelegate) => false;
 }

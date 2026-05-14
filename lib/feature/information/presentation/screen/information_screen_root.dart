@@ -1,26 +1,17 @@
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'information_screen.dart';
 import 'information_view_model.dart';
 
 class InformationScreenRoot extends StatefulWidget {
   final InformationViewModel viewModel;
   final String storeId;
-  final String name;
-  final String subtitle;
-  final double rating;
-  final String category;
 
   const InformationScreenRoot({
     super.key,
     required this.viewModel,
     required this.storeId,
-    required this.name,
-    required this.subtitle,
-    required this.rating,
-    required this.category,
   });
 
   @override
@@ -32,17 +23,7 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.subtitle.isNotEmpty ||
-          widget.rating != 0.0 ||
-          widget.category.isNotEmpty) {
-        widget.viewModel.setInitialData(
-          name: widget.name,
-          subtitle: widget.subtitle,
-          rating: widget.rating,
-          category: widget.category,
-        );
-      }
-      widget.viewModel.fetchStore(widget.storeId);
+      widget.viewModel.fetchStoreDetails(widget.storeId);
     });
   }
 
@@ -53,21 +34,12 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
       child: ListenableBuilder(
         listenable: widget.viewModel,
         builder: (context, _) {
-          if (widget.viewModel.isLoading && !widget.viewModel.hasStoreData) {
-            return const Scaffold(
+          if (widget.viewModel.isLoading) {
+            return Scaffold(
               backgroundColor: AppColors.surface,
               body: Center(
                 child: CircularProgressIndicator(color: AppColors.primary),
               ),
-            );
-          }
-
-          if (widget.viewModel.errorMessage != null &&
-              !widget.viewModel.hasStoreData) {
-            return Scaffold(
-              backgroundColor: AppColors.surface,
-              appBar: AppBar(backgroundColor: AppColors.surface),
-              body: Center(child: Text(widget.viewModel.errorMessage!)),
             );
           }
 
