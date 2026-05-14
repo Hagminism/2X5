@@ -1,1 +1,132 @@
+import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
+class StoreMenuTab extends StatelessWidget {
+  const StoreMenuTab({super.key, required this.menus});
+
+  final List<StoreMenu> menus;
+
+  @override
+  Widget build(BuildContext context) {
+    if (menus.isEmpty) {
+      return const Center(
+        child: Text(
+          '등록된 메뉴가 없습니다.',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+      );
+    }
+
+    final priceFmt = NumberFormat('#,###', 'ko_KR');
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: menus.length,
+      separatorBuilder: (_, __) => const Divider(
+        height: 1,
+        thickness: 1,
+        color: Color(0xFFEEEEEE),
+      ),
+      itemBuilder: (context, index) {
+        final menu = menus[index];
+        final url = menu.imageUrl.trim();
+        final desc = menu.description.trim();
+        final muted = !menu.isAvailable;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Opacity(
+                  opacity: muted ? 0.45 : 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        menu.name,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      if (desc.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          desc,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.35,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      Text(
+                        '${priceFmt.format(menu.price)}원',
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      if (muted)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 6),
+                          child: Text(
+                            '품절',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 96,
+                  height: 96,
+                  child: url.isEmpty
+                      ? ColoredBox(
+                          color: AppColors.surfaceMuted,
+                          child: Icon(
+                            Icons.restaurant_rounded,
+                            size: 36,
+                            color: AppColors.textSecondary.withValues(
+                              alpha: muted ? 0.4 : 1,
+                            ),
+                          ),
+                        )
+                      : Image.network(
+                          url,
+                          fit: BoxFit.cover,
+                          color: muted ? Colors.white : null,
+                          colorBlendMode:
+                              muted ? BlendMode.saturation : null,
+                          errorBuilder: (_, __, ___) => const ColoredBox(
+                            color: AppColors.surfaceMuted,
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

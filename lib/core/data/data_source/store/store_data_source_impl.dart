@@ -19,6 +19,13 @@ class StoreDataSourceImpl implements StoreDataSource {
        _firebaseFunctions = firebaseFunctions;
 
   @override
+  Future<List<StoreDto>> findStores() async {
+    final jsonList = await _supabaseClient.from('stores').select().order('created_at');
+
+    return jsonList.map((json) => StoreDto.fromJson(json)).toList();
+  }
+
+  @override
   Future<StoreDto?> findStoreById(String id) async {
     final json = await _supabaseClient
         .from('stores')
