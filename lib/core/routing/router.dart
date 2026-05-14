@@ -135,7 +135,7 @@ final router = GoRouter(
                     final extraData = state.extra is Map<String, dynamic>
                         ? state.extra as Map<String, dynamic>
                         : <String, dynamic>{};
-                    
+
                     return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
@@ -206,7 +206,7 @@ final router = GoRouter(
                     return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
-                      name: extraData['name']?.toString() ?? '媛寃??대쫫 ?놁쓬',
+                      name: extraData['name']?.toString() ?? '가게 이름 없음',
                       subtitle: extraData['subtitle']?.toString() ?? '',
                       rating: (extraData['rating'] as num?)?.toDouble() ?? 0.0,
                       category: extraData['category']?.toString() ?? '',

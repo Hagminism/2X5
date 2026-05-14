@@ -19,7 +19,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
 
   static const String _packageName = 'com.example.capstone_2026';
   static const String _reviewSelectColumns =
-      'id, store_id, user_id, rating, content, image_urls, created_at, visit_purpose';
+      'id, store_id, user_id, rating, content, image_urls, created_at, visit_purpose, users(name), stores(name)';
   static const Uuid _uuid = Uuid();
 
   final Map<String, List<InternalReview>> _mockReviewsByStoreId = {
@@ -137,7 +137,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       storeName: storeName,
       location: location,
     );
-    final fallbackQuery = Uri.encodeComponent(storeName);
+    final fallbackQuery = Uri.encodeComponent('$storeName $location');
     final fallbackWebUri = Uri.parse(
       'https://m.map.naver.com/search2/search.naver?query=$fallbackQuery',
     );
@@ -245,7 +245,8 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
           );
         }
       } catch (e) {
-        debugPrint('[StoreReviewRepository] Mock mode submit fallback: $e');
+        debugPrint('[StoreReviewRepository] Supabase submit failed: $e');
+        rethrow;
       }
     }
 
