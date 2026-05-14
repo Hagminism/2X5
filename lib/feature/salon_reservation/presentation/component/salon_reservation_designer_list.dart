@@ -19,8 +19,9 @@ class SalonReservationDesignerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 132,
+      height: 140,
       child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         scrollDirection: Axis.horizontal,
         itemCount: designers.length,
         separatorBuilder: (context, index) => const SizedBox(width: 12),
@@ -53,59 +54,76 @@ class _DesignerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: Container(
-        width: 180,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppColors.primary.withValues(alpha: 0.08)
-              : AppColors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? AppColors.primary : AppColors.border,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: 160,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: selected
+                ? AppColors.primary.withValues(alpha: 0.05)
+                : AppColors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.border,
+              width: selected ? 2 : 1,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                : null,
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? AppColors.primary : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 28,
                   backgroundColor: AppColors.surfaceMuted,
                   backgroundImage: designer.imageUrl.isEmpty
                       ? null
                       : NetworkImage(designer.imageUrl),
                   child: designer.imageUrl.isEmpty
-                      ? const Icon(Icons.person, color: AppColors.textSecondary)
+                      ? const Icon(Icons.person, color: AppColors.textSecondary, size: 28)
                       : null,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    designer.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                designer.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              designer.introduction.isEmpty
-                  ? '소개 문구가 없습니다.'
-                  : designer.introduction,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.caption,
-            ),
-          ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                designer.introduction.isEmpty ? '헤어 디자이너' : designer.introduction,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

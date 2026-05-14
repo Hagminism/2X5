@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/data/data_source/salon/salon_data_source.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
+import 'package:capstone_2026/core/util/salon_booking_time.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_reservation.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
@@ -59,8 +60,11 @@ class SalonDataSourceImpl implements SalonDataSource {
     required String designerId,
     required DateTime date,
   }) async {
-    final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(const Duration(days: 1));
+    final y = date.year;
+    final m = date.month;
+    final d = date.day;
+    final start = SalonBookingTime.seoulDayStartUtc(y, m, d);
+    final end = SalonBookingTime.seoulDayEndExclusiveUtc(y, m, d);
     final jsonList = await _supabaseClient
         .from('salon_reservations')
         .select()
@@ -170,7 +174,7 @@ class SalonDataSourceImpl implements SalonDataSource {
       'storeId': storeId,
       'designerId': designerId,
       'serviceIds': serviceIds,
-      'startAt': startAt.toIso8601String(),
+      'startAt': startAt.toUtc().toIso8601String(),
     });
     return SalonReservation.fromJson(Map<String, Object?>.from(result.data));
   }

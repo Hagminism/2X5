@@ -2,7 +2,7 @@ import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salo
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class SalonReservationDateSelector extends StatelessWidget {
   final DateTime? selectedDate;
@@ -16,67 +16,62 @@ class SalonReservationDateSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now();
-    final dates = List.generate(
-      14,
-      (index) => DateTime(today.year, today.month, today.day + index),
-    );
-    return SizedBox(
-      height: 76,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: dates.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final date = dates[index];
-          final selected = _sameDate(date, selectedDate);
-          return InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              onAction(SalonReservationAction.selectDate(date));
-            },
-            child: Container(
-              width: 64,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                color: selected ? AppColors.primary : AppColors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: selected ? AppColors.primary : AppColors.border,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    DateFormat('E', 'ko_KR').format(date),
-                    style: AppTextStyles.caption.copyWith(
-                      color: selected
-                          ? AppColors.white
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${date.day}',
-                    style: AppTextStyles.body.copyWith(
-                      color: selected ? AppColors.white : AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+    final now = DateTime.now();
+    final firstDay = DateTime(now.year, now.month, now.day);
+    final lastDay = DateTime(now.year, now.month, now.day + 30); // 30 days ahead
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TableCalendar(
+        locale: 'ko_KR',
+        firstDay: firstDay,
+        lastDay: lastDay,
+        focusedDay: selectedDate ?? now,
+        currentDay: now,
+        calendarFormat: CalendarFormat.month,
+        headerStyle: HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: true,
+          titleTextStyle: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
+          leftChevronIcon: const Icon(Icons.chevron_left, color: AppColors.textPrimary),
+          rightChevronIcon: const Icon(Icons.chevron_right, color: AppColors.textPrimary),
+        ),
+        daysOfWeekStyle: DaysOfWeekStyle(
+          weekdayStyle: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
+          weekendStyle: AppTextStyles.caption.copyWith(color: AppColors.primary),
+        ),
+        calendarStyle: CalendarStyle(
+          todayDecoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          todayTextStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          selectedDecoration: const BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
+          selectedTextStyle: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+          outsideDaysVisible: false,
+          weekendTextStyle: const TextStyle(color: AppColors.primary),
+        ),
+        selectedDayPredicate: (day) {
+          return isSameDay(selectedDate, day);
+        },
+        onDaySelected: (selectedDay, focusedDay) {
+          onAction(SalonReservationAction.selectDate(selectedDay));
         },
       ),
     );
-  }
-
-  bool _sameDate(DateTime a, DateTime? b) {
-    if (b == null) {
-      return false;
-    }
-    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

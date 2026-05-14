@@ -30,7 +30,7 @@ abstract class SalonReservationState with _$SalonReservationState {
     @Default([]) List<SalonDesignerSchedule> schedules,
     @Default([]) List<SalonReservationSlot> slots,
     String? selectedDesignerId,
-    String? selectedServiceId,
+    @Default([]) List<String> selectedServiceIds,
     DateTime? selectedDate,
     DateTime? selectedStartAt,
     @Default(false) bool isSubmitting,

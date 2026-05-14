@@ -17,44 +17,58 @@ class SalonReservationSubmitBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-        child: SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: enabled && !isSubmitting
-                ? () {
-                    onAction(const SalonReservationAction.tapSubmit());
-                  }
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              disabledBackgroundColor: AppColors.border,
-              foregroundColor: AppColors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            child: isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.white,
-                    ),
-                  )
-                : Text(
-                    '예약하기',
-                    style: AppTextStyles.body.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).padding.bottom + 16,
+        top: 12,
+        left: 20,
+        right: 20,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -4),
           ),
+        ],
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
+        child: ElevatedButton(
+          onPressed: enabled && !isSubmitting
+              ? () {
+                  onAction(const SalonReservationAction.tapSubmit());
+                }
+              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            disabledBackgroundColor: AppColors.border,
+            foregroundColor: AppColors.white,
+            elevation: enabled ? 4 : 0,
+            shadowColor: AppColors.primary.withValues(alpha: 0.4),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: isSubmitting
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: AppColors.white,
+                  ),
+                )
+              : Text(
+                  '예약하기',
+                  style: AppTextStyles.subtitle.copyWith(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
         ),
       ),
     );

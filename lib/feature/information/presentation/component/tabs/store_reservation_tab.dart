@@ -23,27 +23,29 @@ class StoreReservationStatusTab extends StatelessWidget {
     final storeCategory = StoreCategory.fromDbValue(category);
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-          child: ElevatedButton(
-            onPressed: onTapReservation,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+      bottomNavigationBar: storeCategory == StoreCategory.salon
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                child: ElevatedButton(
+                  onPressed: onTapReservation,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    '예약/이용하기',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
-              elevation: 0,
             ),
-            child: const Text(
-              '예약/이용하기',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: switch (storeCategory) {

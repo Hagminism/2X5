@@ -1,5 +1,4 @@
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_date_selector.dart';
-import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_designer_list.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_service_list.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_slot_grid.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_submit_bar.dart';
@@ -99,72 +98,172 @@ class SalonReservationScreen extends StatelessWidget {
       );
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Text(
-          '디자이너와 시술을 선택해 주세요',
-          style: AppTextStyles.titleLarge.copyWith(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
+    final selectedDesigner = state.designers.firstWhere(
+      (d) => d.id == state.selectedDesignerId,
+      orElse: () => state.designers.first,
+    );
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '예약 일정 및 시술 선택',
+                  style: AppTextStyles.titleLarge.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '선택하신 디자이너의 예약 가능 시간을 확인해 주세요.',
+                  style: AppTextStyles.bodySecondary,
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '${state.reservationSlotMinutes}분 단위로 예약을 받으며, 같은 시작 시간에는 디자이너별로 1명만 예약할 수 있어요.',
-          style: AppTextStyles.bodySecondary,
-        ),
-        const SizedBox(height: 24),
-        _SectionTitle(title: '디자이너'),
-        const SizedBox(height: 12),
-        SalonReservationDesignerList(
-          designers: state.designers,
-          selectedDesignerId: state.selectedDesignerId,
-          onAction: onAction,
-        ),
-        const SizedBox(height: 28),
-        _SectionTitle(title: '시술'),
-        const SizedBox(height: 12),
-        SalonReservationServiceList(
-          services: state.services,
-          selectedServiceId: state.selectedServiceId,
-          onAction: onAction,
-        ),
-        const SizedBox(height: 18),
-        _SectionTitle(title: '날짜'),
-        const SizedBox(height: 12),
-        SalonReservationDateSelector(
-          selectedDate: state.selectedDate,
-          onAction: onAction,
-        ),
-        const SizedBox(height: 28),
-        _SectionTitle(title: '시간'),
-        const SizedBox(height: 12),
-        SalonReservationSlotGrid(
-          slots: state.slots,
-          selectedStartAt: state.selectedStartAt,
-          onAction: onAction,
-        ),
-      ],
+          const SizedBox(height: 24),
+          // 선택된 디자이너 정보 카드 (고정)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: AppColors.white,
+                    backgroundImage: selectedDesigner.imageUrl.isEmpty
+                        ? null
+                        : NetworkImage(selectedDesigner.imageUrl),
+                    child: selectedDesigner.imageUrl.isEmpty
+                        ? const Icon(Icons.person, color: AppColors.textSecondary)
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          selectedDesigner.name,
+                          style: AppTextStyles.body.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          selectedDesigner.introduction.isEmpty 
+                            ? '전문 헤어 디자이너' 
+                            : selectedDesigner.introduction,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _SectionHeader(
+              title: '날짜 및 시간 선택',
+              subtitle: '방문하실 날짜와 시간을 선택해주세요.',
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SalonReservationDateSelector(
+              selectedDate: state.selectedDate,
+              onAction: onAction,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SalonReservationSlotGrid(
+              slots: state.slots,
+              selectedStartAt: state.selectedStartAt,
+              onAction: onAction,
+            ),
+          ),
+          const SizedBox(height: 32),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Divider(height: 1, color: AppColors.border),
+          ),
+          const SizedBox(height: 32),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _SectionHeader(
+              title: '시술 선택',
+              subtitle: '받으실 시술을 모두 선택해주세요.',
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SalonReservationServiceList(
+              services: state.services,
+              selectedServiceIds: state.selectedServiceIds,
+              onAction: onAction,
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
     );
   }
 }
 
-class _SectionTitle extends StatelessWidget {
+class _SectionHeader extends StatelessWidget {
   final String title;
+  final String? subtitle;
 
-  const _SectionTitle({
+  const _SectionHeader({
     required this.title,
+    this.subtitle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: AppTextStyles.subtitle.copyWith(
-        color: AppColors.textPrimary,
-        fontWeight: FontWeight.w700,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppTextStyles.subtitle.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle!,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

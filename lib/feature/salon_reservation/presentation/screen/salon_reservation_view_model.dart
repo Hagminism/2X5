@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_reservation.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
+import 'package:capstone_2026/core/util/salon_booking_time.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_action.dart';
@@ -32,20 +33,21 @@ class SalonReservationViewModel extends ChangeNotifier {
       return false;
     }
     final bool enabledSlot = _state.slots.any(
-      (slot) => _sameMinute(slot.startAt, selectedStartAt) && slot.isEnabled,
+      (slot) => _sameUtcMinute(slot.startAt, selectedStartAt) && slot.isEnabled,
     );
     return !_state.isLoading &&
         !_state.isSubmitting &&
         _state.loadError == null &&
         _state.selectedDesignerId != null &&
-        _state.selectedServiceId != null &&
+        _state.selectedServiceIds.isNotEmpty &&
         enabledSlot;
   }
 
   Future<void> initialize(String storeId, {String? initialDesignerId}) async {
+    final today = SalonBookingTime.seoulTodayCalendar();
     _state = SalonReservationState(
       storeId: storeId,
-      selectedDate: _dateOnly(DateTime.now()),
+      selectedDate: DateTime(today.year, today.month, today.day),
     );
     notifyListeners();
     await _loadInitialData(initialDesignerId: initialDesignerId);
@@ -60,8 +62,14 @@ class SalonReservationViewModel extends ChangeNotifier {
         unawaited(_selectDesigner(designerId));
         break;
       case SalonReservationSelectService(:final serviceId):
+        final newIds = List<String>.from(_state.selectedServiceIds);
+        if (newIds.contains(serviceId)) {
+          newIds.remove(serviceId);
+        } else {
+          newIds.add(serviceId);
+        }
         _state = _state.copyWith(
-          selectedServiceId: serviceId,
+          selectedServiceIds: newIds,
           submitError: null,
         );
         notifyListeners();
@@ -78,32 +86,7 @@ class SalonReservationViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> submitReservation() async {
-    if (!canSubmit) {
-      return false;
-    }
-
-    _state = _state.copyWith(isSubmitting: true, submitError: null);
-    notifyListeners();
-
-    try {
-      await _salonRepository.createReservation(
-        storeId: _state.storeId,
-        designerId: _state.selectedDesignerId!,
-        serviceIds: [_state.selectedServiceId!],
-        startAt: _state.selectedStartAt!,
-      );
-      await _loadReservationsAndRecomputeSlots();
-      _state = _state.copyWith(selectedStartAt: null);
-      return true;
-    } catch (e) {
-      _state = _state.copyWith(submitError: e.toString());
-      return false;
-    } finally {
-      _state = _state.copyWith(isSubmitting: false);
-      notifyListeners();
-    }
-  }
+  // submitReservation() is removed as it's now handled in the Confirm screen
 
   SalonDesigner? selectedDesigner() {
     final selectedId = _state.selectedDesignerId;
@@ -118,17 +101,10 @@ class SalonReservationViewModel extends ChangeNotifier {
     return null;
   }
 
-  SalonService? selectedService() {
-    final selectedId = _state.selectedServiceId;
-    if (selectedId == null) {
-      return null;
-    }
-    for (final service in _state.services) {
-      if (service.id == selectedId) {
-        return service;
-      }
-    }
-    return null;
+  List<SalonService> selectedServices() {
+    return _state.services
+        .where((service) => _state.selectedServiceIds.contains(service.id))
+        .toList();
   }
 
   Future<void> _loadInitialData({String? initialDesignerId}) async {
@@ -156,14 +132,12 @@ class SalonReservationViewModel extends ChangeNotifier {
         designers: designers,
         initialDesignerId: initialDesignerId,
       );
-      final selectedServiceId = services.isNotEmpty ? services.first.id : null;
-
       _state = _state.copyWith(
         reservationSlotMinutes: store.reservationSlotMinutes,
         designers: designers,
         services: services,
         selectedDesignerId: selectedDesignerId,
-        selectedServiceId: selectedServiceId,
+        selectedServiceIds: const [],
         isLoading: false,
       );
       notifyListeners();
@@ -209,7 +183,7 @@ class SalonReservationViewModel extends ChangeNotifier {
 
   void _selectSlot(DateTime startAt) {
     final slot = _state.slots.where(
-      (slot) => _sameMinute(slot.startAt, startAt),
+      (slot) => _sameUtcMinute(slot.startAt, startAt),
     );
     if (slot.isEmpty || !slot.first.isEnabled) {
       return;
@@ -257,7 +231,10 @@ class SalonReservationViewModel extends ChangeNotifier {
       return;
     }
 
-    final dayOfWeek = selectedDate.weekday % 7;
+    final y = selectedDate.year;
+    final m = selectedDate.month;
+    final d = selectedDate.day;
+    final dayOfWeek = SalonBookingTime.seoulPostgresDayOfWeek(y, m, d);
     final schedules = _state.schedules.where(
       (schedule) => schedule.dayOfWeek == dayOfWeek && schedule.isWorking,
     );
@@ -268,31 +245,31 @@ class SalonReservationViewModel extends ChangeNotifier {
     }
 
     final schedule = schedules.first;
-    final start = _dateTimeForClock(selectedDate, schedule.startTime);
-    final end = _dateTimeForClock(selectedDate, schedule.endTime);
+    final start = _seoulDateTimeForClock(y, m, d, schedule.startTime);
+    final end = _seoulDateTimeForClock(y, m, d, schedule.endTime);
     if (!end.isAfter(start)) {
       _state = _state.copyWith(slots: const [], selectedStartAt: null);
       notifyListeners();
       return;
     }
 
-    final now = DateTime.now();
+    final nowUtc = DateTime.now().toUtc();
     final reservedStartAts = _reservations
         .where((reservation) => reservation.isConfirmed)
-        .map((reservation) => reservation.startAt.toLocal())
+        .map((reservation) => reservation.startAt.toUtc())
         .toList();
 
     final slots = <SalonReservationSlot>[];
     DateTime cursor = start;
     while (cursor.isBefore(end)) {
       final isReserved = reservedStartAts.any(
-        (reserved) => _sameMinute(reserved, cursor),
+        (reserved) => _sameUtcMinute(reserved, cursor),
       );
       slots.add(
         SalonReservationSlot(
           startAt: cursor,
           isReserved: isReserved,
-          isPast: cursor.isBefore(now),
+          isPast: cursor.isBefore(nowUtc),
         ),
       );
       cursor = cursor.add(Duration(minutes: _state.reservationSlotMinutes));
@@ -303,7 +280,7 @@ class SalonReservationViewModel extends ChangeNotifier {
         selectedStartAt != null &&
         slots.any(
           (slot) =>
-              _sameMinute(slot.startAt, selectedStartAt) && slot.isEnabled,
+              _sameUtcMinute(slot.startAt, selectedStartAt) && slot.isEnabled,
         );
 
     _state = _state.copyWith(
@@ -331,20 +308,20 @@ class SalonReservationViewModel extends ChangeNotifier {
     return DateTime(date.year, date.month, date.day);
   }
 
-  DateTime _dateTimeForClock(DateTime date, String clock) {
+  DateTime _seoulDateTimeForClock(int year, int month, int day, String clock) {
     final parts = clock.split(':');
     final hour = int.tryParse(parts.isNotEmpty ? parts[0] : '') ?? 0;
     final minute = int.tryParse(parts.length > 1 ? parts[1] : '') ?? 0;
-    return DateTime(date.year, date.month, date.day, hour, minute);
+    return SalonBookingTime.seoulWallToUtc(year, month, day, hour, minute);
   }
 
-  bool _sameMinute(DateTime a, DateTime b) {
-    final localA = a.toLocal();
-    final localB = b.toLocal();
-    return localA.year == localB.year &&
-        localA.month == localB.month &&
-        localA.day == localB.day &&
-        localA.hour == localB.hour &&
-        localA.minute == localB.minute;
+  bool _sameUtcMinute(DateTime a, DateTime b) {
+    final ua = a.toUtc();
+    final ub = b.toUtc();
+    return ua.year == ub.year &&
+        ua.month == ub.month &&
+        ua.day == ub.day &&
+        ua.hour == ub.hour &&
+        ua.minute == ub.minute;
   }
 }
