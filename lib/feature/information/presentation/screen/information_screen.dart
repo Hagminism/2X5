@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
 
@@ -10,14 +11,12 @@ class InformationScreen extends StatefulWidget {
   final String name;
   final String subtitle;
   final double rating;
-  final String? imageUrl;
 
   const InformationScreen({
     required this.storeId,
     required this.name,
     required this.subtitle,
     required this.rating,
-    this.imageUrl,
     super.key,
   });
 
@@ -30,11 +29,34 @@ class _InformationScreenState extends State<InformationScreen>
   late TabController _tabController;
   final PageController _sliderController = PageController();
   int _currentSliderPage = 0;
+  List<String> _images = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
+    _fetchImages();
+  }
+
+  Future<void> _fetchImages() async {
+    try {
+      final response = await Supabase.instance.client
+          .from('store_images')
+          .select('image_url')
+          .eq('store_id', widget.storeId)
+          .order('is_cover', ascending: false)
+          .order('sort_order')
+          .order('created_at');
+      if (mounted) {
+        setState(() {
+          _images = (response as List)
+              .map((e) => e['image_url'] as String)
+              .toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('store_images fetch error: $e');
+    }
   }
 
   @override
@@ -46,7 +68,7 @@ class _InformationScreenState extends State<InformationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final List<String?> sliderImages = [widget.imageUrl, null, null];
+    final sliderCount = _images.isEmpty ? 1 : _images.length;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -88,11 +110,10 @@ class _InformationScreenState extends State<InformationScreen>
                   children: [
                     PageView.builder(
                       controller: _sliderController,
-                      onPageChanged: (index) =>
-                          setState(() => _currentSliderPage = index),
-                      itemCount: sliderImages.length,
+                      onPageChanged: (index) => setState(() => _currentSliderPage = index),
+                      itemCount: sliderCount,
                       itemBuilder: (context, index) {
-                        final String? url = sliderImages[index];
+                        final url = _images.isEmpty ? null : _images[index];
                         return Container(
                           width: double.infinity,
                           decoration: const BoxDecoration(
@@ -117,7 +138,7 @@ class _InformationScreenState extends State<InformationScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
-                          sliderImages.length,
+                          sliderCount,
                           (index) => Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             width: 7,
@@ -126,9 +147,7 @@ class _InformationScreenState extends State<InformationScreen>
                               shape: BoxShape.circle,
                               color: _currentSliderPage == index
                                   ? AppColors.primary
-                                  : AppColors.textSecondary.withValues(
-                                      alpha: 0.3,
-                                    ),
+                                  : AppColors.textSecondary.withValues(alpha: 0.3),
                             ),
                           ),
                         ),
@@ -192,19 +211,12 @@ class _InformationScreenState extends State<InformationScreen>
             decoration: BoxDecoration(
               color: AppColors.surfaceMuted,
               borderRadius: BorderRadius.circular(14),
-              image: widget.imageUrl != null
-                  ? DecorationImage(
-                      image: NetworkImage(widget.imageUrl!),
-                      fit: BoxFit.cover,
-                    )
+              image: _images.isNotEmpty
+                  ? DecorationImage(image: NetworkImage(_images.first), fit: BoxFit.cover)
                   : null,
             ),
-            child: widget.imageUrl == null
-                ? const Icon(
-                    Icons.storefront_rounded,
-                    size: 32,
-                    color: AppColors.textSecondary,
-                  )
+            child: _images.isEmpty
+                ? const Icon(Icons.storefront_rounded, size: 32, color: AppColors.textSecondary)
                 : null,
           ),
           const SizedBox(width: 16),
@@ -271,7 +283,6 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
       child: tabBar,
     );
   }
-
   @override
   bool shouldRebuild(_StickyTabBarDelegate oldDelegate) => false;
 }

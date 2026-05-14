@@ -16,16 +16,16 @@ class MyPageHeader extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            '마이페이지',
+            '내페이지',
             style: AppTextStyles.titleLarge.copyWith(
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
             ),
           ),
         ),
-        IconButton.filledTonal(
+        IconButton(
           onPressed: onTap,
-          icon: const Icon(Icons.notifications_none_rounded),
+          icon: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary),
         ),
       ],
     );
