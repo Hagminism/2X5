@@ -36,6 +36,11 @@ Future<List<StoreImage>> getStoreImagesByStoreId(String storeId) {
   return _storeDataSource.findImagesByStoreId(storeId);
 } //이미지 불러오기
 
+  @override
+  Future<List<StoreMenu>> getStoreMenusByStoreId(String storeId) {
+    return _storeDataSource.findMenusByStoreId(storeId);
+  }
+
 
   @override
   Future<Store> getStoreById(String storeId) async {

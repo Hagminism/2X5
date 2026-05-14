@@ -25,6 +25,8 @@ class StoreDataSourceImpl implements StoreDataSource {
     return jsonList.map((json) => StoreDto.fromJson(json)).toList();
   }
 
+ 
+
   @override
   Future<StoreDto?> findStoreByOwnerId(String ownerId) async {
     final json = await _supabaseClient

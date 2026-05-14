@@ -10,7 +10,10 @@ abstract interface class StoreRepository {
   Future<Store> createMyStore(Store store);
 
   Future<List<StoreImage>> getStoreImagesByStoreId(String storeId); //이미 조회
+  
   Future<Store> updateMyStore(Store store);
+
+  Future<List<StoreMenu>> getStoreMenusByStoreId(String storeId);//메뉴 조회
 
   Future<List<StoreMenu>> getMyStoreMenus();
 

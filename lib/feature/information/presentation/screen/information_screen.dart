@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:go_router/go_router.dart';
+import 'tabs/store_home_tab.dart';
+import 'tabs/store_menu_tab.dart';
 import 'tabs/store_photo_tab.dart';
 import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
@@ -9,14 +12,21 @@ import 'tabs/store_reservation_tab.dart';
 class InformationScreen extends StatefulWidget {
   final String name;
   final String subtitle;
+  final String address;
+  /// `phone` 우선·없으면 `contact` (뷰모델 `displayPhone`).
+  final String displayPhone;
   final double rating;
   final List<String> imageUrls;
+  final List<StoreMenu> menus;
 
   const InformationScreen({
     required this.name,
     required this.subtitle,
+    this.address = '',
+    this.displayPhone = '',
     required this.rating,
     this.imageUrls = const [],
+    this.menus = const [],
     super.key,
   });
 
@@ -193,8 +203,13 @@ class _InformationScreenState extends State<InformationScreen>
         body: TabBarView(
           controller: _tabController,
           children: [
-            const Center(child: Text('홈 탭')),
-            const Center(child: Text('메뉴 탭')),
+            StoreHomeTab(
+              address: widget.address,
+              displayPhone: widget.displayPhone,
+              menus: widget.menus,
+              onViewMoreMenus: () => _tabController.animateTo(1),
+            ),
+            StoreMenuTab(menus: widget.menus),
             StorePhotoTab(imageUrls: widget.imageUrls),
             const StoreReviewTab(),
             const Center(child: Text('정보 탭')),

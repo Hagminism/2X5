@@ -46,9 +46,12 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
           // 조회가 완료되면 뷰모델의 순수 DB 데이터만 사용하여 화면을 그립니다.
           return InformationScreen(
             name: widget.viewModel.name,
-            subtitle: widget.viewModel.address, // 주소 데이터를 subtitle로 전달
+            subtitle: widget.viewModel.categorySubtitleLabel,
+            address: widget.viewModel.address,
+            displayPhone: widget.viewModel.displayPhone,
             rating: widget.viewModel.rating,
             imageUrls: widget.viewModel.imageUrls,
+            menus: widget.viewModel.menus,
           );
         },
       ),
