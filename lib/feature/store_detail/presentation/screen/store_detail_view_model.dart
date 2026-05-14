@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
-import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
@@ -45,13 +43,10 @@ class StoreDetailViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final results = await Future.wait<Object>([
+      final (reviews, stampStatus) = await (
         _storeReviewService.loadStoreReviews(storeId: storeId),
         _stampService.loadStoreStampStatus(storeId: storeId),
-      ]);
-
-      final reviews = results[0] as List<InternalReview>;
-      final stampStatus = results[1] as StoreStampStatus;
+      ).wait;
 
       _state = state.copyWith(
         isReviewLoading: false,

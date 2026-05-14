@@ -81,18 +81,18 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
     });
 
     try {
-      final results = await Future.wait<Object>([
+      final (reviews, stampStatus) = await (
         _storeReviewService.loadStoreReviews(storeId: widget.storeId),
         _stampService.loadStoreStampStatus(storeId: widget.storeId),
-      ]);
+      ).wait;
 
       if (!mounted) {
         return;
       }
 
       setState(() {
-        _reviews = results[0] as List<InternalReview>;
-        _stampStatus = results[1] as StoreStampStatus;
+        _reviews = reviews;
+        _stampStatus = stampStatus;
         _isLoading = false;
       });
     } catch (_) {

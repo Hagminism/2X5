@@ -172,27 +172,12 @@ class StampRepositoryImpl implements StampRepository {
         dbStoreId: resolvedStore.dbStoreId!,
       );
 
-      final nextCount = currentStatus.currentCount + 1;
-      await _supabase.from('user_store_stamps').upsert(
-        {
-          'store_id': resolvedStore.dbStoreId,
-          'user_id': userId,
-          'stamp_count': nextCount,
-          'last_reservation_id': reservationId,
-          'reward_unlocked_at': nextCount >= currentStatus.goalCount
-              ? DateTime.now().toIso8601String()
-              : null,
-        },
-        onConflict: 'store_id,user_id',
+      await _accrueStampAtomically(
+        userId: userId,
+        dbStoreId: resolvedStore.dbStoreId!,
+        reservationId: reservationId,
+        currentStatus: currentStatus,
       );
-
-      await _supabase.from('stamp_events').insert({
-        'store_id': resolvedStore.dbStoreId,
-        'user_id': userId,
-        'reservation_id': reservationId,
-        'delta': 1,
-        'reason': 'review_created',
-      });
 
       return await fetchStoreStampStatus(userId: userId, storeId: storeId);
     } catch (e) {
@@ -294,6 +279,63 @@ class StampRepositoryImpl implements StampRepository {
     }
 
     return null;
+  }
+
+  Future<void> _accrueStampAtomically({
+    required String userId,
+    required String dbStoreId,
+    required String? reservationId,
+    required StoreStampStatus currentStatus,
+  }) async {
+    try {
+      await _supabase.rpc(
+        'accrue_stamp_for_review',
+        params: {
+          'p_user_id': userId,
+          'p_store_id': dbStoreId,
+          'p_reservation_id': reservationId,
+        },
+      );
+    } on PostgrestException catch (e) {
+      debugPrint(
+        '[StampRepository] accrue_stamp_for_review RPC fallback: ${e.message}',
+      );
+      await _accrueStampWithClientFallback(
+        userId: userId,
+        dbStoreId: dbStoreId,
+        reservationId: reservationId,
+        currentStatus: currentStatus,
+      );
+    }
+  }
+
+  Future<void> _accrueStampWithClientFallback({
+    required String userId,
+    required String dbStoreId,
+    required String? reservationId,
+    required StoreStampStatus currentStatus,
+  }) async {
+    final nextCount = currentStatus.currentCount + 1;
+    await _supabase.from('user_store_stamps').upsert(
+      {
+        'store_id': dbStoreId,
+        'user_id': userId,
+        'stamp_count': nextCount,
+        'last_reservation_id': reservationId,
+        'reward_unlocked_at': nextCount >= currentStatus.goalCount
+            ? DateTime.now().toIso8601String()
+            : null,
+      },
+      onConflict: 'store_id,user_id',
+    );
+
+    await _supabase.from('stamp_events').insert({
+      'store_id': dbStoreId,
+      'user_id': userId,
+      'reservation_id': reservationId,
+      'delta': 1,
+      'reason': 'review_created',
+    });
   }
 
   Future<StoreStampStatus?> _buildDbStatusForStore({
