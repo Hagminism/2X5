@@ -76,6 +76,7 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
             name: widget.viewModel.name.isEmpty ? widget.name : widget.viewModel.name,
             subtitle: widget.viewModel.subtitle.isEmpty ? widget.subtitle : widget.viewModel.subtitle,
             rating: widget.viewModel.rating == 0.0 ? widget.rating : widget.viewModel.rating,
+            naverPlaceId: widget.viewModel.naverPlaceId,
           );
         },
       ),

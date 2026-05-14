@@ -13,6 +13,7 @@ class InformationViewModel extends ChangeNotifier {
   String? _subtitle;
   double? _rating;
   String? _category;
+  String? _naverPlaceId;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -20,6 +21,7 @@ class InformationViewModel extends ChangeNotifier {
   String get subtitle => _subtitle ?? "";
   double get rating => _rating ?? 0.0;
   String get category => _category ?? "";
+  String? get naverPlaceId => _naverPlaceId;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasStoreData => name.isNotEmpty || subtitle.isNotEmpty;
@@ -70,5 +72,6 @@ class InformationViewModel extends ChangeNotifier {
     _subtitle = store.address;
     _rating = 0.0;
     _category = store.category;
+    _naverPlaceId = store.naverPlaceId;
   }
 }

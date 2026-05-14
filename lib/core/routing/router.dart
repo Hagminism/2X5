@@ -36,7 +36,6 @@ import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
-import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
 import 'package:capstone_2026/feature/partner_onboarding/core/presentation/component/scope/partner_onboarding_scope.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_screen_root.dart';
@@ -195,10 +194,24 @@ final router = GoRouter(
               builder: (context, state) => const BookmarkScreen(),
               routes: [
                 GoRoute(
-                  path: Routes.bookmarkStoreDetail,
-                  builder: (context, state) => BookmarkStoreDetailScreen(
-                    storeId: state.pathParameters['storeId'] ?? '',
-                  ),
+                  name: 'bookmark_information',
+                  parentNavigatorKey: _rootNavigatorKey,
+                  path: Routes.bookmarkStoreInformation,
+                  builder: (context, state) {
+                    final storeId = state.pathParameters['storeId'] ?? '';
+                    final extraData = state.extra is Map<String, dynamic>
+                        ? state.extra as Map<String, dynamic>
+                        : <String, dynamic>{};
+
+                    return InformationScreenRoot(
+                      viewModel: getIt<InformationViewModel>(),
+                      storeId: storeId,
+                      name: extraData['name']?.toString() ?? '媛寃??대쫫 ?놁쓬',
+                      subtitle: extraData['subtitle']?.toString() ?? '',
+                      rating: (extraData['rating'] as num?)?.toDouble() ?? 0.0,
+                      category: extraData['category']?.toString() ?? '',
+                    );
+                  },
                 ),
               ],
             ),

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_state.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
@@ -82,8 +81,10 @@ class _ReviewHistoryCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(22),
-        onTap: () =>
-            context.push('${Routes.home}/information/${review.storeId}'),
+        onTap: () => context.pushNamed(
+          'information',
+          pathParameters: {'storeId': review.storeId},
+        ),
         child: Ink(
           decoration: BoxDecoration(
             color: Colors.white,

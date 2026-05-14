@@ -11,12 +11,14 @@ class InformationScreen extends StatefulWidget {
   final String name;
   final String subtitle;
   final double rating;
+  final String? naverPlaceId;
 
   const InformationScreen({
     required this.storeId,
     required this.name,
     required this.subtitle,
     required this.rating,
+    this.naverPlaceId,
     super.key,
   });
 
@@ -191,7 +193,12 @@ class _InformationScreenState extends State<InformationScreen>
             Center(child: Text('홈 탭')),
             Center(child: Text('메뉴 탭')),
             Center(child: Text('사진 탭')),
-            StoreReviewTab(storeId: widget.storeId),
+            StoreReviewTab(
+              storeId: widget.storeId,
+              storeName: widget.name,
+              location: widget.subtitle,
+              naverPlaceId: widget.naverPlaceId,
+            ),
             Center(child: Text('정보 탭')),
             const StoreReservationStatusTab(),
           ],
