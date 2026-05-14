@@ -10,6 +10,7 @@ import 'tabs/store_review_tab.dart';
 import 'tabs/store_reservation_tab.dart';
 
 class InformationScreen extends StatefulWidget {
+  final String storeId;
   final String name;
   final String subtitle;
   final String address;
@@ -20,6 +21,7 @@ class InformationScreen extends StatefulWidget {
   final List<StoreMenu> menus;
 
   const InformationScreen({
+    required this.storeId,
     required this.name,
     required this.subtitle,
     this.address = '',
@@ -160,9 +162,7 @@ class _InformationScreenState extends State<InformationScreen>
                               shape: BoxShape.circle,
                               color: _currentSliderPage == index
                                   ? AppColors.primary
-                                  : AppColors.textSecondary.withValues(
-                                      alpha: 0.3,
-                                    ),
+                                  : AppColors.textSecondary.withValues(alpha: 0.3),
                             ),
                           ),
                         ),
@@ -211,7 +211,7 @@ class _InformationScreenState extends State<InformationScreen>
             ),
             StoreMenuTab(menus: widget.menus),
             StorePhotoTab(imageUrls: widget.imageUrls),
-            const StoreReviewTab(),
+            StoreReviewTab(storeId: widget.storeId),
             const Center(child: Text('정보 탭')),
             const StoreReservationStatusTab(),
           ],

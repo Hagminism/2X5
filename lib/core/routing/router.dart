@@ -29,6 +29,7 @@ import 'package:capstone_2026/feature/find_password/presentation/screen/find_pas
 import 'package:capstone_2026/feature/home/core/presentation/component/scope/home_scope.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/terms/presentation/screen/terms_screen.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
@@ -268,11 +269,7 @@ final router = GoRouter(
                 GoRoute(
                   path: Routes.terms,
                   parentNavigatorKey: _rootNavigatorKey,
-                  builder: (context, state) => const Scaffold(
-                    body: SafeArea(
-                      child: Center(child: Text('이용약관 페이지')),
-                    ),
-                  ),
+                  builder: (context, state) => const TermsScreen(),
                 ),
               ],
             ),

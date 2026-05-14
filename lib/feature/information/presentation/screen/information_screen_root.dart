@@ -1,3 +1,4 @@
+import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'information_screen.dart';
@@ -21,7 +22,6 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
   @override
   void initState() {
     super.initState();
-    // 화면 진입 시 즉시 DB 조회를 시작합니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.viewModel.fetchStoreDetails(widget.storeId);
     });
@@ -34,17 +34,17 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
       child: ListenableBuilder(
         listenable: widget.viewModel,
         builder: (context, _) {
-          // 데이터 로딩 중일 때는 로딩 바를 표시합니다.
           if (widget.viewModel.isLoading) {
-            return const Scaffold(
+            return Scaffold(
+              backgroundColor: AppColors.surface,
               body: Center(
-                child: CircularProgressIndicator(color: Color(0xFFFF3D00)),
+                child: CircularProgressIndicator(color: AppColors.primary),
               ),
             );
           }
 
-          // 조회가 완료되면 뷰모델의 순수 DB 데이터만 사용하여 화면을 그립니다.
           return InformationScreen(
+            storeId: widget.storeId,
             name: widget.viewModel.name,
             subtitle: widget.viewModel.categorySubtitleLabel,
             address: widget.viewModel.address,

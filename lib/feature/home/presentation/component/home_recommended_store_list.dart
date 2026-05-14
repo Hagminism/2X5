@@ -33,6 +33,7 @@ class HomeRecommendedStoreList extends StatelessWidget {
           name: store.name,
           subtitle: store.subtitle,
           rating: store.rating,
+          category: store.category,
           onTap: () => onStoreTap(store),
         );
       },

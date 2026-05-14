@@ -25,14 +25,12 @@ class StoreDataSourceImpl implements StoreDataSource {
     return jsonList.map((json) => StoreDto.fromJson(json)).toList();
   }
 
- 
-
   @override
-  Future<StoreDto?> findStoreByOwnerId(String ownerId) async {
+  Future<StoreDto?> findStoreById(String id) async {
     final json = await _supabaseClient
         .from('stores')
         .select()
-        .eq('owner_id', ownerId)
+        .eq('id', id)
         .maybeSingle();
 
     if (json == null) {
@@ -43,12 +41,11 @@ class StoreDataSourceImpl implements StoreDataSource {
   }
 
   @override
-  Future<StoreDto?> findStoreById(String id) async {
-
+  Future<StoreDto?> findStoreByOwnerId(String ownerId) async {
     final json = await _supabaseClient
         .from('stores')
         .select()
-        .eq('id', id)
+        .eq('owner_id', ownerId)
         .maybeSingle();
 
     if (json == null) {

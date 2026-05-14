@@ -3,7 +3,11 @@ import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
 
 abstract interface class StoreRepository {
+
   Future<List<Store>> getStores();
+
+  Future<Store?> findStoreById(String id);
+
 
   Future<Store?> getMyStore();
 

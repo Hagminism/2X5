@@ -35,10 +35,8 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     HomeHeader(
-                      onNotificationTap: () => onAction(
-                        const HomeAction.showSoonMessage(
-                          '알림 화면은 다음 단계에서 연결될 예정입니다.',
-                        ),
+                      onNotificationTap: () => context.push(
+                        '${Routes.myPage}/${Routes.notifications}',
                       ),
                     ),
                     const SizedBox(height: 16),

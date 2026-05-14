@@ -1,12 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
-import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
+import 'package:flutter/material.dart';
 
 class InformationViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
+
+  InformationViewModel({
+    required StoreRepository storeRepository,
+  }) : _storeRepository = storeRepository;
 
   String? _name;
   String? _address;
@@ -18,11 +22,12 @@ class InformationViewModel extends ChangeNotifier {
   List<StoreMenu> _menus = [];
   bool _isLoading = true;
 
-  String get name => _name ?? "";
-  String get address => _address ?? "";
-  String get contact => _contact ?? "";
+  String get name => _name ?? '';
+  String get address => _address ?? '';
+  String get contact => _contact ?? '';
   double get rating => _rating ?? 0.0;
-  String get category => _category ?? "";
+  String get category => _category ?? '';
+  bool get isLoading => _isLoading;
 
   /// 인포 홈 전화: `stores.phone` 우선, 없으면 `contact`
   String get displayPhone {
@@ -59,11 +64,6 @@ class InformationViewModel extends ChangeNotifier {
   List<String> get imageUrls =>
       _images.map((e) => e.imageUrl).where((u) => u.trim().isNotEmpty).toList();
   List<StoreMenu> get menus => List.unmodifiable(_menus);
-  bool get isLoading => _isLoading;
-
-  InformationViewModel({
-    required StoreRepository storeRepository,
-  }) : _storeRepository = storeRepository;
 
   Future<void> fetchStoreDetails(String storeId) async {
     _isLoading = true;
@@ -89,7 +89,7 @@ class InformationViewModel extends ChangeNotifier {
       _images = images;
       _menus = menus;
     } catch (e) {
-      debugPrint("데이터 로드 에러 (storeId: $storeId): $e");
+      debugPrint('데이터 로드 에러 (storeId: $storeId): $e');
       _images = [];
       _menus = [];
     } finally {
