@@ -868,10 +868,16 @@ export const createSalonReservation = onCall(
           "선택한 시간에는 디자이너가 근무하지 않습니다.",
         );
       }
-      if (message.includes("salon_start_time")) {
+      if (message.includes("salon_start_time_not_on_slot")) {
         throw new HttpsError(
           "failed-precondition",
-          "선택한 시간이 예약 슬롯과 맞지 않습니다.",
+          "선택한 시작 시간이 예약 간격에 맞지 않습니다.",
+        );
+      }
+      if (message.includes("salon_start_time_out_of_schedule")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시작 시간이 디자이너 근무 시간과 맞지 않습니다.",
         );
       }
       if (message.includes("salon_end_time_out_of_schedule")) {
