@@ -49,10 +49,6 @@ class StoreDetailReviewSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (stampStatus != null) ...[
-          _StampRewardCard(status: stampStatus!),
-          const SizedBox(height: 20),
-        ],
         _AiSummaryBox(summary: summary),
         const SizedBox(height: 32),
         const Text(
@@ -163,107 +159,6 @@ class StoreDetailReviewSection extends StatelessWidget {
     }
 
     await onSubmitReview(result);
-  }
-}
-
-class _StampRewardCard extends StatelessWidget {
-  const _StampRewardCard({required this.status});
-
-  final StoreStampStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFAF6),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(
-                Icons.workspace_premium_rounded,
-                size: 18,
-                color: AppColors.primary,
-              ),
-              SizedBox(width: 8),
-              Text(
-                '스탬프 적립',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            status.reviewEligibilityMessage,
-            style: const TextStyle(
-              fontSize: 12,
-              height: 1.5,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${status.storeName} 스탬프',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-              Text(
-                status.progressLabel,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: status.progress,
-              minHeight: 8,
-              backgroundColor: const Color(0xFFFFE5DA),
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '보상: ${status.rewardTitle}',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            status.rewardDescription,
-            style: const TextStyle(
-              fontSize: 12,
-              height: 1.5,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

@@ -135,7 +135,7 @@ class _InformationScreenState extends State<InformationScreen>
             const StoreHomeTab(),
             const StoreMenuTab(),
             const StorePhotoTab(),
-            const StoreReviewTab(),
+            StoreReviewTab(storeId: widget.state.storeId),
             const StoreInfoTab(),
             StoreReservationStatusTab(
               category: widget.state.category,
