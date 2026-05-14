@@ -76,6 +76,8 @@ import 'package:capstone_2026/feature/search/presentation/screen/search_screen.d
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
 import 'package:capstone_2026/feature/salon_reservation/core/presentation/component/scope/salon_reservation_scope.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_view_model.dart';
+import 'package:capstone_2026/feature/salon_reservation_confirm/core/presentation/component/scope/salon_reservation_confirm_scope.dart';
+import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_view_model.dart';
 import 'package:capstone_2026/feature/information/core/presentation/component/scope/information_scope.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:capstone_2026/feature/search_store_information/core/presentation/component/scope/search_studycafe_pass_selection_scope.dart';
@@ -183,6 +185,26 @@ final router = GoRouter(
                         initialDesignerId:
                             state.uri.queryParameters['designerId'],
                       ),
+                      routes: [
+                        GoRoute(
+                          path: Routes.salonReservationConfirm,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) {
+                            final storeId = state.pathParameters['storeId'] ?? '';
+                            final designerId = state.uri.queryParameters['designerId'] ?? '';
+                            final selectedServices = state.uri.queryParametersAll['selectedServices'] ?? [];
+                            final selectedDateTime = state.uri.queryParameters['selectedDateTime'] ?? '';
+                            
+                            return SalonReservationConfirmScope(
+                              viewModel: getIt<SalonReservationConfirmViewModel>(),
+                              storeId: storeId,
+                              designerId: designerId,
+                              selectedServices: selectedServices,
+                              selectedDateTime: selectedDateTime,
+                            );
+                          },
+                        ),
+                      ],
                     ),
                     GoRoute(
                       path: Routes.seat,
@@ -244,6 +266,26 @@ final router = GoRouter(
                         initialDesignerId:
                             state.uri.queryParameters['designerId'],
                       ),
+                      routes: [
+                        GoRoute(
+                          path: Routes.salonReservationConfirm,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) {
+                            final storeId = state.pathParameters['storeId'] ?? '';
+                            final designerId = state.uri.queryParameters['designerId'] ?? '';
+                            final selectedServices = state.uri.queryParametersAll['selectedServices'] ?? [];
+                            final selectedDateTime = state.uri.queryParameters['selectedDateTime'] ?? '';
+                            
+                            return SalonReservationConfirmScope(
+                              viewModel: getIt<SalonReservationConfirmViewModel>(),
+                              storeId: storeId,
+                              designerId: designerId,
+                              selectedServices: selectedServices,
+                              selectedDateTime: selectedDateTime,
+                            );
+                          },
+                        ),
+                      ],
                     ),
                     GoRoute(
                       path: Routes.seat,
@@ -304,6 +346,26 @@ final router = GoRouter(
                             initialDesignerId:
                                 state.uri.queryParameters['designerId'],
                           ),
+                          routes: [
+                            GoRoute(
+                              path: Routes.salonReservationConfirm,
+                              parentNavigatorKey: _rootNavigatorKey,
+                              builder: (context, state) {
+                                final storeId = state.pathParameters['storeId'] ?? '';
+                                final designerId = state.uri.queryParameters['designerId'] ?? '';
+                                final selectedServices = state.uri.queryParametersAll['selectedServices'] ?? [];
+                                final selectedDateTime = state.uri.queryParameters['selectedDateTime'] ?? '';
+                                
+                                return SalonReservationConfirmScope(
+                                  viewModel: getIt<SalonReservationConfirmViewModel>(),
+                                  storeId: storeId,
+                                  designerId: designerId,
+                                  selectedServices: selectedServices,
+                                  selectedDateTime: selectedDateTime,
+                                );
+                              },
+                            ),
+                          ],
                         ),
                         GoRoute(
                           path: Routes.seat,

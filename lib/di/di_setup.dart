@@ -82,6 +82,7 @@ import 'package:capstone_2026/feature/search_store_information/presentation/scre
 import 'package:capstone_2026/feature/search_store_information/presentation/screen/search_store_information_view_model.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_view_model.dart';
+import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_view_model.dart';
 
 GetIt getIt = GetIt.instance;
 
@@ -417,6 +418,12 @@ void diSetup() {
   );
   getIt.registerFactory<SalonReservationViewModel>(
     () => SalonReservationViewModel(
+      salonRepository: getIt<SalonRepository>(),
+      storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<SalonReservationConfirmViewModel>(
+    () => SalonReservationConfirmViewModel(
       salonRepository: getIt<SalonRepository>(),
       storeRepository: getIt<StoreRepository>(),
     ),

@@ -30,6 +30,7 @@ class Routes {
   static const String seat = 'seat';
   static const String duration = 'duration';
   static const String salonReservation = 'salon-reservation';
+  static const String salonReservationConfirm = 'salon-reservation-confirm';
 
   // My page nested paths
   static const String profileEdit = 'profile-edit';
