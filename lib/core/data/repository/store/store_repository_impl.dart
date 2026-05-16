@@ -32,8 +32,13 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
-  Future<Store?> getStoreById(String storeId) async {
-    final storeDto = await _storeDataSource.findStoreById(storeId);
+  Future<Store?> findStoreById(String id) async {
+    final trimmedId = id.trim();
+    if (trimmedId.isEmpty) {
+      return null;
+    }
+
+    final storeDto = await _storeDataSource.findStoreById(trimmedId);
     return storeDto?.toModel();
   }
 
@@ -54,6 +59,11 @@ class StoreRepositoryImpl implements StoreRepository {
     );
 
     return createdStore.toModel();
+  }
+
+  @override
+  Future<List<StoreImage>> getStoreImagesByStoreId(String storeId) {
+    return _storeDataSource.findImagesByStoreId(storeId);
   }
 
   @override
@@ -83,6 +93,11 @@ class StoreRepositoryImpl implements StoreRepository {
     );
 
     return updatedStore.toModel();
+  }
+
+  @override
+  Future<List<StoreMenu>> getStoreMenusByStoreId(String storeId) {
+    return _storeDataSource.findMenusByStoreId(storeId);
   }
 
   @override
@@ -229,6 +244,17 @@ class StoreRepositoryImpl implements StoreRepository {
       storeId: store.id,
       imageUrl: imageUrl,
     );
+  }
+
+  @override
+  Future<Store> getStoreById(String storeId) async {
+    final storeDto = await _storeDataSource.findStoreById(storeId);
+
+    if (storeDto == null) {
+      throw StateError('해당 가게 정보를 찾을 수 없습니다. (ID: $storeId)');
+    }
+
+    return storeDto.toModel();
   }
 
   String _getCurrentUidOrThrow() {

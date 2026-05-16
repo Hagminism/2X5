@@ -67,15 +67,21 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   List<HomeStoreItem> _pickOneStorePerCategory(List<Store> stores) {
-    final Map<StoreCategory, HomeStoreItem> selectedByCategory =
-        <StoreCategory, HomeStoreItem>{};
+  final Map<StoreCategory, HomeStoreItem> selectedByCategory =
+      <StoreCategory, HomeStoreItem>{};
 
-    for (final store in stores) {
-      final category = StoreCategory.fromDbValue(store.category);
-      if (category == null || selectedByCategory.containsKey(category)) {
-        continue;
-      }
+  for (final store in stores) {
+    final category = StoreCategory.fromDbValue(store.category);
+    if (category == null) {
+      continue;
+    }
 
+    final current = selectedByCategory[category];
+    final isParisBaguette = store.name.contains('파리바게트');
+
+    // 카테고리 첫 매장이면 저장,
+    // 이미 있더라도 새 매장이 파리바게트면 우선 교체
+    if (current == null || isParisBaguette) {
       selectedByCategory[category] = HomeStoreItem(
         storeId: store.id,
         name: store.name,
@@ -84,16 +90,17 @@ class HomeViewModel extends ChangeNotifier {
         category: category.displayName,
       );
     }
-
-    final List<HomeStoreItem> orderedStores = <HomeStoreItem>[];
-    for (final category in StoreCategory.values) {
-      final store = selectedByCategory[category];
-      if (store != null) {
-        orderedStores.add(store);
-      }
-    }
-    return orderedStores;
   }
+
+  final List<HomeStoreItem> orderedStores = <HomeStoreItem>[];
+  for (final category in StoreCategory.values) {
+    final store = selectedByCategory[category];
+    if (store != null) {
+      orderedStores.add(store);
+    }
+  }
+  return orderedStores;
+}
 
   @override
   void dispose() {
