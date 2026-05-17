@@ -1,5 +1,4 @@
 import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class HomeStoreCard extends StatelessWidget {
@@ -7,14 +6,48 @@ class HomeStoreCard extends StatelessWidget {
     required this.name,
     required this.subtitle,
     required this.rating,
+    required this.category,
     required this.onTap,
+    this.imageUrl,
     super.key,
   });
 
   final String name;
   final String subtitle;
   final double rating;
+  final String category;
+  final String? imageUrl;
   final VoidCallback onTap;
+
+  static Color _categoryColor(String category) {
+    switch (category) {
+      case 'restaurant': return const Color(0xFFFFEBEE);
+      case 'cafe':       return const Color(0xFFEFEBE9);
+      case 'study_cafe': return const Color(0xFFE3F2FD);
+      case 'salon':      return const Color(0xFFF3E5F5);
+      default:           return const Color(0xFFF5F5F5);
+    }
+  }
+
+  static Color _categoryIconColor(String category) {
+    switch (category) {
+      case 'restaurant': return const Color(0xFFE53935);
+      case 'cafe':       return const Color(0xFF6D4C41);
+      case 'study_cafe': return const Color(0xFF1E88E5);
+      case 'salon':      return const Color(0xFF8E24AA);
+      default:           return AppColors.textSecondary;
+    }
+  }
+
+  static IconData _categoryIcon(String category) {
+    switch (category) {
+      case 'restaurant': return Icons.restaurant_rounded;
+      case 'cafe':       return Icons.local_cafe_rounded;
+      case 'study_cafe': return Icons.menu_book_rounded;
+      case 'salon':      return Icons.content_cut_rounded;
+      default:           return Icons.storefront_rounded;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,62 +67,92 @@ class HomeStoreCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceMuted,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.storefront_rounded),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: AppTextStyles.subtitle),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star_rounded,
-                          size: 16,
-                          color: Colors.amber,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          rating.toStringAsFixed(1),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
                           style: const TextStyle(
-                            fontSize: 13,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.bookmark_border_rounded,
+                        size: 20,
+                        color: AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                      const SizedBox(width: 3),
+                      Text(
+                        rating.toStringAsFixed(1),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          ' · $subtitle',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textSecondary,
+            ),
+            // 사진 영역
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+              child: SizedBox(
+                height: 130,
+                width: double.infinity,
+                child: imageUrl != null
+                    ? Image.network(imageUrl!, fit: BoxFit.cover)
+                    : Container(
+                        color: _categoryColor(category),
+                        child: Center(
+                          child: Icon(
+                            _categoryIcon(category),
+                            size: 48,
+                            color: _categoryIconColor(category),
+                          ),
+                        ),
+                      ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

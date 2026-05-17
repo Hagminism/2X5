@@ -82,7 +82,8 @@ class _ReviewHistoryCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(22),
-        onTap: () => context.push('${Routes.home}/store/${review.storeId}'),
+        onTap: () =>
+            context.push('${Routes.home}/information/${review.storeId}'),
         child: Ink(
           decoration: BoxDecoration(
             color: Colors.white,

@@ -31,19 +31,23 @@ class _MyPageScreenRootState extends State<MyPageScreenRoot> {
       builder: (context, child) {
         return MyPageScreen(
           state: widget.viewModel.state,
-          onAction: (action) {
+          onAction: (action) async {
             switch (action) {
               case ViewNotifications():
                 context.push('${Routes.myPage}/${Routes.notifications}');
                 break;
               case EditProfile():
-                context.push('${Routes.myPage}/${Routes.profileEdit}');
+                await context.push('${Routes.myPage}/${Routes.profileEdit}');
+                widget.viewModel.fetchProfile();
                 break;
               case ViewReservationHistory():
                 context.push('${Routes.myPage}/${Routes.reservationHistory}');
                 break;
               case ViewReviewHistory():
                 context.push('${Routes.myPage}/${Routes.reviewHistory}');
+                break;
+              case ViewStampHistory():
+                context.push('${Routes.myPage}/${Routes.stampHistory}');
                 break;
               case TapAccountSettings():
                 context.push('${Routes.myPage}/${Routes.accountSettings}');

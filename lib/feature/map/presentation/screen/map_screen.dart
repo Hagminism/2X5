@@ -415,7 +415,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
           Positioned(
             right: 16,
-            bottom: _selectedStore != null ? 220 : 24,
+            bottom: _selectedStore != null ? 148 : 24,
             child: Column(
               children: [
                 _MapButton(icon: Icons.my_location, onTap: _moveToMyLocation),
@@ -427,7 +427,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            bottom: _selectedStore != null ? 216 : 20,
+            bottom: _selectedStore != null ? 144 : 20,
             left: 0,
             right: 0,
             child: Center(
@@ -446,6 +446,9 @@ class _MapScreenState extends State<MapScreen> {
               bottom: 0,
               child: _StoreBottomSheet(
                 store: _selectedStore!,
+                categoryEmoji: _categoryEmoji(
+                  _selectedStore!['category'] as String? ?? '',
+                ),
                 categoryLabel: _categoryLabel(
                   _selectedStore!['category'] as String? ?? '',
                 ),
@@ -524,11 +527,11 @@ class _CategoryChips extends StatelessWidget {
   const _CategoryChips({required this.selected, required this.onSelect});
 
   static const _items = [
-    (label: '전체', value: null as String?),
-    (label: '식당', value: 'restaurant'),
-    (label: '카페', value: 'cafe'),
-    (label: '스터디카페', value: 'study_cafe'),
-    (label: '미용실', value: 'salon'),
+    (label: '전체', value: null as String?, emoji: '🗺'),
+    (label: '식당', value: 'restaurant', emoji: '🍽'),
+    (label: '카페', value: 'cafe', emoji: '☕'),
+    (label: '스터디카페', value: 'study_cafe', emoji: '📚'),
+    (label: '미용실', value: 'salon', emoji: '✂'),
   ];
 
   @override
@@ -539,38 +542,44 @@ class _CategoryChips extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-        children: _items.map((item) {
-          final isSelected = selected == item.value;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () => onSelect(item.value),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color:
-                        isSelected ? AppColors.primary : AppColors.border,
+          children: _items.map((item) {
+            final isSelected = selected == item.value;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: GestureDetector(
+                onTap: () => onSelect(item.value),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
                   ),
-                ),
-                child: Text(
-                  item.label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primary : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.border,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(item.emoji, style: const TextStyle(fontSize: 13)),
+                      const SizedBox(width: 5),
+                      Text(
+                        item.label,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
         ),
       ),
     );
@@ -620,6 +629,7 @@ class _SearchAreaButton extends StatelessWidget {
 
 class _StoreBottomSheet extends StatelessWidget {
   final Map<String, dynamic> store;
+  final String categoryEmoji;
   final String categoryLabel;
   final double? distanceM;
   final String Function(double) formatDistance;
@@ -629,6 +639,7 @@ class _StoreBottomSheet extends StatelessWidget {
 
   const _StoreBottomSheet({
     required this.store,
+    required this.categoryEmoji,
     required this.categoryLabel,
     required this.distanceM,
     required this.formatDistance,
@@ -640,7 +651,6 @@ class _StoreBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = store['name'] as String? ?? '가게';
-    final rating = store['rating'];
 
     return GestureDetector(
       onVerticalDragEnd: (details) {
@@ -662,7 +672,6 @@ class _StoreBottomSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 드래그 핸들
             Center(
               child: Container(
                 width: 36,
@@ -675,120 +684,49 @@ class _StoreBottomSheet extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 가게 아이콘
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.store_outlined,
-                    color: Color(0xFFD1D5DB),
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 14),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 가게명 + 닫기
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: onClose,
-                            child: const Icon(
-                              Icons.close,
-                              size: 20,
-                              color: Color(0xFF9CA3AF),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      // 카테고리 · 거리 · 시간
-                      Row(
-                        children: [
-                          Text(
-                            categoryLabel,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          if (distanceM != null) ...[
-                            const Text(
-                              ' · ',
-                              style: TextStyle(color: AppColors.textSecondary),
-                            ),
-                            const Icon(
-                              Icons.place_outlined,
-                              size: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              formatDistance(distanceM!),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const Text(
-                              ' · ',
-                              style: TextStyle(color: AppColors.textSecondary),
-                            ),
-                            Text(
-                              walkingTime(distanceM!),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      if (rating != null) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              color: Color(0xFFFBBF24),
-                              size: 14,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              rating.toString(),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                GestureDetector(
+                  onTap: onClose,
+                  child: const Icon(Icons.close, size: 20, color: Color(0xFF9CA3AF)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Text(categoryEmoji, style: const TextStyle(fontSize: 13)),
+                const SizedBox(width: 4),
+                Text(
+                  categoryLabel,
+                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                ),
+                if (distanceM != null) ...[
+                  const Text(' · ', style: TextStyle(color: AppColors.textSecondary)),
+                  const Icon(Icons.place_outlined, size: 13, color: AppColors.textSecondary),
+                  const SizedBox(width: 2),
+                  Text(
+                    formatDistance(distanceM!),
+                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                  const Text(' · ', style: TextStyle(color: AppColors.textSecondary)),
+                  Text(
+                    walkingTime(distanceM!),
+                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 12),
@@ -797,18 +735,11 @@ class _StoreBottomSheet extends StatelessWidget {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 16,
-                    color: Color(0xFF9CA3AF),
-                  ),
+                  Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF9CA3AF)),
                   SizedBox(width: 2),
                   Text(
                     '자세히 보기',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF9CA3AF),
-                    ),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
                   ),
                 ],
               ),

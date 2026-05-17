@@ -7,14 +7,14 @@ import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_pa
 import 'package:flutter/material.dart';
 
 class MyPageScreen extends StatelessWidget {
-  final MyPageState state;
-  final void Function(MyPageAction) onAction;
-
   const MyPageScreen({
     super.key,
     required this.state,
     required this.onAction,
   });
+
+  final MyPageState state;
+  final void Function(MyPageAction) onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +27,14 @@ class MyPageScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               MyPageHeader(
-                onTap: () => onAction(MyPageAction.viewNotifications()),
+                onTap: () => onAction(const MyPageAction.viewNotifications()),
               ),
               const SizedBox(height: 16),
               MyProfileCard(
                 name: state.userName,
                 email: state.email,
-                onTap: () => onAction(MyPageAction.editProfile()),
                 photoUrl: state.photoUrl,
+                onTap: () => onAction(const MyPageAction.editProfile()),
               ),
               const SizedBox(height: 20),
               MyMenuSection(
@@ -43,14 +43,20 @@ class MyPageScreen extends StatelessWidget {
                   MyMenuTile(
                     title: '이용 내역',
                     icon: Icons.history_rounded,
-                    onTap: () => onAction(
-                      MyPageAction.viewReservationHistory(),
-                    ),
+                    onTap: () =>
+                        onAction(const MyPageAction.viewReservationHistory()),
                   ),
                   MyMenuTile(
                     title: '리뷰 내역',
                     icon: Icons.rate_review_outlined,
-                    onTap: () => onAction(MyPageAction.viewReviewHistory()),
+                    onTap: () =>
+                        onAction(const MyPageAction.viewReviewHistory()),
+                  ),
+                  MyMenuTile(
+                    title: '스탬프 현황',
+                    icon: Icons.card_giftcard_rounded,
+                    onTap: () =>
+                        onAction(const MyPageAction.viewStampHistory()),
                   ),
                 ],
               ),
@@ -61,29 +67,30 @@ class MyPageScreen extends StatelessWidget {
                   MyMenuTile(
                     title: '계정 설정',
                     icon: Icons.person_outline,
-                    onTap: () => onAction(MyPageAction.tapAccountSettings()),
+                    onTap: () =>
+                        onAction(const MyPageAction.tapAccountSettings()),
                   ),
                   MyMenuTile(
                     title: '알림 설정',
                     icon: Icons.notifications_active_outlined,
                     onTap: () => onAction(
-                      MyPageAction.tapNotificationSettings(),
+                      const MyPageAction.tapNotificationSettings(),
                     ),
                   ),
                   MyMenuTile(
                     title: '1:1 문의',
                     icon: Icons.mail_outline_rounded,
-                    onTap: () => onAction(MyPageAction.tapInquiry()),
+                    onTap: () => onAction(const MyPageAction.tapInquiry()),
                   ),
                   MyMenuTile(
                     title: '공지사항',
                     icon: Icons.campaign_outlined,
-                    onTap: () => onAction(MyPageAction.viewNotices()),
+                    onTap: () => onAction(const MyPageAction.viewNotices()),
                   ),
                   MyMenuTile(
                     title: '이용약관',
                     icon: Icons.description_outlined,
-                    onTap: () => onAction(MyPageAction.viewTerms()),
+                    onTap: () => onAction(const MyPageAction.viewTerms()),
                   ),
                 ],
               ),

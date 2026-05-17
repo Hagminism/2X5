@@ -4,6 +4,7 @@ import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summary.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
+import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,7 @@ class StoreDetailReviewSection extends StatelessWidget {
     required this.location,
     this.naverPlaceId,
     required this.googleSearchQuery,
+    this.stampStatus,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
     required this.onSubmitReview,
@@ -26,6 +28,7 @@ class StoreDetailReviewSection extends StatelessWidget {
   final String location;
   final String? naverPlaceId;
   final String googleSearchQuery;
+  final StoreStampStatus? stampStatus;
   final VoidCallback onTapNaverReview;
   final VoidCallback onTapGoogleReview;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
@@ -132,6 +135,15 @@ class StoreDetailReviewSection extends StatelessWidget {
   }
 
   Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
+    if (stampStatus != null && !stampStatus!.canWriteReview) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(stampStatus!.reviewEligibilityMessage)),
+        );
+      return;
+    }
+
     final result = await showModalBottomSheet<ReviewWriteResult>(
       context: context,
       isScrollControlled: true,

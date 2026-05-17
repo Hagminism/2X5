@@ -7,6 +7,8 @@ import 'package:capstone_2026/feature/address_search/presentation/screen/address
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_screen_root.dart';
 import 'package:capstone_2026/feature/partner_my_page/settings/presentation/screen/partner_my_page_view_model.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/core/presentation/component/scope/partner_reservation_slot_settings_scope.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/core/presentation/component/custom_bottom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/partner_bottom_app_bar.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
@@ -18,13 +20,21 @@ import 'package:capstone_2026/feature/partner_page/core/presentation/component/s
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_screen_root.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_image/core/presentation/component/scope/partner_store_image_scope.dart';
+import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_menu/core/presentation/component/scope/partner_store_menu_scope.dart';
+import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
-import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
+import 'package:capstone_2026/feature/home/core/presentation/component/scope/home_scope.dart';
+import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/terms/presentation/screen/terms_screen.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
+import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
 import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
@@ -41,8 +51,6 @@ import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_m
 import 'package:capstone_2026/feature/map/presentation/screen/map_screen.dart';
 import 'package:capstone_2026/feature/sign_up_customer/core/presentation/component/scope/sign_up_customer_scope.dart';
 import 'package:capstone_2026/feature/sign_up_partner/core/presentation/component/scope/sign_up_partner_scope.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_screen_root.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
@@ -52,6 +60,9 @@ import 'package:capstone_2026/feature/information/presentation/screen/informatio
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+
+import '../../studycafe/presentation/screen/seat_selection_screen.dart';
+import '../../studycafe/presentation/screen/time_selection_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -110,30 +121,33 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.home,
-              builder: (context, state) => const HomeScreen(),
+              builder: (context, state) => HomeScope(
+                viewModel: getIt<HomeViewModel>(),
+              ),
               routes: [
                 GoRoute(
                   parentNavigatorKey: _rootNavigatorKey,
                   path: Routes.search,
                   builder: (context, state) => const SearchScreen(),
                 ),
+
                 GoRoute(
-                  name: 'information', 
+                  name: 'information',
                   parentNavigatorKey: _rootNavigatorKey,
-                  path: 'information/:storeId', // 
+                  path: 'information/:storeId',
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    return InformationScreenRoot( 
+
+                    // 이제 extraData를 통해 name, subtitle 등을 미리 넘길 필요가 없습니다.
+                    // Root 클래스에서 이 파라미터들을 더 이상 받지 않기 때문입니다.
+
+                    return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
                     );
                   },
                   routes: [
-                    GoRoute(
-                      path: Routes.reservation,
-                      parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => const ReservationScreen(),
-                    ),
+                    // ... 기존 자식 루트들 (reservation, seat 등)
                   ],
                 ),
               ],
@@ -210,6 +224,13 @@ final router = GoRouter(
                   ),
                 ),
                 GoRoute(
+                  path: Routes.stampHistory,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => StampHistoryScreenRoot(
+                    viewModel: getIt<StampHistoryViewModel>(),
+                  ),
+                ),
+                GoRoute(
                   path: Routes.accountSettings,
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) {
@@ -248,11 +269,7 @@ final router = GoRouter(
                 GoRoute(
                   path: Routes.terms,
                   parentNavigatorKey: _rootNavigatorKey,
-                  builder: (context, state) => const Scaffold(
-                    body: SafeArea(
-                      child: Center(child: Text('이용약관 페이지')),
-                    ),
-                  ),
+                  builder: (context, state) => const TermsScreen(),
                 ),
               ],
             ),
@@ -288,6 +305,20 @@ final router = GoRouter(
                     viewModel: getIt<AddressSearchViewModel>(),
                   ),
                 ),
+                GoRoute(
+                  path: Routes.partnerStoreMenus,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => PartnerStoreMenuScope(
+                    viewModel: getIt<PartnerStoreMenuViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerStoreImages,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => PartnerStoreImageScope(
+                    viewModel: getIt<PartnerStoreImageViewModel>(),
+                  ),
+                ),
               ],
             ),
           ],
@@ -299,6 +330,17 @@ final router = GoRouter(
               builder: (context, state) => PartnerReservationsScreenRoot(
                 viewModel: getIt<PartnerReservationsViewModel>(),
               ),
+              routes: [
+                GoRoute(
+                  path: Routes.partnerReservationSlotSettings,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) =>
+                      PartnerReservationSlotSettingsScope(
+                        viewModel:
+                            getIt<PartnerReservationSlotSettingsViewModel>(),
+                      ),
+                ),
+              ],
             ),
           ],
         ),
@@ -425,7 +467,7 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final isInSignUpFlow = location.startsWith(
     '${Routes.signIn}/${Routes.selectAuthProvider}/${Routes.signUpType}',
   );
-final isInPartnerOnboarding = location == Routes.partnerOnboarding;
+  final isInPartnerOnboarding = location == Routes.partnerOnboarding;
   final partnerShellBasePaths = [
     Routes.partnerHome,
     Routes.partnerStore,
@@ -437,13 +479,13 @@ final isInPartnerOnboarding = location == Routes.partnerOnboarding;
   );
   final isInUserShell =
       location == Routes.home ||
-          location.startsWith('${Routes.home}/') ||
-          location == Routes.map ||
-          location.startsWith('${Routes.map}/') ||
-          location == Routes.bookmark ||
-          location.startsWith('${Routes.bookmark}/') ||
-          location == Routes.myPage ||
-          location.startsWith('${Routes.myPage}/');
+      location.startsWith('${Routes.home}/') ||
+      location == Routes.map ||
+      location.startsWith('${Routes.map}/') ||
+      location == Routes.bookmark ||
+      location.startsWith('${Routes.bookmark}/') ||
+      location == Routes.myPage ||
+      location.startsWith('${Routes.myPage}/');
 
   if (!isLoggedIn) {
     return isInAuthFlow ? null : Routes.signIn;
@@ -471,9 +513,9 @@ final isInPartnerOnboarding = location == Routes.partnerOnboarding;
 
   final isApprovedPartner =
       registrationStatus == UserRegistrationStatus.exists &&
-          userProfile != null &&
-          userProfile.userType == UserType.partner &&
-          userProfile.partnerStatus == PartnerStatus.approved;
+      userProfile != null &&
+      userProfile.userType == UserType.partner &&
+      userProfile.partnerStatus == PartnerStatus.approved;
 
   if (isApprovedPartner) {
     if (isInPartnerOnboarding ||
