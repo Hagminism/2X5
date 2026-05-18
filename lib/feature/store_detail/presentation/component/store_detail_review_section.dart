@@ -135,14 +135,15 @@ class StoreDetailReviewSection extends StatelessWidget {
   }
 
   Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
-    if (stampStatus != null && !stampStatus!.canWriteReview) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(stampStatus!.reviewEligibilityMessage)),
-        );
-      return;
-    }
+    // TODO: Restore this guard after review/stamp DB integration testing.
+    // if (stampStatus != null && !stampStatus!.canWriteReview) {
+    //   ScaffoldMessenger.of(context)
+    //     ..hideCurrentSnackBar()
+    //     ..showSnackBar(
+    //       SnackBar(content: Text(stampStatus!.reviewEligibilityMessage)),
+    //     );
+    //   return;
+    // }
 
     final result = await showModalBottomSheet<ReviewWriteResult>(
       context: context,

@@ -62,11 +62,12 @@ class StoreDetailViewModel extends ChangeNotifier {
   }
 
   Future<void> submitReview(ReviewWriteResult review) async {
-    final stampStatus = state.stampStatus;
-    if (stampStatus != null && !stampStatus.canWriteReview) {
-      _showSoonMessage(stampStatus.reviewEligibilityMessage);
-      return;
-    }
+    // TODO: Restore this guard after review/stamp DB integration testing.
+    // final stampStatus = state.stampStatus;
+    // if (stampStatus != null && !stampStatus.canWriteReview) {
+    //   _showSoonMessage(stampStatus.reviewEligibilityMessage);
+    //   return;
+    // }
 
     try {
       final createdReview = await _storeReviewService.submitReview(
