@@ -1,6 +1,7 @@
-﻿import 'dart:io';
+import 'dart:io';
 
 import 'package:capstone_2026/core/utils/date_format_util.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summary.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
@@ -15,6 +16,7 @@ class StoreDetailReviewSection extends StatelessWidget {
     this.naverPlaceId,
     required this.googleSearchQuery,
     this.stampStatus,
+    this.googlePlaceReviewInfo,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
     required this.onSubmitReview,
@@ -29,6 +31,7 @@ class StoreDetailReviewSection extends StatelessWidget {
   final String? naverPlaceId;
   final String googleSearchQuery;
   final StoreStampStatus? stampStatus;
+  final GooglePlaceReviewInfo? googlePlaceReviewInfo;
   final VoidCallback onTapNaverReview;
   final VoidCallback onTapGoogleReview;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
@@ -50,6 +53,12 @@ class StoreDetailReviewSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _AiSummaryBox(summary: summary),
+        if (googlePlaceReviewInfo != null &&
+            (googlePlaceReviewInfo!.hasSummary ||
+                googlePlaceReviewInfo!.rating != null)) ...[
+          const SizedBox(height: 16),
+          _GoogleReviewSummaryBox(info: googlePlaceReviewInfo!),
+        ],
         const SizedBox(height: 32),
         const Text(
           '외부 리뷰 확인',
@@ -240,6 +249,102 @@ class _AiKeywordTag extends StatelessWidget {
           fontWeight: FontWeight.w500,
           color: AppColors.primary,
         ),
+      ),
+    );
+  }
+}
+
+class _GoogleReviewSummaryBox extends StatelessWidget {
+  const _GoogleReviewSummaryBox({required this.info});
+
+  final GooglePlaceReviewInfo info;
+
+  @override
+  Widget build(BuildContext context) {
+    final rating = info.rating;
+    final userRatingCount = info.userRatingCount;
+    final summary = info.reviewSummary?.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Image.asset(
+                'assets/icons/google.png',
+                width: 18,
+                height: 18,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.public, size: 18),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Google 리뷰 요약',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              if (rating != null)
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 17,
+                      color: Color(0xFFFFB800),
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      rating.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          if (userRatingCount != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Google 리뷰 $userRatingCount개 기준',
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+          if (summary != null && summary.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              summary,
+              style: const TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

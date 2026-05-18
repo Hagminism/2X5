@@ -2,6 +2,7 @@ import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
 import 'package:capstone_2026/feature/store_detail/data/store_detail_data.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/store_detail.dart';
 import 'package:capstone_2026/feature/store_detail/domain/service/review_ai_summary_generator.dart';
@@ -33,6 +34,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   bool _isLoading = true;
   List<InternalReview> _reviews = const [];
   StoreStampStatus? _stampStatus;
+  GooglePlaceReviewInfo? _googlePlaceReviewInfo;
 
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
   StampService get _stampService => getIt<StampService>();
@@ -45,9 +47,10 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
     final storeName = widget.storeName.trim();
     final location = widget.location.trim();
-    final query = [storeName, location]
-        .where((value) => value.isNotEmpty)
-        .join(' ');
+    final query = [
+      storeName,
+      location,
+    ].where((value) => value.isNotEmpty).join(' ');
 
     return defaultStoreDetail.copyWith(
       name: storeName.isEmpty ? defaultStoreDetail.name : storeName,
@@ -84,6 +87,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
           naverPlaceId: data.naverPlaceId,
           googleSearchQuery: data.googleSearchQuery,
           stampStatus: _stampStatus,
+          googlePlaceReviewInfo: _googlePlaceReviewInfo,
           aiSummary: ReviewAiSummaryGenerator.generate(
             storeName: data.name,
             reviews: _reviews,
@@ -104,9 +108,14 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
     });
 
     try {
-      final (reviews, stampStatus) = await (
+      final data = _reviewTarget;
+      final (reviews, stampStatus, googlePlaceReviewInfo) = await (
         _storeReviewService.loadStoreReviews(storeId: widget.storeId),
         _stampService.loadStoreStampStatus(storeId: widget.storeId),
+        _storeReviewService.fetchGooglePlaceReviewInfo(
+          storeName: data.name,
+          location: data.location,
+        ),
       ).wait;
 
       if (!mounted) {
@@ -116,6 +125,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
       setState(() {
         _reviews = reviews;
         _stampStatus = stampStatus;
+        _googlePlaceReviewInfo = googlePlaceReviewInfo;
         _isLoading = false;
       });
     } catch (_) {
@@ -187,9 +197,11 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   }
 
   Future<void> _openGoogleReview(StoreDetail data) async {
-    final uri = _storeReviewService.getGoogleMapSearchUri(
-      data.googleSearchQuery,
-    );
+    final uri =
+        _googlePlaceReviewInfo?.googleMapsUri ??
+        _storeReviewService.getGoogleMapSearchUri(
+          data.googleSearchQuery,
+        );
 
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);

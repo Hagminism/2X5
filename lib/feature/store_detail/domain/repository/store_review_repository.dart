@@ -1,4 +1,5 @@
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/store_review_link_target.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 
@@ -10,6 +11,11 @@ abstract interface class StoreReviewRepository {
   });
 
   Uri getGoogleMapSearchUri(String query);
+
+  Future<GooglePlaceReviewInfo?> fetchGooglePlaceReviewInfo({
+    required String storeName,
+    required String location,
+  });
 
   Future<List<InternalReview>> fetchStoreReviews({
     required String storeId,
