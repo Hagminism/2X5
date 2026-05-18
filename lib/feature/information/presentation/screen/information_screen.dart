@@ -17,6 +17,7 @@ class InformationScreen extends StatefulWidget {
   /// `phone` 우선·없으면 `contact` (뷰모델 `displayPhone`).
   final String displayPhone;
   final double rating;
+  final String? naverPlaceId;
   final List<String> imageUrls;
   final List<StoreMenu> menus;
 
@@ -27,6 +28,7 @@ class InformationScreen extends StatefulWidget {
     this.address = '',
     this.displayPhone = '',
     required this.rating,
+    this.naverPlaceId,
     this.imageUrls = const [],
     this.menus = const [],
     super.key,
@@ -211,7 +213,12 @@ class _InformationScreenState extends State<InformationScreen>
             ),
             StoreMenuTab(menus: widget.menus),
             StorePhotoTab(imageUrls: widget.imageUrls),
-            StoreReviewTab(storeId: widget.storeId),
+            StoreReviewTab(
+              storeId: widget.storeId,
+              storeName: widget.name,
+              location: widget.address.isEmpty ? widget.subtitle : widget.address,
+              naverPlaceId: widget.naverPlaceId,
+            ),
             const Center(child: Text('정보 탭')),
             const StoreReservationStatusTab(),
           ],

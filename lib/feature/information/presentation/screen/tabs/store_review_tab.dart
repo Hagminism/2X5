@@ -14,10 +14,16 @@ import 'package:url_launcher/url_launcher.dart';
 class StoreReviewTab extends StatefulWidget {
   const StoreReviewTab({
     required this.storeId,
+    required this.storeName,
+    required this.location,
+    this.naverPlaceId,
     super.key,
   });
 
   final String storeId;
+  final String storeName;
+  final String location;
+  final String? naverPlaceId;
 
   @override
   State<StoreReviewTab> createState() => _StoreReviewTabState();
@@ -31,8 +37,25 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
   StampService get _stampService => getIt<StampService>();
 
-  StoreDetail get _storeDetail =>
-      storeDetailMockMap[widget.storeId] ?? defaultStoreDetail;
+  StoreDetail get _reviewTarget {
+    final mockDetail = storeDetailMockMap[widget.storeId];
+    if (mockDetail != null) {
+      return mockDetail;
+    }
+
+    final storeName = widget.storeName.trim();
+    final location = widget.location.trim();
+    final query = [storeName, location]
+        .where((value) => value.isNotEmpty)
+        .join(' ');
+
+    return defaultStoreDetail.copyWith(
+      name: storeName.isEmpty ? defaultStoreDetail.name : storeName,
+      location: location.isEmpty ? defaultStoreDetail.location : location,
+      naverPlaceId: widget.naverPlaceId?.trim() ?? '',
+      googleSearchQuery: query.isEmpty ? storeName : query,
+    );
+  }
 
   @override
   void initState() {
@@ -50,7 +73,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
   @override
   Widget build(BuildContext context) {
-    final data = _storeDetail;
+    final data = _reviewTarget;
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -108,7 +131,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   }
 
   Future<void> _submitReview(ReviewWriteResult result) async {
-    final data = _storeDetail;
+    final data = _reviewTarget;
 
     try {
       final createdReview = await _storeReviewService.submitReview(

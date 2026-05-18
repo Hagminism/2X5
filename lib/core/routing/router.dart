@@ -37,7 +37,6 @@ import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
-import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
 import 'package:capstone_2026/feature/partner_onboarding/core/presentation/component/scope/partner_onboarding_scope.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_screen_root.dart';
@@ -55,14 +54,11 @@ import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partn
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
-import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_screen_root.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
-import '../../studycafe/presentation/screen/seat_selection_screen.dart';
-import '../../studycafe/presentation/screen/time_selection_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -137,10 +133,6 @@ final router = GoRouter(
                   path: 'information/:storeId',
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-
-                    // 이제 extraData를 통해 name, subtitle 등을 미리 넘길 필요가 없습니다.
-                    // Root 클래스에서 이 파라미터들을 더 이상 받지 않기 때문입니다.
-
                     return InformationScreenRoot(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
@@ -176,10 +168,16 @@ final router = GoRouter(
               builder: (context, state) => const BookmarkScreen(),
               routes: [
                 GoRoute(
-                  path: Routes.bookmarkStoreDetail,
-                  builder: (context, state) => BookmarkStoreDetailScreen(
-                    storeId: state.pathParameters['storeId'] ?? '',
-                  ),
+                  name: 'bookmark_information',
+                  parentNavigatorKey: _rootNavigatorKey,
+                  path: Routes.bookmarkStoreInformation,
+                  builder: (context, state) {
+                    final storeId = state.pathParameters['storeId'] ?? '';
+                    return InformationScreenRoot(
+                      viewModel: getIt<InformationViewModel>(),
+                      storeId: storeId,
+                    );
+                  },
                 ),
               ],
             ),

@@ -50,6 +50,7 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
             address: widget.viewModel.address,
             displayPhone: widget.viewModel.displayPhone,
             rating: widget.viewModel.rating,
+            naverPlaceId: widget.viewModel.naverPlaceId,
             imageUrls: widget.viewModel.imageUrls,
             menus: widget.viewModel.menus,
           );

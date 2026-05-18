@@ -112,8 +112,15 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                             subtitle: item.subtitle,
                             rating: item.rating,
                             reviewCount: item.reviewCount,
-                            onTap: () => context.go(
-                              '${Routes.bookmark}/store/${item.id}',
+                            onTap: () => context.pushNamed(
+                              'bookmark_information',
+                              pathParameters: {'storeId': item.id},
+                              extra: {
+                                'name': item.name,
+                                'subtitle': item.subtitle,
+                                'rating': item.rating,
+                                'category': item.category,
+                              },
                             ),
                             onBookmarkTap: () => _removeBookmark(item.id),
                           ),
