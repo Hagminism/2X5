@@ -6,7 +6,13 @@ import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summar
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+const bool _allowReviewStampTestingBypass = bool.fromEnvironment(
+  'ALLOW_REVIEW_STAMP_TEST_BYPASS',
+  defaultValue: !kReleaseMode,
+);
 
 class StoreDetailReviewSection extends StatelessWidget {
   const StoreDetailReviewSection({
@@ -135,15 +141,16 @@ class StoreDetailReviewSection extends StatelessWidget {
   }
 
   Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
-    // TODO: Restore this guard after review/stamp DB integration testing.
-    // if (stampStatus != null && !stampStatus!.canWriteReview) {
-    //   ScaffoldMessenger.of(context)
-    //     ..hideCurrentSnackBar()
-    //     ..showSnackBar(
-    //       SnackBar(content: Text(stampStatus!.reviewEligibilityMessage)),
-    //     );
-    //   return;
-    // }
+    if (!_allowReviewStampTestingBypass &&
+        stampStatus != null &&
+        !stampStatus!.canWriteReview) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(stampStatus!.reviewEligibilityMessage)),
+        );
+      return;
+    }
 
     final result = await showModalBottomSheet<ReviewWriteResult>(
       context: context,

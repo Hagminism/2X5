@@ -9,6 +9,11 @@ class StampRepositoryImpl implements StampRepository {
     required SupabaseClient supabase,
   }) : _supabase = supabase;
 
+  static const bool _allowReviewStampTestingBypass = bool.fromEnvironment(
+    'ALLOW_REVIEW_STAMP_TEST_BYPASS',
+    defaultValue: !kReleaseMode,
+  );
+
   static const String _defaultEligibilityMessage =
       '예약 완료 후 리뷰 작성 시 스탬프가 적립됩니다.';
   static const String _reviewPromptMessage =
@@ -193,10 +198,9 @@ class StampRepositoryImpl implements StampRepository {
         return _buildMockStatus(userId: userId, storeId: storeId);
       }
 
-      // TODO: Restore this guard after review/stamp DB integration testing.
-      // if (!currentStatus.showInHistory) {
-      //   return currentStatus;
-      // }
+      if (!_allowReviewStampTestingBypass && !currentStatus.showInHistory) {
+        return currentStatus;
+      }
 
       final reservationId = await _fetchLatestCompletedReservationId(
         userId: userId,
@@ -322,35 +326,36 @@ class StampRepositoryImpl implements StampRepository {
     required String? reservationId,
     required StoreStampStatus currentStatus,
   }) async {
-    // TODO: Restore RPC usage after review/stamp DB integration testing.
-    // The RPC can keep the production "completed reservation required" rule,
-    // so use the client fallback directly while that rule is temporarily off.
-    await _accrueStampWithClientFallback(
-      userId: userId,
-      dbStoreId: dbStoreId,
-      reservationId: reservationId,
-      currentStatus: currentStatus,
-    );
-    // try {
-    //   await _supabase.rpc(
-    //     'accrue_stamp_for_review',
-    //     params: {
-    //       'p_user_id': userId,
-    //       'p_store_id': dbStoreId,
-    //       'p_reservation_id': reservationId,
-    //     },
-    //   );
-    // } on PostgrestException catch (e) {
-    //   debugPrint(
-    //     '[StampRepository] accrue_stamp_for_review RPC fallback: ${e.message}',
-    //   );
-    //   await _accrueStampWithClientFallback(
-    //     userId: userId,
-    //     dbStoreId: dbStoreId,
-    //     reservationId: reservationId,
-    //     currentStatus: currentStatus,
-    //   );
-    // }
+    if (_allowReviewStampTestingBypass) {
+      await _accrueStampWithClientFallback(
+        userId: userId,
+        dbStoreId: dbStoreId,
+        reservationId: reservationId,
+        currentStatus: currentStatus,
+      );
+      return;
+    }
+
+    try {
+      await _supabase.rpc(
+        'accrue_stamp_for_review',
+        params: {
+          'p_user_id': userId,
+          'p_store_id': dbStoreId,
+          'p_reservation_id': reservationId,
+        },
+      );
+    } on PostgrestException catch (e) {
+      debugPrint(
+        '[StampRepository] accrue_stamp_for_review RPC fallback: ${e.message}',
+      );
+      await _accrueStampWithClientFallback(
+        userId: userId,
+        dbStoreId: dbStoreId,
+        reservationId: reservationId,
+        currentStatus: currentStatus,
+      );
+    }
   }
 
   Future<void> _accrueStampWithClientFallback({
@@ -394,22 +399,10 @@ class StampRepositoryImpl implements StampRepository {
       'reward_unlocked_at': rewardUnlockedAt?.toIso8601String(),
     };
 
-    final existingRow = await _supabase
-        .from('user_store_stamps')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('store_id', dbStoreId)
-        .maybeSingle();
-
-    if (existingRow == null) {
-      await _supabase.from('user_store_stamps').insert(payload);
-      return;
-    }
-
-    await _supabase
-        .from('user_store_stamps')
-        .update(payload)
-        .eq('id', existingRow['id']);
+    await _supabase.from('user_store_stamps').upsert(
+      payload,
+      onConflict: 'user_id,store_id',
+    );
   }
 
   Future<StoreStampStatus?> _buildDbStatusForStore({
@@ -666,10 +659,9 @@ class StampRepositoryImpl implements StampRepository {
     _ensureMockUserState(userId);
 
     final current = _buildMockStatus(userId: userId, storeId: storeId);
-    // TODO: Restore this guard after review/stamp DB integration testing.
-    // if (!current.canWriteReview) {
-    //   return current;
-    // }
+    if (!_allowReviewStampTestingBypass && !current.canWriteReview) {
+      return current;
+    }
 
     final nextCount = (current.currentCount + 1).clamp(0, current.goalCount);
     _mockStampCountsByUserId[userId]![storeId] = nextCount;
