@@ -263,7 +263,7 @@ class _GoogleReviewSummaryBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final rating = info.rating;
     final userRatingCount = info.userRatingCount;
-    final summary = info.reviewSummary?.trim();
+    final summary = _buildSummaryText(info);
 
     return Container(
       width: double.infinity,
@@ -347,6 +347,46 @@ class _GoogleReviewSummaryBox extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String? _buildSummaryText(GooglePlaceReviewInfo info) {
+    final officialSummary = info.reviewSummary?.trim();
+    if (officialSummary != null && officialSummary.isNotEmpty) {
+      return officialSummary;
+    }
+
+    if (info.reviews.isEmpty) {
+      return null;
+    }
+
+    final combinedText = info.reviews
+        .map((review) => review.text)
+        .join(' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (combinedText.isEmpty) {
+      return null;
+    }
+
+    final strengths = <String>[
+      if (_containsAny(combinedText, ['친절', '서비스', '직원'])) '친절한 응대',
+      if (_containsAny(combinedText, ['맛', '고기', '음식', '커피', '메뉴'])) '메뉴 만족도',
+      if (_containsAny(combinedText, ['분위기', '넓', '쾌적', '자리'])) '공간 분위기',
+      if (_containsAny(combinedText, ['예약', '대기', '빠르', '바로'])) '방문 편의성',
+      if (_containsAny(combinedText, ['가족', '데이트', '모임', '친구', '회식']))
+        '방문 목적 적합성',
+    ];
+
+    if (strengths.isEmpty) {
+      return 'Google 리뷰에서는 전반적인 이용 경험과 매장 만족도를 확인할 수 있습니다.';
+    }
+
+    final visibleStrengths = strengths.take(2).join('과 ');
+    return 'Google 리뷰에서는 $visibleStrengths에 대한 언급이 많이 보입니다.';
+  }
+
+  bool _containsAny(String source, List<String> keywords) {
+    return keywords.any(source.contains);
   }
 }
 

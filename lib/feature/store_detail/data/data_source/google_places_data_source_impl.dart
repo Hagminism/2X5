@@ -109,7 +109,7 @@ class GooglePlacesDataSourceImpl implements GooglePlacesDataSource {
           headers: {
             'X-Goog-Api-Key': apiKey,
             'X-Goog-FieldMask':
-                'id,googleMapsUri,rating,userRatingCount,reviewSummary',
+                'id,displayName,googleMapsUri,rating,userRatingCount,reviewSummary,reviews',
           },
         )
         .timeout(const Duration(seconds: 5));
@@ -126,14 +126,17 @@ class GooglePlacesDataSourceImpl implements GooglePlacesDataSource {
     final info = GooglePlaceReviewInfo(
       placeId: data['id']?.toString() ?? placeId,
       googleMapsUri: _parseUri(data['googleMapsUri']),
+      displayName: _parseLocalizedText(data['displayName']),
       rating: (data['rating'] as num?)?.toDouble(),
       userRatingCount: (data['userRatingCount'] as num?)?.toInt(),
       reviewSummary: _parseReviewSummary(data['reviewSummary']),
+      reviews: _parseReviews(data['reviews']),
     );
     debugPrint(
       '[Google Places] Details loaded: '
       'rating=${info.rating}, reviews=${info.userRatingCount}, '
-      'hasSummary=${info.hasSummary}, mapsUri=${info.googleMapsUri != null}',
+      'hasSummary=${info.hasSummary}, reviewSamples=${info.reviews.length}, '
+      'mapsUri=${info.googleMapsUri != null}',
     );
     return info;
   }
@@ -162,6 +165,48 @@ class GooglePlacesDataSourceImpl implements GooglePlacesDataSource {
         if (localizedText != null && localizedText.isNotEmpty) {
           return localizedText;
         }
+      }
+    }
+
+    return null;
+  }
+
+  List<GooglePlaceReview> _parseReviews(dynamic value) {
+    if (value is! List) {
+      return const [];
+    }
+
+    return value
+        .whereType<Map>()
+        .map((review) {
+          final text = _parseLocalizedText(review['text']);
+          if (text == null || text.isEmpty) {
+            return null;
+          }
+
+          return GooglePlaceReview(
+            text: text,
+            rating: (review['rating'] as num?)?.toDouble(),
+            authorName: review['authorAttribution'] is Map
+                ? (review['authorAttribution'] as Map)['displayName']
+                      ?.toString()
+                : null,
+          );
+        })
+        .whereType<GooglePlaceReview>()
+        .toList(growable: false);
+  }
+
+  String? _parseLocalizedText(dynamic value) {
+    if (value is String) {
+      final text = value.trim();
+      return text.isEmpty ? null : text;
+    }
+
+    if (value is Map) {
+      final text = value['text']?.toString().trim();
+      if (text != null && text.isNotEmpty) {
+        return text;
       }
     }
 
