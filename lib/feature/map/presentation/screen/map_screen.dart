@@ -38,6 +38,7 @@ class _MapScreenState extends State<MapScreen> {
   String? _selectedMarkerId;
   DateTime? _lastMarkerClickTime;
   final Set<String> _registeredMarkerIds = {};
+  final Map<String, NLatLng> _clusterPositions = {};
 
   @override
   void initState() {
@@ -47,6 +48,8 @@ class _MapScreenState extends State<MapScreen> {
       if (status is MapLoadSuccess) {
         _naverMapManager.addMapCenterChangedEventListener();
         _naverMapManager.addMapClickEventListener();
+        _naverMapManager.addMapZoomChangedEventListener();
+        _naverMapManager.addMapZoomEndEventListener();
         _addMyLocationMarker();
         _mapReady = true;
         if (_stores.isNotEmpty) _addStoreMarkers();
@@ -55,16 +58,29 @@ class _MapScreenState extends State<MapScreen> {
     _markerEventSubscription = _naverMapManager.onMarkerEvent.listen((event) {
       if (event is MarkerClick) {
         final markerId = event.markerId;
+        _lastMarkerClickTime = DateTime.now();
+
+        // 클러스터 클릭 → 줌인
+        if (markerId.startsWith('cluster_')) {
+          final pos = _clusterPositions[markerId];
+          if (pos != null && mounted) {
+            _currentZoom = (_currentZoom + 3).clamp(1, 21);
+            _naverMapManager.setZoom(zoom: _currentZoom);
+            _naverMapManager.setCenter(center: pos);
+          }
+          return;
+        }
+
+        // 개별 마커 클릭
         final storeId = markerId.replaceFirst('store_', '');
         final matches = _stores.where((s) => s['id'].toString() == storeId);
         if (matches.isNotEmpty && mounted) {
-          _lastMarkerClickTime = DateTime.now();
           final prev = _selectedMarkerId;
           setState(() {
             _selectedStore = matches.first;
             _selectedMarkerId = markerId;
           });
-          if (prev != null && prev != markerId) {
+          if (prev != null && prev != markerId && prev.startsWith('store_')) {
             _updateMarkerAppearance(prev, isSelected: false);
           }
           _updateMarkerAppearance(markerId, isSelected: true);
@@ -83,7 +99,13 @@ class _MapScreenState extends State<MapScreen> {
           _selectedStore = null;
           _selectedMarkerId = null;
         });
-        if (prev != null) _updateMarkerAppearance(prev, isSelected: false);
+        if (prev != null && prev.startsWith('store_')) {
+          _updateMarkerAppearance(prev, isSelected: false);
+        }
+      } else if (event is MapZoomChanged) {
+        _currentZoom = event.zoom;
+      } else if (event is MapZoomEnd && mounted && _mapReady) {
+        _addStoreMarkers();
       }
     });
     _fetchStores();
@@ -152,6 +174,54 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  double _gridSizeForZoom(int zoom) {
+    // zoom 15 → ~0.004deg(≈440m), 줌 1 내려갈수록 2배
+    return 0.004 * math.pow(2, 15 - zoom);
+  }
+
+  Map<String, List<Map<String, dynamic>>> _clusterStores(
+    List<Map<String, dynamic>> stores,
+    int zoom,
+  ) {
+    final gridSize = _gridSizeForZoom(zoom);
+    final clusters = <String, List<Map<String, dynamic>>>{};
+    for (final store in stores) {
+      final lat = store['latitude'] as double?;
+      final lng = store['longitude'] as double?;
+      final category = store['category'] as String? ?? 'unknown';
+      if (lat == null || lng == null) continue;
+      final gridLat = (lat / gridSize).floor();
+      final gridLng = (lng / gridSize).floor();
+      final key = '${category}_${gridLat}_$gridLng';
+      clusters.putIfAbsent(key, () => []).add(store);
+    }
+    return clusters;
+  }
+
+  String _dominantCategory(List<Map<String, dynamic>> stores) {
+    final counts = <String, int>{};
+    for (final s in stores) {
+      final cat = s['category'] as String? ?? '';
+      counts[cat] = (counts[cat] ?? 0) + 1;
+    }
+    return counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+  }
+
+  String _buildClusterHtml(int count, String category) {
+    final color = _categoryColor(category);
+    final emoji = _categoryEmoji(category);
+    final size = count > 99 ? 56 : count > 9 ? 50 : 44;
+    final countFontSize = count > 99 ? 11 : count > 9 ? 12 : 13;
+    return '<div style="background:$color;color:white;border-radius:50%;'
+        'width:${size}px;height:${size}px;display:flex;flex-direction:column;'
+        'align-items:center;justify-content:center;gap:1px;'
+        'border:2.5px solid white;'
+        'box-shadow:0 2px 8px rgba(0,0,0,0.35);">'
+        '<span style="font-size:16px;line-height:1;">$emoji</span>'
+        '<span style="font-size:${countFontSize}px;font-weight:700;line-height:1.2;">$count</span>'
+        '</div>';
+  }
+
   String _buildMarkerHtml(String category, {bool isSelected = false}) {
     final color = _categoryColor(category);
     final emoji = _categoryEmoji(category);
@@ -187,34 +257,65 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _addStoreMarkers() async {
-    // removeMarkerAll() 전에 click event 먼저 해제해야 함
     // SDK 버그: removeMarkerAll()이 markerEventListeners를 초기화하지 않아서
-    // addMarkerClickEvent()가 "이미 등록됨"으로 보고 skip함
+    // addMarkerClickEvent()가 "이미 등록됨"으로 보고 skip함 → 먼저 개별 해제
     for (final id in _registeredMarkerIds) {
       await _naverMapManager.removeMarkerClickEvent(markerId: id);
     }
     _registeredMarkerIds.clear();
     _selectedMarkerId = null;
+    _clusterPositions.clear();
 
     await _naverMapManager.removeMarkerAll();
     await _addMyLocationMarker();
 
-    for (final store in _filteredStores) {
-      final lat = store['latitude'] as double?;
-      final lng = store['longitude'] as double?;
-      final category = store['category'] as String? ?? '';
-      final id = store['id']?.toString() ?? '';
-      if (lat == null || lng == null) continue;
+    final clusters = _clusterStores(_filteredStores, _currentZoom);
 
-      await _naverMapManager.addMarker(
-        markerId: 'store_$id',
-        markerOptions: MarkerOptions(
-          position: NLatLng(lat, lng),
-          icon: HtmlIcon(content: _buildMarkerHtml(category)),
-        ),
-      );
-      await _naverMapManager.addMarkerClickEvent(markerId: 'store_$id');
-      _registeredMarkerIds.add('store_$id');
+    for (final entry in clusters.entries) {
+      final stores = entry.value;
+      if (stores.length == 1) {
+        // 개별 마커
+        final store = stores.first;
+        final lat = store['latitude'] as double?;
+        final lng = store['longitude'] as double?;
+        final category = store['category'] as String? ?? '';
+        final id = store['id']?.toString() ?? '';
+        if (lat == null || lng == null) continue;
+
+        await _naverMapManager.addMarker(
+          markerId: 'store_$id',
+          markerOptions: MarkerOptions(
+            position: NLatLng(lat, lng),
+            icon: HtmlIcon(content: _buildMarkerHtml(category)),
+          ),
+        );
+        await _naverMapManager.addMarkerClickEvent(markerId: 'store_$id');
+        _registeredMarkerIds.add('store_$id');
+      } else {
+        // 클러스터 마커 — 중심점 계산
+        final lat = stores
+                .map((s) => s['latitude'] as double)
+                .reduce((a, b) => a + b) /
+            stores.length;
+        final lng = stores
+                .map((s) => s['longitude'] as double)
+                .reduce((a, b) => a + b) /
+            stores.length;
+        final category = _dominantCategory(stores);
+        final markerId = 'cluster_${entry.key}';
+        final position = NLatLng(lat, lng);
+        _clusterPositions[markerId] = position;
+
+        await _naverMapManager.addMarker(
+          markerId: markerId,
+          markerOptions: MarkerOptions(
+            position: position,
+            icon: HtmlIcon(content: _buildClusterHtml(stores.length, category)),
+          ),
+        );
+        await _naverMapManager.addMarkerClickEvent(markerId: markerId);
+        _registeredMarkerIds.add(markerId);
+      }
     }
   }
 
