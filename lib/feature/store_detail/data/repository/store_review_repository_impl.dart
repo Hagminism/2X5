@@ -154,9 +154,13 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       return StoreReviewLinkTarget(webUri: fallbackWebUri);
     }
 
+    final appSearchQuery = info.roadAddress.trim().isNotEmpty
+        ? info.roadAddress.trim()
+        : searchQuery;
+
     return StoreReviewLinkTarget(
       appUri: Uri.parse(
-        'nmap://search?query=${Uri.encodeComponent(searchQuery)}'
+        'nmap://search?query=${Uri.encodeComponent(appSearchQuery)}'
         '&appname=${Uri.encodeComponent(_packageName)}',
       ),
       webUri: Uri.parse(

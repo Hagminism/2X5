@@ -149,27 +149,7 @@ class GooglePlacesDataSourceImpl implements GooglePlacesDataSource {
     return Uri.tryParse(raw);
   }
 
-  String? _parseReviewSummary(dynamic value) {
-    if (value is String) {
-      return value.trim().isEmpty ? null : value.trim();
-    }
-
-    if (value is Map) {
-      final text = value['text'];
-      if (text is String) {
-        return text.trim().isEmpty ? null : text.trim();
-      }
-
-      if (text is Map) {
-        final localizedText = text['text']?.toString().trim();
-        if (localizedText != null && localizedText.isNotEmpty) {
-          return localizedText;
-        }
-      }
-    }
-
-    return null;
-  }
+  String? _parseReviewSummary(dynamic value) => _parseLocalizedText(value);
 
   List<GooglePlaceReview> _parseReviews(dynamic value) {
     if (value is! List) {
