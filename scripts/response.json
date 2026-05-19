@@ -1,0 +1,21 @@
+{
+  "result": {
+    "type": "all",
+    "metaInfo": {
+      "pageId": "ncaptcha-all-search-no-result",
+      "sessionId": null,
+      "rcode": "",
+      "searchedQuery": "스타벅스 성북구청점",
+      "displayCorrectAnswer": false
+    },
+    "address": null,
+    "place": null,
+    "bus": null,
+    "ncaptcha": {
+      "uuid": "dfc8a2c2-fd15-40b8-83d4-5250c4f087b8",
+      "ip": "58.123.153.114",
+      "confirmRules": "CE_EMPTY_TOKEN",
+      "timestamp": 1779199435479
+    }
+  }
+}
