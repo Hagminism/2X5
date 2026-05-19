@@ -18,6 +18,7 @@ class InformationViewModel extends ChangeNotifier {
   String? _phone;
   double? _rating;
   String? _category;
+  String? _naverPlaceId;
   List<StoreImage> _images = [];
   List<StoreMenu> _menus = [];
   bool _isLoading = true;
@@ -27,6 +28,7 @@ class InformationViewModel extends ChangeNotifier {
   String get contact => _contact ?? '';
   double get rating => _rating ?? 0.0;
   String get category => _category ?? '';
+  String? get naverPlaceId => _naverPlaceId;
   bool get isLoading => _isLoading;
 
   /// 인포 홈 전화: `stores.phone` 우선, 없으면 `contact`
@@ -86,6 +88,7 @@ class InformationViewModel extends ChangeNotifier {
       _phone = store.phone;
       _rating = store.rating;
       _category = store.category;
+      _naverPlaceId = store.naverPlaceId;
       _images = images;
       _menus = menus;
     } catch (e) {
@@ -97,4 +100,5 @@ class InformationViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 }

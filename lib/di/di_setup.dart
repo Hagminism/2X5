@@ -41,6 +41,8 @@ import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/s
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/google_places_data_source.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/google_places_data_source_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/repository/store_detail_repository_impl.dart';
@@ -111,6 +113,9 @@ void diSetup() {
   getIt.registerLazySingleton<NaverStoreSearchDataSource>(
         () => NaverStoreSearchDataSourceImpl(),
   );
+  getIt.registerLazySingleton<GooglePlacesDataSource>(
+        () => GooglePlacesDataSourceImpl(),
+  );
   getIt.registerLazySingleton<UserDataSource>(
         () => UserDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
@@ -145,6 +150,7 @@ void diSetup() {
   );
   getIt.registerLazySingleton<StoreReviewRepository>(
         () => StoreReviewRepositoryImpl(
+      googlePlacesDataSource: getIt<GooglePlacesDataSource>(),
       naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
       supabase: getIt<SupabaseClient>(),
     ),

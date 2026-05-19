@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/store_review_link_target.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
@@ -52,5 +53,15 @@ class StoreReviewService {
 
   Uri getGoogleMapSearchUri(String query) {
     return _storeReviewRepository.getGoogleMapSearchUri(query);
+  }
+
+  Future<GooglePlaceReviewInfo?> fetchGooglePlaceReviewInfo({
+    required String storeName,
+    required String location,
+  }) {
+    return _storeReviewRepository.fetchGooglePlaceReviewInfo(
+      storeName: storeName,
+      location: location,
+    );
   }
 }

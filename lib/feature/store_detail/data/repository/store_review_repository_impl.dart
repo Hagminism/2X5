@@ -1,4 +1,6 @@
+import 'package:capstone_2026/feature/store_detail/data/data_source/google_places_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/store_review_link_target.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
@@ -9,15 +11,20 @@ import 'package:uuid/uuid.dart';
 
 class StoreReviewRepositoryImpl implements StoreReviewRepository {
   StoreReviewRepositoryImpl({
+    required GooglePlacesDataSource googlePlacesDataSource,
     required NaverStoreSearchDataSource naverStoreSearchDataSource,
     required SupabaseClient supabase,
-  }) : _naverStoreSearchDataSource = naverStoreSearchDataSource,
+  }) : _googlePlacesDataSource = googlePlacesDataSource,
+       _naverStoreSearchDataSource = naverStoreSearchDataSource,
        _supabase = supabase;
 
+  final GooglePlacesDataSource _googlePlacesDataSource;
   final NaverStoreSearchDataSource _naverStoreSearchDataSource;
   final SupabaseClient _supabase;
 
   static const String _packageName = 'com.example.capstone_2026';
+  static const String _reviewSelectColumns =
+      'id, store_id, user_id, rating, content, image_urls, created_at, visit_purpose, users(name), stores(name)';
   static const Uuid _uuid = Uuid();
 
   final Map<String, List<InternalReview>> _mockReviewsByStoreId = {
@@ -135,7 +142,10 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       storeName: storeName,
       location: location,
     );
-    final fallbackQuery = Uri.encodeComponent('$storeName $location');
+    final searchQuery = storeName.trim().isNotEmpty
+        ? storeName.trim()
+        : location;
+    final fallbackQuery = Uri.encodeComponent(searchQuery);
     final fallbackWebUri = Uri.parse(
       'https://m.map.naver.com/search2/search.naver?query=$fallbackQuery',
     );
@@ -144,9 +154,13 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       return StoreReviewLinkTarget(webUri: fallbackWebUri);
     }
 
+    final appSearchQuery = info.roadAddress.trim().isNotEmpty
+        ? info.roadAddress.trim()
+        : searchQuery;
+
     return StoreReviewLinkTarget(
       appUri: Uri.parse(
-        'nmap://search?query=${Uri.encodeComponent(info.roadAddress)}'
+        'nmap://search?query=${Uri.encodeComponent(appSearchQuery)}'
         '&appname=${Uri.encodeComponent(_packageName)}',
       ),
       webUri: Uri.parse(
@@ -161,6 +175,17 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       'api': '1',
       'query': query,
     });
+  }
+
+  @override
+  Future<GooglePlaceReviewInfo?> fetchGooglePlaceReviewInfo({
+    required String storeName,
+    required String location,
+  }) {
+    return _googlePlacesDataSource.fetchReviewInfo(
+      storeName: storeName,
+      location: location,
+    );
   }
 
   @override
@@ -210,26 +235,51 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required String userName,
     required ReviewWriteResult review,
   }) async {
-    final mockReview = InternalReview(
-      id: 'mock-${_uuid.v4()}',
+    if (_isUuid(storeId)) {
+      try {
+        final rows = await _supabase
+            .from('reviews')
+            .insert({
+              'store_id': storeId,
+              'user_id': userId,
+              'rating': review.rating,
+              'content': review.content,
+              'visit_purpose': review.visitTag,
+              'image_urls': List<String>.from(review.imagePaths),
+              'is_visible': true,
+            })
+            .select(_reviewSelectColumns)
+            .limit(1);
+
+        final reviews = _mapReviewRows(rows);
+        if (reviews.isNotEmpty) {
+          final inserted = reviews.first;
+          return InternalReview(
+            id: inserted.id,
+            storeId: inserted.storeId,
+            userId: inserted.userId,
+            userName: userName,
+            storeName: storeName,
+            rating: inserted.rating,
+            content: inserted.content,
+            imageUrls: inserted.imageUrls,
+            createdAt: inserted.createdAt,
+            visitPurpose: inserted.visitPurpose,
+          );
+        }
+      } catch (e) {
+        debugPrint('[StoreReviewRepository] Supabase submit failed: $e');
+        rethrow;
+      }
+    }
+
+    return _submitMockReview(
       storeId: storeId,
+      storeName: storeName,
       userId: userId,
       userName: userName,
-      storeName: storeName,
-      rating: review.rating,
-      content: review.content,
-      imageUrls: List<String>.from(review.imagePaths),
-      createdAt: DateTime.now(),
-      visitPurpose: review.visitTag,
+      review: review,
     );
-
-    final storeReviews = List<InternalReview>.from(
-      _mockReviewsByStoreId[storeId] ?? const [],
-    );
-    storeReviews.insert(0, mockReview);
-    _mockReviewsByStoreId[storeId] = storeReviews;
-
-    return mockReview;
   }
 
   @override
@@ -271,9 +321,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
           'visit_purpose': review.visitTag,
         })
         .eq('id', reviewId)
-        .select(
-          'id, store_id, user_id, user_name, store_name, rating, content, image_urls, created_at, visit_purpose',
-        )
+        .select(_reviewSelectColumns)
         .limit(1);
 
     final reviews = _mapReviewRows(rows);
@@ -308,9 +356,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     try {
       final rows = await _supabase
           .from('reviews')
-          .select(
-            'id, store_id, user_id, user_name, store_name, rating, content, image_urls, created_at, visit_purpose',
-          )
+          .select(_reviewSelectColumns)
           .eq('store_id', storeId)
           .eq('is_visible', true)
           .order('created_at', ascending: false)
@@ -332,9 +378,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     try {
       final rows = await _supabase
           .from('reviews')
-          .select(
-            'id, store_id, user_id, user_name, store_name, rating, content, image_urls, created_at, visit_purpose',
-          )
+          .select(_reviewSelectColumns)
           .eq('user_id', userId)
           .order('created_at', ascending: false)
           .limit(limit);
@@ -359,9 +403,44 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
         .toList();
   }
 
+  InternalReview _submitMockReview({
+    required String storeId,
+    required String storeName,
+    required String userId,
+    required String userName,
+    required ReviewWriteResult review,
+  }) {
+    final mockReview = InternalReview(
+      id: 'mock-${_uuid.v4()}',
+      storeId: storeId,
+      userId: userId,
+      userName: userName,
+      storeName: storeName,
+      rating: review.rating,
+      content: review.content,
+      imageUrls: List<String>.from(review.imagePaths),
+      createdAt: DateTime.now(),
+      visitPurpose: review.visitTag,
+    );
+
+    final storeReviews = List<InternalReview>.from(
+      _mockReviewsByStoreId[storeId] ?? const [],
+    );
+    storeReviews.insert(0, mockReview);
+    _mockReviewsByStoreId[storeId] = storeReviews;
+
+    return mockReview;
+  }
+
   int _compareByCreatedAtDesc(InternalReview a, InternalReview b) {
     final aTime = a.createdAt?.millisecondsSinceEpoch ?? 0;
     final bTime = b.createdAt?.millisecondsSinceEpoch ?? 0;
     return bTime.compareTo(aTime);
+  }
+
+  bool _isUuid(String value) {
+    return RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
+    ).hasMatch(value);
   }
 }
