@@ -1,9 +1,14 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:capstone_2026/core/domain/model/store/store.dart';
+import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/di/di_setup.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart' as geo;
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:naver_maps_sdk_flutter/enum/naver_map_map_type_id.dart';
@@ -31,6 +36,9 @@ class _MapScreenState extends State<MapScreen> {
   StreamSubscription<MapEvent>? _mapEventSubscription;
 
   static const _fixedCenter = NLatLng(37.5826, 127.0106);
+  NLatLng _currentCenter = _fixedCenter;
+  NLatLng? _myLocationLatLng;
+  bool _isSearching = false;
   int _currentZoom = 15;
   bool _mapReady = false;
   List<Map<String, dynamic>> _stores = [];
@@ -51,9 +59,8 @@ class _MapScreenState extends State<MapScreen> {
         _naverMapManager.addMapClickEventListener();
         _naverMapManager.addMapZoomChangedEventListener();
         _naverMapManager.addMapZoomEndEventListener();
-        _addMyLocationMarker();
         _mapReady = true;
-        if (_stores.isNotEmpty) _addStoreMarkers();
+        _setupInitialLocation();
       }
     });
     _markerEventSubscription = _naverMapManager.onMarkerEvent.listen((event) {
@@ -108,9 +115,10 @@ class _MapScreenState extends State<MapScreen> {
         _currentZoom = event.zoom;
       } else if (event is MapZoomEnd && mounted && _mapReady) {
         _addStoreMarkers();
+      } else if (event is MapCenterChanged) {
+        _currentCenter = event.latLng;
       }
     });
-    _fetchStores();
   }
 
   Future<void> _fetchStores() async {
@@ -185,6 +193,14 @@ class _MapScreenState extends State<MapScreen> {
     List<Map<String, dynamic>> stores,
     int zoom,
   ) {
+    if (zoom >= 17) {
+      final clusters = <String, List<Map<String, dynamic>>>{};
+      for (final store in stores) {
+        final id = store['id']?.toString() ?? '';
+        clusters[id] = [store];
+      }
+      return clusters;
+    }
     final gridSize = _gridSizeForZoom(zoom);
     final clusters = <String, List<Map<String, dynamic>>>{};
     for (final store in stores) {
@@ -326,6 +342,357 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  Future<void> _setupInitialLocation() async {
+    final userPos = await _getUserCurrentLocation();
+    if (userPos != null) {
+      _myLocationLatLng = userPos;
+      _currentCenter = userPos;
+      if (mounted) {
+        setState(() {});
+        await _naverMapManager.setCenter(center: userPos);
+      }
+    }
+    await _addMyLocationMarker();
+    await _searchAroundCenter();
+  }
+
+  Future<NLatLng?> _getUserCurrentLocation() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return null;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return null;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      return NLatLng(position.latitude, position.longitude);
+    } catch (e) {
+      debugPrint('Error getting location: $e');
+      return null;
+    }
+  }
+
+  String _categorySearchKeyword(String category, String dongName) {
+    switch (category) {
+      case 'restaurant':
+        return '$dongName 맛집';
+      case 'cafe':
+        return '$dongName 카페';
+      case 'study_cafe':
+        return '$dongName 스터디카페';
+      case 'salon':
+        return '$dongName 미용실';
+      default:
+        return '';
+    }
+  }
+
+  Future<void> _searchAroundCenter() async {
+    if (_isSearching) return;
+    _isSearching = true;
+    setState(() {});
+
+    try {
+      final center = _currentCenter;
+      
+      String dongName = '삼선동';
+      try {
+        final placemarks = await geo.placemarkFromCoordinates(center.lat, center.lng);
+        if (placemarks.isNotEmpty) {
+          final placemark = placemarks.first;
+          final sub = placemark.subLocality ?? '';
+          final thor = placemark.thoroughfare ?? '';
+          final match = RegExp(r'[가-힣0-9]+동').firstMatch(thor.isEmpty ? sub : thor);
+          if (match != null) {
+            dongName = match.group(0)!;
+          } else if (thor.isNotEmpty) {
+            dongName = thor;
+          } else if (sub.isNotEmpty) {
+            dongName = sub;
+          }
+        }
+      } catch (e) {
+        debugPrint('[Geocoding] Reverse geocoding failed, using fallback: $e');
+      }
+
+      final categoriesToSearch = _selectedCategory != null
+          ? [_selectedCategory!]
+          : ['restaurant', 'cafe', 'study_cafe', 'salon'];
+
+      final storeRepo = getIt<StoreRepository>();
+      final naverSource = getIt<NaverStoreSearchDataSource>();
+      final List<Map<String, dynamic>> rawCandidates = [];
+
+      for (final cat in categoriesToSearch) {
+        final queryKeyword = _categorySearchKeyword(cat, dongName);
+        if (queryKeyword.isEmpty) continue;
+
+        try {
+          final naverItems = await naverSource.searchStoresByKeyword(
+            keyword: queryKeyword,
+            display: 10,
+          );
+          for (final item in naverItems) {
+            rawCandidates.add({
+              'item': item,
+              'category': cat,
+            });
+          }
+        } catch (e) {
+          debugPrint('Error searching category $cat: $e');
+        }
+      }
+
+      final Map<String, Map<String, dynamic>> uniqueCandidates = {};
+
+      for (final entry in rawCandidates) {
+        final item = entry['item'] as Map<String, dynamic>;
+        final category = entry['category'] as String;
+
+        final String name = (item['title'] as String? ?? '')
+            .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '');
+        final String address = item['address'] as String? ?? '';
+        final String roadAddress = item['roadAddress'] as String? ?? '';
+        final String targetCheckAddress =
+            roadAddress.isNotEmpty ? roadAddress : address;
+
+        final mapxStr = item['mapx']?.toString() ?? '';
+        final mapyStr = item['mapy']?.toString() ?? '';
+
+        double? lat;
+        double? lng;
+
+        if (mapxStr.isNotEmpty && mapyStr.isNotEmpty) {
+          final double rawX = double.tryParse(mapxStr) ?? 0.0;
+          final double rawY = double.tryParse(mapyStr) ?? 0.0;
+          if (rawX > 1000.0 && rawY > 1000.0) {
+            lng = rawX / 1e7;
+            lat = rawY / 1e7;
+          } else {
+            lng = rawX;
+            lat = rawY;
+          }
+        }
+
+        if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
+          continue;
+        }
+
+        String fallbackPlaceId = '';
+        final link = item['link'] as String? ?? '';
+        final idMatch = RegExp(r'id=(\d+)').firstMatch(link);
+        if (idMatch != null) {
+          fallbackPlaceId = idMatch.group(1)!;
+        }
+
+        final key = '$name|$targetCheckAddress';
+        if (!uniqueCandidates.containsKey(key)) {
+          uniqueCandidates[key] = {
+            'name': name,
+            'address': targetCheckAddress,
+            'category': category,
+            'latitude': lat,
+            'longitude': lng,
+            'fallbackPlaceId': fallbackPlaceId,
+            'telephone': item['telephone'] as String? ?? '',
+          };
+        }
+      }
+
+      final candidatesList = uniqueCandidates.values.toList();
+      final List<Map<String, dynamic>> newStoresToRegister = [];
+
+      final checkFutures = candidatesList.map((cand) async {
+        try {
+          Map<String, dynamic>? existing;
+
+          final fallbackPlaceId = cand['fallbackPlaceId'] as String;
+          if (fallbackPlaceId.isNotEmpty) {
+            existing = await Supabase.instance.client
+                .from('stores')
+                .select('id')
+                .eq('naver_place_id', fallbackPlaceId)
+                .maybeSingle();
+          }
+
+          existing ??= await Supabase.instance.client
+              .from('stores')
+              .select('id')
+              .eq('name', cand['name'] as String)
+              .eq('address', cand['address'] as String)
+              .maybeSingle();
+
+          if (existing == null) {
+            newStoresToRegister.add(cand);
+          }
+        } catch (e) {
+          debugPrint('Error checking DB existence for ${cand['name']}: $e');
+        }
+      });
+
+      await Future.wait(checkFutures);
+
+      if (newStoresToRegister.isNotEmpty) {
+        final registerFutures = newStoresToRegister.map((cand) async {
+          final String name = cand['name'] as String;
+          final String address = cand['address'] as String;
+          final String category = cand['category'] as String;
+          final double lat = cand['latitude'] as double;
+          final double lng = cand['longitude'] as double;
+          final String telephone = cand['telephone'] as String;
+          final String fallbackPlaceId = cand['fallbackPlaceId'] as String;
+
+          String finalPlaceId = fallbackPlaceId;
+          String? finalThumUrl;
+          String finalContact = telephone;
+          Map<String, dynamic> operatingHours = {};
+          double finalRating = 0.0;
+
+          debugPrint('[MapCrawl] === 매장 처리 시작: $name ($address) ===');
+          debugPrint('[MapCrawl] 좌표: lat=$lat, lng=$lng, fallbackPlaceId=$fallbackPlaceId, telephone=$telephone');
+
+          try {
+            // 1단계: 모바일 웹 검색으로 place ID + 전화번호 확보
+            String? placeId = fallbackPlaceId.isNotEmpty ? fallbackPlaceId : null;
+            if (placeId == null) {
+              final mobileInfo = await naverSource.fetchPlaceInfoFromMobileSearch(
+                storeName: name,
+              );
+              placeId = mobileInfo?['placeId'];
+              final mobilePhone = mobileInfo?['phone'];
+              if (mobilePhone != null && mobilePhone.isNotEmpty) {
+                finalContact = mobilePhone;
+              }
+              debugPrint('[MapCrawl] 모바일 검색 결과 - placeId: $placeId, phone: $mobilePhone');
+            }
+
+            if (placeId != null && placeId.isNotEmpty) {
+              finalPlaceId = placeId;
+
+              // 2단계: Place Summary API로 상세 정보 확보
+              final summary =
+                  await naverSource.fetchPlaceSummary(placeId: placeId);
+              debugPrint('[MapCrawl] fetchPlaceSummary 결과: ${summary != null ? "성공 (keys: ${summary.keys.toList()})" : "null"}');
+
+              if (summary != null) {
+                // 전화번호
+                final summaryPhone = summary['phone'] as String?;
+                if (summaryPhone != null && summaryPhone.isNotEmpty) {
+                  finalContact = summaryPhone;
+                } else {
+                  final buttons = summary['buttons'] as Map<String, dynamic>?;
+                  final btnPhone = buttons?['phone'] as String?;
+                  if (btnPhone != null && btnPhone.isNotEmpty) {
+                    finalContact = btnPhone;
+                  }
+                }
+
+                // 영업시간
+                final bizHoursObj = summary['businessHours'] as Map<String, dynamic>?;
+                final bizHours = bizHoursObj?['description'] as String?;
+                if (bizHours != null && bizHours.isNotEmpty) {
+                  operatingHours = {'text': bizHours};
+                }
+
+                // 대표 이미지
+                final imagesObj = summary['images'] as Map<String, dynamic>?;
+                final imagesList = imagesObj?['images'] as List?;
+                if (imagesList != null && imagesList.isNotEmpty) {
+                  final firstImg = imagesList.first as Map<String, dynamic>?;
+                  final firstImgUrl = firstImg?['origin'] as String? ?? firstImg?['url'] as String?;
+                  if (firstImgUrl != null && firstImgUrl.isNotEmpty) {
+                    finalThumUrl = firstImgUrl;
+                  }
+                }
+
+                // 리뷰 평점
+                final visitorReviews = summary['visitorReviews'] as Map<String, dynamic>?;
+                if (visitorReviews != null) {
+                  final scoreRaw = visitorReviews['score'];
+                  if (scoreRaw != null) {
+                    if (scoreRaw is num) {
+                      finalRating = scoreRaw.toDouble();
+                    } else if (scoreRaw is String) {
+                      finalRating = double.tryParse(scoreRaw) ?? 0.0;
+                    }
+                  }
+                }
+
+                debugPrint('[MapCrawl] 최종 - contact=$finalContact, bizHours=$operatingHours, thumUrl=$finalThumUrl, rating=$finalRating');
+              }
+            } else {
+              debugPrint('[MapCrawl] placeId 확보 실패 for $name');
+            }
+          } catch (crawlErr) {
+            debugPrint(
+              '[MapCrawl] 크롤링 실패 for $name: $crawlErr',
+            );
+          }
+
+          debugPrint('[MapCrawl] DB 저장 시도 - name=$name, placeId=$finalPlaceId, contact=$finalContact, operatingHours=$operatingHours, thumUrl=$finalThumUrl, rating=$finalRating');
+
+          final store = Store(
+            id: '',
+            ownerId: '',
+            name: name,
+            category: category,
+            businessNumber: '',
+            latitude: lat,
+            longitude: lng,
+            address: address,
+            contact: finalContact,
+            naverPlaceId: finalPlaceId,
+            operatingHours: operatingHours,
+            rating: finalRating,
+          );
+
+          try {
+            final createdStore = await storeRepo.createStoreDynamically(store);
+            debugPrint('[MapCrawl] DB 저장 성공 - storeId=${createdStore.id}');
+            if (finalThumUrl != null && finalThumUrl.isNotEmpty) {
+              await storeRepo.addStoreImage(
+                createdStore.id,
+                finalThumUrl,
+                isCover: true,
+              );
+              debugPrint('[MapCrawl] 이미지 저장 성공 - $finalThumUrl');
+            }
+          } catch (dbErr) {
+            debugPrint('[MapCrawl] DB 저장 실패 for $name: $dbErr');
+          }
+        });
+
+        await Future.wait(registerFutures);
+      }
+
+      await _fetchStores();
+
+    } catch (e) {
+      debugPrint('Error searching around center: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+        });
+      }
+    }
+  }
+
   Future<void> _addMyLocationMarker() async {
     const html =
         '<div style="background:#1E88E5;border-radius:50%;'
@@ -334,14 +701,25 @@ class _MapScreenState extends State<MapScreen> {
     await _naverMapManager.addMarker(
       markerId: 'my_location',
       markerOptions: MarkerOptions(
-        position: _fixedCenter,
+        position: _myLocationLatLng ?? _fixedCenter,
         icon: HtmlIcon(content: html),
       ),
     );
   }
 
   Future<void> _moveToMyLocation() async {
-    await _naverMapManager.setCenter(center: _fixedCenter);
+    final pos = await _getUserCurrentLocation();
+    if (pos != null) {
+      setState(() {
+        _myLocationLatLng = pos;
+        _currentCenter = pos;
+      });
+      await _naverMapManager.setCenter(center: pos);
+      await _addMyLocationMarker();
+    } else {
+      await _naverMapManager.setCenter(center: _myLocationLatLng ?? _fixedCenter);
+      _currentCenter = _myLocationLatLng ?? _fixedCenter;
+    }
   }
 
   Future<void> _zoomIn() async {
@@ -359,8 +737,8 @@ class _MapScreenState extends State<MapScreen> {
     final lng = store['longitude'] as double?;
     if (lat == null || lng == null) return null;
     return Geolocator.distanceBetween(
-      _fixedCenter.lat,
-      _fixedCenter.lng,
+      _myLocationLatLng?.lat ?? _fixedCenter.lat,
+      _myLocationLatLng?.lng ?? _fixedCenter.lng,
       lat,
       lng,
     );
@@ -441,7 +819,7 @@ class _MapScreenState extends State<MapScreen> {
               child: _SearchAreaButton(
                 onTap: () {
                   setState(() => _selectedStore = null);
-                  _fetchStores();
+                  _searchAroundCenter();
                 },
               ),
             ),
@@ -471,6 +849,17 @@ class _MapScreenState extends State<MapScreen> {
                     );
                   }
                 },
+              ),
+            ),
+          if (_isSearching)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black26,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
             ),
         ],

@@ -64,6 +64,16 @@ class StoreDataSourceImpl implements StoreDataSource {
       ..remove('id')
       ..remove('created_at');
 
+    if (payload['owner_id'] == '') {
+      payload['owner_id'] = null;
+    }
+    if (payload['business_number'] == '') {
+      payload['business_number'] = null;
+    }
+    if (payload['naver_place_id'] == '') {
+      payload['naver_place_id'] = null;
+    }
+
     final json = await _supabaseClient
         .from('stores')
         .insert(payload)

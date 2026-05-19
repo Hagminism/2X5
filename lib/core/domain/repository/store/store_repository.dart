@@ -36,4 +36,8 @@ abstract interface class StoreRepository {
   Future<void> deleteMyStoreMenuImageByUrl(String imageUrl);
 
   Future<void> deleteMySalonDesignerImageByUrl(String imageUrl);
+
+  Future<Store> createStoreDynamically(Store store);
+
+  Future<void> addStoreImage(String storeId, String imageUrl, {bool isCover = false});
 }

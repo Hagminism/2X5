@@ -21,5 +21,6 @@ abstract class MapStoreInformationState with _$MapStoreInformationState {
     @Default(false) bool isBookmarked,
     @Default(false) bool isLoading,
     @Default([]) List<SalonDesigner> salonDesigners,
+    @Default('') String naverPlaceId,
   }) = _MapStoreInformationState;
 }

@@ -154,8 +154,9 @@ class _MapStoreInformationScreenState extends State<MapStoreInformationScreen>
                 StorePhotoTab(imageUrls: widget.state.imageUrls),
                 StoreReviewTab(
                   storeId: widget.state.storeId,
-                  storeName: '',
-                  location: '',
+                  storeName: widget.state.name,
+                  location: widget.state.address,
+                  naverPlaceId: widget.state.naverPlaceId,
                 ),
                 const StoreInfoTab(),
                 StoreReservationStatusTab(

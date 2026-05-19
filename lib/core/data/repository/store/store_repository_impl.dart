@@ -333,4 +333,26 @@ class StoreRepositoryImpl implements StoreRepository {
       throw ArgumentError('대표 사진은 1개만 설정할 수 있습니다.');
     }
   }
+
+  @override
+  Future<Store> createStoreDynamically(Store store) async {
+    final createdStoreDto = await _storeDataSource.createStore(store.toDto());
+    return createdStoreDto.toModel();
+  }
+
+  @override
+  Future<void> addStoreImage(
+    String storeId,
+    String imageUrl, {
+    bool isCover = false,
+  }) async {
+    final storeImage = StoreImage(
+      id: null,
+      imageUrl: imageUrl,
+      caption: '',
+      sortOrder: 0,
+      isCover: isCover,
+    );
+    await _storeDataSource.createImage(storeId, storeImage);
+  }
 }

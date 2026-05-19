@@ -56,6 +56,7 @@ class MapStoreInformationViewModel extends ChangeNotifier {
         menus: menus,
         imageUrls: imageUrls,
         imageUrl: storeHeaderImageUrl(images),
+        naverPlaceId: store.naverPlaceId ?? '',
         isLoading: false,
       );
 
