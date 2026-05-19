@@ -118,9 +118,6 @@ class SalonReservationViewModel extends ChangeNotifier {
 
     try {
       final store = await _storeRepository.getStoreById(_state.storeId);
-      if (store == null) {
-        throw StateError('업장 정보를 찾을 수 없습니다.');
-      }
       final designers = (await _salonRepository.getDesignersByStoreId(
         _state.storeId,
       )).where((designer) => designer.isActive).toList();

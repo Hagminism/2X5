@@ -16,7 +16,6 @@ abstract class Store with _$Store {
     required double longitude,
     String? naverPlaceId,
     required String contact,
-    @Default('') String phone,
     required Map<String, dynamic> operatingHours,
     @Default(0) double rating,
     @Default(false) bool depositEnabled,

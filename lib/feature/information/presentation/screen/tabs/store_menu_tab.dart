@@ -24,7 +24,7 @@ class StoreMenuTab extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: menus.length,
-      separatorBuilder: (_, __) => const Divider(
+      separatorBuilder: (_, _) => const Divider(
         height: 1,
         thickness: 1,
         color: Color(0xFFEEEEEE),
@@ -113,7 +113,7 @@ class StoreMenuTab extends StatelessWidget {
                           color: muted ? Colors.white : null,
                           colorBlendMode:
                               muted ? BlendMode.saturation : null,
-                          errorBuilder: (_, __, ___) => const ColoredBox(
+                          errorBuilder: (_, _, _) => const ColoredBox(
                             color: AppColors.surfaceMuted,
                             child: Icon(
                               Icons.broken_image_outlined,

@@ -43,7 +43,7 @@ class StorePhotoTab extends StatelessWidget {
               : Image.network(
                   url,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     color: AppColors.surfaceMuted,
                     alignment: Alignment.center,
                     child: const Icon(Icons.broken_image_outlined),

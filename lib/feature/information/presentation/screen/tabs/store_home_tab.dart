@@ -128,7 +128,7 @@ class StoreHomeTab extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   scrollDirection: Axis.horizontal,
                   itemCount: menus.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     return _HomeMenuCard(menu: menus[index]);
                   },
@@ -164,12 +164,10 @@ class _InfoTile extends StatelessWidget {
   const _InfoTile({
     required this.icon,
     required this.child,
-    this.trailing,
   });
 
   final IconData icon;
   final Widget child;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +179,6 @@ class _InfoTile extends StatelessWidget {
           Icon(icon, size: 22, color: AppColors.textSecondary),
           const SizedBox(width: 12),
           Expanded(child: child),
-          if (trailing != null) trailing!,
         ],
       ),
     );
@@ -219,7 +216,7 @@ class _HomeMenuCard extends StatelessWidget {
                   : Image.network(
                       url,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const ColoredBox(
+                      errorBuilder: (_, _, _) => const ColoredBox(
                         color: AppColors.surfaceMuted,
                         child: Icon(
                           Icons.broken_image_outlined,

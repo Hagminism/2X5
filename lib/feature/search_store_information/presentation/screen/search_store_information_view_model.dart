@@ -31,12 +31,6 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
 
   Future<void> initialize(String storeId) async {
     final store = await _storeRepository.getStoreById(storeId);
-    if (store == null) {
-      _eventController.add(
-        const SearchStoreInformationEvent.showSnackBar('업장 정보를 불러오지 못했습니다.'),
-      );
-      return;
-    }
 
     _state = _state.copyWith(
       storeId: store.id,
