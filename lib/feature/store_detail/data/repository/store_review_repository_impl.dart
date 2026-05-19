@@ -142,7 +142,10 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
       storeName: storeName,
       location: location,
     );
-    final fallbackQuery = Uri.encodeComponent('$storeName $location');
+    final searchQuery = storeName.trim().isNotEmpty
+        ? storeName.trim()
+        : location;
+    final fallbackQuery = Uri.encodeComponent(searchQuery);
     final fallbackWebUri = Uri.parse(
       'https://m.map.naver.com/search2/search.naver?query=$fallbackQuery',
     );
@@ -153,7 +156,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
 
     return StoreReviewLinkTarget(
       appUri: Uri.parse(
-        'nmap://search?query=${Uri.encodeComponent(info.roadAddress)}'
+        'nmap://search?query=${Uri.encodeComponent(searchQuery)}'
         '&appname=${Uri.encodeComponent(_packageName)}',
       ),
       webUri: Uri.parse(

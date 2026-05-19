@@ -38,10 +38,9 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
       return null;
     }
 
-    final cleanLocation = location.contains(' ')
-        ? location.split(' ').first
-        : location;
-    final query = '$storeName $cleanLocation';
+    // Store-name-only search gives Naver a better chance to resolve branches
+    // naturally than mixing in a partially formatted address.
+    final query = storeName.trim().isNotEmpty ? storeName.trim() : location;
     final url = Uri.https('openapi.naver.com', '/v1/search/local.json', {
       'query': query,
       'display': '1',
