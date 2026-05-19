@@ -38,10 +38,7 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
       return null;
     }
 
-    final cleanLocation = location.contains(' ')
-        ? location.split(' ').first
-        : location;
-    final query = '$storeName $cleanLocation';
+    final query = _buildSearchQuery(storeName: storeName, location: location);
     final url = Uri.https('openapi.naver.com', '/v1/search/local.json', {
       'query': query,
       'display': '1',
@@ -76,6 +73,33 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     }
 
     return null;
+  }
+
+  String _buildSearchQuery({
+    required String storeName,
+    required String location,
+  }) {
+    final cleanStoreName = storeName.trim();
+    final locationHint = _buildLocationHint(location);
+
+    if (cleanStoreName.isEmpty) {
+      return locationHint;
+    }
+
+    if (locationHint.isEmpty) {
+      return cleanStoreName;
+    }
+
+    return '$cleanStoreName $locationHint';
+  }
+
+  String _buildLocationHint(String location) {
+    return location
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((token) => token.isNotEmpty)
+        .take(2)
+        .join(' ');
   }
 
   NaverStoreInfo _mapNaverStoreInfo(Map<String, dynamic> json) {
