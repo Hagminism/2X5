@@ -49,6 +49,11 @@ import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/par
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_layout_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/presentation/screen/partner_studycafe_usage_option_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
+import 'package:capstone_2026/feature/my_page/reservation_history/data/data_source/user_reservation_history_data_source.dart';
+import 'package:capstone_2026/feature/my_page/reservation_history/data/data_source/user_reservation_history_data_source_impl.dart';
+import 'package:capstone_2026/feature/my_page/reservation_history/data/repository/user_reservation_history_repository_impl.dart';
+import 'package:capstone_2026/feature/my_page/reservation_history/domain/repository/user_reservation_history_repository.dart';
+import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_view_model.dart';
@@ -172,6 +177,11 @@ void diSetup() {
   getIt.registerLazySingleton<AddressSearchDataSource>(
         () => AddressSearchDataSourceImpl(),
   );
+  getIt.registerLazySingleton<UserReservationHistoryDataSource>(
+    () => UserReservationHistoryDataSourceImpl(
+      supabaseClient: getIt<SupabaseClient>(),
+    ),
+  );
 
   // Repository
   getIt.registerLazySingleton<AuthRepository>(
@@ -199,6 +209,11 @@ void diSetup() {
   );
   getIt.registerLazySingleton<StampRepository>(
         () => StampRepositoryImpl(supabase: getIt<SupabaseClient>()),
+  );
+  getIt.registerLazySingleton<UserReservationHistoryRepository>(
+    () => UserReservationHistoryRepositoryImpl(
+      dataSource: getIt<UserReservationHistoryDataSource>(),
+    ),
   );
   getIt.registerLazySingleton<StampService>(
         () => StampService(
@@ -358,6 +373,12 @@ void diSetup() {
       stampService: getIt<StampService>(),
     ),
   );
+  getIt.registerFactory<ReservationHistoryViewModel>(
+    () => ReservationHistoryViewModel(
+      authRepository: getIt<AuthRepository>(),
+      userReservationHistoryRepository: getIt<UserReservationHistoryRepository>(),
+    ),
+  );
   getIt.registerFactory<StampHistoryViewModel>(
         () => StampHistoryViewModel(stampService: getIt<StampService>()),
   );
@@ -368,8 +389,6 @@ void diSetup() {
       stampService: getIt<StampService>(),
     ),
   );
-
-  // ✅ 수정 완료: 이제 Repository를 주입받습니다.
   getIt.registerFactory<InformationViewModel>(
         () => InformationViewModel(
       storeRepository: getIt<StoreRepository>(),

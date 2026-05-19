@@ -24,7 +24,8 @@ class Routes {
   static const String searchStoreInformation =
       'search-store-information/:storeId';
   static const String bookmarkStoreDetail = 'store/:storeId';
-  static const String bookmarkStoreInformation = 'bookmark_information/:storeId';
+  static const String bookmarkStoreInformation =
+      'bookmark_information/:storeId';
 
   // reservation
   static const String reservation = 'reservation';
@@ -36,6 +37,8 @@ class Routes {
   // My page nested paths
   static const String profileEdit = 'profile-edit';
   static const String reservationHistory = 'history-reservations';
+  static const String reservationHistoryStoreInformation =
+      'information/:storeId';
   static const String reviewHistory = 'history-reviews';
   static const String stampHistory = 'history-stamps';
   static const String accountSettings = 'account-settings';

@@ -53,6 +53,8 @@ import 'package:capstone_2026/feature/my_page/account_settings/presentation/scre
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/reservation_history/core/presentation/component/scope/reservation_history_scope.dart';
+import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
@@ -481,11 +483,23 @@ final router = GoRouter(
                 GoRoute(
                   path: Routes.reservationHistory,
                   parentNavigatorKey: _rootNavigatorKey,
-                  builder: (context, state) => const Scaffold(
-                    body: SafeArea(
-                      child: Center(child: Text('이용 내역 페이지')),
-                    ),
+                  builder: (context, state) => ReservationHistoryScope(
+                    viewModel: getIt<ReservationHistoryViewModel>(),
                   ),
+                  routes: [
+                    GoRoute(
+                      path: Routes.reservationHistoryStoreInformation,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) {
+                        final storeId = state.pathParameters['storeId'] ?? '';
+
+                        return InformationScope(
+                          viewModel: getIt<InformationViewModel>(),
+                          storeId: storeId,
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 GoRoute(
                   path: Routes.reviewHistory,
