@@ -28,8 +28,8 @@ class InternalReview {
       id: json['id']?.toString() ?? '',
       storeId: json['store_id']?.toString() ?? '',
       userId: json['user_id']?.toString() ?? '',
-      userName: json['user_name']?.toString() ?? '익명 사용자',
-      storeName: json['store_name']?.toString() ?? '',
+      userName: _parseRelatedName(json['user_name'], json['users']) ?? '익명 사용자',
+      storeName: _parseRelatedName(json['store_name'], json['stores']) ?? '',
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       content: json['content']?.toString() ?? '',
       imageUrls: List<String>.from(json['image_urls'] as List? ?? const []),
@@ -56,5 +56,21 @@ class InternalReview {
       return null;
     }
     return text;
+  }
+
+  static String? _parseRelatedName(dynamic flatValue, dynamic relatedValue) {
+    final flatText = flatValue?.toString().trim();
+    if (flatText != null && flatText.isNotEmpty) {
+      return flatText;
+    }
+
+    if (relatedValue is Map) {
+      final relatedText = relatedValue['name']?.toString().trim();
+      if (relatedText != null && relatedText.isNotEmpty) {
+        return relatedText;
+      }
+    }
+
+    return null;
   }
 }

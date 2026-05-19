@@ -5,6 +5,7 @@ import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen_root.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_screen_root.dart';
 import 'package:capstone_2026/feature/map_store_information/core/presentation/component/scope/map_studycafe_pass_selection_scope.dart';
 import 'package:capstone_2026/feature/map_store_information/core/presentation/component/scope/map_studycafe_seat_selection_scope.dart';
 import 'package:capstone_2026/feature/map_store_information/core/presentation/component/scope/map_store_information_scope.dart';
@@ -55,7 +56,6 @@ import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
-import 'package:capstone_2026/feature/bookmark_store_detail/presentation/screen/bookmark_store_detail_screen.dart';
 import 'package:capstone_2026/feature/partner_onboarding/core/presentation/component/scope/partner_onboarding_scope.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_screen_root.dart';
@@ -442,10 +442,15 @@ final router = GoRouter(
               builder: (context, state) => const BookmarkScreen(),
               routes: [
                 GoRoute(
-                  path: Routes.bookmarkStoreDetail,
-                  builder: (context, state) => BookmarkStoreDetailScreen(
-                    storeId: state.pathParameters['storeId'] ?? '',
-                  ),
+                  parentNavigatorKey: _rootNavigatorKey,
+                  path: Routes.bookmarkStoreInformation,
+                  builder: (context, state) {
+                    final storeId = state.pathParameters['storeId'] ?? '';
+                    return InformationScreenRoot(
+                      viewModel: getIt<InformationViewModel>(),
+                      storeId: storeId,
+                    );
+                  },
                 ),
               ],
             ),

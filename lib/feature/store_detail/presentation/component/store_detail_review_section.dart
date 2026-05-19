@@ -1,12 +1,19 @@
-﻿import 'dart:io';
+import 'dart:io';
 
 import 'package:capstone_2026/core/utils/date_format_util.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summary.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+const bool _allowReviewStampTestingBypass = bool.fromEnvironment(
+  'ALLOW_REVIEW_STAMP_TEST_BYPASS',
+  defaultValue: !kReleaseMode,
+);
 
 class StoreDetailReviewSection extends StatelessWidget {
   const StoreDetailReviewSection({
@@ -15,6 +22,7 @@ class StoreDetailReviewSection extends StatelessWidget {
     this.naverPlaceId,
     required this.googleSearchQuery,
     this.stampStatus,
+    this.googlePlaceReviewInfo,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
     required this.onSubmitReview,
@@ -29,6 +37,7 @@ class StoreDetailReviewSection extends StatelessWidget {
   final String? naverPlaceId;
   final String googleSearchQuery;
   final StoreStampStatus? stampStatus;
+  final GooglePlaceReviewInfo? googlePlaceReviewInfo;
   final VoidCallback onTapNaverReview;
   final VoidCallback onTapGoogleReview;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
@@ -50,6 +59,12 @@ class StoreDetailReviewSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _AiSummaryBox(summary: summary),
+        if (googlePlaceReviewInfo != null &&
+            (googlePlaceReviewInfo!.hasSummary ||
+                googlePlaceReviewInfo!.rating != null)) ...[
+          const SizedBox(height: 16),
+          _GoogleReviewSummaryBox(info: googlePlaceReviewInfo!),
+        ],
         const SizedBox(height: 32),
         const Text(
           '외부 리뷰 확인',
@@ -135,7 +150,9 @@ class StoreDetailReviewSection extends StatelessWidget {
   }
 
   Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
-    if (stampStatus != null && !stampStatus!.canWriteReview) {
+    if (!_allowReviewStampTestingBypass &&
+        stampStatus != null &&
+        !stampStatus!.canWriteReview) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
@@ -242,6 +259,176 @@ class _AiKeywordTag extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _GoogleReviewSummaryBox extends StatelessWidget {
+  const _GoogleReviewSummaryBox({required this.info});
+
+  final GooglePlaceReviewInfo info;
+
+  @override
+  Widget build(BuildContext context) {
+    final rating = info.rating;
+    final userRatingCount = info.userRatingCount;
+    final summary = _buildSummaryText(info);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Image.asset(
+                'assets/icons/google.png',
+                width: 18,
+                height: 18,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.public, size: 18),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Google 리뷰 요약',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              if (rating != null)
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 17,
+                      color: Color(0xFFFFB800),
+                    ),
+                    const SizedBox(width: 2),
+                    Text(
+                      rating.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          if (userRatingCount != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Google 리뷰 $userRatingCount개 기준',
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+          if (summary != null && summary.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              summary,
+              style: const TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String? _buildSummaryText(GooglePlaceReviewInfo info) {
+    final officialSummary = info.reviewSummary?.trim();
+    if (officialSummary != null && officialSummary.isNotEmpty) {
+      return officialSummary;
+    }
+
+    return _GoogleReviewSummaryFallback.build(info.reviews);
+  }
+}
+
+class _GoogleReviewSummaryFallback {
+  const _GoogleReviewSummaryFallback._();
+
+  static const List<_GoogleReviewSummaryPattern> _patterns = [
+    _GoogleReviewSummaryPattern(
+      label: '친절한 응대',
+      keywords: ['친절', '서비스', '직원'],
+    ),
+    _GoogleReviewSummaryPattern(
+      label: '메뉴 만족도',
+      keywords: ['맛', '고기', '음식', '커피', '메뉴'],
+    ),
+    _GoogleReviewSummaryPattern(
+      label: '공간 분위기',
+      keywords: ['분위기', '넓', '쾌적', '자리'],
+    ),
+    _GoogleReviewSummaryPattern(
+      label: '방문 편의성',
+      keywords: ['예약', '대기', '빠르', '바로'],
+    ),
+    _GoogleReviewSummaryPattern(
+      label: '방문 목적 적합성',
+      keywords: ['가족', '데이트', '모임', '친구', '회식'],
+    ),
+  ];
+
+  static String? build(List<GooglePlaceReview> reviews) {
+    final combinedText = reviews
+        .map((review) => review.text)
+        .join(' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    if (combinedText.isEmpty) {
+      return null;
+    }
+
+    final matchedLabels = _patterns
+        .where((pattern) => pattern.matches(combinedText))
+        .map((pattern) => pattern.label)
+        .take(2)
+        .toList(growable: false);
+
+    if (matchedLabels.isEmpty) {
+      return 'Google 리뷰에서 전반적인 이용 경험과 매장 만족도를 확인할 수 있습니다.';
+    }
+
+    return 'Google 리뷰에서 ${matchedLabels.join(' · ')} 관련 언급이 확인됩니다.';
+  }
+}
+
+class _GoogleReviewSummaryPattern {
+  const _GoogleReviewSummaryPattern({
+    required this.label,
+    required this.keywords,
+  });
+
+  final String label;
+  final List<String> keywords;
+
+  bool matches(String source) {
+    return keywords.any(source.contains);
   }
 }
 

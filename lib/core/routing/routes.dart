@@ -24,6 +24,7 @@ class Routes {
   static const String searchStoreInformation =
       'search-store-information/:storeId';
   static const String bookmarkStoreDetail = 'store/:storeId';
+  static const String bookmarkStoreInformation = 'bookmark_information/:storeId';
 
   // reservation
   static const String reservation = 'reservation';

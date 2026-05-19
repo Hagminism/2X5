@@ -9,6 +9,11 @@ class StampRepositoryImpl implements StampRepository {
     required SupabaseClient supabase,
   }) : _supabase = supabase;
 
+  static const bool _allowReviewStampTestingBypass = bool.fromEnvironment(
+    'ALLOW_REVIEW_STAMP_TEST_BYPASS',
+    defaultValue: !kReleaseMode,
+  );
+
   static const String _defaultEligibilityMessage =
       '예약 완료 후 리뷰 작성 시 스탬프가 적립됩니다.';
   static const String _reviewPromptMessage = '스탬프 적립을 위해 리뷰를 작성 해 주세요!';
@@ -59,6 +64,12 @@ class StampRepositoryImpl implements StampRepository {
         userId: userId,
         resolvedStore: resolvedStore,
       );
+      if (_shouldUseMockStatusFallback(
+        resolvedStore: resolvedStore,
+        status: status,
+      )) {
+        return _buildMockStatus(userId: userId, storeId: storeId);
+      }
       return status ?? _buildMockStatus(userId: userId, storeId: storeId);
     } catch (e) {
       debugPrint('[StampRepository] fetchStoreStampStatus fallback: $e');
@@ -72,17 +83,35 @@ class StampRepositoryImpl implements StampRepository {
   }) async {
     try {
       final visitedStoreIds = await _fetchCompletedReservationStoreIds(userId);
-      if (visitedStoreIds.isEmpty) {
+      final stampRows = await _supabase
+          .from('user_store_stamps')
+          .select('store_id, stamp_count, reward_unlocked_at')
+          .eq('user_id', userId);
+      final reviewRows = await _supabase
+          .from('reviews')
+          .select('store_id')
+          .eq('user_id', userId)
+          .eq('is_visible', true);
+
+      final stampedStoreIds = _extractStoreIds(stampRows);
+      final reviewedStoreIds = _extractStoreIds(reviewRows);
+      final historyStoreIds = {
+        ...visitedStoreIds,
+        ...stampedStoreIds,
+        ...reviewedStoreIds,
+      };
+
+      if (historyStoreIds.isEmpty) {
         return const [];
       }
 
       final List<dynamic> storeRows = await _supabase
           .from('stores')
           .select('id, name')
-          .inFilter('id', visitedStoreIds.toList());
+          .inFilter('id', historyStoreIds.toList());
 
       if (storeRows.isEmpty) {
-        return _buildMockHistoryStatuses(userId: userId);
+        return const [];
       }
 
       final storeMap = <String, _ResolvedStore>{};
@@ -103,7 +132,7 @@ class StampRepositoryImpl implements StampRepository {
       }
 
       if (storeMap.isEmpty) {
-        return _buildMockHistoryStatuses(userId: userId);
+        return const [];
       }
 
       final policyRows = await _supabase
@@ -111,12 +140,6 @@ class StampRepositoryImpl implements StampRepository {
           .select(
             'store_id, goal_count, reward_title, reward_description, is_active',
           )
-          .inFilter('store_id', storeMap.keys.toList());
-
-      final stampRows = await _supabase
-          .from('user_store_stamps')
-          .select('store_id, stamp_count, reward_unlocked_at')
-          .eq('user_id', userId)
           .inFilter('store_id', storeMap.keys.toList());
 
       final policyMap = _mapPolicyRows(policyRows);
@@ -128,13 +151,14 @@ class StampRepositoryImpl implements StampRepository {
           policyRow: policyMap[store.dbStoreId],
         );
         final currentCount = stampCountMap[store.dbStoreId] ?? 0;
-        final hasWrittenReview = currentCount > 0;
+        final hasWrittenReview = reviewedStoreIds.contains(store.dbStoreId);
         return _buildStatus(
           appStoreId: store.appStoreId,
           policy: policy,
           currentCount: currentCount,
-          hasVisited: true,
+          hasVisited: visitedStoreIds.contains(store.dbStoreId),
           hasWrittenReview: hasWrittenReview,
+          forceShowInHistory: true,
         );
       }).toList()
         ..sort((a, b) => b.currentCount.compareTo(a.currentCount));
@@ -142,7 +166,7 @@ class StampRepositoryImpl implements StampRepository {
       return statuses;
     } catch (e) {
       debugPrint('[StampRepository] fetchUserStampStatuses fallback: $e');
-      return _buildMockHistoryStatuses(userId: userId);
+      return const [];
     }
   }
 
@@ -161,8 +185,19 @@ class StampRepositoryImpl implements StampRepository {
         userId: userId,
         resolvedStore: resolvedStore,
       );
-      if (currentStatus == null || !currentStatus.canWriteReview) {
-        return currentStatus ?? _buildMockStatus(userId: userId, storeId: storeId);
+      if (_shouldUseMockStatusFallback(
+        resolvedStore: resolvedStore,
+        status: currentStatus,
+      )) {
+        return _accrueMockStampForReview(userId: userId, storeId: storeId);
+      }
+
+      if (currentStatus == null) {
+        return _buildMockStatus(userId: userId, storeId: storeId);
+      }
+
+      if (!_allowReviewStampTestingBypass && !currentStatus.showInHistory) {
+        return currentStatus;
       }
 
       final reservationId = await _fetchLatestCompletedReservationId(
@@ -174,12 +209,18 @@ class StampRepositoryImpl implements StampRepository {
         userId: userId,
         dbStoreId: resolvedStore.dbStoreId!,
         reservationId: reservationId,
-        currentStatus: currentStatus,
+        currentStatus: currentStatus.copyWith(
+          canWriteReview: true,
+          hasWrittenReview: false,
+        ),
       );
 
       return await fetchStoreStampStatus(userId: userId, storeId: storeId);
     } catch (e) {
-      debugPrint('[StampRepository] accrueStampForReview fallback: $e');
+      debugPrint('[StampRepository] accrueStampForReview failed: $e');
+      if (_isUuid(storeId)) {
+        rethrow;
+      }
       return _accrueMockStampForReview(userId: userId, storeId: storeId);
     }
   }
@@ -207,16 +248,14 @@ class StampRepositoryImpl implements StampRepository {
           ? currentStatus.currentCount - 1
           : 0;
 
-      await _supabase.from('user_store_stamps').upsert(
-        {
-          'store_id': resolvedStore.dbStoreId,
-          'user_id': userId,
-          'stamp_count': nextCount,
-          'reward_unlocked_at': nextCount >= currentStatus.goalCount
-              ? DateTime.now().toIso8601String()
-              : null,
-        },
-        onConflict: 'store_id,user_id',
+      await _saveStampCount(
+        userId: userId,
+        dbStoreId: resolvedStore.dbStoreId!,
+        stampCount: nextCount,
+        reservationId: null,
+        rewardUnlockedAt: nextCount >= currentStatus.goalCount
+            ? DateTime.now()
+            : null,
       );
 
       await _supabase.from('stamp_events').insert({
@@ -285,6 +324,16 @@ class StampRepositoryImpl implements StampRepository {
     required String? reservationId,
     required StoreStampStatus currentStatus,
   }) async {
+    if (_allowReviewStampTestingBypass) {
+      await _accrueStampWithClientFallback(
+        userId: userId,
+        dbStoreId: dbStoreId,
+        reservationId: reservationId,
+        currentStatus: currentStatus,
+      );
+      return;
+    }
+
     try {
       await _supabase.rpc(
         'accrue_stamp_for_review',
@@ -314,17 +363,14 @@ class StampRepositoryImpl implements StampRepository {
     required StoreStampStatus currentStatus,
   }) async {
     final nextCount = currentStatus.currentCount + 1;
-    await _supabase.from('user_store_stamps').upsert(
-      {
-        'store_id': dbStoreId,
-        'user_id': userId,
-        'stamp_count': nextCount,
-        'last_reservation_id': reservationId,
-        'reward_unlocked_at': nextCount >= currentStatus.goalCount
-            ? DateTime.now().toIso8601String()
-            : null,
-      },
-      onConflict: 'store_id,user_id',
+    await _saveStampCount(
+      userId: userId,
+      dbStoreId: dbStoreId,
+      stampCount: nextCount,
+      reservationId: reservationId,
+      rewardUnlockedAt: nextCount >= currentStatus.goalCount
+          ? DateTime.now()
+          : null,
     );
 
     await _supabase.from('stamp_events').insert({
@@ -334,6 +380,27 @@ class StampRepositoryImpl implements StampRepository {
       'delta': 1,
       'reason': 'review_created',
     });
+  }
+
+  Future<void> _saveStampCount({
+    required String userId,
+    required String dbStoreId,
+    required int stampCount,
+    required String? reservationId,
+    required DateTime? rewardUnlockedAt,
+  }) async {
+    final payload = <String, dynamic>{
+      'store_id': dbStoreId,
+      'user_id': userId,
+      'stamp_count': stampCount,
+      'last_reservation_id': reservationId,
+      'reward_unlocked_at': rewardUnlockedAt?.toIso8601String(),
+    };
+
+    await _supabase.from('user_store_stamps').upsert(
+      payload,
+      onConflict: 'user_id,store_id',
+    );
   }
 
   Future<StoreStampStatus?> _buildDbStatusForStore({
@@ -369,6 +436,14 @@ class StampRepositoryImpl implements StampRepository {
         .eq('store_id', resolvedStore.dbStoreId!)
         .limit(1);
 
+    final List<dynamic> reviewRows = await _supabase
+        .from('reviews')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('store_id', resolvedStore.dbStoreId!)
+        .eq('is_visible', true)
+        .limit(1);
+
     final policy = _buildPolicyForStore(
       resolvedStore: resolvedStore,
       policyRow: policyRows.isNotEmpty
@@ -381,7 +456,7 @@ class StampRepositoryImpl implements StampRepository {
                 0)
             .toInt()
         : 0;
-    final hasWrittenReview = currentCount > 0;
+    final hasWrittenReview = reviewRows.isNotEmpty;
 
     return _buildStatus(
       appStoreId: resolvedStore.appStoreId,
@@ -390,6 +465,14 @@ class StampRepositoryImpl implements StampRepository {
       hasVisited: hasVisited,
       hasWrittenReview: hasWrittenReview,
     );
+  }
+
+  bool _shouldUseMockStatusFallback({
+    required _ResolvedStore resolvedStore,
+    required StoreStampStatus? status,
+  }) {
+    return _mockPolicies.containsKey(resolvedStore.appStoreId) &&
+        (status == null || !status.showInHistory);
   }
 
   Future<Set<String>> _fetchCompletedReservationStoreIds(String userId) async {
@@ -444,6 +527,19 @@ class StampRepositoryImpl implements StampRepository {
     return result;
   }
 
+  Set<String> _extractStoreIds(dynamic rows) {
+    if (rows is! List) {
+      return const {};
+    }
+
+    return rows
+        .whereType<Map>()
+        .map((row) => row['store_id']?.toString())
+        .whereType<String>()
+        .where((value) => value.isNotEmpty)
+        .toSet();
+  }
+
   Map<String, int> _mapStampCountRows(dynamic rows) {
     if (rows is! List) {
       return const {};
@@ -490,6 +586,7 @@ class StampRepositoryImpl implements StampRepository {
     required int currentCount,
     required bool hasVisited,
     required bool hasWrittenReview,
+    bool forceShowInHistory = false,
   }) {
     return StoreStampStatus(
       storeId: appStoreId,
@@ -503,7 +600,7 @@ class StampRepositoryImpl implements StampRepository {
         hasVisited: hasVisited,
         hasWrittenReview: hasWrittenReview,
       ),
-      showInHistory: hasVisited,
+      showInHistory: forceShowInHistory || hasVisited,
       historyStatusMessage: hasWrittenReview ? '리뷰 작성 완료' : '리뷰 미작성',
       hasWrittenReview: hasWrittenReview,
     );
@@ -520,18 +617,6 @@ class StampRepositoryImpl implements StampRepository {
       return _reviewPromptMessage;
     }
     return _defaultEligibilityMessage;
-  }
-
-  List<StoreStampStatus> _buildMockHistoryStatuses({
-    required String userId,
-  }) {
-    _ensureMockUserState(userId);
-
-    return _mockPolicies.keys
-        .map((storeId) => _buildMockStatus(userId: userId, storeId: storeId))
-        .where((status) => status.showInHistory)
-        .toList()
-      ..sort((a, b) => b.currentCount.compareTo(a.currentCount));
   }
 
   StoreStampStatus _buildMockStatus({
@@ -572,7 +657,7 @@ class StampRepositoryImpl implements StampRepository {
     _ensureMockUserState(userId);
 
     final current = _buildMockStatus(userId: userId, storeId: storeId);
-    if (!current.canWriteReview) {
+    if (!_allowReviewStampTestingBypass && !current.canWriteReview) {
       return current;
     }
 
@@ -607,7 +692,7 @@ class StampRepositoryImpl implements StampRepository {
       },
     );
     _mockVisitedStoreIdsByUserId.putIfAbsent(userId, () => {'s1', 's2'});
-    _mockReviewedStoreIdsByUserId.putIfAbsent(userId, () => {'s1'});
+    _mockReviewedStoreIdsByUserId.putIfAbsent(userId, () => <String>{});
   }
 
   String? _findAppStoreIdByName(String storeName) {

@@ -138,7 +138,7 @@ class _SearchStoreInformationScreenState
             const StoreHomeTab(),
             const StoreMenuTab(),
             const StorePhotoTab(),
-            StoreReviewTab(storeId: widget.state.storeId),
+            StoreReviewTab(storeId: widget.state.storeId, storeName: '', location: '',),
             const StoreInfoTab(),
             StoreReservationStatusTab(
               category: widget.state.category,

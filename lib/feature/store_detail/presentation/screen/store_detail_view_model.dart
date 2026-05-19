@@ -7,7 +7,12 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/review
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_action.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_event.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_state.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+
+const bool _allowReviewStampTestingBypass = bool.fromEnvironment(
+  'ALLOW_REVIEW_STAMP_TEST_BYPASS',
+  defaultValue: !kReleaseMode,
+);
 
 class StoreDetailViewModel extends ChangeNotifier {
   StoreDetailViewModel({
@@ -63,7 +68,9 @@ class StoreDetailViewModel extends ChangeNotifier {
 
   Future<void> submitReview(ReviewWriteResult review) async {
     final stampStatus = state.stampStatus;
-    if (stampStatus != null && !stampStatus.canWriteReview) {
+    if (!_allowReviewStampTestingBypass &&
+        stampStatus != null &&
+        !stampStatus.canWriteReview) {
       _showSoonMessage(stampStatus.reviewEligibilityMessage);
       return;
     }
