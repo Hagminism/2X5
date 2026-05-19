@@ -9,17 +9,17 @@ class StoreHomeTab extends StatelessWidget {
     super.key,
     required this.address,
     required this.displayPhone,
+    required this.operatingHoursText,
     required this.menus,
     required this.onViewMoreMenus,
   });
 
   final String address;
-  /// 뷰모델 `displayPhone` (`stores.phone` 우선, 없으면 `contact`).
+  /// 뷰모델 `displayPhone` (`stores.contact`).
   final String displayPhone;
+  final String operatingHoursText;
   final List<StoreMenu> menus;
   final VoidCallback onViewMoreMenus;
-
-  static const String _dummyHours = '브레이크타임 · 17:00에 영업 시작';
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +39,11 @@ class StoreHomeTab extends StatelessWidget {
         ),
         _InfoTile(
           icon: Icons.schedule_rounded,
-          child: const Text(
-            _dummyHours,
-            style: TextStyle(
+          child: Text(
+            operatingHoursText.trim().isEmpty
+                ? '영업시간 정보 없음'
+                : operatingHoursText.trim(),
+            style: const TextStyle(
               fontSize: 15,
               height: 1.4,
               color: AppColors.textPrimary,
