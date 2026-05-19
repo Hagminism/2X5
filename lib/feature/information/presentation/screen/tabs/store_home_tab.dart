@@ -15,6 +15,7 @@ class StoreHomeTab extends StatelessWidget {
   });
 
   final String address;
+
   /// 뷰모델 `displayPhone` (`stores.contact`).
   final String displayPhone;
   final String operatingHoursText;
@@ -24,72 +25,81 @@ class StoreHomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.only(bottom: 24),
       children: [
-        _InfoTile(
-          icon: Icons.location_on_outlined,
-          child: Text(
-            address.trim().isEmpty ? '주소 정보 없음' : address.trim(),
-            style: const TextStyle(
-              fontSize: 15,
-              height: 1.4,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ),
-        _InfoTile(
-          icon: Icons.schedule_rounded,
-          child: Text(
-            operatingHoursText.trim().isEmpty
-                ? '영업시간 정보 없음'
-                : operatingHoursText.trim(),
-            style: const TextStyle(
-              fontSize: 15,
-              height: 1.4,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ),
-        _InfoTile(
-          icon: Icons.phone_outlined,
-          child: Row(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
             children: [
-              Expanded(
+              _InfoTile(
+                icon: Icons.location_on_outlined,
                 child: Text(
-                  displayPhone.trim().isEmpty
-                      ? '전화번호 없음'
-                      : displayPhone.trim(),
+                  address.trim().isEmpty ? '주소 정보 없음' : address.trim(),
                   style: const TextStyle(
                     fontSize: 15,
+                    height: 1.4,
                     color: AppColors.textPrimary,
                   ),
                 ),
               ),
-              if (displayPhone.trim().isNotEmpty)
-                TextButton(
-                  onPressed: () async {
-                    await Clipboard.setData(
-                      ClipboardData(text: displayPhone.trim()),
-                    );
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('전화번호를 복사했습니다.')),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    '복사',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF2563EB),
-                    ),
+              _InfoTile(
+                icon: Icons.schedule_rounded,
+                child: Text(
+                  operatingHoursText.trim().isEmpty
+                      ? '영업시간 정보 없음'
+                      : operatingHoursText.trim(),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 1.4,
+                    color: AppColors.textPrimary,
                   ),
                 ),
+              ),
+              _InfoTile(
+                icon: Icons.phone_outlined,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        displayPhone.trim().isEmpty
+                            ? '전화번호 없음'
+                            : displayPhone.trim(),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    if (displayPhone.trim().isNotEmpty)
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () async {
+                            await Clipboard.setData(
+                              ClipboardData(text: displayPhone.trim()),
+                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('전화번호를 복사했습니다.')),
+                              );
+                            }
+                          },
+                          child: const Text(
+                            '복사',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2563EB),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
         Container(height: 8, color: const Color(0xFFF3F4F6)),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
@@ -174,9 +184,9 @@ class _InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(icon, size: 22, color: AppColors.textSecondary),
           const SizedBox(width: 12),
