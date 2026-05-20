@@ -44,4 +44,13 @@ class StampService {
       storeId: storeId,
     );
   }
+
+  Future<StoreStampStatus> claimReward({
+    required String storeId,
+  }) {
+    return _stampRepository.claimReward(
+      userId: _authRepository.getCurrentUserId(),
+      storeId: storeId,
+    );
+  }
 }

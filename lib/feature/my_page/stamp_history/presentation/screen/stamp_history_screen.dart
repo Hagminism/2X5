@@ -7,11 +7,13 @@ class StampHistoryScreen extends StatelessWidget {
   const StampHistoryScreen({
     required this.state,
     required this.onTapWriteReview,
+    required this.onTapClaimReward,
     super.key,
   });
 
   final StampHistoryState state;
   final void Function(StoreStampStatus status) onTapWriteReview;
+  final void Function(StoreStampStatus status) onTapClaimReward;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,7 @@ class StampHistoryScreen extends StatelessWidget {
                       border: Border.all(color: AppColors.border),
                     ),
                     child: const Text(
-                      '예약 완료 후 리뷰를 작성하면 업장별 스탬프가 적립됩니다. 매장마다 목표 개수와 보상 내용이 다를 수 있습니다.',
+                      '예약 완료 후 리뷰를 작성하면 매장별 스탬프가 적립됩니다. 매장마다 목표 개수와 보상 내용이 다를 수 있습니다.',
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.6,
@@ -55,6 +57,7 @@ class StampHistoryScreen extends StatelessWidget {
                         child: _StampHistoryCard(
                           status: status,
                           onTapWriteReview: onTapWriteReview,
+                          onTapClaimReward: onTapClaimReward,
                         ),
                       ),
                     ),
@@ -69,10 +72,12 @@ class _StampHistoryCard extends StatelessWidget {
   const _StampHistoryCard({
     required this.status,
     required this.onTapWriteReview,
+    required this.onTapClaimReward,
   });
 
   final StoreStampStatus status;
   final void Function(StoreStampStatus status) onTapWriteReview;
+  final void Function(StoreStampStatus status) onTapClaimReward;
 
   @override
   Widget build(BuildContext context) {
@@ -172,23 +177,22 @@ class _StampHistoryCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (!status.hasWrittenReview)
+              if (status.isRewardUnlocked)
+                FilledButton(
+                  onPressed: () => onTapClaimReward(status),
+                  style: _compactButtonStyle(),
+                  child: const Text(
+                    '보상 수령하기',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                )
+              else if (!status.hasWrittenReview)
                 FilledButton(
                   onPressed: () => onTapWriteReview(status),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
+                  style: _compactButtonStyle(),
                   child: const Text(
                     '리뷰 작성하기',
                     style: TextStyle(
@@ -201,9 +205,11 @@ class _StampHistoryCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            status.hasWrittenReview
+            status.isRewardUnlocked
+                ? '스탬프를 모두 모았습니다. 보상 수령 시 목표 개수만큼 차감됩니다.'
+                : status.hasWrittenReview
                 ? '리뷰 작성이 완료되어 스탬프가 적립된 상태입니다.'
-                : '스탬프 적립을 위해 리뷰를 작성 해 주세요!',
+                : '스탬프 적립을 위해 리뷰를 작성해 주세요!',
             style: const TextStyle(
               fontSize: 12,
               height: 1.5,
@@ -212,6 +218,25 @@ class _StampHistoryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  ButtonStyle _compactButtonStyle() {
+    return FilledButton.styleFrom(
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      disabledBackgroundColor: const Color(0xFFE5E7EB),
+      disabledForegroundColor: AppColors.textSecondary,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 8,
+      ),
+      minimumSize: Size.zero,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      elevation: 0,
     );
   }
 }
@@ -246,7 +271,7 @@ class _EmptyStampHistory extends StatelessWidget {
           ),
           SizedBox(height: 6),
           Text(
-            '예약 완료 후 리뷰를 작성하면 업장별 스탬프가 적립됩니다.',
+            '예약 완료 후 리뷰를 작성하면 매장별 스탬프가 적립됩니다.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,

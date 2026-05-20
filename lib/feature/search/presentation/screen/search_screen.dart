@@ -17,12 +17,28 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
+  List<Map<String, dynamic>> _searchResults = [];
   Map<String, List<Map<String, dynamic>>> _categorizedResults = {};
   bool _isLoading = false;
   bool _hasSearched = false;
+  double? _selectedRadiusMeters;
+  Set<String> _selectedCategories = {};
+  _SearchSortOption _selectedSortOption = _SearchSortOption.defaultOrder;
 
   static const double _baseLatitude = 37.5826;
   static const double _baseLongitude = 127.0106;
+  static const List<_RadiusFilterOption> _radiusFilterOptions = [
+    _RadiusFilterOption(label: '전체', radiusMeters: null),
+    _RadiusFilterOption(label: '500m', radiusMeters: 500),
+    _RadiusFilterOption(label: '1km', radiusMeters: 1000),
+    _RadiusFilterOption(label: '3km', radiusMeters: 3000),
+  ];
+  static const List<_CategoryFilterOption> _categoryFilterOptions = [
+    _CategoryFilterOption(label: '식당', value: 'restaurant'),
+    _CategoryFilterOption(label: '카페', value: 'cafe'),
+    _CategoryFilterOption(label: '스터디카페', value: 'study_cafe'),
+    _CategoryFilterOption(label: '미용실', value: 'salon'),
+  ];
 
   static const Map<String, String> categoryEmojis = {
     'restaurant': '🍽',
@@ -57,10 +73,66 @@ class _SearchScreenState extends State<SearchScreen> {
     return grouped;
   }
 
+  List<Map<String, dynamic>> _filterByRadius(
+    List<Map<String, dynamic>> stores,
+  ) {
+    final radiusMeters = _selectedRadiusMeters;
+    if (radiusMeters == null) {
+      return stores;
+    }
+
+    return stores.where((store) {
+      final distance = _calcDistance(store);
+      return distance != null && distance <= radiusMeters;
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _filterByCategory(
+    List<Map<String, dynamic>> stores,
+  ) {
+    if (_selectedCategories.isEmpty) {
+      return stores;
+    }
+
+    return stores.where((store) {
+      final category = store['category']?.toString();
+      return category != null && _selectedCategories.contains(category);
+    }).toList();
+  }
+
+  void _applyFilters() {
+    final radiusFilteredStores = _filterByRadius(_searchResults);
+    final filteredStores = _filterByCategory(radiusFilteredStores);
+    _sortStores(filteredStores);
+    _categorizedResults = _groupByCategory(filteredStores);
+  }
+
+  void _sortStores(List<Map<String, dynamic>> stores) {
+    switch (_selectedSortOption) {
+      case _SearchSortOption.defaultOrder:
+        return;
+      case _SearchSortOption.rating:
+        stores.sort((a, b) {
+          final aRating = (a['rating'] as num?)?.toDouble() ?? 0;
+          final bRating = (b['rating'] as num?)?.toDouble() ?? 0;
+          return bRating.compareTo(aRating);
+        });
+        break;
+      case _SearchSortOption.nearest:
+        stores.sort((a, b) {
+          final aDistance = _calcDistance(a) ?? double.infinity;
+          final bDistance = _calcDistance(b) ?? double.infinity;
+          return aDistance.compareTo(bDistance);
+        });
+        break;
+    }
+  }
+
   Future<void> _search(String query) async {
     final trimmedQuery = query.trim();
     if (trimmedQuery.isEmpty) {
       setState(() {
+        _searchResults = [];
         _categorizedResults = {};
         _hasSearched = false;
       });
@@ -82,12 +154,12 @@ class _SearchScreenState extends State<SearchScreen> {
           .limit(50);
 
       final results = List<Map<String, dynamic>>.from(response);
-      final grouped = _groupByCategory(results);
 
       if (!mounted) return;
 
       setState(() {
-        _categorizedResults = grouped;
+        _searchResults = results;
+        _applyFilters();
         _isLoading = false;
       });
     } catch (e) {
@@ -146,6 +218,61 @@ class _SearchScreenState extends State<SearchScreen> {
     return '$emoji $label';
   }
 
+  void _changeRadiusFilter(double? radiusMeters) {
+    setState(() {
+      _selectedRadiusMeters = radiusMeters;
+      _applyFilters();
+    });
+  }
+
+  void _changeSortOption(_SearchSortOption sortOption) {
+    setState(() {
+      _selectedSortOption = sortOption;
+      _applyFilters();
+    });
+  }
+
+  void _changeCategoryFilters(Set<String> categories) {
+    setState(() {
+      _selectedCategories = categories;
+      _applyFilters();
+    });
+  }
+
+  bool get _hasActiveFilter =>
+      _selectedRadiusMeters != null ||
+      _selectedCategories.isNotEmpty ||
+      _selectedSortOption != _SearchSortOption.defaultOrder;
+
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return _SearchFilterBottomSheet(
+          radiusOptions: _radiusFilterOptions,
+          categoryOptions: _categoryFilterOptions,
+          selectedRadiusMeters: _selectedRadiusMeters,
+          selectedCategories: _selectedCategories,
+          selectedSortOption: _selectedSortOption,
+          onRadiusSelected: (radiusMeters) {
+            _changeRadiusFilter(radiusMeters);
+            Navigator.pop(context);
+          },
+          onCategoriesChanged: _changeCategoryFilters,
+          onSortSelected: (sortOption) {
+            _changeSortOption(sortOption);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,6 +295,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       controller: _controller,
                       onSubmitted: _search,
                       onSearchTap: () => _search(_controller.text),
+                      onFilterTap: _showFilterBottomSheet,
+                      hasActiveFilter: _hasActiveFilter,
                     ),
                   ),
                 ],
@@ -240,16 +369,269 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
+enum _SearchSortOption {
+  defaultOrder(label: '기본순'),
+  rating(label: '별점순'),
+  nearest(label: '가까운 순')
+  ;
+
+  const _SearchSortOption({required this.label});
+
+  final String label;
+}
+
+class _RadiusFilterOption {
+  const _RadiusFilterOption({
+    required this.label,
+    required this.radiusMeters,
+  });
+
+  final String label;
+  final double? radiusMeters;
+}
+
+class _CategoryFilterOption {
+  const _CategoryFilterOption({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+}
+
+class _SearchFilterBottomSheet extends StatefulWidget {
+  const _SearchFilterBottomSheet({
+    required this.radiusOptions,
+    required this.categoryOptions,
+    required this.selectedRadiusMeters,
+    required this.selectedCategories,
+    required this.selectedSortOption,
+    required this.onRadiusSelected,
+    required this.onCategoriesChanged,
+    required this.onSortSelected,
+  });
+
+  final List<_RadiusFilterOption> radiusOptions;
+  final List<_CategoryFilterOption> categoryOptions;
+  final double? selectedRadiusMeters;
+  final Set<String> selectedCategories;
+  final _SearchSortOption selectedSortOption;
+  final ValueChanged<double?> onRadiusSelected;
+  final ValueChanged<Set<String>> onCategoriesChanged;
+  final ValueChanged<_SearchSortOption> onSortSelected;
+
+  @override
+  State<_SearchFilterBottomSheet> createState() =>
+      _SearchFilterBottomSheetState();
+}
+
+class _SearchFilterBottomSheetState extends State<_SearchFilterBottomSheet> {
+  late Set<String> _selectedCategories;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategories = Set<String>.from(widget.selectedCategories);
+  }
+
+  void _clearCategories() {
+    setState(() {
+      _selectedCategories = {};
+    });
+    widget.onCategoriesChanged(_selectedCategories);
+  }
+
+  void _toggleCategory(String category) {
+    final nextCategories = Set<String>.from(_selectedCategories);
+    if (nextCategories.contains(category)) {
+      nextCategories.remove(category);
+    } else {
+      nextCategories.add(category);
+    }
+
+    setState(() {
+      _selectedCategories = nextCategories;
+    });
+    widget.onCategoriesChanged(nextCategories);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '검색 필터',
+              style: AppTextStyles.subtitle.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 18),
+            const _FilterSectionTitle(title: '거리'),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: widget.radiusOptions.map((option) {
+                return _FilterOptionChip(
+                  label: option.label,
+                  isSelected:
+                      option.radiusMeters == widget.selectedRadiusMeters,
+                  onTap: () => widget.onRadiusSelected(option.radiusMeters),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 22),
+            const _FilterSectionTitle(title: '업종'),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _FilterOptionChip(
+                  label: '전체',
+                  isSelected: _selectedCategories.isEmpty,
+                  onTap: _clearCategories,
+                ),
+                ...widget.categoryOptions.map((option) {
+                  return _FilterOptionChip(
+                    label: option.label,
+                    isSelected: _selectedCategories.contains(option.value),
+                    onTap: () => _toggleCategory(option.value),
+                  );
+                }),
+              ],
+            ),
+            const SizedBox(height: 22),
+            const _FilterSectionTitle(title: '정렬'),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _SearchSortOption.values.map((option) {
+                return _FilterOptionChip(
+                  label: option.label,
+                  isSelected: option == widget.selectedSortOption,
+                  onTap: () => widget.onSortSelected(option),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterSectionTitle extends StatelessWidget {
+  const _FilterSectionTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: AppTextStyles.label.copyWith(
+        color: AppColors.textSecondary,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+}
+
+class _FilterOptionChip extends StatelessWidget {
+  const _FilterOptionChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) => onTap(),
+      showCheckmark: false,
+      labelStyle: AppTextStyles.caption.copyWith(
+        fontWeight: FontWeight.w700,
+        color: isSelected ? Colors.white : AppColors.textSecondary,
+      ),
+      selectedColor: AppColors.primary,
+      backgroundColor: AppColors.surfaceMuted,
+      shape: StadiumBorder(
+        side: BorderSide(
+          color: isSelected ? AppColors.primary : AppColors.border,
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterIconButton extends StatelessWidget {
+  const _FilterIconButton({
+    required this.onTap,
+    required this.isActive,
+  });
+
+  final VoidCallback onTap;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onTap,
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Icon(
+            Icons.tune_rounded,
+            color: isActive ? AppColors.primary : AppColors.textSecondary,
+          ),
+          if (isActive)
+            Positioned(
+              right: -1,
+              top: -1,
+              child: Container(
+                width: 7,
+                height: 7,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+        ],
+      ),
+      tooltip: '필터',
+    );
+  }
+}
+
 class _SearchInput extends StatelessWidget {
   const _SearchInput({
     required this.controller,
     required this.onSubmitted,
     required this.onSearchTap,
+    required this.onFilterTap,
+    required this.hasActiveFilter,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onSearchTap;
+  final VoidCallback onFilterTap;
+  final bool hasActiveFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -286,6 +668,10 @@ class _SearchInput extends StatelessWidget {
               textInputAction: TextInputAction.search,
               onSubmitted: onSubmitted,
             ),
+          ),
+          _FilterIconButton(
+            onTap: onFilterTap,
+            isActive: hasActiveFilter,
           ),
           IconButton(
             onPressed: onSearchTap,
