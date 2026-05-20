@@ -19,4 +19,9 @@ abstract interface class StampRepository {
     required String userId,
     required String storeId,
   });
+
+  Future<StoreStampStatus> claimReward({
+    required String userId,
+    required String storeId,
+  });
 }
