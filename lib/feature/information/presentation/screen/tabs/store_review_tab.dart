@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
@@ -10,6 +11,7 @@ import 'package:capstone_2026/feature/store_detail/domain/service/store_review_s
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class StoreReviewTab extends StatefulWidget {
@@ -142,6 +144,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
   Future<void> _submitReview(ReviewWriteResult result) async {
     final data = _reviewTarget;
+    final wasRewardUnlocked = _stampStatus?.isRewardUnlocked ?? false;
 
     try {
       final createdReview = await _storeReviewService.submitReview(
@@ -162,10 +165,12 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         _stampStatus = updatedStampStatus;
       });
 
-      final message = updatedStampStatus.isRewardUnlocked
-          ? '리뷰가 등록되었습니다. 스탬프 적립이 완료되어 보상을 받을 수 있습니다.'
-          : '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.';
-      _showMessage(message);
+      if (!wasRewardUnlocked && updatedStampStatus.isRewardUnlocked) {
+        await _showRewardUnlockedDialog(updatedStampStatus);
+        return;
+      }
+
+      _showMessage('리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.');
     } catch (_) {
       if (!mounted) {
         return;
@@ -217,5 +222,36 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _showRewardUnlockedDialog(StoreStampStatus status) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('스탬프 보상 달성!'),
+          content: Text(
+            '${status.storeName}에서 ${status.goalCount}개의 스탬프를 모두 모았습니다.\n'
+            '${status.rewardTitle} 보상을 확인해 보세요.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('닫기'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (!mounted) {
+                  return;
+                }
+                context.push('${Routes.myPage}/${Routes.stampHistory}');
+              },
+              child: const Text('확인하러 가기'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

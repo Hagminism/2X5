@@ -11,6 +11,7 @@ class StoreStampStatus {
     required this.showInHistory,
     required this.historyStatusMessage,
     required this.hasWrittenReview,
+    this.rewardClaimedAt,
   });
 
   final String storeId;
@@ -24,8 +25,11 @@ class StoreStampStatus {
   final bool showInHistory;
   final String historyStatusMessage;
   final bool hasWrittenReview;
+  final DateTime? rewardClaimedAt;
 
   bool get isRewardUnlocked => currentCount >= goalCount;
+
+  bool get isRewardClaimed => isRewardUnlocked && rewardClaimedAt != null;
 
   double get progress {
     if (goalCount <= 0) {
@@ -49,6 +53,7 @@ class StoreStampStatus {
     bool? showInHistory,
     String? historyStatusMessage,
     bool? hasWrittenReview,
+    DateTime? rewardClaimedAt,
   }) {
     return StoreStampStatus(
       storeId: storeId ?? this.storeId,
@@ -63,6 +68,7 @@ class StoreStampStatus {
       showInHistory: showInHistory ?? this.showInHistory,
       historyStatusMessage: historyStatusMessage ?? this.historyStatusMessage,
       hasWrittenReview: hasWrittenReview ?? this.hasWrittenReview,
+      rewardClaimedAt: rewardClaimedAt ?? this.rewardClaimedAt,
     );
   }
 }
