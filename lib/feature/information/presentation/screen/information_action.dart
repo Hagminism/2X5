@@ -17,4 +17,6 @@ sealed class InformationAction with _$InformationAction {
     required String currentLocation,
     required String designerId,
   }) = TapSalonDesignerReservation;
+
+  const factory InformationAction.sliderPageChanged(int index) = SliderPageChanged;
 }

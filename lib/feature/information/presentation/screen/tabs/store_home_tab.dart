@@ -12,6 +12,7 @@ class StoreHomeTab extends StatelessWidget {
     required this.operatingHoursText,
     required this.menus,
     required this.onViewMoreMenus,
+    required this.showMenuSection,
   });
 
   final String address;
@@ -21,6 +22,7 @@ class StoreHomeTab extends StatelessWidget {
   final String operatingHoursText;
   final List<StoreMenu> menus;
   final VoidCallback onViewMoreMenus;
+  final bool showMenuSection;
 
   @override
   Widget build(BuildContext context) {
@@ -100,73 +102,75 @@ class StoreHomeTab extends StatelessWidget {
             ],
           ),
         ),
-        Container(height: 8, color: const Color(0xFFF3F4F6)),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Text(
-                '메뉴',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${menus.length}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const Spacer(),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: 200,
-          child: menus.isEmpty
-              ? const Center(
-                  child: Text(
-                    '등록된 메뉴가 없습니다.',
-                    style: TextStyle(color: AppColors.textSecondary),
+        if (showMenuSection) ...[
+          Container(height: 8, color: const Color(0xFFF3F4F6)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                const Text(
+                  '메뉴',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
                   ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: menus.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    return _HomeMenuCard(menu: menus[index]);
-                  },
                 ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onViewMoreMenus,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.textPrimary,
-                side: const BorderSide(color: Color(0xFFE5E7EB)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 6),
+                Text(
+                  '${menus.length}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
-              child: const Text(
-                '메뉴 더보기  >',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                const Spacer(),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 200,
+            child: menus.isEmpty
+                ? const Center(
+                    child: Text(
+                      '등록된 메뉴가 없습니다.',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: menus.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      return _HomeMenuCard(menu: menus[index]);
+                    },
+                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: onViewMoreMenus,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textPrimary,
+                  side: const BorderSide(color: Color(0xFFE5E7EB)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  '메뉴 더보기  >',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

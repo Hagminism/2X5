@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'search_store_information_state.freezed.dart';
@@ -21,5 +22,9 @@ abstract class SearchStoreInformationState with _$SearchStoreInformationState {
     @Default(false) bool isBookmarked,
     @Default(false) bool isLoading,
     @Default([]) List<SalonDesigner> salonDesigners,
+    @Default([]) List<String> tabs,
+    PageController? sliderController,
+    @Default(0) int currentSliderPage,
+    @Default('') String naverPlaceId,
   }) = _SearchStoreInformationState;
 }

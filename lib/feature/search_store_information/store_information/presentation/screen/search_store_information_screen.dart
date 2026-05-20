@@ -3,7 +3,6 @@ import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_image_slider.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_store_header.dart';
-import 'package:capstone_2026/feature/information/presentation/component/tabs/store_info_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_home_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_menu_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_photo_tab.dart';
@@ -15,7 +14,7 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class SearchStoreInformationScreen extends StatefulWidget {
+class SearchStoreInformationScreen extends StatelessWidget {
   final SearchStoreInformationState state;
   final void Function(SearchStoreInformationAction action) onAction;
 
@@ -26,180 +25,175 @@ class SearchStoreInformationScreen extends StatefulWidget {
   });
 
   @override
-  State<SearchStoreInformationScreen> createState() =>
-      _SearchStoreInformationScreenState();
-}
-
-class _SearchStoreInformationScreenState
-    extends State<SearchStoreInformationScreen>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController = TabController(
-    length: 6,
-    vsync: this,
-  );
-  final PageController _sliderController = PageController();
-  int _currentSliderPage = 0;
-
-  @override
   Widget build(BuildContext context) {
-    final List<String?> sliderImages = storeSliderImages(
-      widget.state.imageUrls,
-    );
+    if (state.tabs.isEmpty) {
+      return const Scaffold(
+        backgroundColor: AppColors.white,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary,
+          ),
+        ),
+      );
+    }
 
     return Stack(
       children: [
-        Scaffold(
-          backgroundColor: AppColors.white,
-          appBar: AppBar(
-            surfaceTintColor: AppColors.white,
+        DefaultTabController(
+          length: state.tabs.length,
+          child: Scaffold(
             backgroundColor: AppColors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: AppColors.textPrimary,
-                size: 20,
-              ),
-              onPressed: () {
-                widget.onAction(const SearchStoreInformationAction.tapBack());
-              },
-            ),
-            actions: [
-              IconButton(
+            appBar: AppBar(
+              surfaceTintColor: AppColors.white,
+              backgroundColor: AppColors.white,
+              elevation: 0,
+              leading: IconButton(
                 icon: const Icon(
-                  Icons.share_outlined,
+                  Icons.arrow_back_ios_new_rounded,
                   color: AppColors.textPrimary,
+                  size: 20,
                 ),
                 onPressed: () {
-                  widget.onAction(
-                    const SearchStoreInformationAction.tapShare(),
-                  );
+                  onAction(const SearchStoreInformationAction.tapBack());
                 },
               ),
-              IconButton(
-                icon: Icon(
-                  widget.state.isBookmarked
-                      ? Icons.favorite_rounded
-                      : Icons.favorite_border_rounded,
-                  color: AppColors.textPrimary,
-                ),
-                onPressed: () {
-                  widget.onAction(
-                    const SearchStoreInformationAction.tapBookmark(),
-                  );
-                },
-              ),
-            ],
-          ),
-          body: NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverToBoxAdapter(
-                  child: InformationImageSlider(
-                    controller: _sliderController,
-                    currentPage: _currentSliderPage,
-                    onPageChanged: (int index) {
-                      setState(() {
-                        _currentSliderPage = index;
-                      });
-                    },
-                    images: sliderImages,
+              actions: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.share_outlined,
+                    color: AppColors.textPrimary,
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: InformationStoreHeader(
-                    name: widget.state.name,
-                    subtitle: widget.state.subtitle,
-                    rating: widget.state.rating,
-                    imageUrl: widget.state.imageUrl,
-                  ),
-                ),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: InformationStickyTabBarDelegate(
-                    TabBar(
-                      controller: _tabController,
-                      isScrollable: false,
-                      labelColor: AppColors.primary,
-                      unselectedLabelColor: AppColors.textSecondary,
-                      indicatorColor: AppColors.primary,
-                      indicatorWeight: 3,
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                      tabs: const [
-                        Tab(text: '홈'),
-                        Tab(text: '메뉴'),
-                        Tab(text: '사진'),
-                        Tab(text: '리뷰'),
-                        Tab(text: '정보'),
-                        Tab(text: '예약'),
-                      ],
-                    ),
-                  ),
-                ),
-              ];
-            },
-            body: TabBarView(
-              controller: _tabController,
-              children: [
-                StoreHomeTab(
-                  address: widget.state.address,
-                  displayPhone: widget.state.displayPhone,
-                  operatingHoursText: widget.state.operatingHoursText,
-                  menus: widget.state.menus,
-                  onViewMoreMenus: () {
-                    _tabController.animateTo(1);
+                  onPressed: () {
+                    onAction(const SearchStoreInformationAction.tapShare());
                   },
                 ),
-                StoreMenuTab(menus: widget.state.menus),
-                StorePhotoTab(imageUrls: widget.state.imageUrls),
-                StoreReviewTab(
-                  storeId: widget.state.storeId,
-                  storeName: '',
-                  location: '',
-                ),
-                const StoreInfoTab(),
-                StoreReservationStatusTab(
-                  category: widget.state.category,
-                  salonDesigners: widget.state.salonDesigners,
-                  onTapReservation: () {
-                    final currentLocation = GoRouterState.of(
-                      context,
-                    ).matchedLocation;
-                    widget.onAction(
-                      SearchStoreInformationAction.tapReservation(
-                        currentLocation,
-                      ),
-                    );
+                IconButton(
+                  icon: Icon(
+                    state.isBookmarked
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    color: AppColors.textPrimary,
+                  ),
+                  onPressed: () {
+                    onAction(const SearchStoreInformationAction.tapBookmark());
                   },
-                  onTapSalonDesigner:
-                      StoreCategory.fromDbValue(widget.state.category) ==
-                          StoreCategory.salon
-                      ? (String designerId) {
-                          final currentLocation = GoRouterState.of(
-                            context,
-                          ).matchedLocation;
-                          widget.onAction(
-                            SearchStoreInformationAction.tapSalonDesignerReservation(
-                              currentLocation: currentLocation,
-                              designerId: designerId,
-                            ),
-                          );
-                        }
-                      : null,
                 ),
               ],
             ),
+            body: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: InformationImageSlider(
+                      controller: state.sliderController ?? PageController(),
+                      currentPage: state.currentSliderPage,
+                      onPageChanged: (int index) {
+                        onAction(SearchStoreInformationAction.sliderPageChanged(index));
+                      },
+                      images: storeSliderImages(state.imageUrls),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: InformationStoreHeader(
+                      name: state.name,
+                      subtitle: state.subtitle,
+                      rating: state.rating,
+                      imageUrl: state.imageUrl,
+                    ),
+                  ),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: InformationStickyTabBarDelegate(
+                      TabBar(
+                        isScrollable: false,
+                        labelColor: AppColors.primary,
+                        unselectedLabelColor: AppColors.textSecondary,
+                        indicatorColor: AppColors.primary,
+                        indicatorWeight: 3,
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                        ),
+                        tabs: state.tabs.map((title) => Tab(text: title)).toList(),
+                      ),
+                    ),
+                  ),
+                ];
+              },
+              body: TabBarView(
+                children: [
+                  Builder(
+                    builder: (innerContext) {
+                      return StoreHomeTab(
+                        address: state.address,
+                        displayPhone: state.displayPhone,
+                        operatingHoursText: state.operatingHoursText,
+                        menus: state.menus,
+                        onViewMoreMenus: () {
+                          final controller = DefaultTabController.of(innerContext);
+                          final category = StoreCategory.fromDbValue(state.category);
+                          final isCafeOrRestaurant =
+                              category == StoreCategory.cafe || category == StoreCategory.restaurant;
+                          if (isCafeOrRestaurant) {
+                            controller.animateTo(1);
+                          }
+                        },
+                        showMenuSection:
+                            StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
+                                StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant,
+                      );
+                    },
+                  ),
+                  if (StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
+                      StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant)
+                    StoreMenuTab(menus: state.menus),
+                  StoreReservationStatusTab(
+                    category: state.category,
+                    salonDesigners: state.salonDesigners,
+                    onTapReservation: () {
+                      final currentLocation = GoRouterState.of(
+                        context,
+                      ).matchedLocation;
+                      onAction(
+                        SearchStoreInformationAction.tapReservation(
+                          currentLocation,
+                        ),
+                      );
+                    },
+                    onTapSalonDesigner:
+                        StoreCategory.fromDbValue(state.category) ==
+                            StoreCategory.salon
+                        ? (String designerId) {
+                            final currentLocation = GoRouterState.of(
+                              context,
+                            ).matchedLocation;
+                            onAction(
+                              SearchStoreInformationAction.tapSalonDesignerReservation(
+                                currentLocation: currentLocation,
+                                designerId: designerId,
+                              ),
+                            );
+                          }
+                        : null,
+                  ),
+                  StorePhotoTab(imageUrls: state.imageUrls),
+                  StoreReviewTab(
+                    storeId: state.storeId,
+                    storeName: state.name,
+                    location: state.address,
+                    naverPlaceId: state.naverPlaceId,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-        if (widget.state.isLoading)
+        if (state.isLoading)
           ModalBarrier(
             dismissible: false,
             color: AppColors.black.withValues(alpha: 0.2588),
           ),
-        if (widget.state.isLoading)
+        if (state.isLoading)
           const Center(
             child: CircularProgressIndicator(
               color: AppColors.primary,
@@ -207,12 +201,5 @@ class _SearchStoreInformationScreenState
           ),
       ],
     );
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _sliderController.dispose();
-    super.dispose();
   }
 }

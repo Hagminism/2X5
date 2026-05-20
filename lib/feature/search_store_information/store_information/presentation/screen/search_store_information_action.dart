@@ -21,4 +21,7 @@ sealed class SearchStoreInformationAction with _$SearchStoreInformationAction {
     required String currentLocation,
     required String designerId,
   }) = TapSearchStoreInformationSalonDesignerReservation;
+
+  const factory SearchStoreInformationAction.sliderPageChanged(int index) =
+      SliderSearchStoreInformationPageChanged;
 }

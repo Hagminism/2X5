@@ -56,6 +56,7 @@ class InformationViewModel extends ChangeNotifier {
         menus: menus,
         imageUrls: imageUrls,
         imageUrl: storeHeaderImageUrl(images),
+        naverPlaceId: store.naverPlaceId ?? '',
         isLoading: false,
       );
 
@@ -66,14 +67,35 @@ class InformationViewModel extends ChangeNotifier {
                 .toList();
         _state = _state.copyWith(salonDesigners: designers);
       }
+
+      // 가져온 업장 종류에 따라 탭 정의
+      _initTabs();
     } catch (_) {
       _state = _state.copyWith(isLoading: false);
       _eventController.add(
         const InformationEvent.showSnackBar('업장 정보를 불러오지 못했습니다.'),
       );
+    } finally {
+      notifyListeners();
     }
+  }
 
-    notifyListeners();
+  void _initTabs() {
+    final category = StoreCategory.fromDbValue(state.category);
+    final isCafeOrRestaurant =
+        (category == StoreCategory.cafe ||
+        category == StoreCategory.restaurant);
+    if (isCafeOrRestaurant) {
+      _state = state.copyWith(
+        tabs: const ['홈', '메뉴', '예약', '사진', '리뷰'],
+        sliderController: PageController(),
+      );
+    } else {
+      _state = state.copyWith(
+          tabs: const ['홈', '예약', '사진', '리뷰'],
+          sliderController: PageController(),
+      );
+    }
   }
 
   void onAction(InformationAction action) {
@@ -116,6 +138,10 @@ class InformationViewModel extends ChangeNotifier {
           queryParameters: {'designerId': designerId},
         );
         _eventController.add(InformationEvent.push(uri.toString()));
+        break;
+      case SliderPageChanged(:final index):
+        _state = _state.copyWith(currentSliderPage: index);
+        notifyListeners();
         break;
     }
   }

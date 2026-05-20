@@ -27,5 +27,7 @@ class InformationStickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(InformationStickyTabBarDelegate oldDelegate) => false;
+  bool shouldRebuild(InformationStickyTabBarDelegate oldDelegate) {
+    return oldDelegate.tabBar != tabBar;
+  }
 }

@@ -67,6 +67,7 @@ class MapStoreInformationViewModel extends ChangeNotifier {
                 .toList();
         _state = _state.copyWith(salonDesigners: designers);
       }
+      _initTabs();
     } catch (_) {
       _state = _state.copyWith(isLoading: false);
       _eventController.add(
@@ -75,6 +76,24 @@ class MapStoreInformationViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  void _initTabs() {
+    final category = StoreCategory.fromDbValue(state.category);
+    final isCafeOrRestaurant =
+        (category == StoreCategory.cafe ||
+        category == StoreCategory.restaurant);
+    if (isCafeOrRestaurant) {
+      _state = state.copyWith(
+        tabs: const ['홈', '메뉴', '예약', '사진', '리뷰'],
+        sliderController: PageController(),
+      );
+    } else {
+      _state = state.copyWith(
+        tabs: const ['홈', '예약', '사진', '리뷰'],
+        sliderController: PageController(),
+      );
+    }
   }
 
   void onAction(MapStoreInformationAction action) {
@@ -117,6 +136,10 @@ class MapStoreInformationViewModel extends ChangeNotifier {
           queryParameters: {'designerId': designerId},
         );
         _eventController.add(MapStoreInformationEvent.push(uri.toString()));
+        break;
+      case SliderMapStoreInformationPageChanged(:final index):
+        _state = _state.copyWith(currentSliderPage: index);
+        notifyListeners();
         break;
     }
   }

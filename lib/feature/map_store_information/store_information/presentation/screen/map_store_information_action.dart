@@ -21,4 +21,7 @@ sealed class MapStoreInformationAction with _$MapStoreInformationAction {
     required String currentLocation,
     required String designerId,
   }) = TapMapStoreInformationSalonDesignerReservation;
+
+  const factory MapStoreInformationAction.sliderPageChanged(int index) =
+      SliderMapStoreInformationPageChanged;
 }

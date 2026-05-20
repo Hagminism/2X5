@@ -57,6 +57,7 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         menus: menus,
         imageUrls: imageUrls,
         imageUrl: storeHeaderImageUrl(images),
+        naverPlaceId: store.naverPlaceId ?? '',
         isLoading: false,
       );
 
@@ -67,6 +68,7 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
                 .toList();
         _state = _state.copyWith(salonDesigners: designers);
       }
+      _initTabs();
     } catch (_) {
       _state = _state.copyWith(isLoading: false);
       _eventController.add(
@@ -75,6 +77,24 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  void _initTabs() {
+    final category = StoreCategory.fromDbValue(state.category);
+    final isCafeOrRestaurant =
+        (category == StoreCategory.cafe ||
+        category == StoreCategory.restaurant);
+    if (isCafeOrRestaurant) {
+      _state = state.copyWith(
+        tabs: const ['홈', '메뉴', '예약', '사진', '리뷰'],
+        sliderController: PageController(),
+      );
+    } else {
+      _state = state.copyWith(
+        tabs: const ['홈', '예약', '사진', '리뷰'],
+        sliderController: PageController(),
+      );
+    }
   }
 
   void onAction(SearchStoreInformationAction action) {
@@ -117,6 +137,10 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
           queryParameters: {'designerId': designerId},
         );
         _eventController.add(SearchStoreInformationEvent.push(uri.toString()));
+        break;
+      case SliderSearchStoreInformationPageChanged(:final index):
+        _state = _state.copyWith(currentSliderPage: index);
+        notifyListeners();
         break;
     }
   }

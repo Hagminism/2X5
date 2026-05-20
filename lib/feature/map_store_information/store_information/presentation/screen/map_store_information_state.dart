@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'map_store_information_state.freezed.dart';
@@ -22,5 +23,8 @@ abstract class MapStoreInformationState with _$MapStoreInformationState {
     @Default(false) bool isLoading,
     @Default([]) List<SalonDesigner> salonDesigners,
     @Default('') String naverPlaceId,
+    @Default([]) List<String> tabs,
+    PageController? sliderController,
+    @Default(0) int currentSliderPage,
   }) = _MapStoreInformationState;
 }

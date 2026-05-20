@@ -559,6 +559,7 @@ class _MapScreenState extends State<MapScreen> {
 
           String finalPlaceId = fallbackPlaceId;
           String? finalThumUrl;
+          final List<String> finalImageUrls = [];
           String finalContact = telephone;
           Map<String, dynamic> operatingHours = {};
           double finalRating = 0.0;
@@ -609,14 +610,19 @@ class _MapScreenState extends State<MapScreen> {
                   operatingHours = {'text': bizHours};
                 }
 
-                // 대표 이미지
+                // 대표 이미지 및 다중 이미지
                 final imagesObj = summary['images'] as Map<String, dynamic>?;
                 final imagesList = imagesObj?['images'] as List?;
                 if (imagesList != null && imagesList.isNotEmpty) {
-                  final firstImg = imagesList.first as Map<String, dynamic>?;
-                  final firstImgUrl = firstImg?['origin'] as String? ?? firstImg?['url'] as String?;
-                  if (firstImgUrl != null && firstImgUrl.isNotEmpty) {
-                    finalThumUrl = firstImgUrl;
+                  for (final img in imagesList) {
+                    final imgMap = img as Map<String, dynamic>?;
+                    final imgUrl = imgMap?['origin'] as String? ?? imgMap?['url'] as String?;
+                    if (imgUrl != null && imgUrl.isNotEmpty) {
+                      finalImageUrls.add(imgUrl);
+                    }
+                  }
+                  if (finalImageUrls.isNotEmpty) {
+                    finalThumUrl = finalImageUrls.first;
                   }
                 }
 
@@ -664,13 +670,23 @@ class _MapScreenState extends State<MapScreen> {
           try {
             final createdStore = await storeRepo.createStoreDynamically(store);
             debugPrint('[MapCrawl] DB 저장 성공 - storeId=${createdStore.id}');
-            if (finalThumUrl != null && finalThumUrl.isNotEmpty) {
+            if (finalImageUrls.isNotEmpty) {
+              for (int i = 0; i < finalImageUrls.length; i++) {
+                final imgUrl = finalImageUrls[i];
+                await storeRepo.addStoreImage(
+                  createdStore.id,
+                  imgUrl,
+                  isCover: i == 0,
+                );
+                debugPrint('[MapCrawl] 이미지 저장 성공 ($i) - $imgUrl, isCover: ${i == 0}');
+              }
+            } else if (finalThumUrl != null && finalThumUrl.isNotEmpty) {
               await storeRepo.addStoreImage(
                 createdStore.id,
                 finalThumUrl,
                 isCover: true,
               );
-              debugPrint('[MapCrawl] 이미지 저장 성공 - $finalThumUrl');
+              debugPrint('[MapCrawl] 이미지 저장 성공 (단일) - $finalThumUrl');
             }
           } catch (dbErr) {
             debugPrint('[MapCrawl] DB 저장 실패 for $name: $dbErr');

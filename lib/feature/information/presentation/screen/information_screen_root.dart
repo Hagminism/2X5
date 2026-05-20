@@ -26,6 +26,8 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
   @override
   void initState() {
     super.initState();
+    widget.viewModel.initialize(widget.storeId);
+
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (!mounted) {
         return;
@@ -43,10 +45,6 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
             ..showSnackBar(SnackBar(content: Text(event.message)));
           break;
       }
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.viewModel.initialize(widget.storeId);
     });
   }
 
