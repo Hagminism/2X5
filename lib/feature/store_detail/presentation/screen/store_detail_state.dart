@@ -13,5 +13,9 @@ abstract class StoreDetailState with _$StoreDetailState {
     @Default(<InternalReview>[]) List<InternalReview> reviews,
     StoreStampStatus? stampStatus,
     @Default(emptyStoreDetail) StoreDetail data,
+    @Default(<Map<String, dynamic>>[]) List<Map<String, dynamic>> naverMenus,
+    @Default(<Map<String, dynamic>>[]) List<Map<String, dynamic>> naverReviews,
+    @Default(false) bool isNaverDataLoading,
   }) = _StoreDetailState;
 }
+

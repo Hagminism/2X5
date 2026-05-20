@@ -1,14 +1,17 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/util/format_today_operating_hours.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/search_store_information/store_information/presentation/screen/search_store_information_action.dart';
 import 'package:capstone_2026/feature/search_store_information/store_information/presentation/screen/search_store_information_event.dart';
 import 'package:capstone_2026/feature/search_store_information/store_information/presentation/screen/search_store_information_state.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:flutter/material.dart';
 
 class SearchStoreInformationViewModel extends ChangeNotifier {
@@ -69,6 +72,11 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         _state = _state.copyWith(salonDesigners: designers);
       }
       _initTabs();
+
+      // 네이버 플레이스 실시간 메뉴가 있는 경우 비동기로 가져와 덮어씌움
+      if (store.naverPlaceId != null && store.naverPlaceId!.trim().isNotEmpty) {
+        _loadNaverMenus(store.naverPlaceId!.trim());
+      }
     } catch (_) {
       _state = _state.copyWith(isLoading: false);
       _eventController.add(
@@ -78,6 +86,36 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  Future<void> _loadNaverMenus(String naverPlaceId) async {
+    try {
+      final naverDataSource = getIt<NaverStoreSearchDataSource>();
+      final rawMenus = await naverDataSource.fetchStoreMenus(placeId: naverPlaceId);
+
+      if (rawMenus.isNotEmpty) {
+        final List<StoreMenu> naverMenus = rawMenus.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
+          return StoreMenu(
+            id: item['id']?.toString(),
+            name: item['name']?.toString() ?? '',
+            price: int.tryParse(item['price']?.toString() ?? '0') ?? 0,
+            description: item['description']?.toString() ?? '',
+            imageUrl: item['imageUrl']?.toString() ?? '',
+            sortOrder: index,
+            isAvailable: true,
+          );
+        }).toList();
+
+        _state = _state.copyWith(menus: naverMenus);
+        notifyListeners();
+      }
+    } catch (e, stack) {
+      debugPrint('[SearchStoreInformationViewModel] Failed to load Naver menus: $e');
+      debugPrint('[SearchStoreInformationViewModel] Stacktrace: $stack');
+    }
+  }
+
 
   void _initTabs() {
     final category = StoreCategory.fromDbValue(state.category);

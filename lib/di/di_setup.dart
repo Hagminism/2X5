@@ -392,8 +392,10 @@ void diSetup() {
       storeDetailRepository: getIt<StoreDetailRepository>(),
       storeReviewService: getIt<StoreReviewService>(),
       stampService: getIt<StampService>(),
+      naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
     ),
   );
+
   getIt.registerFactory<InformationViewModel>(
         () => InformationViewModel(
       storeRepository: getIt<StoreRepository>(),

@@ -16,6 +16,9 @@ class StoreDetailTabSection extends StatelessWidget {
     required this.googleSearchQuery,
     required this.reviews,
     required this.isReviewLoading,
+    required this.naverMenus,
+    required this.naverReviews,
+    required this.isNaverDataLoading,
     required this.stampStatus,
     required this.onSubmitReview,
     required this.onTapNaverReview,
@@ -31,10 +34,14 @@ class StoreDetailTabSection extends StatelessWidget {
   final String googleSearchQuery;
   final List<InternalReview> reviews;
   final bool isReviewLoading;
+  final List<Map<String, dynamic>> naverMenus;
+  final List<Map<String, dynamic>> naverReviews;
+  final bool isNaverDataLoading;
   final StoreStampStatus? stampStatus;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
   final void Function() onTapNaverReview;
   final void Function() onTapGoogleReview;
+
 
   static const List<String> _tabs = ['홈', '메뉴', '사진', '리뷰', '매장정보'];
 
@@ -110,15 +117,151 @@ class StoreDetailTabSection extends StatelessWidget {
           ),
           reviews: reviews,
           isReviewLoading: isReviewLoading,
+          naverReviews: naverReviews,
+          isNaverDataLoading: isNaverDataLoading,
           onSubmitReview: onSubmitReview,
           onTapNaverReview: onTapNaverReview,
           onTapGoogleReview: onTapGoogleReview,
         );
       case 1:
-        return const Text(
-          '대표 메뉴, 가격, 구성 정보를 이 영역에 표시합니다.',
-          style: _contentStyle,
+        if (isNaverDataLoading) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF03C75A)),
+              ),
+            ),
+          );
+        }
+        if (naverMenus.isEmpty) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Center(
+              child: Text(
+                '등록된 실시간 메뉴 정보가 없습니다.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          );
+        }
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: naverMenus.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final menu = naverMenus[index];
+            final name = menu['name'] as String? ?? '';
+            final priceRaw = menu['price'];
+            final description = menu['description'] as String? ?? '';
+            final imageUrl = menu['imageUrl'] as String? ?? '';
+
+            // 가격 포맷팅
+            String formattedPrice = '';
+            if (priceRaw != null) {
+              final priceStr = priceRaw.toString().replaceAll(RegExp(r'[^0-9]'), '');
+              final priceInt = int.tryParse(priceStr);
+              if (priceInt != null) {
+                final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
+                formattedPrice = '${priceInt.toString().replaceAllMapped(reg, (match) => ',')}원';
+              } else {
+                formattedPrice = priceRaw.toString();
+              }
+            }
+
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (imageUrl.isNotEmpty) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 80,
+                          height: 80,
+                          color: const Color(0xFFF3F4F6),
+                          child: const Icon(
+                            Icons.broken_image_outlined,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (description.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            description,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                              height: 1.4,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        if (formattedPrice.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            formattedPrice,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
+
       case 2:
         return const Text('업장/메뉴 사진 목록을 갤러리 형태로 표시합니다.', style: _contentStyle);
       case 4:

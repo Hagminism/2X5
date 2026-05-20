@@ -27,6 +27,8 @@ class StoreDetailReviewSection extends StatelessWidget {
     required this.onTapGoogleReview,
     required this.onSubmitReview,
     this.isReviewLoading = false,
+    required this.naverReviews,
+    required this.isNaverDataLoading,
     this.aiSummary,
     this.reviews,
     super.key,
@@ -42,8 +44,11 @@ class StoreDetailReviewSection extends StatelessWidget {
   final VoidCallback onTapGoogleReview;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
   final bool isReviewLoading;
+  final List<Map<String, dynamic>> naverReviews;
+  final bool isNaverDataLoading;
   final ReviewAiSummary? aiSummary;
   final List<InternalReview>? reviews;
+
 
   @override
   Widget build(BuildContext context) {
@@ -145,8 +150,84 @@ class StoreDetailReviewSection extends StatelessWidget {
               ],
             );
           }),
+        const SizedBox(height: 40),
+        const Divider(height: 1, color: AppColors.border, thickness: 1),
+        const SizedBox(height: 32),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF03C75A),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'N',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              '네이버 플레이스 실시간 리뷰',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (isNaverDataLoading)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF03C75A)),
+              ),
+            ),
+          )
+        else if (naverReviews.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Center(
+              child: Text(
+                '아직 수집된 네이버 실시간 리뷰가 없습니다.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: naverReviews.length,
+            separatorBuilder: (context, index) => const Divider(
+              height: 32,
+              color: AppColors.border,
+              thickness: 1,
+            ),
+            itemBuilder: (context, index) {
+              final review = naverReviews[index];
+              return _NaverReviewItem(review: review);
+            },
+          ),
       ],
     );
+
   }
 
   Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
@@ -741,3 +822,89 @@ class _ReviewImageThumbnail extends StatelessWidget {
     );
   }
 }
+
+class _NaverReviewItem extends StatelessWidget {
+  const _NaverReviewItem({required this.review});
+
+  final Map<String, dynamic> review;
+
+  @override
+  Widget build(BuildContext context) {
+    final author = review['author'] as Map<String, dynamic>?;
+    final nickname = author?['nickname'] as String? ?? '익명';
+    final imageUrl = author?['imageUrl'] as String? ?? '';
+    final ratingVal = double.tryParse(review['rating']?.toString() ?? '');
+    final date = review['created'] as String? ?? '';
+    final bodyText = review['body'] as String? ?? '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: const Color(0xFFF3F4F6),
+              backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+              child: imageUrl.isEmpty
+                  ? const Icon(Icons.person, color: Color(0xFF9CA3AF), size: 20)
+                  : null,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nickname,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (ratingVal != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: List.generate(
+                        5,
+                        (index) => Icon(
+                          Icons.star_rounded,
+                          color: index < ratingVal.round()
+                              ? const Color(0xFFFFB800)
+                              : AppColors.border,
+                          size: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (date.isNotEmpty)
+              Text(
+                date,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          bodyText.isEmpty ? '리뷰 내용이 없습니다.' : bodyText,
+          style: const TextStyle(
+            fontSize: 14,
+            height: 1.5,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+

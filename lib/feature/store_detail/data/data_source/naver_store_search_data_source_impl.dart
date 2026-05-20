@@ -276,4 +276,76 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     }
     return null;
   }
+
+  String get _proxyUrl {
+    final url = _getEnv('NAVER_PROXY_URL');
+    return url == 'NOT_FOUND' || url.isEmpty ? 'http://localhost:8000' : url;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchStoreMenus({
+    required String placeId,
+  }) async {
+    if (placeId.isEmpty) return const [];
+
+    final url = Uri.parse('$_proxyUrl/api/place/$placeId/menu');
+    debugPrint('[NaverMenus] Requesting URL: $url');
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is Map && decoded.containsKey('menus')) {
+          final menusList = decoded['menus'] as List?;
+          if (menusList != null) {
+            return menusList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          }
+        }
+        debugPrint('[NaverMenus] Unexpected response body format: ${response.body}');
+      } else {
+        debugPrint('[NaverMenus] Fail status: ${response.statusCode}, Body: ${response.body}');
+      }
+    } catch (e, stack) {
+      debugPrint('[NaverMenus] Exception occurred: $e');
+      debugPrint('[NaverMenus] Stacktrace: $stack');
+    }
+
+    return const [];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchStoreReviews({
+    required String placeId,
+    int page = 1,
+    int size = 15,
+  }) async {
+    if (placeId.isEmpty) return const [];
+
+    final url = Uri.parse(
+      '$_proxyUrl/api/place/$placeId/review?page=$page&size=$size',
+    );
+    debugPrint('[NaverReviews] Requesting URL: $url');
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is Map && decoded.containsKey('reviews')) {
+          final reviewsList = decoded['reviews'] as List?;
+          if (reviewsList != null) {
+            return reviewsList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+          }
+        }
+        debugPrint('[NaverReviews] Unexpected response body format: ${response.body}');
+      } else {
+        debugPrint('[NaverReviews] Fail status: ${response.statusCode}, Body: ${response.body}');
+      }
+    } catch (e, stack) {
+      debugPrint('[NaverReviews] Exception occurred: $e');
+      debugPrint('[NaverReviews] Stacktrace: $stack');
+    }
+
+    return const [];
+  }
 }
+

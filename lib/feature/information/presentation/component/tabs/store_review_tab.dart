@@ -11,6 +11,7 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/review
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 
 class StoreReviewTab extends StatefulWidget {
   const StoreReviewTab({
@@ -36,8 +37,12 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   StoreStampStatus? _stampStatus;
   GooglePlaceReviewInfo? _googlePlaceReviewInfo;
 
+  bool _isNaverLoading = false;
+  List<Map<String, dynamic>> _naverReviews = const [];
+
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
   StampService get _stampService => getIt<StampService>();
+  NaverStoreSearchDataSource get _naverStoreSearchDataSource => getIt<NaverStoreSearchDataSource>();
 
   StoreDetail get _reviewTarget {
     final mockDetail = storeDetailMockMap[widget.storeId];
@@ -94,6 +99,8 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
           ),
           reviews: _reviews,
           isReviewLoading: _isLoading,
+          naverReviews: _naverReviews,
+          isNaverDataLoading: _isNaverLoading,
           onSubmitReview: _submitReview,
           onTapNaverReview: () => _openNaverReview(data),
           onTapGoogleReview: () => _openGoogleReview(data),
@@ -105,17 +112,29 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   Future<void> _loadReviewData() async {
     setState(() {
       _isLoading = true;
+      _isNaverLoading = true;
     });
 
     try {
       final data = _reviewTarget;
-      final (reviews, stampStatus, googlePlaceReviewInfo) = await (
+
+      Future<List<Map<String, dynamic>>> loadNaverReviews() async {
+        if (data.naverPlaceId.isEmpty) return const [];
+        try {
+          return await _naverStoreSearchDataSource.fetchStoreReviews(placeId: data.naverPlaceId);
+        } catch (_) {
+          return const [];
+        }
+      }
+
+      final (reviews, stampStatus, googlePlaceReviewInfo, naverReviews) = await (
         _storeReviewService.loadStoreReviews(storeId: widget.storeId),
         _stampService.loadStoreStampStatus(storeId: widget.storeId),
         _storeReviewService.fetchGooglePlaceReviewInfo(
           storeName: data.name,
           location: data.location,
         ),
+        loadNaverReviews(),
       ).wait;
 
       if (!mounted) {
@@ -126,7 +145,9 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         _reviews = reviews;
         _stampStatus = stampStatus;
         _googlePlaceReviewInfo = googlePlaceReviewInfo;
+        _naverReviews = naverReviews;
         _isLoading = false;
+        _isNaverLoading = false;
       });
     } catch (_) {
       if (!mounted) {
@@ -135,6 +156,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
       setState(() {
         _isLoading = false;
+        _isNaverLoading = false;
       });
       _showMessage('리뷰를 불러오는 중 오류가 발생했습니다.');
     }

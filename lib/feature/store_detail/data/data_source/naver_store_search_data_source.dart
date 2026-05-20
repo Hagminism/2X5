@@ -23,4 +23,15 @@ abstract interface class NaverStoreSearchDataSource {
   Future<Map<String, dynamic>?> fetchPlaceSummary({
     required String placeId,
   });
+
+  Future<List<Map<String, dynamic>>> fetchStoreMenus({
+    required String placeId,
+  });
+
+  Future<List<Map<String, dynamic>>> fetchStoreReviews({
+    required String placeId,
+    int page = 1,
+    int size = 15,
+  });
 }
+

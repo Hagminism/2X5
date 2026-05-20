@@ -12,6 +12,7 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/store_
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 
 class BookmarkStoreDetailScreen extends StatefulWidget {
   const BookmarkStoreDetailScreen({
@@ -31,12 +32,18 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
   bool _isReviewLoading = true;
   List<InternalReview> _reviews = const [];
 
+  bool _isNaverDataLoading = false;
+  List<Map<String, dynamic>> _naverMenus = const [];
+  List<Map<String, dynamic>> _naverReviews = const [];
+
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
+  NaverStoreSearchDataSource get _naverStoreSearchDataSource =>
+      getIt<NaverStoreSearchDataSource>();
 
   @override
   void initState() {
     super.initState();
-    _loadReviews();
+    _loadStoreData();
   }
 
   @override
@@ -44,7 +51,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.storeId != widget.storeId) {
       _selectedTab = 0;
-      _loadReviews();
+      _loadStoreData();
     }
   }
 
@@ -119,6 +126,9 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
               googleSearchQuery: data.googleSearchQuery,
               reviews: _reviews,
               isReviewLoading: _isReviewLoading,
+              isNaverDataLoading: _isNaverDataLoading,
+              naverMenus: _naverMenus,
+              naverReviews: _naverReviews,
               stampStatus: null,
               onSubmitReview: (result) => _submitReview(data, result),
               onTapNaverReview: () => _openNaverReview(data),
@@ -141,15 +151,41 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
     );
   }
 
-  Future<void> _loadReviews() async {
+  Future<void> _loadStoreData() async {
     setState(() {
       _isReviewLoading = true;
+      _isNaverDataLoading = true;
     });
 
+    final data = storeDetailMockMap[widget.storeId] ?? defaultStoreDetail;
+
+    Future<void> loadNaverData() async {
+      if (data.naverPlaceId.isEmpty) return;
+      try {
+        final (menus, reviews) = await (
+          _naverStoreSearchDataSource.fetchStoreMenus(placeId: data.naverPlaceId),
+          _naverStoreSearchDataSource.fetchStoreReviews(placeId: data.naverPlaceId),
+        ).wait;
+
+        if (!mounted) return;
+        setState(() {
+          _naverMenus = menus;
+          _naverReviews = reviews;
+          _isNaverDataLoading = false;
+        });
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          _isNaverDataLoading = false;
+        });
+      }
+    }
+
     try {
-      final reviews = await _storeReviewService.loadStoreReviews(
-        storeId: widget.storeId,
-      );
+      final (reviews, _) = await (
+        _storeReviewService.loadStoreReviews(storeId: widget.storeId),
+        loadNaverData(),
+      ).wait;
 
       if (!mounted) {
         return;
@@ -166,6 +202,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
 
       setState(() {
         _isReviewLoading = false;
+        _isNaverDataLoading = false;
       });
       _showMessage('리뷰를 불러오는 중 오류가 발생했습니다.');
     }
