@@ -66,6 +66,8 @@ import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/google_places_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/google_places_data_source_impl.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/kakao_store_search_data_source.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/kakao_store_search_data_source_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/repository/store_detail_repository_impl.dart';
@@ -141,6 +143,9 @@ void diSetup() {
   // DataSource
   getIt.registerLazySingleton<NaverStoreSearchDataSource>(
         () => NaverStoreSearchDataSourceImpl(),
+  );
+  getIt.registerLazySingleton<KakaoStoreSearchDataSource>(
+        () => KakaoStoreSearchDataSourceImpl(),
   );
   getIt.registerLazySingleton<GooglePlacesDataSource>(
         () => GooglePlacesDataSourceImpl(),

@@ -5,10 +5,10 @@ import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
+import 'package:capstone_2026/feature/store_detail/data/data_source/kakao_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart' as geo;
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:naver_maps_sdk_flutter/enum/naver_map_map_type_id.dart';
@@ -387,16 +387,16 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  String _categorySearchKeyword(String category, String dongName) {
+  String _categorySearchKeyword(String category) {
     switch (category) {
       case 'restaurant':
-        return '$dongName 맛집';
+        return '맛집';
       case 'cafe':
-        return '$dongName 카페';
+        return '카페';
       case 'study_cafe':
-        return '$dongName 스터디카페';
+        return '스터디카페';
       case 'salon':
-        return '$dongName 미용실';
+        return '미용실';
       default:
         return '';
     }
@@ -409,45 +409,28 @@ class _MapScreenState extends State<MapScreen> {
 
     try {
       final center = _currentCenter;
-      
-      String dongName = '삼선동';
-      try {
-        final placemarks = await geo.placemarkFromCoordinates(center.lat, center.lng);
-        if (placemarks.isNotEmpty) {
-          final placemark = placemarks.first;
-          final sub = placemark.subLocality ?? '';
-          final thor = placemark.thoroughfare ?? '';
-          final match = RegExp(r'[가-힣0-9]+동').firstMatch(thor.isEmpty ? sub : thor);
-          if (match != null) {
-            dongName = match.group(0)!;
-          } else if (thor.isNotEmpty) {
-            dongName = thor;
-          } else if (sub.isNotEmpty) {
-            dongName = sub;
-          }
-        }
-      } catch (e) {
-        debugPrint('[Geocoding] Reverse geocoding failed, using fallback: $e');
-      }
 
       final categoriesToSearch = _selectedCategory != null
           ? [_selectedCategory!]
           : ['restaurant', 'cafe', 'study_cafe', 'salon'];
 
       final storeRepo = getIt<StoreRepository>();
+      final kakaoSource = getIt<KakaoStoreSearchDataSource>();
       final naverSource = getIt<NaverStoreSearchDataSource>();
       final List<Map<String, dynamic>> rawCandidates = [];
 
       for (final cat in categoriesToSearch) {
-        final queryKeyword = _categorySearchKeyword(cat, dongName);
+        final queryKeyword = _categorySearchKeyword(cat);
         if (queryKeyword.isEmpty) continue;
 
         try {
-          final naverItems = await naverSource.searchStoresByKeyword(
+          final kakaoItems = await kakaoSource.searchStoresByCoordinates(
             keyword: queryKeyword,
-            display: 10,
+            lat: center.lat,
+            lng: center.lng,
+            radius: 1000,
           );
-          for (final item in naverItems) {
+          for (final item in kakaoItems) {
             rawCandidates.add({
               'item': item,
               'category': cat,
@@ -464,40 +447,26 @@ class _MapScreenState extends State<MapScreen> {
         final item = entry['item'] as Map<String, dynamic>;
         final category = entry['category'] as String;
 
-        final String name = (item['title'] as String? ?? '')
+        final String name = (item['place_name'] as String? ?? '')
             .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '');
-        final String address = item['address'] as String? ?? '';
-        final String roadAddress = item['roadAddress'] as String? ?? '';
+        final String address = item['address_name'] as String? ?? '';
+        final String roadAddress = item['road_address_name'] as String? ?? '';
         final String targetCheckAddress =
             roadAddress.isNotEmpty ? roadAddress : address;
 
-        final mapxStr = item['mapx']?.toString() ?? '';
-        final mapyStr = item['mapy']?.toString() ?? '';
+        final xStr = item['x']?.toString() ?? '';
+        final yStr = item['y']?.toString() ?? '';
 
         double? lat;
         double? lng;
 
-        if (mapxStr.isNotEmpty && mapyStr.isNotEmpty) {
-          final double rawX = double.tryParse(mapxStr) ?? 0.0;
-          final double rawY = double.tryParse(mapyStr) ?? 0.0;
-          if (rawX > 1000.0 && rawY > 1000.0) {
-            lng = rawX / 1e7;
-            lat = rawY / 1e7;
-          } else {
-            lng = rawX;
-            lat = rawY;
-          }
+        if (xStr.isNotEmpty && yStr.isNotEmpty) {
+          lng = double.tryParse(xStr);
+          lat = double.tryParse(yStr);
         }
 
         if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
           continue;
-        }
-
-        String fallbackPlaceId = '';
-        final link = item['link'] as String? ?? '';
-        final idMatch = RegExp(r'id=(\d+)').firstMatch(link);
-        if (idMatch != null) {
-          fallbackPlaceId = idMatch.group(1)!;
         }
 
         final key = '$name|$targetCheckAddress';
@@ -508,8 +477,8 @@ class _MapScreenState extends State<MapScreen> {
             'category': category,
             'latitude': lat,
             'longitude': lng,
-            'fallbackPlaceId': fallbackPlaceId,
-            'telephone': item['telephone'] as String? ?? '',
+            'fallbackPlaceId': '',
+            'telephone': item['phone'] as String? ?? '',
           };
         }
       }
