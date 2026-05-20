@@ -221,9 +221,9 @@ class _StampHistoryCard extends StatelessWidget {
     );
   }
 
-  ButtonStyle _compactButtonStyle({bool isDisabled = false}) {
+  ButtonStyle _compactButtonStyle() {
     return FilledButton.styleFrom(
-      backgroundColor: isDisabled ? const Color(0xFFE5E7EB) : AppColors.primary,
+      backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
       disabledBackgroundColor: const Color(0xFFE5E7EB),
       disabledForegroundColor: AppColors.textSecondary,

@@ -242,6 +242,9 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
             FilledButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
+                if (!mounted) {
+                  return;
+                }
                 context.push('${Routes.myPage}/${Routes.stampHistory}');
               },
               child: const Text('확인하러 가기'),
