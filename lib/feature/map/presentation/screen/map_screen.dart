@@ -121,11 +121,23 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  Future<void> _fetchStores() async {
+  Future<void> _fetchStores(NLatLng center) async {
     try {
+      final double latOffset = 0.0135;
+      final double lngOffset = 0.017;
+      final minLat = center.lat - latOffset;
+      final maxLat = center.lat + latOffset;
+      final minLng = center.lng - lngOffset;
+      final maxLng = center.lng + lngOffset;
+
       final response = await Supabase.instance.client
           .from('stores')
-          .select('id, name, category, latitude, longitude, address');
+          .select('id, name, category, latitude, longitude, address')
+          .gte('latitude', minLat)
+          .lte('latitude', maxLat)
+          .gte('longitude', minLng)
+          .lte('longitude', maxLng);
+
       if (!mounted) return;
       setState(() => _stores = List<Map<String, dynamic>>.from(response));
       if (_mapReady) _addStoreMarkers();
@@ -665,7 +677,7 @@ class _MapScreenState extends State<MapScreen> {
         await Future.wait(registerFutures);
       }
 
-      await _fetchStores();
+      await _fetchStores(center);
 
     } catch (e) {
       debugPrint('Error searching around center: $e');
