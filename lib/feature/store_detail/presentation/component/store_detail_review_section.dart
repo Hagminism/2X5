@@ -9,6 +9,7 @@ import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/feature/information/presentation/component/tabs/store_review_tab.dart';
 
 const bool _allowReviewStampTestingBypass = bool.fromEnvironment(
   'ALLOW_REVIEW_STAMP_TEST_BYPASS',
@@ -29,6 +30,9 @@ class StoreDetailReviewSection extends StatelessWidget {
     this.isReviewLoading = false,
     required this.naverReviews,
     required this.isNaverDataLoading,
+    required this.selectedPlatform,
+    required this.onPlatformChanged,
+    required this.googleReviews,
     this.aiSummary,
     this.reviews,
     super.key,
@@ -46,9 +50,11 @@ class StoreDetailReviewSection extends StatelessWidget {
   final bool isReviewLoading;
   final List<Map<String, dynamic>> naverReviews;
   final bool isNaverDataLoading;
+  final ReviewPlatform selectedPlatform;
+  final void Function(ReviewPlatform) onPlatformChanged;
+  final List<GooglePlaceReview> googleReviews;
   final ReviewAiSummary? aiSummary;
   final List<InternalReview>? reviews;
-
 
   @override
   Widget build(BuildContext context) {
@@ -108,135 +114,169 @@ class StoreDetailReviewSection extends StatelessWidget {
         const SizedBox(height: 32),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '방문자 리뷰',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            TextButton.icon(
-              onPressed: () => _showWriteReviewBottomSheet(context),
-              icon: const Icon(Icons.edit_outlined, size: 16),
-              label: const Text('리뷰 쓰기'),
-              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        if (isReviewLoading)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: CircularProgressIndicator(),
-            ),
-          )
-        else if (reviews == null || reviews!.isEmpty)
-          _EmptyReviewState(
-            onTapWriteReview: () => _showWriteReviewBottomSheet(context),
-          )
-        else
-          ...reviews!.asMap().entries.map((entry) {
-            final isLast = entry.key == reviews!.length - 1;
-            return Column(
-              children: [
-                _InternalReviewItem(review: entry.value),
-                if (!isLast)
-                  const Divider(
-                    height: 32,
-                    color: AppColors.border,
-                    thickness: 1,
-                  ),
-              ],
-            );
-          }),
-        const SizedBox(height: 40),
-        const Divider(height: 1, color: AppColors.border, thickness: 1),
-        const SizedBox(height: 32),
-        Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF03C75A),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Text(
-                'N',
-                style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
             const Text(
-              '네이버 플레이스 리뷰',
+              '플랫폼별 리뷰 확인',
               style: TextStyle(
                 fontFamily: 'Pretendard',
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 letterSpacing: -0.3,
                 color: AppColors.textPrimary,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        if (isNaverDataLoading)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF03C75A)),
-              ),
-            ),
-          )
-        else if (naverReviews.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: const Center(
-              child: Text(
-                '아직 수집된 네이버 실시간 리뷰가 없습니다.',
-                style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
+            if (selectedPlatform == ReviewPlatform.internal)
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => _showWriteReviewBottomSheet(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.edit_outlined,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        '리뷰 쓰기',
+                        style: TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: -0.3,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _ReviewPlatformSegmentedButton(
+          selectedPlatform: selectedPlatform,
+          onChanged: onPlatformChanged,
+        ),
+        const SizedBox(height: 24),
+        if (selectedPlatform == ReviewPlatform.internal) ...[
+          if (isReviewLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (reviews == null || reviews!.isEmpty)
+            _EmptyReviewState(
+              onTapWriteReview: () => _showWriteReviewBottomSheet(context),
+            )
+          else
+            ...reviews!.asMap().entries.map((entry) {
+              final isLast = entry.key == reviews!.length - 1;
+              return Column(
+                children: [
+                  _InternalReviewItem(review: entry.value),
+                  if (!isLast)
+                    const Divider(
+                      height: 32,
+                      color: AppColors.border,
+                      thickness: 1,
+                    ),
+                ],
+              );
+            }),
+        ] else if (selectedPlatform == ReviewPlatform.naver) ...[
+          if (isNaverDataLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF03C75A)),
+                ),
+              ),
+            )
+          else if (naverReviews.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: const Center(
+                child: Text(
+                  '아직 수집된 네이버 실시간 리뷰가 없습니다.',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: naverReviews.length,
+              separatorBuilder: (context, index) => const Divider(
+                height: 32,
+                color: AppColors.border,
+                thickness: 1,
+              ),
+              itemBuilder: (context, index) {
+                final review = naverReviews[index];
+                return _NaverReviewItem(review: review);
+              },
             ),
-          )
-        else
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: naverReviews.length,
-            separatorBuilder: (context, index) => const Divider(
-              height: 32,
-              color: AppColors.border,
-              thickness: 1,
+        ] else ...[
+          const _GoogleInfoBanner(),
+          const SizedBox(height: 24),
+          if (googleReviews.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: const Center(
+                child: Text(
+                  '아직 등록된 Google 실시간 리뷰가 없습니다.',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: googleReviews.length,
+              separatorBuilder: (context, index) => const Divider(
+                height: 32,
+                color: AppColors.border,
+                thickness: 1,
+              ),
+              itemBuilder: (context, index) {
+                final review = googleReviews[index];
+                return _GoogleReviewItem(review: review);
+              },
             ),
-            itemBuilder: (context, index) {
-              final review = naverReviews[index];
-              return _NaverReviewItem(review: review);
-            },
-          ),
+        ],
       ],
     );
-
   }
 
   Future<void> _showWriteReviewBottomSheet(BuildContext context) async {
@@ -658,37 +698,17 @@ class _EmptyReviewState extends StatelessWidget {
         color: const Color(0xFFF7F8FA),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '아직 등록된 자체 리뷰가 없습니다.',
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
-              color: AppColors.textPrimary,
-            ),
+      child: Center(
+        child: const Text(
+          '아직 등록된 자체 리뷰가 없습니다.',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+            color: AppColors.textPrimary,
           ),
-          const SizedBox(height: 8),
-          const Text(
-            '발표 시연에서는 mock 저장소에 리뷰를 쌓아 자연스럽게 흐름을 보여주고, 실제 서비스 단계에서 작성 권한과 저장 로직을 연결할 예정입니다.',
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 13,
-              height: 1.5,
-              letterSpacing: -0.1,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          OutlinedButton.icon(
-            onPressed: onTapWriteReview,
-            icon: const Icon(Icons.rate_review_outlined, size: 16),
-            label: const Text('리뷰 작성하기'),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -885,7 +905,9 @@ class _NaverReviewItem extends StatelessWidget {
             CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xFFF3F4F6),
-              backgroundImage: imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+              backgroundImage: imageUrl.isNotEmpty
+                  ? NetworkImage(imageUrl)
+                  : null,
               child: imageUrl.isEmpty
                   ? const Icon(Icons.person, color: Color(0xFF9CA3AF), size: 20)
                   : null,
@@ -974,3 +996,233 @@ class _NaverReviewItem extends StatelessWidget {
   }
 }
 
+class _ReviewPlatformSegmentedButton extends StatelessWidget {
+  const _ReviewPlatformSegmentedButton({
+    required this.selectedPlatform,
+    required this.onChanged,
+  });
+
+  final ReviewPlatform selectedPlatform;
+  final void Function(ReviewPlatform) onChanged;
+
+  static const List<(ReviewPlatform, String)> _options = [
+    (ReviewPlatform.internal, '자체 리뷰'),
+    (ReviewPlatform.naver, '네이버 플레이스'),
+    (ReviewPlatform.google, 'Google 지도'),
+  ];
+
+  static Alignment _alignmentFor(ReviewPlatform platform) {
+    return switch (platform) {
+      ReviewPlatform.internal => Alignment.centerLeft,
+      ReviewPlatform.naver => Alignment.center,
+      ReviewPlatform.google => Alignment.centerRight,
+    };
+  }
+
+  static LinearGradient _gradientFor(ReviewPlatform platform) {
+    return switch (platform) {
+      ReviewPlatform.internal => const LinearGradient(
+        colors: [AppColors.primary, Color(0xFFE63500)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      ReviewPlatform.naver => const LinearGradient(
+        colors: [Color(0xFF03C75A), Color(0xFF02A34A)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      ReviewPlatform.google => const LinearGradient(
+        colors: [Color(0xFF4285F4), Color(0xFF357AE8)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    };
+  }
+
+  static Color _shadowColorFor(ReviewPlatform platform) {
+    return switch (platform) {
+      ReviewPlatform.internal => AppColors.primary,
+      ReviewPlatform.naver => const Color(0xFF03C75A),
+      ReviewPlatform.google => const Color(0xFF4285F4),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth / _options.length;
+          return Stack(
+            children: [
+              AnimatedAlign(
+                alignment: _alignmentFor(selectedPlatform),
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                child: Container(
+                  width: width,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: _gradientFor(selectedPlatform),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _shadowColorFor(
+                          selectedPlatform,
+                        ).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  for (final (platform, label) in _options)
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => onChanged(platform),
+                        child: Center(
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 200),
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontSize: 12,
+                              fontWeight: selectedPlatform == platform
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: selectedPlatform == platform
+                                  ? Colors.white
+                                  : const Color(0xFF6B7280),
+                            ),
+                            child: Text(label),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _GoogleInfoBanner extends StatelessWidget {
+  const _GoogleInfoBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.info_outline_rounded, color: Color(0xFF2563EB), size: 20),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '구글 공식 API 제한으로 인해 최신 리뷰 5개만 표시됩니다.',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1E40AF),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GoogleReviewItem extends StatelessWidget {
+  const _GoogleReviewItem({required this.review});
+
+  final GooglePlaceReview review;
+
+  @override
+  Widget build(BuildContext context) {
+    final authorName = review.authorName?.trim().isNotEmpty == true
+        ? review.authorName!
+        : 'Google 사용자';
+    final rating = review.rating ?? 0.0;
+    final text = review.text.trim().isNotEmpty == true
+        ? review.text
+        : '리뷰 내용이 없습니다.';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const CircleAvatar(
+              radius: 18,
+              backgroundColor: Color(0xFFF3F4F6),
+              child: Icon(Icons.person, color: Color(0xFF9CA3AF), size: 20),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    authorName,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                      color: AppColors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: List.generate(
+                      5,
+                      (index) => Icon(
+                        Icons.star_rounded,
+                        color: index < rating.round()
+                            ? Colors.amber
+                            : AppColors.border,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text(
+          text,
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            height: 1.5,
+            letterSpacing: -0.1,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+}

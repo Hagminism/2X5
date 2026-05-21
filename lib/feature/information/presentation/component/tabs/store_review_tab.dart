@@ -15,6 +15,12 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 
+enum ReviewPlatform {
+  internal,
+  naver,
+  google,
+}
+
 class StoreReviewTab extends StatefulWidget {
   const StoreReviewTab({
     required this.storeId,
@@ -34,6 +40,7 @@ class StoreReviewTab extends StatefulWidget {
 }
 
 class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAliveClientMixin<StoreReviewTab> {
+  ReviewPlatform _selectedPlatform = ReviewPlatform.internal;
   bool _isLoading = true;
   List<InternalReview> _reviews = const [];
   StoreStampStatus? _stampStatus;
@@ -95,11 +102,13 @@ class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAlive
 
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
-        final metrics = notification.metrics;
-        final maxScroll = metrics.maxScrollExtent;
-        final currentScroll = metrics.pixels;
-        if (maxScroll - currentScroll <= 200) {
-          _loadMoreNaverReviews();
+        if (_selectedPlatform == ReviewPlatform.naver) {
+          final metrics = notification.metrics;
+          final maxScroll = metrics.maxScrollExtent;
+          final currentScroll = metrics.pixels;
+          if (maxScroll - currentScroll <= 200) {
+            _loadMoreNaverReviews();
+          }
         }
         return false;
       },
@@ -121,11 +130,18 @@ class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAlive
             isReviewLoading: _isLoading,
             naverReviews: _naverReviews,
             isNaverDataLoading: _isNaverLoading,
+            selectedPlatform: _selectedPlatform,
+            onPlatformChanged: (ReviewPlatform platform) {
+              setState(() {
+                _selectedPlatform = platform;
+              });
+            },
+            googleReviews: _googlePlaceReviewInfo?.reviews ?? const [],
             onSubmitReview: _submitReview,
             onTapNaverReview: () => _openNaverReview(data),
             onTapGoogleReview: () => _openGoogleReview(data),
           ),
-          if (_isMoreNaverLoading)
+          if (_selectedPlatform == ReviewPlatform.naver && _isMoreNaverLoading)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
