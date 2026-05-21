@@ -154,6 +154,7 @@ class StoreDetailReviewSection extends StatelessWidget {
         const Divider(height: 1, color: AppColors.border, thickness: 1),
         const SizedBox(height: 32),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -172,7 +173,7 @@ class StoreDetailReviewSection extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             const Text(
-              '네이버 플레이스 실시간 리뷰',
+              '네이버 플레이스 리뷰',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -181,7 +182,7 @@ class StoreDetailReviewSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         if (isNaverDataLoading)
           const Center(
             child: Padding(
@@ -833,7 +834,6 @@ class _NaverReviewItem extends StatelessWidget {
     final author = review['author'] as Map<String, dynamic>?;
     final nickname = author?['nickname'] as String? ?? '익명';
     final imageUrl = author?['imageUrl'] as String? ?? '';
-    final ratingVal = double.tryParse(review['rating']?.toString() ?? '');
     final date = review['created'] as String? ?? '';
     final bodyText = review['body'] as String? ?? '';
 
@@ -841,7 +841,7 @@ class _NaverReviewItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
               radius: 18,
@@ -865,21 +865,6 @@ class _NaverReviewItem extends StatelessWidget {
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (ratingVal != null) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: List.generate(
-                        5,
-                        (index) => Icon(
-                          Icons.star_rounded,
-                          color: index < ratingVal.round()
-                              ? const Color(0xFFFFB800)
-                              : AppColors.border,
-                          size: 14,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),

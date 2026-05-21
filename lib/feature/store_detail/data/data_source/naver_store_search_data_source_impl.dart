@@ -333,7 +333,10 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
         if (decoded is Map && decoded.containsKey('reviews')) {
           final reviewsList = decoded['reviews'] as List?;
           if (reviewsList != null) {
-            return reviewsList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+            return reviewsList
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .where((review) => (review['body'] as String? ?? '').trim().isNotEmpty)
+                .toList();
           }
         }
         debugPrint('[NaverReviews] Unexpected response body format: ${response.body}');
