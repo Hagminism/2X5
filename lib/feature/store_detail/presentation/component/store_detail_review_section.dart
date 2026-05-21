@@ -112,52 +112,63 @@ class StoreDetailReviewSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 40),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Text(
-              '플랫폼별 리뷰 간편 확인',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.3,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            if (selectedPlatform == ReviewPlatform.internal)
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () => _showWriteReviewBottomSheet(context),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.edit_outlined,
-                        size: 14,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      const Text(
-                        '리뷰 쓰기',
-                        style: TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: -0.3,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
+        const Text(
+          '플랫폼별 리뷰 간편 확인',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
+            color: AppColors.textPrimary,
+          ),
         ),
+        // TODO: 특정 매장을 이용한 "이력"을 기반으로 리뷰를 작성하는데, 굳이 여기에 작성 버튼이 있어야할 이유가 있을까?
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //   crossAxisAlignment: CrossAxisAlignment.center,
+        //   children: [
+        //     const Text(
+        //       '플랫폼별 리뷰 간편 확인',
+        //       style: TextStyle(
+        //         fontFamily: 'Pretendard',
+        //         fontSize: 16,
+        //         fontWeight: FontWeight.w600,
+        //         letterSpacing: -0.3,
+        //         color: AppColors.textPrimary,
+        //       ),
+        //     ),
+        //     if (selectedPlatform == ReviewPlatform.internal)
+        //       Material(
+        //         color: Colors.transparent,
+        //         child: InkWell(
+        //           borderRadius: BorderRadius.circular(8),
+        //           onTap: () => _showWriteReviewBottomSheet(context),
+        //           child: Row(
+        //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //             crossAxisAlignment: CrossAxisAlignment.center,
+        //             children: [
+        //               const Icon(
+        //                 Icons.edit_outlined,
+        //                 size: 14,
+        //                 color: AppColors.primary,
+        //               ),
+        //               const SizedBox(width: 4),
+        //               const Text(
+        //                 '리뷰 쓰기',
+        //                 style: TextStyle(
+        //                   fontFamily: 'Pretendard',
+        //                   fontSize: 14,
+        //                   fontWeight: FontWeight.w500,
+        //                   letterSpacing: -0.3,
+        //                   color: AppColors.primary,
+        //                 ),
+        //               ),
+        //             ],
+        //           ),
+        //         ),
+        //       ),
+        //   ],
+        // ),
         const SizedBox(height: 12),
         _ReviewPlatformSegmentedButton(
           selectedPlatform: selectedPlatform,
