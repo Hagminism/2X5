@@ -5,6 +5,8 @@ part 'store.g.dart';
 
 @freezed
 abstract class Store with _$Store {
+  const Store._();
+
   const factory Store({
     required String id,
     required String ownerId,
@@ -23,6 +25,9 @@ abstract class Store with _$Store {
     @Default(30) int reservationSlotMinutes,
     DateTime? createdAt,
   }) = _Store;
+
+  /// DB `owner_id`가 null(또는 빈 문자열)이면 검색 API 등으로만 등록된 미입점 매장.
+  bool get isOnboarded => ownerId.trim().isNotEmpty;
 
   factory Store.fromJson(Map<String, Object?> json) => _$StoreFromJson(json);
 }

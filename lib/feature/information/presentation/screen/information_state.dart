@@ -26,5 +26,6 @@ abstract class InformationState with _$InformationState {
     PageController? sliderController,
     @Default(0) int currentSliderPage,
     @Default('') String naverPlaceId,
+    @Default(true) bool isReservationAvailable,
   }) = _InformationState;
 }

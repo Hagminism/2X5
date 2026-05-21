@@ -169,6 +169,7 @@ class InformationScreen extends StatelessWidget {
                     StoreMenuTab(menus: state.menus),
                   StoreReservationStatusTab(
                     category: state.category,
+                    isReservationAvailable: state.isReservationAvailable,
                     salonDesigners: state.salonDesigners,
                     onTapReservation: () {
                       final currentLocation = GoRouterState.of(

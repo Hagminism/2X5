@@ -9,6 +9,7 @@ class StoreReservationStatusTab extends StatelessWidget {
   final List<SalonDesigner> salonDesigners;
   final void Function() onTapReservation;
   final void Function(String designerId)? onTapSalonDesigner;
+  final bool isReservationAvailable;
 
   const StoreReservationStatusTab({
     super.key,
@@ -16,10 +17,18 @@ class StoreReservationStatusTab extends StatelessWidget {
     this.salonDesigners = const [],
     required this.onTapReservation,
     this.onTapSalonDesigner,
+    this.isReservationAvailable = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (!isReservationAvailable) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: _NotOnboardedReservationBody(),
+      );
+    }
+
     final storeCategory = StoreCategory.fromDbValue(category);
     return Scaffold(
       backgroundColor: Colors.white,
@@ -61,6 +70,64 @@ class StoreReservationStatusTab extends StatelessWidget {
           ),
           _ => _DefaultReservationAvailabilityBody(category: category),
         },
+      ),
+    );
+  }
+}
+
+class _NotOnboardedReservationBody extends StatelessWidget {
+  const _NotOnboardedReservationBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF7F8FA),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Icon(
+                Icons.storefront_outlined,
+                size: 36,
+                color: AppColors.textSecondary.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              '아직 입점하지 않은 매장입니다',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+                color: AppColors.textPrimary,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              '이 매장은 정보 조회만 가능합니다.\n예약·이용은 입점 후 이용할 수 있어요.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                letterSpacing: -0.1,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

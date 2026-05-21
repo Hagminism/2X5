@@ -26,5 +26,6 @@ abstract class MapStoreInformationState with _$MapStoreInformationState {
     @Default([]) List<String> tabs,
     PageController? sliderController,
     @Default(0) int currentSliderPage,
+    @Default(true) bool isReservationAvailable,
   }) = _MapStoreInformationState;
 }

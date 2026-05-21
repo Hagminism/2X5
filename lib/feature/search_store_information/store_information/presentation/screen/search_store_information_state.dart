@@ -26,5 +26,6 @@ abstract class SearchStoreInformationState with _$SearchStoreInformationState {
     PageController? sliderController,
     @Default(0) int currentSliderPage,
     @Default('') String naverPlaceId,
+    @Default(true) bool isReservationAvailable,
   }) = _SearchStoreInformationState;
 }
