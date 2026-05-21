@@ -5,4 +5,33 @@ abstract interface class NaverStoreSearchDataSource {
     required String storeName,
     required String location,
   });
+
+  Future<List<Map<String, dynamic>>> searchStoresByKeyword({
+    required String keyword,
+    int display = 10,
+  });
+
+  Future<String?> fetchStoreImageUrl({
+    required String storeName,
+    required String address,
+  });
+
+  Future<Map<String, String?>?> fetchPlaceInfoFromMobileSearch({
+    required String storeName,
+  });
+
+  Future<Map<String, dynamic>?> fetchPlaceSummary({
+    required String placeId,
+  });
+
+  Future<List<Map<String, dynamic>>> fetchStoreMenus({
+    required String placeId,
+  });
+
+  Future<List<Map<String, dynamic>>> fetchStoreReviews({
+    required String placeId,
+    int page = 1,
+    int size = 15,
+  });
 }
+

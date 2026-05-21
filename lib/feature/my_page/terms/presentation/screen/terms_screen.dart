@@ -10,7 +10,10 @@ class TermsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('이용약관', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text(
+          '이용약관',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.of(context).pop(),
@@ -104,7 +107,11 @@ class _SectionBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 14, color: Color(0xFF4B5563), height: 1.7),
+      style: const TextStyle(
+        fontSize: 14,
+        color: Color(0xFF4B5563),
+        height: 1.7,
+      ),
     );
   }
 }

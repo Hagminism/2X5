@@ -73,6 +73,9 @@ class StoreDetailScreen extends StatelessWidget {
                     googleSearchQuery: state.data.googleSearchQuery,
                     reviews: state.reviews,
                     isReviewLoading: state.isReviewLoading,
+                    naverMenus: state.naverMenus,
+                    naverReviews: state.naverReviews,
+                    isNaverDataLoading: state.isNaverDataLoading,
                     stampStatus: state.stampStatus,
                     onSubmitReview: onSubmitReview,
                     onTapNaverReview: () {
@@ -86,6 +89,7 @@ class StoreDetailScreen extends StatelessWidget {
                     },
                   ),
                 ),
+
                 const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
             ),

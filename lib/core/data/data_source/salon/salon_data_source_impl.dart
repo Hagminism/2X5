@@ -1,0 +1,200 @@
+import 'package:capstone_2026/core/data/data_source/salon/salon_data_source.dart';
+import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
+import 'package:capstone_2026/core/util/salon_booking_time.dart';
+import 'package:capstone_2026/core/domain/model/salon/salon_designer_schedule.dart';
+import 'package:capstone_2026/core/domain/model/salon/salon_reservation.dart';
+import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class SalonDataSourceImpl implements SalonDataSource {
+  final SupabaseClient _supabaseClient;
+  final FirebaseFunctions _firebaseFunctions;
+
+  const SalonDataSourceImpl({
+    required SupabaseClient supabaseClient,
+    required FirebaseFunctions firebaseFunctions,
+  }) : _supabaseClient = supabaseClient,
+       _firebaseFunctions = firebaseFunctions;
+
+  @override
+  Future<List<SalonDesigner>> findDesignersByStoreId(String storeId) async {
+    final jsonList = await _supabaseClient
+        .from('salon_designers')
+        .select()
+        .eq('store_id', storeId)
+        .eq('is_deleted', false)
+        .order('created_at', ascending: true)
+        .order('id', ascending: true);
+    return jsonList.map((json) => SalonDesigner.fromJson(json)).toList();
+  }
+
+  @override
+  Future<List<SalonService>> findServicesByStoreId(String storeId) async {
+    final jsonList = await _supabaseClient
+        .from('salon_services')
+        .select()
+        .eq('store_id', storeId)
+        .order('sort_order')
+        .order('created_at');
+    return jsonList.map((json) => SalonService.fromJson(json)).toList();
+  }
+
+  @override
+  Future<List<SalonDesignerSchedule>> findSchedulesByDesignerId(
+    String designerId,
+  ) async {
+    final jsonList = await _supabaseClient
+        .from('salon_designer_schedules')
+        .select()
+        .eq('designer_id', designerId)
+        .order('day_of_week');
+    return jsonList
+        .map((json) => SalonDesignerSchedule.fromJson(json))
+        .toList();
+  }
+
+  @override
+  Future<List<SalonReservation>> findReservationsByDesignerAndDate({
+    required String storeId,
+    required String designerId,
+    required DateTime date,
+  }) async {
+    final y = date.year;
+    final m = date.month;
+    final d = date.day;
+    final start = SalonBookingTime.seoulDayStartUtc(y, m, d);
+    final end = SalonBookingTime.seoulDayEndExclusiveUtc(y, m, d);
+    final jsonList = await _supabaseClient
+        .from('salon_reservations')
+        .select()
+        .eq('store_id', storeId)
+        .eq('designer_id', designerId)
+        .eq('status', 'confirmed')
+        .gte('start_at', start.toIso8601String())
+        .lt('start_at', end.toIso8601String())
+        .order('start_at');
+    return jsonList.map((json) => SalonReservation.fromJson(json)).toList();
+  }
+
+  @override
+  Future<List<SalonDesigner>> upsertDesigners(
+    List<SalonDesigner> designers,
+  ) async {
+    if (designers.isEmpty) {
+      return const [];
+    }
+    final callable = _firebaseFunctions.httpsCallable('saveSalonDesigners');
+    final result = await callable.call<List<dynamic>>({
+      'storeId': designers.first.storeId,
+      'designers': designers
+          .map(
+            (designer) => {
+              'id': designer.id,
+              'name': designer.name,
+              'introduction': designer.introduction,
+              'imageUrl': designer.imageUrl,
+              'isActive': designer.isActive,
+              'isDeleted': designer.isDeleted,
+            },
+          )
+          .toList(),
+    });
+    final jsonList = _listFromCallableData(result.data);
+    return jsonList.map((json) => SalonDesigner.fromJson(json)).toList();
+  }
+
+  @override
+  Future<List<SalonService>> upsertServices(List<SalonService> services) async {
+    if (services.isEmpty) {
+      return const [];
+    }
+    final callable = _firebaseFunctions.httpsCallable('saveSalonServices');
+    final result = await callable.call<List<dynamic>>({
+      'storeId': services.first.storeId,
+      'services': services
+          .map(
+            (service) => {
+              'id': service.id,
+              'name': service.name,
+              'description': service.description,
+              'durationMinutes': service.durationMinutes,
+              'price': service.price,
+              'isActive': service.isActive,
+              'sortOrder': service.sortOrder,
+            },
+          )
+          .toList(),
+    });
+    final jsonList = _listFromCallableData(result.data);
+    return jsonList.map((json) => SalonService.fromJson(json)).toList();
+  }
+
+  @override
+  Future<List<SalonDesignerSchedule>> upsertSchedules(
+    List<SalonDesignerSchedule> schedules,
+  ) async {
+    if (schedules.isEmpty) {
+      return const [];
+    }
+    final callable = _firebaseFunctions.httpsCallable(
+      'saveSalonDesignerSchedules',
+    );
+    final result = await callable.call<List<dynamic>>({
+      'storeId': await _storeIdForDesigner(schedules.first.designerId),
+      'schedules': schedules
+          .map(
+            (schedule) => {
+              'id': schedule.id,
+              'designerId': schedule.designerId,
+              'dayOfWeek': schedule.dayOfWeek,
+              'isWorking': schedule.isWorking,
+              'startTime': schedule.startTime,
+              'endTime': schedule.endTime,
+            },
+          )
+          .toList(),
+    });
+    final jsonList = _listFromCallableData(result.data);
+    return jsonList
+        .map((json) => SalonDesignerSchedule.fromJson(json))
+        .toList();
+  }
+
+  @override
+  Future<SalonReservation> createReservation({
+    required String storeId,
+    required String userId,
+    required String designerId,
+    required List<String> serviceIds,
+    required DateTime startAt,
+  }) async {
+    final callable = _firebaseFunctions.httpsCallable('createSalonReservation');
+    final result = await callable.call<Map<String, dynamic>>({
+      'storeId': storeId,
+      'designerId': designerId,
+      'serviceIds': serviceIds,
+      'startAt': startAt.toUtc().toIso8601String(),
+    });
+    return SalonReservation.fromJson(Map<String, Object?>.from(result.data));
+  }
+
+  Future<String> _storeIdForDesigner(String designerId) async {
+    final json = await _supabaseClient
+        .from('salon_designers')
+        .select('store_id')
+        .eq('id', designerId)
+        .single();
+    return json['store_id'].toString();
+  }
+
+  List<Map<String, Object?>> _listFromCallableData(Object? data) {
+    if (data is! List) {
+      throw StateError('Cloud Functions 응답 형식이 올바르지 않습니다.');
+    }
+    return data
+        .whereType<Map>()
+        .map((json) => Map<String, Object?>.from(json))
+        .toList();
+  }
+}

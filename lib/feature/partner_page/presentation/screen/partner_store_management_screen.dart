@@ -2,6 +2,7 @@ import 'package:capstone_2026/core/presentation/component/button/primary_button.
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/enum/week_day.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_form_text_field.dart';
+import 'package:capstone_2026/feature/partner_page/presentation/component/partner_reservation_slot_minutes_selector.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_store_management_cta_card.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_store_management_day_operating_row.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_store_section_card.dart';
@@ -218,75 +219,141 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  PartnerStoreSectionCard(
-                    title: '예약금 설정',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '예약금 사용',
-                                style: AppTextStyles.body.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w700,
+                  if (state.category != 'study_cafe') ...[
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '예약금 설정',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '예약금 사용',
+                                  style: AppTextStyles.body.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Switch(
-                              value: state.depositEnabled,
-                              activeThumbColor: AppColors.primary,
-                              onChanged: (value) => onAction(
-                                PartnerStoreManagementAction.changeDepositEnabled(
-                                  value,
+                              Switch(
+                                value: state.depositEnabled,
+                                activeThumbColor: AppColors.primary,
+                                onChanged: (value) => onAction(
+                                  PartnerStoreManagementAction.changeDepositEnabled(
+                                    value,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        PartnerFormTextField(
-                          hintText: '예약금 금액(원)',
-                          initialValue: state.depositAmount,
-                          keyboardType: TextInputType.number,
-                          isInteractive: state.depositEnabled,
-                          onChanged: (value) => onAction(
-                            PartnerStoreManagementAction.changeDepositAmount(
-                              value,
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          PartnerFormTextField(
+                            hintText: '예약금 금액(원)',
+                            initialValue: state.depositAmount,
+                            keyboardType: TextInputType.number,
+                            isInteractive: state.depositEnabled,
+                            onChanged: (value) => onAction(
+                              PartnerStoreManagementAction.changeDepositAmount(
+                                value,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          state.depositEnabled
-                              ? '예약금 사용 시 0원보다 큰 금액을 입력해 주세요.'
-                              : '예약금을 사용하지 않으면 금액은 자동으로 0원으로 저장됩니다.',
-                          style: AppTextStyles.bodySecondary,
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            state.depositEnabled
+                                ? '예약금 사용 시 0원보다 큰 금액을 입력해 주세요.'
+                                : '예약금을 사용하지 않으면 금액은 자동으로 0원으로 저장됩니다.',
+                            style: AppTextStyles.bodySecondary,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  PartnerStoreSectionCard(
-                    title: '메뉴 정보',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PartnerStoreManagementCtaCard(
-                          icon: Icons.restaurant_menu_rounded,
-                          title: '메뉴 관리',
-                          subtitle: '대표 메뉴, 가격, 설명을 등록하고 수정할 수 있어요.',
-                          onTap: () {
-                            onAction(
-                              const PartnerStoreManagementAction.tapOpenMenuManager(),
-                            );
-                          },
-                        ),
-                      ],
+                  ],
+                  if (state.category == 'restaurant' ||
+                      state.category == 'cafe') ...[
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '메뉴 정보',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PartnerStoreManagementCtaCard(
+                            icon: Icons.restaurant_menu_rounded,
+                            title: '메뉴 관리',
+                            subtitle: '대표 메뉴, 가격, 설명을 등록하고 수정할 수 있어요.',
+                            onTap: () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenMenuManager(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
+                  if (state.category == 'study_cafe') ...[
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '좌석 관리',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PartnerStoreManagementCtaCard(
+                            icon: Icons.chair_alt_rounded,
+                            title: '좌석 배치',
+                            subtitle: '스터디카페 좌석 구성을 확인하고 조정할 수 있어요.',
+                            onTap: () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenSeatLayoutManager(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '이용권 관리',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PartnerStoreManagementCtaCard(
+                            icon: Icons.confirmation_number_outlined,
+                            title: '이용권 설정',
+                            subtitle: '이용 시간·가격·판매 여부를 설정할 수 있어요.',
+                            onTap: () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenStudyCafeUsageOptionManager(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (state.category == 'salon') ...[
+                    const SizedBox(height: 24),
+                    PartnerStoreSectionCard(
+                      title: '미용실 관리',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PartnerStoreManagementCtaCard(
+                            icon: Icons.content_cut_rounded,
+                            title: '디자이너/시술 관리',
+                            subtitle: '디자이너, 시술, 근무표와 예약 슬롯 단위를 관리해요.',
+                            onTap: () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenSalonManager(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   PartnerStoreSectionCard(
                     title: '업장 사진',
@@ -302,6 +369,30 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                               const PartnerStoreManagementAction.tapOpenImageManager(),
                             );
                           },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '예약 슬롯 설정',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PartnerReservationSlotMinutesSelector(
+                          selectedSlotMinutes: state.reservationSlotMinutes,
+                          onChanged: (minutes) {
+                            onAction(
+                              PartnerStoreManagementAction.changeReservationSlotMinutes(
+                                minutes,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '선택한 슬롯 단위는 저장 버튼을 눌렀을 때 반영됩니다.',
+                          style: AppTextStyles.bodySecondary,
                         ),
                       ],
                     ),

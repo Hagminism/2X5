@@ -44,8 +44,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         setState(() {
           _phone = response?['phone'] as String?;
           final raw = response?['image_url'] as String?;
-        final supabaseImage = (raw != null && raw.isNotEmpty) ? raw : null;
-        _imageUrl = supabaseImage ?? _user?.photoURL;
+          final supabaseImage = (raw != null && raw.isNotEmpty) ? raw : null;
+          _imageUrl = supabaseImage ?? _user?.photoURL;
         });
       }
     } catch (_) {
@@ -78,9 +78,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     await Supabase.instance.client.storage
         .from('profiles')
         .upload(path, file, fileOptions: const FileOptions(upsert: true));
-    return Supabase.instance.client.storage
-        .from('profiles')
-        .getPublicUrl(path);
+    return Supabase.instance.client.storage.from('profiles').getPublicUrl(path);
   }
 
   Future<void> _submit() async {
@@ -137,23 +135,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text(
           '프로필 수정',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
         ),
         centerTitle: true,
         actions: [
           _isSaving
               ? const Padding(
                   padding: EdgeInsets.only(right: 16),
-                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 )
               : TextButton(
                   onPressed: _submit,
-                  child: const Text('저장', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                  child: const Text(
+                    '저장',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
         ],
       ),
@@ -178,12 +198,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: _pickedImage != null
                             ? Image.file(_pickedImage!, fit: BoxFit.cover)
                             : _imageUrl != null
-                                ? Image.network(
-                                    _imageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, e, st) => const Icon(Icons.person_rounded, size: 48, color: Colors.white),
-                                  )
-                                : const Icon(Icons.person_rounded, size: 48, color: Colors.white),
+                            ? Image.network(
+                                _imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, e, st) => const Icon(
+                                  Icons.person_rounded,
+                                  size: 48,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person_rounded,
+                                size: 48,
+                                color: Colors.white,
+                              ),
                       ),
                     ),
                     Positioned(
@@ -196,7 +224,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           color: AppColors.primary,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.camera_alt_rounded, size: 16, color: Colors.white),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -204,18 +236,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             const SizedBox(height: 36),
-            const Text('닉네임', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            const Text(
+              '닉네임',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _nicknameController,
               decoration: _inputDecoration(hintText: '닉네임을 입력해 주세요.'),
             ),
             const SizedBox(height: 20),
-            const Text('이메일', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            const Text(
+              '이메일',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: 8),
             _ReadOnlyField(value: '${_user?.email ?? '-'} (변경 불가)'),
             const SizedBox(height: 20),
-            const Text('휴대폰', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            const Text(
+              '휴대폰',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: 8),
             _ReadOnlyField(value: _phone ?? '-'),
           ],
@@ -230,9 +283,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       hintStyle: const TextStyle(color: AppColors.textSecondary),
       filled: true,
       fillColor: AppColors.surfaceMuted,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.border)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.2)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
@@ -252,7 +314,10 @@ class _ReadOnlyField extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
-      child: Text(value, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+      child: Text(
+        value,
+        style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+      ),
     );
   }
 }

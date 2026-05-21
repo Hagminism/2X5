@@ -1,0 +1,15 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'search_store_information_event.freezed.dart';
+
+@freezed
+sealed class SearchStoreInformationEvent with _$SearchStoreInformationEvent {
+  const factory SearchStoreInformationEvent.pop() =
+      PopSearchStoreInformationScreen;
+
+  const factory SearchStoreInformationEvent.push(String location) =
+      PushSearchStoreInformationRoute;
+
+  const factory SearchStoreInformationEvent.showSnackBar(String message) =
+      ShowSearchStoreInformationSnackBar;
+}

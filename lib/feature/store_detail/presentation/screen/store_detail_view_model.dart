@@ -9,6 +9,8 @@ import 'package:capstone_2026/feature/store_detail/presentation/screen/store_det
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_state.dart';
 import 'package:flutter/foundation.dart';
 
+import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
+
 const bool _allowReviewStampTestingBypass = bool.fromEnvironment(
   'ALLOW_REVIEW_STAMP_TEST_BYPASS',
   defaultValue: !kReleaseMode,
@@ -19,13 +21,16 @@ class StoreDetailViewModel extends ChangeNotifier {
     required StoreDetailRepository storeDetailRepository,
     required StoreReviewService storeReviewService,
     required StampService stampService,
+    required NaverStoreSearchDataSource naverStoreSearchDataSource,
   }) : _storeDetailRepository = storeDetailRepository,
        _storeReviewService = storeReviewService,
-       _stampService = stampService;
+       _stampService = stampService,
+       _naverStoreSearchDataSource = naverStoreSearchDataSource;
 
   final StoreDetailRepository _storeDetailRepository;
   final StoreReviewService _storeReviewService;
   final StampService _stampService;
+  final NaverStoreSearchDataSource _naverStoreSearchDataSource;
 
   StoreDetailState _state = const StoreDetailState();
   String _currentStoreId = '';
@@ -39,18 +44,46 @@ class StoreDetailViewModel extends ChangeNotifier {
 
   Future<void> initialize(String storeId) async {
     _currentStoreId = storeId;
+    final storeDetail = _storeDetailRepository.getStoreDetailById(storeId);
+
     _state = state.copyWith(
       selectedTab: 0,
       isReviewLoading: true,
+      isNaverDataLoading: storeDetail.naverPlaceId.isNotEmpty,
       reviews: const [],
-      data: _storeDetailRepository.getStoreDetailById(storeId),
+      naverMenus: const [],
+      naverReviews: const [],
+      data: storeDetail,
     );
     notifyListeners();
 
+    // 로컬 프록시 API 호출을 통한 실시간 네이버 데이터 병렬 로드
+    Future<void> loadNaverData() async {
+      if (storeDetail.naverPlaceId.isEmpty) return;
+      try {
+        final (menus, reviews) = await (
+          _naverStoreSearchDataSource.fetchStoreMenus(placeId: storeDetail.naverPlaceId),
+          _naverStoreSearchDataSource.fetchStoreReviews(placeId: storeDetail.naverPlaceId),
+        ).wait;
+
+        _state = state.copyWith(
+          naverMenus: menus,
+          naverReviews: reviews,
+          isNaverDataLoading: false,
+        );
+        notifyListeners();
+      } catch (e) {
+        debugPrint('[StoreDetailViewModel] Failed to fetch Naver data: $e');
+        _state = state.copyWith(isNaverDataLoading: false);
+        notifyListeners();
+      }
+    }
+
     try {
-      final (reviews, stampStatus) = await (
+      final (reviews, stampStatus, _) = await (
         _storeReviewService.loadStoreReviews(storeId: storeId),
         _stampService.loadStoreStampStatus(storeId: storeId),
+        loadNaverData(),
       ).wait;
 
       _state = state.copyWith(
@@ -60,11 +93,12 @@ class StoreDetailViewModel extends ChangeNotifier {
       );
       notifyListeners();
     } catch (_) {
-      _state = state.copyWith(isReviewLoading: false);
+      _state = state.copyWith(isReviewLoading: false, isNaverDataLoading: false);
       notifyListeners();
       _showSoonMessage('데이터를 불러오는 중 오류가 발생했습니다.');
     }
   }
+
 
   Future<void> submitReview(ReviewWriteResult review) async {
     final stampStatus = state.stampStatus;

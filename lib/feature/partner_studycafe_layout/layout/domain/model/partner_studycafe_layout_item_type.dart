@@ -1,0 +1,4 @@
+enum PartnerStudyCafeLayoutItemType {
+  seat,
+  element,
+}

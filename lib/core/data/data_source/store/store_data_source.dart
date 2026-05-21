@@ -3,10 +3,9 @@ import 'package:capstone_2026/core/domain/model/store/store_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 
 abstract interface class StoreDataSource {
-
   Future<List<StoreDto>> findStores();
 
-  Future<StoreDto?> findStoreById(String id);
+  Future<StoreDto?> findStoreById(String storeId);
 
   Future<StoreDto?> findStoreByOwnerId(String ownerId);
 
@@ -41,6 +40,16 @@ abstract interface class StoreDataSource {
   });
 
   Future<void> deleteStoreMenuImageByUrl({
+    required String storeId,
+    required String imageUrl,
+  });
+
+  Future<String> uploadSalonDesignerImageFile({
+    required String storeId,
+    required String filePath,
+  });
+
+  Future<void> deleteSalonDesignerImageByUrl({
     required String storeId,
     required String imageUrl,
   });

@@ -87,9 +87,28 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         );
         notifyListeners();
         break;
+      case ChangeReservationSlotMinutes():
+        _state = state.copyWith(reservationSlotMinutes: action.minutes);
+        notifyListeners();
+        break;
       case TapOpenMenuManager():
         _eventController.add(
           const PartnerStoreManagementEvent.openMenuManager(),
+        );
+        break;
+      case TapOpenSeatLayoutManager():
+        _eventController.add(
+          const PartnerStoreManagementEvent.openSeatLayoutManager(),
+        );
+        break;
+      case TapOpenStudyCafeUsageOptionManager():
+        _eventController.add(
+          const PartnerStoreManagementEvent.openStudyCafeUsageOptionManager(),
+        );
+        break;
+      case TapOpenSalonManager():
+        _eventController.add(
+          const PartnerStoreManagementEvent.openSalonManager(),
         );
         break;
       case TapOpenImageManager():
@@ -181,6 +200,7 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
           storeContact: _myStore!.contact,
           depositEnabled: _myStore!.depositEnabled,
           depositAmount: _myStore!.depositAmount.toString(),
+          reservationSlotMinutes: _myStore!.reservationSlotMinutes,
           operatingHours: operatingHours,
         );
         notifyListeners();
@@ -247,6 +267,7 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         rating: _myStore?.rating ?? 0,
         depositEnabled: state.depositEnabled,
         depositAmount: parsedDepositAmount,
+        reservationSlotMinutes: state.reservationSlotMinutes,
       );
 
       final savedStore = _myStore == null

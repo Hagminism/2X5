@@ -11,6 +11,7 @@ abstract class HomeStoreItem with _$HomeStoreItem {
     required String subtitle,
     required double rating,
     required String category,
+    String? imageUrl,
   }) = _HomeStoreItem;
 
   factory HomeStoreItem.fromJson(Map<String, Object?> json) =>

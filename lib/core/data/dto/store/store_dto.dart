@@ -9,11 +9,11 @@ class StoreDto {
   double? longitude;
   String? naverPlaceId;
   String? contact;
-  String? phone;
   Map<String, dynamic>? operatingHours;
   double? rating;
   bool? depositEnabled;
   int? depositAmount;
+  int? reservationSlotMinutes;
   String? createdAt;
 
   StoreDto({
@@ -27,11 +27,11 @@ class StoreDto {
     this.longitude,
     this.naverPlaceId,
     this.contact,
-    this.phone,
     this.operatingHours,
     this.rating,
     this.depositEnabled,
     this.depositAmount,
+    this.reservationSlotMinutes,
     this.createdAt,
   });
 
@@ -46,12 +46,12 @@ class StoreDto {
     longitude = (json['longitude'] as num?)?.toDouble();
     naverPlaceId = json['naver_place_id'];
     contact = json['contact'];
-    final phoneRaw = json['phone']?.toString().trim();
-    phone = (phoneRaw == null || phoneRaw.isEmpty) ? null : phoneRaw;
     operatingHours = (json['operating_hours'] as Map?)?.cast<String, dynamic>();
     rating = (json['rating'] as num?)?.toDouble();
     depositEnabled = json['deposit_enabled'];
     depositAmount = (json['deposit_amount'] as num?)?.toInt();
+    reservationSlotMinutes = (json['reservation_slot_minutes'] as num?)
+        ?.toInt();
     createdAt = json['created_at'];
   }
 
@@ -67,11 +67,11 @@ class StoreDto {
     map['longitude'] = longitude;
     map['naver_place_id'] = naverPlaceId;
     map['contact'] = contact;
-    map['phone'] = phone;
     map['operating_hours'] = operatingHours;
     map['rating'] = rating;
     map['deposit_enabled'] = depositEnabled;
     map['deposit_amount'] = depositAmount;
+    map['reservation_slot_minutes'] = reservationSlotMinutes;
     map['created_at'] = createdAt;
     return map;
   }

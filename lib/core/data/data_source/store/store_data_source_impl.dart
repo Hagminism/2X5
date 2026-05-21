@@ -20,17 +20,20 @@ class StoreDataSourceImpl implements StoreDataSource {
 
   @override
   Future<List<StoreDto>> findStores() async {
-    final jsonList = await _supabaseClient.from('stores').select().order('created_at');
+    final jsonList = await _supabaseClient
+        .from('stores')
+        .select()
+        .order('created_at');
 
     return jsonList.map((json) => StoreDto.fromJson(json)).toList();
   }
 
   @override
-  Future<StoreDto?> findStoreById(String id) async {
+  Future<StoreDto?> findStoreById(String storeId) async {
     final json = await _supabaseClient
         .from('stores')
         .select()
-        .eq('id', id)
+        .eq('id', storeId)
         .maybeSingle();
 
     if (json == null) {
@@ -60,6 +63,16 @@ class StoreDataSourceImpl implements StoreDataSource {
     final payload = storeDto.toJson()
       ..remove('id')
       ..remove('created_at');
+
+    if (payload['owner_id'] == '') {
+      payload['owner_id'] = null;
+    }
+    if (payload['business_number'] == '') {
+      payload['business_number'] = null;
+    }
+    if (payload['naver_place_id'] == '') {
+      payload['naver_place_id'] = null;
+    }
 
     final json = await _supabaseClient
         .from('stores')
@@ -282,6 +295,18 @@ class StoreDataSourceImpl implements StoreDataSource {
   }
 
   @override
+  Future<String> uploadSalonDesignerImageFile({
+    required String storeId,
+    required String filePath,
+  }) async {
+    return _uploadToBucket(
+      bucketId: 'salon_designer_images',
+      storeId: storeId,
+      filePath: filePath,
+    );
+  }
+
+  @override
   Future<void> deleteStoreMenuImageByUrl({
     required String storeId,
     required String imageUrl,
@@ -299,6 +324,28 @@ class StoreDataSourceImpl implements StoreDataSource {
     await callable.call({
       'storeId': storeId,
       'bucketId': 'store_menu_images',
+      'objectPath': objectPath,
+    });
+  }
+
+  @override
+  Future<void> deleteSalonDesignerImageByUrl({
+    required String storeId,
+    required String imageUrl,
+  }) async {
+    final objectPath = _extractObjectPathFromPublicUrl(
+      bucketId: 'salon_designer_images',
+      imageUrl: imageUrl,
+    );
+    if (objectPath == null) {
+      return;
+    }
+    final callable = _firebaseFunctions.httpsCallable(
+      'deleteStoreImageFromSupabase',
+    );
+    await callable.call({
+      'storeId': storeId,
+      'bucketId': 'salon_designer_images',
       'objectPath': objectPath,
     });
   }

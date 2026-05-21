@@ -14,11 +14,11 @@ extension StoreDtoMapper on StoreDto {
       longitude: longitude ?? 0,
       naverPlaceId: naverPlaceId,
       contact: contact ?? '',
-      phone: phone ?? '',
       operatingHours: operatingHours ?? const {},
       rating: rating ?? 0,
       depositEnabled: depositEnabled ?? false,
       depositAmount: depositAmount ?? 0,
+      reservationSlotMinutes: reservationSlotMinutes ?? 30,
       createdAt: _parseDateTime(createdAt),
     );
   }
@@ -45,11 +45,11 @@ extension StoreToDtoMapper on Store {
       longitude: longitude,
       naverPlaceId: naverPlaceId,
       contact: contact,
-      phone: phone,
       operatingHours: operatingHours,
       rating: rating,
       depositEnabled: depositEnabled,
       depositAmount: depositAmount,
+      reservationSlotMinutes: reservationSlotMinutes,
       createdAt: createdAt?.toIso8601String(),
     );
   }

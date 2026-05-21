@@ -51,6 +51,21 @@ class _PartnerStoreManagementScreenRootState
         case OpenMenuManager():
           context.push('${Routes.partnerStore}/${Routes.partnerStoreMenus}');
           break;
+        case OpenSeatLayoutManager():
+          context.push(
+            '${Routes.partnerStore}/${Routes.partnerStudyCafeLayout}',
+          );
+          break;
+        case OpenStudyCafeUsageOptionManager():
+          context.push(
+            '${Routes.partnerStore}/${Routes.partnerStudyCafeUsageOptions}',
+          );
+          break;
+        case OpenSalonManager():
+          context.push(
+            '${Routes.partnerStore}/${Routes.partnerSalonManagement}',
+          );
+          break;
         case OpenImageManager():
           context.push('${Routes.partnerStore}/${Routes.partnerStoreImages}');
           break;

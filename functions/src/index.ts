@@ -211,14 +211,193 @@ type StoreOwnershipResponse = {
   id: string;
 };
 
+type StartStudyCafeUsageRequest = {
+  storeId?: string;
+  seatId?: string;
+  durationMinutes?: number;
+};
+
+type ExtendStudyCafeUsageRequest = {
+  reservationId?: string;
+  additionalMinutes?: number;
+};
+
+type AcquireStudycafeSeatHoldRequest = {
+  storeId?: string;
+  seatId?: string;
+  holdMinutes?: number;
+};
+
+type ReleaseStudycafeSeatHoldRequest = {
+  holdId?: string;
+};
+
+type StudyCafeSeatHoldResponse = {
+  id: string;
+  store_id: string;
+  user_id: string;
+  seat_id: string;
+  expires_at: string;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type CreateSalonReservationRequest = {
+  storeId?: string;
+  designerId?: string;
+  serviceIds?: unknown;
+  startAt?: string;
+};
+
+type SalonDesignerPayload = {
+  id?: string;
+  name?: string;
+  introduction?: string;
+  imageUrl?: string;
+  isActive?: boolean;
+  isDeleted?: boolean;
+};
+
+type SaveSalonDesignersRequest = {
+  storeId?: string;
+  designers?: SalonDesignerPayload[];
+};
+
+type SalonServicePayload = {
+  id?: string;
+  name?: string;
+  description?: string;
+  durationMinutes?: number;
+  price?: number;
+  isActive?: boolean;
+  sortOrder?: number;
+};
+
+type SaveSalonServicesRequest = {
+  storeId?: string;
+  services?: SalonServicePayload[];
+};
+
+type SalonDesignerSchedulePayload = {
+  id?: string;
+  designerId?: string;
+  dayOfWeek?: number;
+  isWorking?: boolean;
+  startTime?: string;
+  endTime?: string;
+};
+
+type SaveSalonDesignerSchedulesRequest = {
+  storeId?: string;
+  schedules?: SalonDesignerSchedulePayload[];
+};
+
+type SaveStudyCafeDetailRequest = {
+  storeId?: string;
+  layoutJson?: {
+    seats?: unknown[];
+    elements?: unknown[];
+  };
+  usageOptions?: unknown[];
+};
+
+type StudyCafeReservationResponse = {
+  id: string;
+  store_id: string;
+  user_id: string;
+  seat_id: string;
+  duration_minutes: number;
+  start_at: string;
+  end_at: string;
+  status: string;
+};
+
+type SalonReservationResponse = {
+  id: string;
+  store_id: string;
+  user_id: string;
+  designer_id: string;
+  service_ids: string[];
+  start_at: string;
+  end_at: string;
+  slot_minutes?: number;
+  status: string;
+};
+
+type SalonDesignerResponse = {
+  id: string;
+  store_id: string;
+  name: string;
+  introduction: string;
+  image_url: string;
+  is_active: boolean;
+  is_deleted: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type SalonServiceResponse = {
+  id: string;
+  store_id: string;
+  name: string;
+  description: string;
+  duration_minutes: number;
+  price: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type SalonDesignerScheduleResponse = {
+  id: string;
+  designer_id: string;
+  day_of_week: number;
+  is_working: boolean;
+  start_time: string;
+  end_time: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type StudyCafeDetailResponse = {
+  id: string;
+  store_id: string;
+  layout_json: {
+    seats?: unknown[];
+    elements?: unknown[];
+  };
+  usage_options: unknown[];
+  created_at: string;
+  updated_at: string;
+};
+
 const STORE_IMAGE_BUCKET = "store_images";
 const STORE_MENU_IMAGE_BUCKET = "store_menu_images";
+const SALON_DESIGNER_IMAGE_BUCKET = "salon_designer_images";
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_MIME_TYPES = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
 ]);
+
+/**
+ * RPC 응답이 배열 또는 단일 객체일 수 있어 단일 객체로 정규화한다.
+ * @param {T | T[]} response RPC 응답 본문
+ * @param {string} errorMessage 빈 배열일 때 반환할 에러 메시지
+ * @return {T} 정규화된 단일 응답 객체
+ */
+function normalizeRpcRow<T>(response: T | T[], errorMessage: string): T {
+  if (Array.isArray(response)) {
+    if (response.length === 0) {
+      throw new HttpsError("internal", errorMessage);
+    }
+    return response[0];
+  }
+  return response;
+}
 
 const MIME_TO_EXTENSIONS: Record<string, string[]> = {
   "image/jpeg": ["jpg", "jpeg"],
@@ -463,6 +642,550 @@ async function assertStoreOwnership(
   }
 }
 
+export const startStudyCafeUsage = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as StartStudyCafeUsageRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const seatId = (data.seatId ?? "").trim();
+    const durationMinutes = Number(data.durationMinutes ?? 0);
+
+    if (!storeId || !seatId || !Number.isInteger(durationMinutes)) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (durationMinutes <= 0) {
+      throw new HttpsError("invalid-argument", "이용 시간은 0분보다 커야 합니다.");
+    }
+
+    try {
+      const reservation = await supabaseRequest<
+        StudyCafeReservationResponse | StudyCafeReservationResponse[]
+      >(
+        "rpc/start_studycafe_usage",
+        "POST",
+        {
+          p_store_id: storeId,
+          p_user_id: uid,
+          p_seat_id: seatId,
+          p_duration_minutes: durationMinutes,
+        },
+      );
+      return normalizeRpcRow(reservation, "스터디카페 이용 시작에 실패했습니다.");
+    } catch (e) {
+      const message = e instanceof HttpsError ? e.message : "";
+      if (message.includes("seat_held_by_other")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "다른 사용자가 해당 좌석을 선택 중입니다.",
+        );
+      }
+      throw e;
+    }
+  },
+);
+
+export const extendStudyCafeUsage = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as ExtendStudyCafeUsageRequest;
+    const reservationId = (data.reservationId ?? "").trim();
+    const additionalMinutes = Number(data.additionalMinutes ?? 0);
+
+    if (!reservationId || !Number.isInteger(additionalMinutes)) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (additionalMinutes <= 0) {
+      throw new HttpsError("invalid-argument", "연장 시간은 0분보다 커야 합니다.");
+    }
+
+    const reservation = await supabaseRequest<
+      StudyCafeReservationResponse | StudyCafeReservationResponse[]
+    >(
+      "rpc/extend_studycafe_usage",
+      "POST",
+      {
+        p_reservation_id: reservationId,
+        p_user_id: uid,
+        p_additional_minutes: additionalMinutes,
+      },
+    );
+    return normalizeRpcRow(reservation, "스터디카페 이용 연장에 실패했습니다.");
+  },
+);
+
+export const acquireStudycafeSeatHold = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as AcquireStudycafeSeatHoldRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const seatId = (data.seatId ?? "").trim();
+    const holdMinutes = Number(data.holdMinutes ?? 10);
+
+    if (!storeId || !seatId || !Number.isInteger(holdMinutes)) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (holdMinutes < 1 || holdMinutes > 60) {
+      throw new HttpsError(
+        "invalid-argument",
+        "홀드 시간은 1분 이상 60분 이하여야 합니다.",
+      );
+    }
+
+    try {
+      const hold = await supabaseRequest<
+        StudyCafeSeatHoldResponse | StudyCafeSeatHoldResponse[]
+      >(
+        "rpc/acquire_studycafe_seat_hold",
+        "POST",
+        {
+          p_store_id: storeId,
+          p_user_id: uid,
+          p_seat_id: seatId,
+          p_hold_minutes: holdMinutes,
+        },
+      );
+      return normalizeRpcRow(
+        hold,
+        "스터디카페 좌석 홀드를 획득하지 못했습니다.",
+      );
+    } catch (e) {
+      const message = e instanceof HttpsError ? e.message : "";
+      if (message.includes("seat_held_by_other")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "다른 사용자가 해당 좌석을 선택 중입니다.",
+        );
+      }
+      if (message.includes("seat_already_reserved")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "이미 예약된 좌석입니다.",
+        );
+      }
+      throw e;
+    }
+  },
+);
+
+export const releaseStudycafeSeatHold = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as ReleaseStudycafeSeatHoldRequest;
+    const holdId = (data.holdId ?? "").trim();
+    if (!holdId) {
+      throw new HttpsError("invalid-argument", "holdId가 필요합니다.");
+    }
+
+    await supabaseRequest<boolean>(
+      "rpc/release_studycafe_seat_hold",
+      "POST",
+      {
+        p_hold_id: holdId,
+        p_user_id: uid,
+      },
+    );
+    return {success: true};
+  },
+);
+
+export const createSalonReservation = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as CreateSalonReservationRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const designerId = (data.designerId ?? "").trim();
+    const rawServiceIds = Array.isArray(data.serviceIds) ? data.serviceIds : [];
+    const serviceIds = rawServiceIds
+      .map((id) => String(id ?? "").trim())
+      .filter((id) => id.length > 0);
+    const startAt = (data.startAt ?? "").trim();
+
+    if (!storeId || !designerId || serviceIds.length === 0 || !startAt) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+
+    try {
+      const reservation = await supabaseRequest<
+        SalonReservationResponse | SalonReservationResponse[]
+      >(
+        "rpc/create_salon_reservation",
+        "POST",
+        {
+          p_store_id: storeId,
+          p_user_id: uid,
+          p_designer_id: designerId,
+          p_service_ids: serviceIds,
+          p_start_at: startAt,
+        },
+      );
+      return normalizeRpcRow(reservation, "미용실 예약 생성에 실패했습니다.");
+    } catch (e) {
+      const message = e instanceof HttpsError ? e.message : "";
+      if (message.includes("salon_slot_already_reserved")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "이미 예약된 시간입니다.",
+        );
+      }
+      if (message.includes("salon_designer_not_working")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시간에는 디자이너가 근무하지 않습니다.",
+        );
+      }
+      if (message.includes("salon_start_time_not_on_slot")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시작 시간이 예약 간격에 맞지 않습니다.",
+        );
+      }
+      if (message.includes("salon_start_time_out_of_schedule")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시작 시간이 디자이너 근무 시간과 맞지 않습니다.",
+        );
+      }
+      if (message.includes("salon_end_time_out_of_schedule")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시술 시간이 디자이너 근무 시간을 넘어갑니다.",
+        );
+      }
+      throw e;
+    }
+  },
+);
+
+export const saveSalonDesigners = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveSalonDesignersRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const designers = Array.isArray(data.designers) ? data.designers : [];
+    if (!storeId) {
+      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const saved: SalonDesignerResponse[] = [];
+    for (const designer of designers) {
+      const id = (designer.id ?? "").trim();
+      const isDeleted = designer.isDeleted ?? false;
+      if (isDeleted) {
+        if (!id) {
+          continue;
+        }
+        const reservations = await supabaseRequest<SupabaseInsertResponse[]>(
+          `salon_reservations?designer_id=eq.${id}&select=id&limit=1`,
+          "GET",
+        );
+        if (reservations.length === 0) {
+          const deletedRows = await supabaseRequest<SupabaseInsertResponse[]>(
+            `salon_designers?id=eq.${id}&store_id=eq.${storeId}&select=id`,
+            "DELETE",
+          );
+          if (deletedRows.length === 0) {
+            throw new HttpsError(
+              "permission-denied",
+              "디자이너 삭제 권한이 없습니다.",
+            );
+          }
+        } else {
+          const rows = await supabaseRequest<SalonDesignerResponse[]>(
+            `salon_designers?id=eq.${id}&store_id=eq.${storeId}&select=*`,
+            "PATCH",
+            {
+              is_active: false,
+              is_deleted: true,
+              updated_at: new Date().toISOString(),
+            },
+          );
+          if (rows.length === 0) {
+            throw new HttpsError(
+              "permission-denied",
+              "디자이너 삭제 권한이 없습니다.",
+            );
+          }
+        }
+        continue;
+      }
+      const name = (designer.name ?? "").trim();
+      if (!name) {
+        throw new HttpsError("invalid-argument", "디자이너 이름이 필요합니다.");
+      }
+      const payload = {
+        store_id: storeId,
+        name,
+        introduction: (designer.introduction ?? "").trim(),
+        image_url: (designer.imageUrl ?? "").trim(),
+        is_active: designer.isActive ?? true,
+        is_deleted: false,
+        updated_at: new Date().toISOString(),
+      };
+      const rows = id ?
+        await supabaseRequest<SalonDesignerResponse[]>(
+          `salon_designers?id=eq.${id}&store_id=eq.${storeId}&select=*`,
+          "PATCH",
+          payload,
+        ) :
+        await supabaseRequest<SalonDesignerResponse[]>(
+          "salon_designers?select=*",
+          "POST",
+          payload,
+        );
+      if (rows.length === 0) {
+        throw new HttpsError("permission-denied", "디자이너 저장 권한이 없습니다.");
+      }
+      saved.push(rows[0]);
+    }
+    return saved;
+  },
+);
+
+export const saveSalonServices = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveSalonServicesRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const services = Array.isArray(data.services) ? data.services : [];
+    if (!storeId) {
+      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const saved: SalonServiceResponse[] = [];
+    for (const service of services) {
+      const id = (service.id ?? "").trim();
+      const name = (service.name ?? "").trim();
+      const durationMinutes = Number(service.durationMinutes ?? 0);
+      const price = Number(service.price ?? 0);
+      if (!name || !Number.isInteger(durationMinutes) || durationMinutes <= 0) {
+        throw new HttpsError("invalid-argument", "시술 정보가 올바르지 않습니다.");
+      }
+      if (!Number.isInteger(price) || price < 0) {
+        throw new HttpsError("invalid-argument", "시술 가격이 올바르지 않습니다.");
+      }
+      const payload = {
+        store_id: storeId,
+        name,
+        description: (service.description ?? "").trim(),
+        duration_minutes: durationMinutes,
+        price,
+        is_active: service.isActive ?? true,
+        sort_order: Number.isInteger(service.sortOrder) ? service.sortOrder : 0,
+        updated_at: new Date().toISOString(),
+      };
+      const rows = id ?
+        await supabaseRequest<SalonServiceResponse[]>(
+          `salon_services?id=eq.${id}&store_id=eq.${storeId}&select=*`,
+          "PATCH",
+          payload,
+        ) :
+        await supabaseRequest<SalonServiceResponse[]>(
+          "salon_services?select=*",
+          "POST",
+          payload,
+        );
+      if (rows.length === 0) {
+        throw new HttpsError("permission-denied", "시술 저장 권한이 없습니다.");
+      }
+      saved.push(rows[0]);
+    }
+    return saved;
+  },
+);
+
+export const saveSalonDesignerSchedules = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveSalonDesignerSchedulesRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const schedules = Array.isArray(data.schedules) ? data.schedules : [];
+    if (!storeId) {
+      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const saved: SalonDesignerScheduleResponse[] = [];
+    for (const schedule of schedules) {
+      const id = (schedule.id ?? "").trim();
+      const designerId = (schedule.designerId ?? "").trim();
+      const dayOfWeek = Number(schedule.dayOfWeek ?? -1);
+      if (!designerId || !Number.isInteger(dayOfWeek) || dayOfWeek < 0 ||
+        dayOfWeek > 6) {
+        throw new HttpsError("invalid-argument", "근무표 정보가 올바르지 않습니다.");
+      }
+
+      const designers = await supabaseRequest<{id: string}[]>(
+        `salon_designers?id=eq.${designerId}&store_id=eq.${storeId}` +
+          "&select=id&limit=1",
+        "GET",
+      );
+      if (designers.length === 0) {
+        throw new HttpsError("permission-denied", "디자이너 저장 권한이 없습니다.");
+      }
+
+      const payload = {
+        designer_id: designerId,
+        day_of_week: dayOfWeek,
+        is_working: schedule.isWorking ?? true,
+        start_time: (schedule.startTime ?? "10:00").trim(),
+        end_time: (schedule.endTime ?? "19:00").trim(),
+        updated_at: new Date().toISOString(),
+      };
+
+      let targetId = id;
+      if (!targetId) {
+        const existingRows = await supabaseRequest<{id: string}[]>(
+          `salon_designer_schedules?designer_id=eq.${designerId}` +
+            `&day_of_week=eq.${dayOfWeek}&select=id&limit=1`,
+          "GET",
+        );
+        targetId = existingRows[0]?.id ?? "";
+      }
+
+      const rows = targetId ?
+        await supabaseRequest<SalonDesignerScheduleResponse[]>(
+          `salon_designer_schedules?id=eq.${targetId}&select=*`,
+          "PATCH",
+          payload,
+        ) :
+        await supabaseRequest<SalonDesignerScheduleResponse[]>(
+          "salon_designer_schedules?select=*",
+          "POST",
+          payload,
+        );
+      if (rows.length === 0) {
+        throw new HttpsError("internal", "근무표 저장에 실패했습니다.");
+      }
+      saved.push(rows[0]);
+    }
+    return saved;
+  },
+);
+
+export const saveStudyCafeDetail = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as SaveStudyCafeDetailRequest;
+    const storeId = (data.storeId ?? "").trim();
+    if (!storeId) {
+      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+    }
+
+    await assertStoreOwnership(storeId, uid);
+
+    const layoutJson = data.layoutJson ?? {};
+    const seats = Array.isArray(layoutJson.seats) ? layoutJson.seats : [];
+    const elements = Array.isArray(layoutJson.elements) ?
+      layoutJson.elements :
+      [];
+    const usageOptions = Array.isArray(data.usageOptions) ?
+      data.usageOptions :
+      [];
+
+    const nowIso = new Date().toISOString();
+    const payload = {
+      store_id: storeId,
+      layout_json: {
+        seats,
+        elements,
+      },
+      usage_options: usageOptions,
+      updated_at: nowIso,
+    };
+
+    const existingRows = await supabaseRequest<{id: string}[]>(
+      `studycafe_detail?store_id=eq.${storeId}&select=id&limit=1`,
+      "GET",
+    );
+
+    const detailRows = existingRows.length === 0 ?
+      await supabaseRequest<StudyCafeDetailResponse[]>(
+        "studycafe_detail?select=*",
+        "POST",
+        payload,
+      ) :
+      await supabaseRequest<StudyCafeDetailResponse[]>(
+        `studycafe_detail?id=eq.${existingRows[0].id}&select=*`,
+        "PATCH",
+        payload,
+      );
+
+    if (detailRows.length === 0) {
+      throw new HttpsError("internal", "스터디카페 상세 저장에 실패했습니다.");
+    }
+
+    return detailRows[0];
+  },
+);
+
 /**
  * 데모용으로 특정 partner 사용자를 승인 상태로 변경한다.
  * @param {string} targetUid 승인할 사용자 UID
@@ -658,7 +1381,8 @@ export const uploadStoreImageToSupabase = onCall(
     }
     if (
       bucketId !== STORE_IMAGE_BUCKET &&
-      bucketId !== STORE_MENU_IMAGE_BUCKET
+      bucketId !== STORE_MENU_IMAGE_BUCKET &&
+      bucketId !== SALON_DESIGNER_IMAGE_BUCKET
     ) {
       throw new HttpsError("invalid-argument", "허용되지 않은 버킷입니다.");
     }
@@ -723,7 +1447,8 @@ export const deleteStoreImageFromSupabase = onCall(
     }
     if (
       bucketId !== STORE_IMAGE_BUCKET &&
-      bucketId !== STORE_MENU_IMAGE_BUCKET
+      bucketId !== STORE_MENU_IMAGE_BUCKET &&
+      bucketId !== SALON_DESIGNER_IMAGE_BUCKET
     ) {
       throw new HttpsError("invalid-argument", "허용되지 않은 버킷입니다.");
     }

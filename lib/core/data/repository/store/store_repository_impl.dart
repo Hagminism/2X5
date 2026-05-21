@@ -190,7 +190,7 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<String> uploadMyStoreImageFile(String filePath) async {
     final store = await getMyStore();
     if (store == null) {
-      throw StateError('업장 정보 저장 후 이미지를 업로드할 수 없습니다.');
+      throw StateError('업장 정보 저장 후 이미지를 업로드할 수 있습니다.');
     }
     return _storeDataSource.uploadStoreImageFile(
       storeId: store.id,
@@ -202,9 +202,21 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<String> uploadMyStoreMenuImageFile(String filePath) async {
     final store = await getMyStore();
     if (store == null) {
-      throw StateError('업장 정보 저장 후 메뉴 이미지를 업로드할 수 없습니다.');
+      throw StateError('업장 정보 저장 후 메뉴 이미지를 업로드할 수 있습니다.');
     }
     return _storeDataSource.uploadStoreMenuImageFile(
+      storeId: store.id,
+      filePath: filePath,
+    );
+  }
+
+  @override
+  Future<String> uploadMySalonDesignerImageFile(String filePath) async {
+    final store = await getMyStore();
+    if (store == null) {
+      throw StateError('업장 정보 저장 후 디자이너 이미지를 업로드할 수 있습니다.');
+    }
+    return _storeDataSource.uploadSalonDesignerImageFile(
       storeId: store.id,
       filePath: filePath,
     );
@@ -217,6 +229,18 @@ class StoreRepositoryImpl implements StoreRepository {
       return;
     }
     await _storeDataSource.deleteStoreMenuImageByUrl(
+      storeId: store.id,
+      imageUrl: imageUrl,
+    );
+  }
+
+  @override
+  Future<void> deleteMySalonDesignerImageByUrl(String imageUrl) async {
+    final store = await getMyStore();
+    if (store == null) {
+      return;
+    }
+    await _storeDataSource.deleteSalonDesignerImageByUrl(
       storeId: store.id,
       imageUrl: imageUrl,
     );
@@ -308,5 +332,27 @@ class StoreRepositoryImpl implements StoreRepository {
     if (coverCount > 1) {
       throw ArgumentError('대표 사진은 1개만 설정할 수 있습니다.');
     }
+  }
+
+  @override
+  Future<Store> createStoreDynamically(Store store) async {
+    final createdStoreDto = await _storeDataSource.createStore(store.toDto());
+    return createdStoreDto.toModel();
+  }
+
+  @override
+  Future<void> addStoreImage(
+    String storeId,
+    String imageUrl, {
+    bool isCover = false,
+  }) async {
+    final storeImage = StoreImage(
+      id: null,
+      imageUrl: imageUrl,
+      caption: '',
+      sortOrder: 0,
+      isCover: isCover,
+    );
+    await _storeDataSource.createImage(storeId, storeImage);
   }
 }

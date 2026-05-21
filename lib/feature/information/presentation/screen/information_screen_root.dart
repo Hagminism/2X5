@@ -1,8 +1,10 @@
-import 'package:capstone_2026/ui/app_colors.dart';
+import 'dart:async';
+
+import 'package:capstone_2026/feature/information/presentation/screen/information_event.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_screen.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'information_screen.dart';
-import 'information_view_model.dart';
+import 'package:go_router/go_router.dart';
 
 class InformationScreenRoot extends StatefulWidget {
   final InformationViewModel viewModel;
@@ -19,43 +21,49 @@ class InformationScreenRoot extends StatefulWidget {
 }
 
 class _InformationScreenRootState extends State<InformationScreenRoot> {
+  StreamSubscription<InformationEvent>? _eventSubscription;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.viewModel.fetchStoreDetails(widget.storeId);
+    widget.viewModel.initialize(widget.storeId);
+
+    _eventSubscription = widget.viewModel.eventStream.listen((event) {
+      if (!mounted) {
+        return;
+      }
+      switch (event) {
+        case PopInformationScreen():
+          context.pop();
+          break;
+        case PushInformationRoute():
+          context.push(event.location);
+          break;
+        case ShowInformationSnackBar():
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(event.message)));
+          break;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: widget.viewModel,
-      child: ListenableBuilder(
-        listenable: widget.viewModel,
-        builder: (context, _) {
-          if (widget.viewModel.isLoading) {
-            return Scaffold(
-              backgroundColor: AppColors.surface,
-              body: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
-            );
-          }
-
-          return InformationScreen(
-            storeId: widget.storeId,
-            name: widget.viewModel.name,
-            subtitle: widget.viewModel.categorySubtitleLabel,
-            address: widget.viewModel.address,
-            displayPhone: widget.viewModel.displayPhone,
-            rating: widget.viewModel.rating,
-            naverPlaceId: widget.viewModel.naverPlaceId,
-            imageUrls: widget.viewModel.imageUrls,
-            menus: widget.viewModel.menus,
-          );
-        },
-      ),
+    return ListenableBuilder(
+      listenable: widget.viewModel,
+      builder: (context, _) {
+        return InformationScreen(
+          state: widget.viewModel.state,
+          onAction: widget.viewModel.onAction,
+        );
+      },
     );
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription?.cancel();
+    super.dispose();
   }
 }

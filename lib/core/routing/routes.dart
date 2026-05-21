@@ -20,16 +20,25 @@ class Routes {
   static const String search = 'search';
   static const String notifications = 'notifications';
   static const String homeStoreInformation = 'information/:storeId';
-  static const String bookmarkStoreInformation = 'bookmark_information/:storeId';
+  static const String mapStoreInformation = 'map-store-information/:storeId';
+  static const String searchStoreInformation =
+      'search-store-information/:storeId';
+  static const String bookmarkStoreDetail = 'store/:storeId';
+  static const String bookmarkStoreInformation =
+      'bookmark_information/:storeId';
 
   // reservation
   static const String reservation = 'reservation';
   static const String seat = 'seat';
-  static const String time = 'time/:seatNumber';
+  static const String duration = 'duration';
+  static const String salonReservation = 'salon-reservation';
+  static const String salonReservationConfirm = 'salon-reservation-confirm';
 
   // My page nested paths
   static const String profileEdit = 'profile-edit';
   static const String reservationHistory = 'history-reservations';
+  static const String reservationHistoryStoreInformation =
+      'information/:storeId';
   static const String reviewHistory = 'history-reviews';
   static const String stampHistory = 'history-stamps';
   static const String accountSettings = 'account-settings';
@@ -44,6 +53,12 @@ class Routes {
   static const String partnerAddressSearch = 'address-search';
   static const String partnerStoreMenus = 'menus';
   static const String partnerStoreImages = 'images';
+  static const String partnerStudyCafeLayout = 'study-cafe-layout';
+  static const String partnerStudyCafeUsageOptions = 'study-cafe-usage-options';
+  static const String partnerSalonManagement = 'salon-management';
+  static const String partnerSalonDesigners = 'designers';
+  static const String partnerSalonServices = 'services';
+  static const String partnerSalonSchedules = 'schedules';
   static const String partnerOnboarding = '/partner/onboarding';
   static const String partnerStoreEdit = '/partner/store/edit';
   static const String partnerReservations = '/partner/reservations';

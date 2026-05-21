@@ -25,11 +25,10 @@ class PartnerStoreManagementCtaCard extends StatelessWidget {
       child: InkWell(
         borderRadius: borderRadius,
         onTap: onTap,
-        child: Container(
+        child: Ink(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.white,
             borderRadius: borderRadius,
             border: Border.all(color: AppColors.border),
           ),

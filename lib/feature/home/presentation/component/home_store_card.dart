@@ -21,31 +21,46 @@ class HomeStoreCard extends StatelessWidget {
 
   static Color _categoryColor(String category) {
     switch (category) {
-      case 'restaurant': return const Color(0xFFFFEBEE);
-      case 'cafe':       return const Color(0xFFEFEBE9);
-      case 'study_cafe': return const Color(0xFFE3F2FD);
-      case 'salon':      return const Color(0xFFF3E5F5);
-      default:           return const Color(0xFFF5F5F5);
+      case 'restaurant':
+        return const Color(0xFFFFEBEE);
+      case 'cafe':
+        return const Color(0xFFEFEBE9);
+      case 'study_cafe':
+        return const Color(0xFFE3F2FD);
+      case 'salon':
+        return const Color(0xFFF3E5F5);
+      default:
+        return const Color(0xFFF5F5F5);
     }
   }
 
   static Color _categoryIconColor(String category) {
     switch (category) {
-      case 'restaurant': return const Color(0xFFE53935);
-      case 'cafe':       return const Color(0xFF6D4C41);
-      case 'study_cafe': return const Color(0xFF1E88E5);
-      case 'salon':      return const Color(0xFF8E24AA);
-      default:           return AppColors.textSecondary;
+      case 'restaurant':
+        return const Color(0xFFE53935);
+      case 'cafe':
+        return const Color(0xFF6D4C41);
+      case 'study_cafe':
+        return const Color(0xFF1E88E5);
+      case 'salon':
+        return const Color(0xFF8E24AA);
+      default:
+        return AppColors.textSecondary;
     }
   }
 
   static IconData _categoryIcon(String category) {
     switch (category) {
-      case 'restaurant': return Icons.restaurant_rounded;
-      case 'cafe':       return Icons.local_cafe_rounded;
-      case 'study_cafe': return Icons.menu_book_rounded;
-      case 'salon':      return Icons.content_cut_rounded;
-      default:           return Icons.storefront_rounded;
+      case 'restaurant':
+        return Icons.restaurant_rounded;
+      case 'cafe':
+        return Icons.local_cafe_rounded;
+      case 'study_cafe':
+        return Icons.menu_book_rounded;
+      case 'salon':
+        return Icons.content_cut_rounded;
+      default:
+        return Icons.storefront_rounded;
     }
   }
 
@@ -100,7 +115,11 @@ class HomeStoreCard extends StatelessWidget {
                   const SizedBox(height: 5),
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 14,
+                        color: Colors.amber,
+                      ),
                       const SizedBox(width: 3),
                       Text(
                         rating.toStringAsFixed(1),
@@ -134,7 +153,9 @@ class HomeStoreCard extends StatelessWidget {
             ),
             // 사진 영역
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(16),
+              ),
               child: SizedBox(
                 height: 130,
                 width: double.infinity,

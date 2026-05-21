@@ -25,7 +25,10 @@ class MyPageHeader extends StatelessWidget {
         ),
         IconButton(
           onPressed: onTap,
-          icon: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.notifications_none_rounded,
+            color: AppColors.textPrimary,
+          ),
         ),
       ],
     );
