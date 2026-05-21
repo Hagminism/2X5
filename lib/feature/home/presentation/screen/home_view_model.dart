@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
+import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/feature/home/core/model/home_store_item.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_action.dart';
@@ -11,10 +12,13 @@ import 'package:flutter/material.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
+  final BookmarkRepository _bookmarkRepository;
 
   HomeViewModel({
     required StoreRepository storeRepository,
-  }) : _storeRepository = storeRepository;
+    required BookmarkRepository bookmarkRepository,
+  }) : _storeRepository = storeRepository,
+       _bookmarkRepository = bookmarkRepository;
 
   HomeState _state = const HomeState();
 
@@ -34,6 +38,9 @@ class HomeViewModel extends ChangeNotifier {
       case ShowSoonMessage():
         _eventController.add(HomeEvent.showSnackBar(action.message));
         break;
+      case TapHomeBookmark(:final storeId):
+        unawaited(_toggleBookmark(storeId));
+        break;
     }
   }
 
@@ -48,12 +55,10 @@ class HomeViewModel extends ChangeNotifier {
     try {
       final stores = await _storeRepository.getStores();
 
-      // 각 store에 대해 이미지 리스트를 병렬로 가져옵니다.
       final imagesList = await Future.wait(
         stores.map((store) => _storeRepository.getStoreImagesByStoreId(store.id)),
       );
 
-      // store.id를 키로 대표 이미지 URL을 매핑합니다.
       final Map<String, String?> storeImageMap = <String, String?>{};
       for (int i = 0; i < stores.length; i++) {
         final store = stores[i];
@@ -67,7 +72,14 @@ class HomeViewModel extends ChangeNotifier {
         }
       }
 
-      final recommendedStores = _pickOneStorePerCategory(stores, storeImageMap);
+      final myBookmarks = await _bookmarkRepository.getMyBookmarks();
+      final bookmarkedIds = myBookmarks.map((item) => item.storeId).toSet();
+
+      final recommendedStores = _pickOneStorePerCategory(
+        stores,
+        storeImageMap,
+        bookmarkedIds,
+      );
 
       _state = state.copyWith(
         isLoading: false,
@@ -89,6 +101,7 @@ class HomeViewModel extends ChangeNotifier {
   List<HomeStoreItem> _pickOneStorePerCategory(
     List<Store> stores,
     Map<String, String?> storeImageMap,
+    Set<String> bookmarkedIds,
   ) {
     final Map<StoreCategory, HomeStoreItem> selectedByCategory =
         <StoreCategory, HomeStoreItem>{};
@@ -102,8 +115,6 @@ class HomeViewModel extends ChangeNotifier {
       final current = selectedByCategory[category];
       final isParisBaguette = store.name.contains('파리바게트');
 
-      // 카테고리 첫 매장이면 저장,
-      // 이미 있더라도 새 매장이 파리바게트면 우선 교체
       if (current == null || isParisBaguette) {
         selectedByCategory[category] = HomeStoreItem(
           storeId: store.id,
@@ -112,6 +123,7 @@ class HomeViewModel extends ChangeNotifier {
           rating: store.rating,
           category: category.displayName,
           imageUrl: storeImageMap[store.id],
+          isBookmarked: bookmarkedIds.contains(store.id),
         );
       }
     }
@@ -124,6 +136,41 @@ class HomeViewModel extends ChangeNotifier {
       }
     }
     return orderedStores;
+  }
+
+  Future<void> _toggleBookmark(String storeId) async {
+    final index =
+        state.recommendedStores.indexWhere((item) => item.storeId == storeId);
+    if (index < 0) {
+      return;
+    }
+
+    final item = state.recommendedStores[index];
+    final wasBookmarked = item.isBookmarked;
+
+    try {
+      if (wasBookmarked) {
+        await _bookmarkRepository.removeBookmark(storeId);
+      } else {
+        await _bookmarkRepository.addBookmark(storeId);
+      }
+
+      final updatedStores = [...state.recommendedStores];
+      updatedStores[index] = item.copyWith(isBookmarked: !wasBookmarked);
+
+      _state = state.copyWith(recommendedStores: updatedStores);
+      notifyListeners();
+
+      _eventController.add(
+        HomeEvent.showSnackBar(
+          wasBookmarked ? '즐겨찾기를 해제했습니다.' : '즐겨찾기에 추가했습니다.',
+        ),
+      );
+    } catch (_) {
+      _eventController.add(
+        const HomeEvent.showSnackBar('즐겨찾기 처리에 실패했습니다.'),
+      );
+    }
   }
 
   @override

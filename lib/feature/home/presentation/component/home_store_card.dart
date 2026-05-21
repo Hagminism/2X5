@@ -8,6 +8,8 @@ class HomeStoreCard extends StatelessWidget {
     required this.rating,
     required this.category,
     required this.onTap,
+    required this.onBookmarkTap,
+    required this.isBookmarked,
     this.imageUrl,
     super.key,
   });
@@ -17,7 +19,9 @@ class HomeStoreCard extends StatelessWidget {
   final double rating;
   final String category;
   final String? imageUrl;
+  final bool isBookmarked;
   final VoidCallback onTap;
+  final VoidCallback onBookmarkTap;
 
   static Color _categoryColor(String category) {
     switch (category) {
@@ -105,10 +109,18 @@ class HomeStoreCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(
-                        Icons.bookmark_border_rounded,
-                        size: 20,
-                        color: AppColors.textSecondary,
+                      GestureDetector(
+                        onTap: onBookmarkTap,
+                        behavior: HitTestBehavior.opaque,
+                        child: Icon(
+                          isBookmarked
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded,
+                          size: 20,
+                          color: isBookmarked
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -151,7 +163,6 @@ class HomeStoreCard extends StatelessWidget {
                 ],
               ),
             ),
-            // 사진 영역
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(16),

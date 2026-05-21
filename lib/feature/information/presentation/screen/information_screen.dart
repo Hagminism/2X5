@@ -72,7 +72,9 @@ class InformationScreen extends StatelessWidget {
                     state.isBookmarked
                         ? Icons.favorite_rounded
                         : Icons.favorite_border_rounded,
-                    color: AppColors.textPrimary,
+                    color: state.isBookmarked
+                        ? AppColors.primary
+                        : AppColors.textPrimary,
                   ),
                   onPressed: () {
                     onAction(const InformationAction.tapBookmark());
