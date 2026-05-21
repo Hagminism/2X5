@@ -162,7 +162,6 @@ final router = GoRouter(
                   builder: (context, state) => const SearchScreen(),
                 ),
                 GoRoute(
-                  name: 'information',
                   parentNavigatorKey: _rootNavigatorKey,
                   path: Routes.homeStoreInformation,
                   builder: (context, state) {
