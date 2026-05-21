@@ -81,6 +81,9 @@ class HomeScreen extends StatelessWidget {
                           '${Routes.home}/information/${store.storeId}',
                         );
                       },
+                      onBookmarkTap: (HomeStoreItem store) {
+                        onAction(HomeAction.tapBookmark(store.storeId));
+                      },
                     ),
             ),
             SliverToBoxAdapter(

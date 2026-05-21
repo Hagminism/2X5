@@ -6,6 +6,7 @@ class BookmarkListItem {
     required this.category,
     required this.address,
     required this.rating,
+    this.imageUrl,
     this.bookmarkedAt,
   });
 
@@ -15,5 +16,6 @@ class BookmarkListItem {
   final String category;
   final String address;
   final double rating;
+  final String? imageUrl;
   final DateTime? bookmarkedAt;
 }

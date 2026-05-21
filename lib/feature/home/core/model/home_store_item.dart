@@ -12,6 +12,7 @@ abstract class HomeStoreItem with _$HomeStoreItem {
     required double rating,
     required String category,
     String? imageUrl,
+    @Default(false) bool isBookmarked,
   }) = _HomeStoreItem;
 
   factory HomeStoreItem.fromJson(Map<String, Object?> json) =>

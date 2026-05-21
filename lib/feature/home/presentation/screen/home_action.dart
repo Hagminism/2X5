@@ -9,4 +9,6 @@ sealed class HomeAction with _$HomeAction {
   const factory HomeAction.retryLoadHomeData() = RetryLoadHomeData;
 
   const factory HomeAction.showSoonMessage(String message) = ShowSoonMessage;
+
+  const factory HomeAction.tapBookmark(String storeId) = TapHomeBookmark;
 }

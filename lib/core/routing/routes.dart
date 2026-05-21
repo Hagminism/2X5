@@ -26,6 +26,8 @@ class Routes {
   static const String bookmarkStoreDetail = 'store/:storeId';
   static const String bookmarkStoreInformation =
       'bookmark_information/:storeId';
+  /// GoRoute.name — 북마크 탭 상세 (pushNamed용)
+  static const String bookmarkInformationName = 'bookmark_information';
 
   // reservation
   static const String reservation = 'reservation';

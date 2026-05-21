@@ -75,9 +75,10 @@ class BookmarkScreen extends StatelessWidget {
                                 subtitle: viewModel.subtitleFor(item),
                                 rating: item.rating,
                                 reviewCount: 0,
+                                imageUrl: item.imageUrl,
                                 onTap: () async {
                                   await context.pushNamed(
-                                    'bookmark_information',
+                                    Routes.bookmarkInformationName,
                                     pathParameters: {
                                       'storeId': item.storeId,
                                     },

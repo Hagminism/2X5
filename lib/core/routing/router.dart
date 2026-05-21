@@ -447,6 +447,7 @@ final router = GoRouter(
               ),
               routes: [
                 GoRoute(
+                  name: Routes.bookmarkInformationName,
                   parentNavigatorKey: _rootNavigatorKey,
                   path: Routes.bookmarkStoreInformation,
                   builder: (context, state) {

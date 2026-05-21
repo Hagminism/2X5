@@ -59,7 +59,12 @@ class BookmarkDataSourceImpl implements BookmarkDataSource {
             name,
             category,
             address,
-            rating
+            rating,
+            store_images (
+              image_url,
+              is_cover,
+              sort_order
+            )
           )
         ''')
         .eq('user_id', userId)

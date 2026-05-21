@@ -1,7 +1,9 @@
 import 'package:capstone_2026/core/data/data_source/bookmark/bookmark_data_source.dart';
 import 'package:capstone_2026/core/domain/model/bookmark/bookmark_list_item.dart';
+import 'package:capstone_2026/core/domain/model/store/store_image.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
+import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 
 class BookmarkRepositoryImpl implements BookmarkRepository {
   const BookmarkRepositoryImpl({
@@ -63,7 +65,28 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
       category: store['category']?.toString() ?? '',
       address: store['address']?.toString() ?? '',
       rating: rating,
+      imageUrl: _firstStoreImageUrl(store['store_images']),
       bookmarkedAt: DateTime.tryParse(row['created_at']?.toString() ?? ''),
     );
+  }
+
+  String? _firstStoreImageUrl(dynamic rawImages) {
+    if (rawImages is! List) {
+      return null;
+    }
+
+    final images = rawImages
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (json) => StoreImage(
+            id: json['id']?.toString(),
+            imageUrl: json['image_url']?.toString() ?? '',
+            sortOrder: (json['sort_order'] as num?)?.toInt() ?? 0,
+            isCover: json['is_cover'] as bool? ?? false,
+          ),
+        )
+        .toList();
+
+    return storeHeaderImageUrl(images);
   }
 }

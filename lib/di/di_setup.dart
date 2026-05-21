@@ -287,9 +287,10 @@ void diSetup() {
   getIt.registerFactory<SignInViewModel>(
         () => SignInViewModel(authRepository: getIt<AuthRepository>()),
   );
-  getIt.registerFactory<HomeViewModel>(
+    getIt.registerFactory<HomeViewModel>(
         () => HomeViewModel(
       storeRepository: getIt<StoreRepository>(),
+      bookmarkRepository: getIt<BookmarkRepository>(),
     ),
   );
     getIt.registerFactory<BookmarkViewModel>(
