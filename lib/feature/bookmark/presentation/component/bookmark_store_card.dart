@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -116,38 +117,36 @@ class BookmarkStoreCard extends StatelessWidget {
   Widget _buildThumbnail() {
     final url = imageUrl?.trim();
     if (url == null || url.isEmpty) {
-      return const ColoredBox(
-        color: AppColors.surfaceMuted,
-        child: Center(
-          child: Icon(Icons.storefront_rounded),
-        ),
-      );
+      return _thumbnailPlaceholder();
     }
 
-    return Image.network(
-      url,
+    return CachedNetworkImage(
+      imageUrl: url,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => const ColoredBox(
-        color: AppColors.surfaceMuted,
-        child: Center(
-          child: Icon(Icons.storefront_rounded),
+      placeholder: (_, __) => _thumbnailLoading(),
+      errorWidget: (_, __, ___) => _thumbnailPlaceholder(),
+    );
+  }
+
+  Widget _thumbnailPlaceholder() {
+    return const ColoredBox(
+      color: AppColors.surfaceMuted,
+      child: Center(
+        child: Icon(Icons.storefront_rounded),
+      ),
+    );
+  }
+
+  Widget _thumbnailLoading() {
+    return const ColoredBox(
+      color: AppColors.surfaceMuted,
+      child: Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) {
-          return child;
-        }
-        return const ColoredBox(
-          color: AppColors.surfaceMuted,
-          child: Center(
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-        );
-      },
     );
   }
 }

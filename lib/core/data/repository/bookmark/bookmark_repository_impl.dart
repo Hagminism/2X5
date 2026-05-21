@@ -25,7 +25,10 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
 
   @override
   Future<bool> isBookmarked(String storeId) async {
-    final userId = _requireUserId();
+    final userId = _authRepository.getCurrentUser()?.uid;
+    if (userId == null || userId.isEmpty) {
+      return false;
+    }
     return _bookmarkDataSource.exists(userId: userId, storeId: storeId);
   }
 
@@ -65,9 +68,29 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
       category: store['category']?.toString() ?? '',
       address: store['address']?.toString() ?? '',
       rating: rating,
+      reviewCount: _reviewCountFromStore(store),
       imageUrl: _firstStoreImageUrl(store['store_images']),
       bookmarkedAt: DateTime.tryParse(row['created_at']?.toString() ?? ''),
     );
+  }
+
+  int _reviewCountFromStore(Map<String, dynamic> store) {
+    final raw = store['reviews'];
+    if (raw is! List || raw.isEmpty) {
+      return 0;
+    }
+
+    final first = raw.first;
+    if (first is! Map<String, dynamic>) {
+      return 0;
+    }
+
+    final count = first['count'];
+    if (count is num) {
+      return count.toInt();
+    }
+
+    return 0;
   }
 
   String? _firstStoreImageUrl(dynamic rawImages) {

@@ -46,6 +46,10 @@ class BookmarkViewModel extends ChangeNotifier {
   }
 
   Future<void> loadBookmarks() async {
+    if (_isLoading) {
+      return;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
