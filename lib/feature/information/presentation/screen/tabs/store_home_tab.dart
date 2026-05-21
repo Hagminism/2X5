@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:capstone_2026/core/domain/util/store_operating_hours_display.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +10,7 @@ class StoreHomeTab extends StatelessWidget {
     super.key,
     required this.address,
     required this.displayPhone,
-    required this.operatingHoursText,
+    required this.operatingHours,
     required this.menus,
     required this.onViewMoreMenus,
     required this.showMenuSection,
@@ -19,7 +20,7 @@ class StoreHomeTab extends StatelessWidget {
 
   /// 뷰모델 `displayPhone` (`stores.contact`).
   final String displayPhone;
-  final String operatingHoursText;
+  final Map<String, dynamic> operatingHours;
   final List<StoreMenu> menus;
   final VoidCallback onViewMoreMenus;
   final bool showMenuSection;
@@ -46,22 +47,7 @@ class StoreHomeTab extends StatelessWidget {
                   ),
                 ),
               ),
-              _InfoTile(
-                icon: Icons.schedule_rounded,
-                child: Text(
-                  operatingHoursText.trim().isEmpty
-                      ? '영업시간 정보 없음'
-                      : operatingHoursText.trim(),
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    height: 1.4,
-                    letterSpacing: -0.1,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
+              _OperatingHoursSection(operatingHours: operatingHours),
               _InfoTile(
                 icon: Icons.phone_outlined,
                 child: Row(
@@ -194,6 +180,132 @@ class StoreHomeTab extends StatelessWidget {
             ),
           ),
         ],
+      ],
+    );
+  }
+}
+
+class _OperatingHoursSection extends StatefulWidget {
+  const _OperatingHoursSection({required this.operatingHours});
+
+  final Map<String, dynamic> operatingHours;
+
+  @override
+  State<_OperatingHoursSection> createState() => _OperatingHoursSectionState();
+}
+
+class _OperatingHoursSectionState extends State<_OperatingHoursSection> {
+  bool _isExpanded = false;
+
+  static const TextStyle _summaryStyle = TextStyle(
+    fontFamily: 'Pretendard',
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+    letterSpacing: -0.1,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle _dayStyle = TextStyle(
+    fontFamily: 'Pretendard',
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    height: 1.45,
+    letterSpacing: -0.1,
+    color: AppColors.textPrimary,
+  );
+
+  static const TextStyle _subStyle = TextStyle(
+    fontFamily: 'Pretendard',
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+    letterSpacing: -0.1,
+    color: AppColors.textSecondary,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = resolveOperatingHoursSummary(widget.operatingHours);
+    final summaryText =
+        summary.isEmpty ? '영업시간 정보 없음' : summary;
+    final weeklyLines = buildWeeklyOperatingHoursLines(widget.operatingHours);
+    final canExpand = weeklyLines.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.schedule_rounded,
+                size: 22,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 12),
+              Text(summaryText, style: _summaryStyle),
+              const SizedBox(width: 4),
+              if (canExpand)
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      setState(() {
+                        _isExpanded = !_isExpanded;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        _isExpanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.arrow_drop_down_rounded,
+                        size: 28,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (_isExpanded && canExpand)
+          Padding(
+            padding: const EdgeInsets.only(left: 50, right: 16, bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final line in weeklyLines) ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 28,
+                        child: Text(line.dayLabel, style: _dayStyle),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(line.hoursText, style: _dayStyle),
+                            if (line.subText != null) ...[
+                              const SizedBox(height: 2),
+                              Text(line.subText!, style: _subStyle),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ],
+            ),
+          ),
       ],
     );
   }

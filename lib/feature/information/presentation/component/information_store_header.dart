@@ -7,12 +7,16 @@ class InformationStoreHeader extends StatelessWidget {
   final double rating;
   final String? imageUrl;
 
+  /// 입점 매장만 헤더 별점 표시. 크롤(미입점) 매장은 false.
+  final bool showRating;
+
   const InformationStoreHeader({
     super.key,
     required this.name,
     required this.subtitle,
     required this.rating,
     required this.imageUrl,
+    this.showRating = true,
   });
 
   @override
@@ -69,27 +73,29 @@ class InformationStoreHeader extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      size: 18,
-                      color: Colors.amber,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      rating.toStringAsFixed(1),
-                      style: const TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                        color: AppColors.textPrimary,
+                if (showRating) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 18,
+                        color: Colors.amber,
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 4),
+                      Text(
+                        rating.toStringAsFixed(1),
+                        style: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

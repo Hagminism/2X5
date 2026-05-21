@@ -183,6 +183,115 @@ async def get_review(place_id: str, page: int = 1, size: int = 15, after: str = 
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"GraphQL proxy request error: {str(e)}")
 
+
+PLACE_DETAIL_HOURS_QUERY = """
+query getPlaceDetail($input: PlaceDetailInput!) {
+  placeDetail(input: $input) {
+    newBusinessHours {
+      businessStatusDescription { description status }
+      businessHours {
+        day
+        businessHours { start end }
+        breakHours { start end }
+      }
+    }
+  }
+}
+"""
+
+
+@app.get("/api/place/{place_id}/hours")
+async def get_hours(place_id: str, business_type: str = "restaurant"):
+    """
+    네이버 플레이스 GraphQL에서 요일별 영업시간을 조회합니다.
+    Flutter 앱에서 stores.operating_hours 구조로 매핑할 수 있도록 weeklyHours를 반환합니다.
+    """
+    url = "https://pcmap-api.place.naver.com/place/graphql"
+
+    headers = {
+        **COMMON_HEADERS,
+        "Content-Type": "application/json",
+        "Origin": "https://m.place.naver.com",
+        "Referer": f"https://m.place.naver.com/{business_type}/{place_id}/home",
+    }
+
+    payload = [
+        {
+            "operationName": "getPlaceDetail",
+            "variables": {"input": {"id": place_id}},
+            "query": PLACE_DETAIL_HOURS_QUERY,
+        }
+    ]
+
+    async with httpx.AsyncClient(http2=True) as client:
+        try:
+            res = await client.post(url, json=payload, headers=headers)
+            if res.status_code != 200:
+                raise HTTPException(
+                    status_code=res.status_code,
+                    detail="Failed to fetch business hours from Naver GraphQL",
+                )
+
+            data = res.json()
+            if not data or not isinstance(data, list):
+                return {"statusDescription": "", "weeklyHours": []}
+
+            first = data[0]
+            if first.get("errors"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"GraphQL Error: {first.get('errors')}",
+                )
+
+            place_detail = (first.get("data") or {}).get("placeDetail") or {}
+            blocks = place_detail.get("newBusinessHours") or []
+
+            status_description = ""
+            weekly_hours = []
+
+            for block in blocks:
+                if not isinstance(block, dict):
+                    continue
+
+                status = block.get("businessStatusDescription") or {}
+                if isinstance(status, dict):
+                    desc = (status.get("description") or "").strip()
+                    if desc and not status_description:
+                        status_description = desc
+
+                for item in block.get("businessHours") or []:
+                    if not isinstance(item, dict):
+                        continue
+
+                    day = (item.get("day") or "").strip()
+                    business_hours = item.get("businessHours")
+                    start = None
+                    end = None
+                    if isinstance(business_hours, dict):
+                        start = business_hours.get("start")
+                        end = business_hours.get("end")
+
+                    weekly_hours.append(
+                        {
+                            "day": day,
+                            "start": start,
+                            "end": end,
+                        }
+                    )
+
+            return {
+                "statusDescription": status_description,
+                "weeklyHours": weekly_hours,
+            }
+
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"GraphQL hours proxy error: {str(e)}"
+            )
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("local_naver_proxy:app", host="0.0.0.0", port=8000, reload=True)

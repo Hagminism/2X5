@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
-import 'package:capstone_2026/core/domain/util/format_today_operating_hours.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
@@ -57,7 +56,7 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         category: store.category,
         address: store.address,
         displayPhone: store.contact.trim(),
-        operatingHoursText: formatTodayOperatingHours(store.operatingHours),
+        operatingHours: store.operatingHours,
         menus: menus,
         imageUrls: imageUrls,
         imageUrl: storeHeaderImageUrl(images),

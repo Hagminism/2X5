@@ -99,6 +99,7 @@ class MapStoreInformationScreen extends StatelessWidget {
                       subtitle: state.subtitle,
                       rating: state.rating,
                       imageUrl: state.imageUrl,
+                      showRating: state.isReservationAvailable,
                     ),
                   ),
                   SliverPersistentHeader(
@@ -127,7 +128,7 @@ class MapStoreInformationScreen extends StatelessWidget {
                       return StoreHomeTab(
                         address: state.address,
                         displayPhone: state.displayPhone,
-                        operatingHoursText: state.operatingHoursText,
+                        operatingHours: state.operatingHours,
                         menus: state.menus,
                         onViewMoreMenus: () {
                           final controller = DefaultTabController.of(innerContext);

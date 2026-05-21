@@ -24,6 +24,11 @@ abstract interface class NaverStoreSearchDataSource {
     required String placeId,
   });
 
+  /// 프록시 `/api/place/{placeId}/hours` — `weeklyHours`, `statusDescription`.
+  Future<Map<String, dynamic>?> fetchPlaceOperatingHours({
+    required String placeId,
+  });
+
   Future<List<Map<String, dynamic>>> fetchStoreMenus({
     required String placeId,
   });

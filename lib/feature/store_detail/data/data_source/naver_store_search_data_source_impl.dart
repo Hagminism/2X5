@@ -277,6 +277,39 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     return null;
   }
 
+  @override
+  Future<Map<String, dynamic>?> fetchPlaceOperatingHours({
+    required String placeId,
+  }) async {
+    if (placeId.isEmpty) return null;
+
+    final url = Uri.parse('$_proxyUrl/api/place/$placeId/hours');
+    debugPrint('[NaverHours] Requesting URL: $url');
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+        if (decoded is Map) {
+          return Map<String, dynamic>.from(decoded);
+        }
+        debugPrint('[NaverHours] Unexpected response body format: ${response.body}');
+      } else {
+        debugPrint(
+          '[NaverHours] Fail status: ${response.statusCode}, Body: ${response.body}',
+        );
+      }
+    } catch (e, stack) {
+      debugPrint('[NaverHours] Exception occurred: $e');
+      debugPrint('[NaverHours] Stacktrace: $stack');
+    }
+
+    return null;
+  }
+
   String get _proxyUrl {
     final url = _getEnv('NAVER_PROXY_URL');
     return url == 'NOT_FOUND' || url.isEmpty ? 'http://localhost:8000' : url;

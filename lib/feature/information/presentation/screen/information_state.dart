@@ -15,7 +15,7 @@ abstract class InformationState with _$InformationState {
     @Default('') String category,
     @Default('') String address,
     @Default('') String displayPhone,
-    @Default('') String operatingHoursText,
+    @Default(<String, dynamic>{}) Map<String, dynamic> operatingHours,
     @Default(<StoreMenu>[]) List<StoreMenu> menus,
     @Default(<String>[]) List<String> imageUrls,
     String? imageUrl,

@@ -9,6 +9,7 @@ class HomeStoreCard extends StatelessWidget {
     required this.category,
     required this.onTap,
     this.imageUrl,
+    this.showRating = true,
     super.key,
   });
 
@@ -18,6 +19,9 @@ class HomeStoreCard extends StatelessWidget {
   final String category;
   final String? imageUrl;
   final VoidCallback onTap;
+
+  /// 입점 매장만 카드 별점 표시. 크롤(미입점) 매장은 false.
+  final bool showRating;
 
   static Color _categoryColor(String category) {
     switch (category) {
@@ -115,24 +119,26 @@ class HomeStoreCard extends StatelessWidget {
                   const SizedBox(height: 5),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.star_rounded,
-                        size: 14,
-                        color: Colors.amber,
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        rating.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                      if (showRating) ...[
+                        const Icon(
+                          Icons.star_rounded,
+                          size: 14,
+                          color: Colors.amber,
                         ),
-                      ),
-                      const SizedBox(width: 4),
+                        const SizedBox(width: 3),
+                        Text(
+                          rating.toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
                       Expanded(
                         child: Text(
-                          ' · $subtitle',
+                          showRating ? ' · $subtitle' : subtitle,
                           style: const TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondary,
