@@ -14,6 +14,12 @@ class SalonReservationConfirmScreen extends StatelessWidget {
     required this.onAction,
   });
 
+  bool get _canConfirmReservation {
+    return !state.isLoading &&
+        !state.isSubmitting &&
+        state.designer != null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,9 +37,9 @@ class SalonReservationConfirmScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: ElevatedButton(
-            onPressed: state.isLoading || state.isSubmitting
-                ? null
-                : () => onAction(const SalonReservationConfirmAction.tapConfirm()),
+            onPressed: _canConfirmReservation
+                ? () => onAction(const SalonReservationConfirmAction.tapConfirm())
+                : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -63,6 +69,17 @@ class SalonReservationConfirmScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('예약 내역을 확인해주세요.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  if (state.submitError != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      state.submitError!,
+                      style: const TextStyle(
+                        color: AppColors.danger,
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   if (state.designer != null)
                     Text('디자이너: ${state.designer!.name}', style: const TextStyle(fontSize: 16)),

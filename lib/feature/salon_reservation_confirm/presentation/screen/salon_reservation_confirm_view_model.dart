@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
+import 'package:collection/collection.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_action.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_event.dart';
@@ -43,8 +44,18 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
     try {
       final store = await _storeRepository.getStoreById(storeId);
       final designers = await _salonRepository.getDesignersByStoreId(storeId);
-      final designer = designers.firstWhere((d) => d.id == designerId);
-      
+      final designer = designers.firstWhereOrNull((d) => d.id == designerId);
+
+      if (designer == null) {
+        _state = _state.copyWith(
+          isLoading: false,
+          store: store,
+          submitError: '선택한 디자이너 정보를 찾을 수 없습니다.',
+        );
+        notifyListeners();
+        return;
+      }
+
       final storeServices = await _salonRepository.getServicesByStoreId(storeId);
       final services = storeServices
           .where((s) => selectedServices.contains(s.id))
@@ -55,6 +66,7 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
         store: store,
         designer: designer,
         services: services,
+        submitError: null,
       );
     } catch (e) {
       _state = _state.copyWith(

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/util/format_today_operating_hours.dart';
+import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
@@ -98,7 +99,7 @@ class MapStoreInformationViewModel extends ChangeNotifier {
           return StoreMenu(
             id: item['id']?.toString(),
             name: item['name']?.toString() ?? '',
-            price: int.tryParse(item['price']?.toString() ?? '0') ?? 0,
+            price: parseIntegerPrice(item['price']),
             description: item['description']?.toString() ?? '',
             imageUrl: item['imageUrl']?.toString() ?? '',
             sortOrder: index,
