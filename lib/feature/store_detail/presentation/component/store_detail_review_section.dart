@@ -73,12 +73,12 @@ class StoreDetailReviewSection extends StatelessWidget {
         if (googlePlaceReviewInfo != null &&
             (googlePlaceReviewInfo!.hasSummary ||
                 googlePlaceReviewInfo!.rating != null)) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _GoogleReviewSummaryBox(info: googlePlaceReviewInfo!),
         ],
-        const SizedBox(height: 32),
+        const SizedBox(height: 40),
         const Text(
-          '외부 리뷰 확인',
+          '외부 리뷰 페이지로 이동',
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 16,
@@ -111,13 +111,13 @@ class StoreDetailReviewSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 40),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
-              '플랫폼별 리뷰 확인',
+              '플랫폼별 리뷰 간편 확인',
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 16,
@@ -204,19 +204,20 @@ class StoreDetailReviewSection extends StatelessWidget {
           else if (naverReviews.isEmpty)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                color: const Color(0xFFF7F8FA),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Center(
                 child: Text(
-                  '아직 수집된 네이버 실시간 리뷰가 없습니다.',
+                  '아직 등록된 네이버 플레이스 리뷰가 없습니다.',
                   style: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
-                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -242,19 +243,20 @@ class StoreDetailReviewSection extends StatelessWidget {
           if (googleReviews.isEmpty)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                color: const Color(0xFFF7F8FA),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Center(
                 child: Text(
-                  '아직 등록된 Google 실시간 리뷰가 없습니다.',
+                  '아직 등록된 Google 지도 리뷰가 없습니다.',
                   style: TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 14,
-                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
