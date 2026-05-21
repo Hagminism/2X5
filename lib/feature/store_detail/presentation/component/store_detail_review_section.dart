@@ -74,8 +74,10 @@ class StoreDetailReviewSection extends StatelessWidget {
         const Text(
           '외부 리뷰 확인',
           style: TextStyle(
+            fontFamily: 'Pretendard',
             fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
             color: AppColors.textPrimary,
           ),
         ),
@@ -110,8 +112,10 @@ class StoreDetailReviewSection extends StatelessWidget {
             const Text(
               '방문자 리뷰',
               style: TextStyle(
+                fontFamily: 'Pretendard',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -165,6 +169,7 @@ class StoreDetailReviewSection extends StatelessWidget {
               child: const Text(
                 'N',
                 style: TextStyle(
+                  fontFamily: 'Pretendard',
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 12,
@@ -175,8 +180,10 @@ class StoreDetailReviewSection extends StatelessWidget {
             const Text(
               '네이버 플레이스 리뷰',
               style: TextStyle(
+                fontFamily: 'Pretendard',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -205,6 +212,7 @@ class StoreDetailReviewSection extends StatelessWidget {
               child: Text(
                 '아직 수집된 네이버 실시간 리뷰가 없습니다.',
                 style: TextStyle(
+                  fontFamily: 'Pretendard',
                   fontSize: 14,
                   color: AppColors.textSecondary,
                 ),
@@ -285,8 +293,10 @@ class _AiSummaryBox extends StatelessWidget {
               Text(
                 'AI 리뷰 요약',
                 style: TextStyle(
+                  fontFamily: 'Pretendard',
                   fontSize: 15,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
                   color: AppColors.primary,
                 ),
               ),
@@ -296,9 +306,11 @@ class _AiSummaryBox extends StatelessWidget {
           Text(
             '"${summary.oneLine}"',
             style: const TextStyle(
+              fontFamily: 'Pretendard',
               fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               height: 1.5,
+              letterSpacing: -0.1,
               color: AppColors.textPrimary,
             ),
           ),
@@ -335,6 +347,7 @@ class _AiKeywordTag extends StatelessWidget {
       child: Text(
         '# $label',
         style: const TextStyle(
+          fontFamily: 'Pretendard',
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.primary,
@@ -386,8 +399,10 @@ class _GoogleReviewSummaryBox extends StatelessWidget {
               const Text(
                 'Google 리뷰 요약',
                 style: TextStyle(
+                  fontFamily: 'Pretendard',
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
                   color: AppColors.textPrimary,
                 ),
               ),
@@ -404,8 +419,10 @@ class _GoogleReviewSummaryBox extends StatelessWidget {
                     Text(
                       rating.toStringAsFixed(1),
                       style: const TextStyle(
+                        fontFamily: 'Pretendard',
                         fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -418,6 +435,7 @@ class _GoogleReviewSummaryBox extends StatelessWidget {
             Text(
               'Google 리뷰 $userRatingCount개 기준',
               style: const TextStyle(
+                fontFamily: 'Pretendard',
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
@@ -428,8 +446,10 @@ class _GoogleReviewSummaryBox extends StatelessWidget {
             Text(
               summary,
               style: const TextStyle(
+                fontFamily: 'Pretendard',
                 fontSize: 13,
                 height: 1.5,
+                letterSpacing: -0.1,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -528,13 +548,18 @@ class _AiSentimentBar extends StatelessWidget {
           children: [
             const Text(
               '긍정 비율',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
             Text(
               '${(positiveRatio * 100).toInt()}%',
               style: const TextStyle(
+                fontFamily: 'Pretendard',
                 fontSize: 12,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppColors.primary,
               ),
             ),
@@ -605,9 +630,11 @@ class _ExternalReviewButton extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
+                fontFamily: 'Pretendard',
                 color: textColor,
                 fontSize: 14,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
+                letterSpacing: -0.1,
               ),
             ),
           ],
@@ -637,8 +664,10 @@ class _EmptyReviewState extends StatelessWidget {
           const Text(
             '아직 등록된 자체 리뷰가 없습니다.',
             style: TextStyle(
+              fontFamily: 'Pretendard',
               fontSize: 14,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
               color: AppColors.textPrimary,
             ),
           ),
@@ -646,8 +675,10 @@ class _EmptyReviewState extends StatelessWidget {
           const Text(
             '발표 시연에서는 mock 저장소에 리뷰를 쌓아 자연스럽게 흐름을 보여주고, 실제 서비스 단계에서 작성 권한과 저장 로직을 연결할 예정입니다.',
             style: TextStyle(
+              fontFamily: 'Pretendard',
               fontSize: 13,
               height: 1.5,
+              letterSpacing: -0.1,
               color: AppColors.textSecondary,
             ),
           ),
@@ -695,8 +726,10 @@ class _InternalReviewItem extends StatelessWidget {
                   Text(
                     displayName,
                     style: const TextStyle(
+                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
                       color: AppColors.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -721,6 +754,7 @@ class _InternalReviewItem extends StatelessWidget {
             Text(
               formatDotDate(review.createdAt),
               style: const TextStyle(
+                fontFamily: 'Pretendard',
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
@@ -751,8 +785,10 @@ class _InternalReviewItem extends StatelessWidget {
           Text(
             '[$visitPurpose]으로 방문함',
             style: const TextStyle(
+              fontFamily: 'Pretendard',
               fontSize: 11,
               fontWeight: FontWeight.w500,
+              letterSpacing: -0.1,
               color: Color(0xFF9CA3AF),
             ),
           ),
@@ -761,8 +797,10 @@ class _InternalReviewItem extends StatelessWidget {
         Text(
           reviewText,
           style: const TextStyle(
+            fontFamily: 'Pretendard',
             fontSize: 14,
             height: 1.5,
+            letterSpacing: -0.1,
             color: AppColors.textPrimary,
           ),
         ),
@@ -860,8 +898,10 @@ class _NaverReviewItem extends StatelessWidget {
                   Text(
                     nickname,
                     style: const TextStyle(
+                      fontFamily: 'Pretendard',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
                       color: AppColors.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -874,6 +914,7 @@ class _NaverReviewItem extends StatelessWidget {
               Text(
                 date,
                 style: const TextStyle(
+                  fontFamily: 'Pretendard',
                   fontSize: 12,
                   color: AppColors.textSecondary,
                 ),
@@ -884,8 +925,10 @@ class _NaverReviewItem extends StatelessWidget {
         Text(
           bodyText.isEmpty ? '리뷰 내용이 없습니다.' : bodyText,
           style: const TextStyle(
+            fontFamily: 'Pretendard',
             fontSize: 14,
             height: 1.5,
+            letterSpacing: -0.1,
             color: AppColors.textPrimary,
           ),
         ),

@@ -1,5 +1,4 @@
 import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class InformationStoreHeader extends StatelessWidget {
@@ -51,13 +50,25 @@ class InformationStoreHeader extends StatelessWidget {
                 Text(
                   name,
                   style: const TextStyle(
+                    fontFamily: 'Pretendard',
                     fontSize: 22,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(subtitle, style: AppTextStyles.subtitle),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.2,
+                    height: 1.3,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -70,8 +81,10 @@ class InformationStoreHeader extends StatelessWidget {
                     Text(
                       rating.toStringAsFixed(1),
                       style: const TextStyle(
+                        fontFamily: 'Pretendard',
                         fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
                         color: AppColors.textPrimary,
                       ),
                     ),

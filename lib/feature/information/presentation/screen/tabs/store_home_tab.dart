@@ -37,8 +37,11 @@ class StoreHomeTab extends StatelessWidget {
                 child: Text(
                   address.trim().isEmpty ? '주소 정보 없음' : address.trim(),
                   style: const TextStyle(
+                    fontFamily: 'Pretendard',
                     fontSize: 15,
+                    fontWeight: FontWeight.w400,
                     height: 1.4,
+                    letterSpacing: -0.1,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -50,8 +53,11 @@ class StoreHomeTab extends StatelessWidget {
                       ? '영업시간 정보 없음'
                       : operatingHoursText.trim(),
                   style: const TextStyle(
+                    fontFamily: 'Pretendard',
                     fontSize: 15,
+                    fontWeight: FontWeight.w400,
                     height: 1.4,
+                    letterSpacing: -0.1,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -66,7 +72,10 @@ class StoreHomeTab extends StatelessWidget {
                             ? '전화번호 없음'
                             : displayPhone.trim(),
                         style: const TextStyle(
+                          fontFamily: 'Pretendard',
                           fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: -0.1,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -89,8 +98,10 @@ class StoreHomeTab extends StatelessWidget {
                           child: const Text(
                             '복사',
                             style: TextStyle(
+                              fontFamily: 'Pretendard',
                               fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.1,
                               color: Color(0xFF2563EB),
                             ),
                           ),
@@ -112,8 +123,10 @@ class StoreHomeTab extends StatelessWidget {
                 const Text(
                   '메뉴',
                   style: TextStyle(
+                    fontFamily: 'Pretendard',
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -121,8 +134,10 @@ class StoreHomeTab extends StatelessWidget {
                 Text(
                   '${menus.length}',
                   style: const TextStyle(
+                    fontFamily: 'Pretendard',
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -0.2,
                     color: AppColors.textSecondary,
                   ),
                 ),
@@ -136,7 +151,10 @@ class StoreHomeTab extends StatelessWidget {
                 ? const Center(
                     child: Text(
                       '등록된 메뉴가 없습니다.',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   )
                 : ListView.separated(
@@ -165,7 +183,12 @@ class StoreHomeTab extends StatelessWidget {
                 ),
                 child: const Text(
                   '메뉴 더보기  >',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15,
+                    letterSpacing: -0.2,
+                  ),
                 ),
               ),
             ),
@@ -248,8 +271,10 @@ class _HomeMenuCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
+              fontFamily: 'Pretendard',
               fontSize: 14,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
               color: AppColors.textPrimary,
               height: 1.25,
             ),
@@ -258,8 +283,10 @@ class _HomeMenuCard extends StatelessWidget {
           Text(
             '${priceFmt.format(menu.price)}원',
             style: const TextStyle(
+              fontFamily: 'Pretendard',
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
               color: AppColors.textPrimary,
             ),
           ),

@@ -16,7 +16,10 @@ class StorePhotoTab extends StatelessWidget {
       return const Center(
         child: Text(
           '등록된 사진이 없습니다.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            color: AppColors.textSecondary,
+          ),
         ),
       );
     }

@@ -112,8 +112,16 @@ class InformationScreen extends StatelessWidget {
                         indicatorColor: AppColors.primary,
                         indicatorWeight: 3,
                         labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w600,
                           fontSize: 15,
+                          letterSpacing: -0.2,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          letterSpacing: -0.2,
                         ),
                         tabs: state.tabs
                             .map((title) => Tab(text: title))
