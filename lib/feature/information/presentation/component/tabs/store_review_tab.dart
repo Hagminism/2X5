@@ -33,7 +33,7 @@ class StoreReviewTab extends StatefulWidget {
   State<StoreReviewTab> createState() => _StoreReviewTabState();
 }
 
-class _StoreReviewTabState extends State<StoreReviewTab> {
+class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAliveClientMixin<StoreReviewTab> {
   bool _isLoading = true;
   List<InternalReview> _reviews = const [];
   StoreStampStatus? _stampStatus;
@@ -72,6 +72,9 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
     _loadReviewData();
@@ -87,6 +90,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final data = _reviewTarget;
 
     return NotificationListener<ScrollNotification>(
