@@ -8,6 +8,8 @@ class HomeStoreCard extends StatelessWidget {
     required this.rating,
     required this.category,
     required this.onTap,
+    required this.onBookmarkTap,
+    required this.isBookmarked,
     this.imageUrl,
     this.showRating = true,
     super.key,
@@ -18,7 +20,9 @@ class HomeStoreCard extends StatelessWidget {
   final double rating;
   final String category;
   final String? imageUrl;
+  final bool isBookmarked;
   final VoidCallback onTap;
+  final VoidCallback onBookmarkTap;
 
   /// 입점 매장만 카드 별점 표시. 크롤(미입점) 매장은 false.
   final bool showRating;
@@ -109,10 +113,18 @@ class HomeStoreCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Icon(
-                        Icons.bookmark_border_rounded,
-                        size: 20,
-                        color: AppColors.textSecondary,
+                      GestureDetector(
+                        onTap: onBookmarkTap,
+                        behavior: HitTestBehavior.opaque,
+                        child: Icon(
+                          isBookmarked
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded,
+                          size: 20,
+                          color: isBookmarked
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -157,7 +169,6 @@ class HomeStoreCard extends StatelessWidget {
                 ],
               ),
             ),
-            // 사진 영역
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(16),

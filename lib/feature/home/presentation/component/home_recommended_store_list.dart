@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 class HomeRecommendedStoreList extends StatelessWidget {
   final List<HomeStoreItem> stores;
   final void Function(HomeStoreItem) onStoreTap;
+  final void Function(HomeStoreItem) onBookmarkTap;
 
   const HomeRecommendedStoreList({
     required this.stores,
     required this.onStoreTap,
+    required this.onBookmarkTap,
     super.key,
   });
 
@@ -35,8 +37,10 @@ class HomeRecommendedStoreList extends StatelessWidget {
           rating: store.rating,
           category: store.category,
           imageUrl: store.imageUrl,
+          isBookmarked: store.isBookmarked,
           showRating: store.showRating,
           onTap: () => onStoreTap(store),
+          onBookmarkTap: () => onBookmarkTap(store),
         );
       },
       separatorBuilder: (_, _) => const SizedBox(height: 12),

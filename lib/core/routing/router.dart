@@ -57,7 +57,8 @@ import 'package:capstone_2026/feature/my_page/reservation_history/core/presentat
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
-import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen.dart';
+import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen_root.dart';
+import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/core/presentation/component/scope/partner_onboarding_scope.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_screen_root.dart';
@@ -440,9 +441,12 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.bookmark,
-              builder: (context, state) => const BookmarkScreen(),
+              builder: (context, state) => BookmarkScreenRoot(
+                viewModel: getIt<BookmarkViewModel>(),
+              ),
               routes: [
                 GoRoute(
+                  name: Routes.bookmarkInformationName,
                   parentNavigatorKey: _rootNavigatorKey,
                   path: Routes.bookmarkStoreInformation,
                   builder: (context, state) {
