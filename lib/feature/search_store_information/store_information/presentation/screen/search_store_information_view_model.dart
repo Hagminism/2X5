@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:capstone_2026/core/domain/util/build_store_share_text.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
@@ -144,7 +145,16 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         break;
       case TapSearchStoreInformationShare():
         _eventController.add(
-          const SearchStoreInformationEvent.showSnackBar('공유 기능은 준비 중입니다.'),
+          SearchStoreInformationEvent.share(
+            text: buildStoreShareText(
+              route: StoreShareRoute.search,
+              storeId: _state.storeId,
+              name: _state.name,
+              address: _state.address,
+              naverPlaceId: _state.naverPlaceId,
+            ),
+            subject: _state.name,
+          ),
         );
         break;
       case TapSearchStoreInformationBookmark():

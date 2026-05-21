@@ -10,4 +10,9 @@ sealed class InformationEvent with _$InformationEvent {
 
   const factory InformationEvent.showSnackBar(String message) =
       ShowInformationSnackBar;
+
+  const factory InformationEvent.share({
+    required String text,
+    String? subject,
+  }) = ShareInformationContent;
 }

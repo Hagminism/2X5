@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/presentation/util/share_store_text.dart';
 import 'package:capstone_2026/feature/map_store_information/store_information/presentation/screen/map_store_information_event.dart';
 import 'package:capstone_2026/feature/map_store_information/store_information/presentation/screen/map_store_information_screen.dart';
 import 'package:capstone_2026/feature/map_store_information/store_information/presentation/screen/map_store_information_view_model.dart';
@@ -43,6 +44,9 @@ class _MapStoreInformationScreenRootState
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(content: Text(message)));
+          break;
+        case ShareMapStoreInformationContent(:final text, :final subject):
+          shareStoreText(context, text: text, subject: subject);
           break;
       }
     });
