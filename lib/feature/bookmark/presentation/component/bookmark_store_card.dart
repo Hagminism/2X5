@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ class BookmarkStoreCard extends StatelessWidget {
     required this.reviewCount,
     required this.onTap,
     required this.onBookmarkTap,
+    this.imageUrl,
     super.key,
   });
 
@@ -19,6 +21,7 @@ class BookmarkStoreCard extends StatelessWidget {
   final String subtitle;
   final double rating;
   final int reviewCount;
+  final String? imageUrl;
   final VoidCallback onTap;
   final VoidCallback onBookmarkTap;
 
@@ -44,14 +47,13 @@ class BookmarkStoreCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceMuted,
-                  borderRadius: BorderRadius.circular(12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: _buildThumbnail(),
                 ),
-                child: const Icon(Icons.storefront_rounded),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -107,6 +109,42 @@ class BookmarkStoreCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThumbnail() {
+    final url = imageUrl?.trim();
+    if (url == null || url.isEmpty) {
+      return _thumbnailPlaceholder();
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      placeholder: (_, __) => _thumbnailLoading(),
+      errorWidget: (_, __, ___) => _thumbnailPlaceholder(),
+    );
+  }
+
+  Widget _thumbnailPlaceholder() {
+    return const ColoredBox(
+      color: AppColors.surfaceMuted,
+      child: Center(
+        child: Icon(Icons.storefront_rounded),
+      ),
+    );
+  }
+
+  Widget _thumbnailLoading() {
+    return const ColoredBox(
+      color: AppColors.surfaceMuted,
+      child: Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
     );
