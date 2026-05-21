@@ -836,6 +836,7 @@ class _NaverReviewItem extends StatelessWidget {
     final imageUrl = author?['imageUrl'] as String? ?? '';
     final date = review['created'] as String? ?? '';
     final bodyText = review['body'] as String? ?? '';
+    final mediaList = review['media'] as List<dynamic>? ?? const [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -888,6 +889,43 @@ class _NaverReviewItem extends StatelessWidget {
             color: AppColors.textPrimary,
           ),
         ),
+        if (mediaList.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 100,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: mediaList.length,
+              itemBuilder: (context, index) {
+                final media = mediaList[index] as Map<String, dynamic>?;
+                final thumbnailUrl = media?['thumbnail'] as String? ?? '';
+                if (thumbnailUrl.isEmpty) return const SizedBox.shrink();
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      thumbnailUrl,
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 100,
+                        height: 100,
+                        color: const Color(0xFFF3F4F6),
+                        child: const Icon(
+                          Icons.broken_image_outlined,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ],
     );
   }

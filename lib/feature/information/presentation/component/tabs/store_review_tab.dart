@@ -42,6 +42,10 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   bool _isNaverLoading = false;
   List<Map<String, dynamic>> _naverReviews = const [];
 
+  int _naverPage = 1;
+  bool _hasMoreNaver = true;
+  bool _isMoreNaverLoading = false;
+
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
   StampService get _stampService => getIt<StampService>();
   NaverStoreSearchDataSource get _naverStoreSearchDataSource => getIt<NaverStoreSearchDataSource>();
@@ -85,29 +89,49 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   Widget build(BuildContext context) {
     final data = _reviewTarget;
 
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        StoreDetailReviewSection(
-          storeName: data.name,
-          location: data.location,
-          naverPlaceId: data.naverPlaceId,
-          googleSearchQuery: data.googleSearchQuery,
-          stampStatus: _stampStatus,
-          googlePlaceReviewInfo: _googlePlaceReviewInfo,
-          aiSummary: ReviewAiSummaryGenerator.generate(
+    return NotificationListener<ScrollNotification>(
+      onNotification: (ScrollNotification notification) {
+        final metrics = notification.metrics;
+        final maxScroll = metrics.maxScrollExtent;
+        final currentScroll = metrics.pixels;
+        if (maxScroll - currentScroll <= 200) {
+          _loadMoreNaverReviews();
+        }
+        return false;
+      },
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          StoreDetailReviewSection(
             storeName: data.name,
+            location: data.location,
+            naverPlaceId: data.naverPlaceId,
+            googleSearchQuery: data.googleSearchQuery,
+            stampStatus: _stampStatus,
+            googlePlaceReviewInfo: _googlePlaceReviewInfo,
+            aiSummary: ReviewAiSummaryGenerator.generate(
+              storeName: data.name,
+              reviews: _reviews,
+            ),
             reviews: _reviews,
+            isReviewLoading: _isLoading,
+            naverReviews: _naverReviews,
+            isNaverDataLoading: _isNaverLoading,
+            onSubmitReview: _submitReview,
+            onTapNaverReview: () => _openNaverReview(data),
+            onTapGoogleReview: () => _openGoogleReview(data),
           ),
-          reviews: _reviews,
-          isReviewLoading: _isLoading,
-          naverReviews: _naverReviews,
-          isNaverDataLoading: _isNaverLoading,
-          onSubmitReview: _submitReview,
-          onTapNaverReview: () => _openNaverReview(data),
-          onTapGoogleReview: () => _openGoogleReview(data),
-        ),
-      ],
+          if (_isMoreNaverLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF03C75A)),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -115,6 +139,9 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
     setState(() {
       _isLoading = true;
       _isNaverLoading = true;
+      _naverPage = 1;
+      _hasMoreNaver = true;
+      _isMoreNaverLoading = false;
     });
 
     try {
@@ -161,6 +188,54 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         _isNaverLoading = false;
       });
       _showMessage('리뷰를 불러오는 중 오류가 발생했습니다.');
+    }
+  }
+
+  Future<void> _loadMoreNaverReviews() async {
+    if (_isMoreNaverLoading || !_hasMoreNaver) return;
+
+    setState(() {
+      _isMoreNaverLoading = true;
+    });
+
+    try {
+      final data = _reviewTarget;
+      if (data.naverPlaceId.isEmpty) {
+        setState(() {
+          _hasMoreNaver = false;
+          _isMoreNaverLoading = false;
+        });
+        return;
+      }
+
+      final nextPage = _naverPage + 1;
+      final lastReview = _naverReviews.isNotEmpty ? _naverReviews.last : null;
+      final afterCursor = lastReview?['cursor'] as String?;
+      final newReviews = await _naverStoreSearchDataSource.fetchStoreReviews(
+        placeId: data.naverPlaceId,
+        page: nextPage,
+        after: afterCursor,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        if (newReviews.isEmpty) {
+          _hasMoreNaver = false;
+        } else {
+          _naverReviews = [..._naverReviews, ...newReviews];
+          _naverPage = nextPage;
+          if (newReviews.length < 15) {
+            _hasMoreNaver = false;
+          }
+        }
+        _isMoreNaverLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isMoreNaverLoading = false;
+      });
     }
   }
 

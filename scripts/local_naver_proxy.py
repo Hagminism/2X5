@@ -71,7 +71,7 @@ async def get_menu(place_id: str):
             raise HTTPException(status_code=500, detail=f"Scraping error: {str(e)}")
 
 @app.get("/api/place/{place_id}/review")
-async def get_review(place_id: str, page: int = 1, size: int = 15):
+async def get_review(place_id: str, page: int = 1, size: int = 15, after: str = None, business_type: str = "restaurant"):
     """
     네이버 플레이스 내부 GraphQL API를 연동하여 방문자 리뷰 데이터를 긁어와 반환합니다.
     """
@@ -89,9 +89,18 @@ async def get_review(place_id: str, page: int = 1, size: int = 15):
             "operationName": "getVisitorReviews",
             "variables": {
                 "input": {
+                    "bookingBusinessId": None,
                     "businessId": place_id,
+                    "businessType": business_type,
+                    "size": size,
+                    "getAuthorInfo": True,
+                    "includeContent": True,
+                    "includeReceiptPhotos": True,
+                    "isPhotoUsed": False,
+                    "item": "0",
                     "page": page,
-                    "size": size
+                    "sort": "recent",
+                    "after": after
                 }
             },
             "query": """
@@ -99,6 +108,7 @@ async def get_review(place_id: str, page: int = 1, size: int = 15):
               visitorReviews(input: $input) {
                 items {
                   id
+                  cursor
                   rating
                   body
                   created
@@ -106,6 +116,10 @@ async def get_review(place_id: str, page: int = 1, size: int = 15):
                     id
                     nickname
                     imageUrl
+                  }
+                  media {
+                    type
+                    thumbnail
                   }
                 }
                 total
@@ -117,13 +131,17 @@ async def get_review(place_id: str, page: int = 1, size: int = 15):
     
     async with httpx.AsyncClient(http2=True) as client:
         try:
+            print(f"[DEBUG] Requesting Naver GraphQL for page: {page}, display(size): {size}")
+            print(f"[DEBUG] Variables sent: {payload[0]['variables']}")
             res = await client.post(url, json=payload, headers=headers)
+            print(f"[DEBUG] Naver Response Status: {res.status_code}")
             if res.status_code != 200:
                 raise HTTPException(status_code=res.status_code, detail="Failed to fetch reviews from Naver GraphQL")
             
             data = res.json()
             if not data or "errors" in data[0]:
                 errors = data[0].get("errors") if data else "Unknown GraphQL error"
+                print(f"[DEBUG] GraphQL Errors inside response: {errors}")
                 raise HTTPException(status_code=400, detail=f"GraphQL Error: {errors}")
             
             visitor_reviews_data = data[0]['data']['visitorReviews']
@@ -133,8 +151,17 @@ async def get_review(place_id: str, page: int = 1, size: int = 15):
             reviews = []
             for item in items:
                 author_info = item.get("author", {})
+                media_info = []
+                if item.get("media"):
+                    for m in item.get("media", []):
+                        if m:
+                            media_info.append({
+                                "type": m.get("type"),
+                                "thumbnail": m.get("thumbnail")
+                            })
                 reviews.append({
                   "id": item.get("id"),
+                  "cursor": item.get("cursor"),
                   "rating": item.get("rating"),
                   "body": item.get("body", ""),
                   "created": item.get("created", ""),
@@ -142,7 +169,8 @@ async def get_review(place_id: str, page: int = 1, size: int = 15):
                       "id": author_info.get("id"),
                       "nickname": author_info.get("nickname") or "익명",
                       "imageUrl": author_info.get("imageUrl") or ""
-                  }
+                  },
+                  "media": media_info
                 })
                 
             return {

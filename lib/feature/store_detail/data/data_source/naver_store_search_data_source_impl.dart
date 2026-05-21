@@ -318,12 +318,19 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     required String placeId,
     int page = 1,
     int size = 15,
+    String? after,
   }) async {
     if (placeId.isEmpty) return const [];
 
-    final url = Uri.parse(
-      '$_proxyUrl/api/place/$placeId/review?page=$page&size=$size',
-    );
+    final queryParams = <String, String>{
+      'page': page.toString(),
+      'size': size.toString(),
+    };
+    if (after != null) {
+      queryParams['after'] = after;
+    }
+    final url = Uri.parse('$_proxyUrl/api/place/$placeId/review')
+        .replace(queryParameters: queryParams);
     debugPrint('[NaverReviews] Requesting URL: $url');
 
     try {

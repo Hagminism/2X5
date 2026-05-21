@@ -32,6 +32,7 @@ abstract interface class NaverStoreSearchDataSource {
     required String placeId,
     int page = 1,
     int size = 15,
+    String? after,
   });
 }
 
