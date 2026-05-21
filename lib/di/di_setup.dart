@@ -92,6 +92,11 @@ import 'package:capstone_2026/feature/search_store_information/store_information
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_view_model.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_view_model.dart';
+import 'package:capstone_2026/core/data/data_source/bookmark/bookmark_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/bookmark/bookmark_data_source_impl.dart';
+import 'package:capstone_2026/core/data/repository/bookmark/bookmark_repository_impl.dart';
+import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
+import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
 
 GetIt getIt = GetIt.instance;
 
@@ -187,6 +192,12 @@ void diSetup() {
       supabaseClient: getIt<SupabaseClient>(),
     ),
   );
+    getIt.registerLazySingleton<BookmarkDataSource>(
+    () => BookmarkDataSourceImpl(
+      supabaseClient: getIt<SupabaseClient>(),
+    ),
+  );
+
 
   // Repository
   getIt.registerLazySingleton<AuthRepository>(
@@ -196,6 +207,13 @@ void diSetup() {
       firebaseFunctions: getIt<FirebaseFunctions>(),
     ),
   );
+    getIt.registerLazySingleton<BookmarkRepository>(
+    () => BookmarkRepositoryImpl(
+      bookmarkDataSource: getIt<BookmarkDataSource>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
+
   getIt.registerLazySingleton<StoreDetailRepository>(
         () => MockStoreDetailRepositoryImpl(),
   );
@@ -272,6 +290,11 @@ void diSetup() {
   getIt.registerFactory<HomeViewModel>(
         () => HomeViewModel(
       storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+    getIt.registerFactory<BookmarkViewModel>(
+    () => BookmarkViewModel(
+      bookmarkRepository: getIt<BookmarkRepository>(),
     ),
   );
   getIt.registerFactory<PartnerOnboardingViewModel>(
@@ -400,8 +423,10 @@ void diSetup() {
         () => InformationViewModel(
       storeRepository: getIt<StoreRepository>(),
       salonRepository: getIt<SalonRepository>(),
+      bookmarkRepository: getIt<BookmarkRepository>(),
     ),
   );
+  
   getIt.registerFactory<SearchStoreInformationViewModel>(
     () => SearchStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
