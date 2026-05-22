@@ -23,15 +23,19 @@ class _BookmarkScreenRootState extends State<BookmarkScreenRoot> {
   @override
   void initState() {
     super.initState();
-    widget.viewModel.loadBookmarks();
+    widget.viewModel.loadBookmarks(force: true);
   }
 
   @override
   Widget build(BuildContext context) {
     final shellIndex = StatefulNavigationShell.maybeOf(context)?.currentIndex;
-    if (shellIndex == _bookmarkShellIndex && _lastShellIndex != _bookmarkShellIndex) {
+    if (shellIndex == _bookmarkShellIndex &&
+        _lastShellIndex != _bookmarkShellIndex) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.viewModel.loadBookmarks();
+        if (!mounted) {
+          return;
+        }
+        widget.viewModel.loadBookmarks(force: true);
       });
     }
     _lastShellIndex = shellIndex;
