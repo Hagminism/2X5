@@ -567,14 +567,20 @@ class _MapScreenState extends State<MapScreen> {
             if (placeId != null && placeId.isNotEmpty) {
               finalPlaceId = placeId;
 
-              // 2단계: Summary + 요일별 영업시간(GraphQL) 병렬 수집
-              final crawlResults = await Future.wait<dynamic>([
-                naverSource.fetchPlaceSummary(placeId: placeId),
-                naverSource.fetchPlaceOperatingHours(placeId: placeId),
-              ]);
-              final summary = crawlResults[0] as Map<String, dynamic>?;
+              // 2단계: Summary → businessType 반영 후 영업시간(GraphQL) 수집
+              final summary = await naverSource.fetchPlaceSummary(
+                placeId: placeId,
+              );
+              final businessTypeRaw = summary?['businessType'];
+              final businessType = businessTypeRaw is String &&
+                      businessTypeRaw.trim().isNotEmpty
+                  ? businessTypeRaw.trim()
+                  : 'restaurant';
               final hoursPayload =
-                  crawlResults[1] as Map<String, dynamic>?;
+                  await naverSource.fetchPlaceOperatingHours(
+                placeId: placeId,
+                businessType: businessType,
+              );
 
               debugPrint(
                 '[MapCrawl] fetchPlaceSummary 결과: ${summary != null ? "성공 (keys: ${summary.keys.toList()})" : "null"}',

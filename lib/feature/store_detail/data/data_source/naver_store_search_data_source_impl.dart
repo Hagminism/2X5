@@ -280,10 +280,16 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
   @override
   Future<Map<String, dynamic>?> fetchPlaceOperatingHours({
     required String placeId,
+    String businessType = 'restaurant',
   }) async {
     if (placeId.isEmpty) return null;
 
-    final url = Uri.parse('$_proxyUrl/api/place/$placeId/hours');
+    final normalizedType = businessType.trim().isEmpty
+        ? 'restaurant'
+        : businessType.trim();
+    final url = Uri.parse('$_proxyUrl/api/place/$placeId/hours').replace(
+      queryParameters: {'business_type': normalizedType},
+    );
     debugPrint('[NaverHours] Requesting URL: $url');
 
     try {
