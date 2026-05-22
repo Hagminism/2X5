@@ -95,3 +95,4 @@ functions/node_modules/
 
 .vscode/
 .venv/
+.cursor/
