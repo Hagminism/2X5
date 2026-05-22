@@ -277,6 +277,45 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     return null;
   }
 
+  @override
+  Future<Map<String, dynamic>?> fetchPlaceOperatingHours({
+    required String placeId,
+    String businessType = 'restaurant',
+  }) async {
+    if (placeId.isEmpty) return null;
+
+    final normalizedType = businessType.trim().isEmpty
+        ? 'restaurant'
+        : businessType.trim();
+    final url = Uri.parse('$_proxyUrl/api/place/$placeId/hours').replace(
+      queryParameters: {'business_type': normalizedType},
+    );
+    debugPrint('[NaverHours] Requesting URL: $url');
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+        if (decoded is Map) {
+          return Map<String, dynamic>.from(decoded);
+        }
+        debugPrint('[NaverHours] Unexpected response body format: ${response.body}');
+      } else {
+        debugPrint(
+          '[NaverHours] Fail status: ${response.statusCode}, Body: ${response.body}',
+        );
+      }
+    } catch (e, stack) {
+      debugPrint('[NaverHours] Exception occurred: $e');
+      debugPrint('[NaverHours] Stacktrace: $stack');
+    }
+
+    return null;
+  }
+
   String get _proxyUrl {
     final url = _getEnv('NAVER_PROXY_URL');
     return url == 'NOT_FOUND' || url.isEmpty ? 'http://localhost:8000' : url;
@@ -318,12 +357,19 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     required String placeId,
     int page = 1,
     int size = 15,
+    String? after,
   }) async {
     if (placeId.isEmpty) return const [];
 
-    final url = Uri.parse(
-      '$_proxyUrl/api/place/$placeId/review?page=$page&size=$size',
-    );
+    final queryParams = <String, String>{
+      'page': page.toString(),
+      'size': size.toString(),
+    };
+    if (after != null) {
+      queryParams['after'] = after;
+    }
+    final url = Uri.parse('$_proxyUrl/api/place/$placeId/review')
+        .replace(queryParameters: queryParams);
     debugPrint('[NaverReviews] Requesting URL: $url');
 
     try {
@@ -333,7 +379,10 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
         if (decoded is Map && decoded.containsKey('reviews')) {
           final reviewsList = decoded['reviews'] as List?;
           if (reviewsList != null) {
-            return reviewsList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+            return reviewsList
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .where((review) => (review['body'] as String? ?? '').trim().isNotEmpty)
+                .toList();
           }
         }
         debugPrint('[NaverReviews] Unexpected response body format: ${response.body}');

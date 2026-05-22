@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:capstone_2026/core/domain/model/store/store.dart';
+import 'package:capstone_2026/core/domain/util/map_naver_place_operating_hours.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
@@ -121,11 +122,23 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  Future<void> _fetchStores() async {
+  Future<void> _fetchStores(NLatLng center) async {
     try {
+      final double latOffset = 0.0135;
+      final double lngOffset = 0.017;
+      final minLat = center.lat - latOffset;
+      final maxLat = center.lat + latOffset;
+      final minLng = center.lng - lngOffset;
+      final maxLng = center.lng + lngOffset;
+
       final response = await Supabase.instance.client
           .from('stores')
-          .select('id, name, category, latitude, longitude, address');
+          .select('id, name, category, latitude, longitude, address')
+          .gte('latitude', minLat)
+          .lte('latitude', maxLat)
+          .gte('longitude', minLng)
+          .lte('longitude', maxLng);
+
       if (!mounted) return;
       setState(() => _stores = List<Map<String, dynamic>>.from(response));
       if (_mapReady) _addStoreMarkers();
@@ -554,10 +567,34 @@ class _MapScreenState extends State<MapScreen> {
             if (placeId != null && placeId.isNotEmpty) {
               finalPlaceId = placeId;
 
-              // 2단계: Place Summary API로 상세 정보 확보
-              final summary =
-                  await naverSource.fetchPlaceSummary(placeId: placeId);
-              debugPrint('[MapCrawl] fetchPlaceSummary 결과: ${summary != null ? "성공 (keys: ${summary.keys.toList()})" : "null"}');
+              // 2단계: Summary → businessType 반영 후 영업시간(GraphQL) 수집
+              final summary = await naverSource.fetchPlaceSummary(
+                placeId: placeId,
+              );
+              final businessTypeRaw = summary?['businessType'];
+              final businessType = businessTypeRaw is String &&
+                      businessTypeRaw.trim().isNotEmpty
+                  ? businessTypeRaw.trim()
+                  : 'restaurant';
+              final hoursPayload =
+                  await naverSource.fetchPlaceOperatingHours(
+                placeId: placeId,
+                businessType: businessType,
+              );
+
+              debugPrint(
+                '[MapCrawl] fetchPlaceSummary 결과: ${summary != null ? "성공 (keys: ${summary.keys.toList()})" : "null"}',
+              );
+
+              final structuredHours = mapNaverWeeklyHoursToStoreOperatingHours(
+                hoursPayload,
+              );
+              if (structuredHours != null && structuredHours.isNotEmpty) {
+                operatingHours = structuredHours;
+                debugPrint(
+                  '[MapCrawl] 구조화 영업시간 저장 keys: ${structuredHours.keys.toList()}',
+                );
+              }
 
               if (summary != null) {
                 // 전화번호
@@ -572,11 +609,14 @@ class _MapScreenState extends State<MapScreen> {
                   }
                 }
 
-                // 영업시간
-                final bizHoursObj = summary['businessHours'] as Map<String, dynamic>?;
-                final bizHours = bizHoursObj?['description'] as String?;
-                if (bizHours != null && bizHours.isNotEmpty) {
-                  operatingHours = {'text': bizHours};
+                // 영업시간: GraphQL 실패 시 Summary 한 줄 텍스트 fallback
+                if (operatingHours.isEmpty) {
+                  final bizHoursObj =
+                      summary['businessHours'] as Map<String, dynamic>?;
+                  final bizHours = bizHoursObj?['description'] as String?;
+                  if (bizHours != null && bizHours.isNotEmpty) {
+                    operatingHours = {'text': bizHours};
+                  }
                 }
 
                 // 대표 이미지 및 다중 이미지
@@ -665,7 +705,7 @@ class _MapScreenState extends State<MapScreen> {
         await Future.wait(registerFutures);
       }
 
-      await _fetchStores();
+      await _fetchStores(center);
 
     } catch (e) {
       debugPrint('Error searching around center: $e');

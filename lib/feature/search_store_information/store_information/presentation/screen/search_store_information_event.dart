@@ -12,4 +12,9 @@ sealed class SearchStoreInformationEvent with _$SearchStoreInformationEvent {
 
   const factory SearchStoreInformationEvent.showSnackBar(String message) =
       ShowSearchStoreInformationSnackBar;
+
+  const factory SearchStoreInformationEvent.share({
+    required String text,
+    String? subject,
+  }) = ShareSearchStoreInformationContent;
 }

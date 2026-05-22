@@ -123,6 +123,7 @@ class HomeViewModel extends ChangeNotifier {
           rating: store.rating,
           category: category.displayName,
           imageUrl: storeImageMap[store.id],
+          showRating: store.isOnboarded,
           isBookmarked: bookmarkedIds.contains(store.id),
         );
       }

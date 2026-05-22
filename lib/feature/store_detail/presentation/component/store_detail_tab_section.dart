@@ -5,8 +5,10 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/store_
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/feature/information/presentation/component/tabs/store_review_tab.dart';
+import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 
-class StoreDetailTabSection extends StatelessWidget {
+class StoreDetailTabSection extends StatefulWidget {
   const StoreDetailTabSection({
     required this.selectedTab,
     required this.onTabSelected,
@@ -23,6 +25,7 @@ class StoreDetailTabSection extends StatelessWidget {
     required this.onSubmitReview,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
+    this.googlePlaceReviewInfo,
     super.key,
   });
 
@@ -41,8 +44,14 @@ class StoreDetailTabSection extends StatelessWidget {
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;
   final void Function() onTapNaverReview;
   final void Function() onTapGoogleReview;
+  final GooglePlaceReviewInfo? googlePlaceReviewInfo;
 
+  @override
+  State<StoreDetailTabSection> createState() => _StoreDetailTabSectionState();
+}
 
+class _StoreDetailTabSectionState extends State<StoreDetailTabSection> {
+  ReviewPlatform _selectedPlatform = ReviewPlatform.internal;
   static const List<String> _tabs = ['홈', '메뉴', '사진', '리뷰', '매장정보'];
 
   @override
@@ -61,9 +70,9 @@ class StoreDetailTabSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemCount: _tabs.length,
             itemBuilder: (_, index) {
-              final isSelected = selectedTab == index;
+              final isSelected = widget.selectedTab == index;
               return InkWell(
-                onTap: () => onTabSelected(index),
+                onTap: () => widget.onTabSelected(index),
                 child: Container(
                   alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -96,7 +105,7 @@ class StoreDetailTabSection extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-          child: _tabView(selectedTab),
+          child: _tabView(widget.selectedTab),
         ),
       ],
     );
@@ -106,25 +115,33 @@ class StoreDetailTabSection extends StatelessWidget {
     switch (tabIndex) {
       case 3:
         return StoreDetailReviewSection(
-          storeName: storeName,
-          location: location,
-          naverPlaceId: naverPlaceId,
-          googleSearchQuery: googleSearchQuery,
-          stampStatus: stampStatus,
+          storeName: widget.storeName,
+          location: widget.location,
+          naverPlaceId: widget.naverPlaceId,
+          googleSearchQuery: widget.googleSearchQuery,
+          stampStatus: widget.stampStatus,
+          googlePlaceReviewInfo: widget.googlePlaceReviewInfo,
           aiSummary: ReviewAiSummaryGenerator.generate(
-            storeName: storeName,
-            reviews: reviews,
+            storeName: widget.storeName,
+            reviews: widget.reviews,
           ),
-          reviews: reviews,
-          isReviewLoading: isReviewLoading,
-          naverReviews: naverReviews,
-          isNaverDataLoading: isNaverDataLoading,
-          onSubmitReview: onSubmitReview,
-          onTapNaverReview: onTapNaverReview,
-          onTapGoogleReview: onTapGoogleReview,
+          reviews: widget.reviews,
+          isReviewLoading: widget.isReviewLoading,
+          naverReviews: widget.naverReviews,
+          isNaverDataLoading: widget.isNaverDataLoading,
+          selectedPlatform: _selectedPlatform,
+          onPlatformChanged: (ReviewPlatform platform) {
+            setState(() {
+              _selectedPlatform = platform;
+            });
+          },
+          googleReviews: widget.googlePlaceReviewInfo?.reviews ?? const [],
+          onSubmitReview: widget.onSubmitReview,
+          onTapNaverReview: widget.onTapNaverReview,
+          onTapGoogleReview: widget.onTapGoogleReview,
         );
       case 1:
-        if (isNaverDataLoading) {
+        if (widget.isNaverDataLoading) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 40),
@@ -134,7 +151,7 @@ class StoreDetailTabSection extends StatelessWidget {
             ),
           );
         }
-        if (naverMenus.isEmpty) {
+        if (widget.naverMenus.isEmpty) {
           return Container(
             width: double.infinity,
             padding: const EdgeInsets.all(32),
@@ -157,10 +174,10 @@ class StoreDetailTabSection extends StatelessWidget {
         return ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: naverMenus.length,
+          itemCount: widget.naverMenus.length,
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
-            final menu = naverMenus[index];
+            final menu = widget.naverMenus[index];
             final name = menu['name'] as String? ?? '';
             final priceRaw = menu['price'];
             final description = menu['description'] as String? ?? '';
