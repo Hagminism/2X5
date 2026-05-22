@@ -197,9 +197,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         PartnerFormTextField(
-                          hintText: (state.address == '')
-                              ? '주소'
-                              : state.address,
+                          hintText: '주소',
                           initialValue: state.address,
                           isInteractive: false,
                           onTap: () => onAction(
