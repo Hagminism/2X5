@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
@@ -15,6 +16,7 @@ import 'package:capstone_2026/feature/information/presentation/screen/informatio
 import 'package:capstone_2026/feature/information/presentation/screen/information_state.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 class InformationViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
@@ -78,10 +80,8 @@ class InformationViewModel extends ChangeNotifier {
         _state = _state.copyWith(salonDesigners: designers);
       }
 
-      // 가져온 업장 종류에 따라 탭 정의
       _initTabs();
 
-      // 네이버 플레이스 실시간 메뉴가 있는 경우 비동기로 가져와 덮어씌움
       if (store.naverPlaceId != null && store.naverPlaceId!.trim().isNotEmpty) {
         _loadNaverMenus(store.naverPlaceId!.trim());
       }
@@ -98,10 +98,12 @@ class InformationViewModel extends ChangeNotifier {
   Future<void> _loadNaverMenus(String naverPlaceId) async {
     try {
       final naverDataSource = getIt<NaverStoreSearchDataSource>();
-      final rawMenus = await naverDataSource.fetchStoreMenus(placeId: naverPlaceId);
+      final rawMenus =
+          await naverDataSource.fetchStoreMenus(placeId: naverPlaceId);
 
       if (rawMenus.isNotEmpty) {
-        final List<StoreMenu> naverMenus = rawMenus.asMap().entries.map((entry) {
+        final List<StoreMenu> naverMenus =
+            rawMenus.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
           return StoreMenu(
@@ -147,10 +149,8 @@ class InformationViewModel extends ChangeNotifier {
       case TapInformationBack():
         _eventController.add(const InformationEvent.pop());
         break;
-      case TapInformationShare():
-        _eventController.add(
-          const InformationEvent.showSnackBar('공유 기능은 준비 중입니다.'),
-        );
+      case TapInformationShare(:final shareOrigin):
+        unawaited(_shareStore(shareOrigin: shareOrigin));
         break;
       case TapInformationBookmark():
         unawaited(_toggleBookmark());
@@ -181,6 +181,62 @@ class InformationViewModel extends ChangeNotifier {
         notifyListeners();
         break;
     }
+  }
+
+  Future<void> _shareStore({Rect? shareOrigin}) async {
+    final name = _state.name.trim();
+    if (name.isEmpty) {
+      _eventController.add(
+        const InformationEvent.showSnackBar('매장 정보를 불러온 뒤 공유해 주세요.'),
+      );
+      return;
+    }
+
+    final lines = <String>[
+      'ReverseHub에서 추천하는 매장이에요!',
+      '',
+      name,
+    ];
+
+    if (_state.subtitle.trim().isNotEmpty) {
+      lines.add(_state.subtitle.trim());
+    }
+    if (_state.rating > 0) {
+      lines.add('평점 ${_state.rating}');
+    }
+    if (_state.address.trim().isNotEmpty) {
+      lines.add(_state.address.trim());
+    }
+    if (_state.displayPhone.trim().isNotEmpty) {
+      lines.add(_state.displayPhone.trim());
+    }
+
+    try {
+      await Share.share(
+        lines.join('\n'),
+        subject: name,
+        sharePositionOrigin: shareOrigin ?? _fallbackShareOrigin(),
+      );
+    } catch (e) {
+      debugPrint('매장 공유 실패: $e');
+      _eventController.add(
+        const InformationEvent.showSnackBar('공유를 시작하지 못했습니다.'),
+      );
+    }
+  }
+
+  Rect _fallbackShareOrigin() {
+    final view = PlatformDispatcher.instance.views.first;
+    final size = view.physicalSize / view.devicePixelRatio;
+    const buttonSize = 44.0;
+    const topInset = 52.0;
+
+    return Rect.fromLTWH(
+      size.width - buttonSize - 12,
+      topInset,
+      buttonSize,
+      buttonSize,
+    );
   }
 
   Future<void> _toggleBookmark() async {
