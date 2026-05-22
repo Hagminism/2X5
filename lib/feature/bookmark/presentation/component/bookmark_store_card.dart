@@ -123,8 +123,8 @@ class BookmarkStoreCard extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
-      placeholder: (_, __) => _thumbnailLoading(),
-      errorWidget: (_, __, ___) => _thumbnailPlaceholder(),
+      placeholder: (_, _) => _thumbnailLoading(),
+      errorWidget: (_, _, _) => _thumbnailPlaceholder(),
     );
   }
 
