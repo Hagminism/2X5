@@ -1,13 +1,17 @@
+import 'package:capstone_2026/di/di_setup.dart';
+import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class AppBarNavItem extends StatelessWidget {
-  final StatefulNavigationShell navigationShell; // index 따오고 goBranch 하기 위해
-  final int index; // 각 버튼의 인덱스 저장
-  final IconData icon; // 설정할 아이콘
-  final String label; // 설정할 라벨
+  final StatefulNavigationShell navigationShell;
+  final int index;
+  final IconData icon;
+  final String label;
+
+  static const int _bookmarkTabIndex = 2;
 
   const AppBarNavItem({
     super.key,
@@ -17,15 +21,23 @@ class AppBarNavItem extends StatelessWidget {
     required this.label,
   });
 
+  void _onTap() {
+    if (index == _bookmarkTabIndex) {
+      getIt<BookmarkViewModel>().loadBookmarks(force: true);
+    }
+
+    navigationShell.goBranch(
+      index,
+      initialLocation: navigationShell.currentIndex == index,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 80,
       child: InkWell(
-        onTap: () => navigationShell.goBranch(
-          index,
-          initialLocation: (navigationShell.currentIndex == index),
-        ),
+        onTap: _onTap,
         highlightColor: Colors.transparent,
         splashColor: Colors.transparent,
         child: Column(
