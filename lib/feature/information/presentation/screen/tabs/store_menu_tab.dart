@@ -25,7 +25,7 @@ class StoreMenuTab extends StatelessWidget {
     final priceFmt = NumberFormat('#,###', 'ko_KR');
 
     return ListView.separated(
-      cacheExtent: double.infinity,
+      cacheExtent: 1000.0,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: menus.length,
       separatorBuilder: (_, _) => const Divider(
