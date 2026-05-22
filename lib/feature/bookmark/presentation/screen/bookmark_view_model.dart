@@ -45,8 +45,8 @@ class BookmarkViewModel extends ChangeNotifier {
     return '$label · $address';
   }
 
-  Future<void> loadBookmarks() async {
-    if (_isLoading) {
+  Future<void> loadBookmarks({bool force = false}) async {
+    if (_isLoading && !force) {
       return;
     }
 
