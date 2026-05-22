@@ -14,6 +14,7 @@ class StoreDto {
   bool? depositEnabled;
   int? depositAmount;
   int? reservationSlotMinutes;
+  String? description;
   String? createdAt;
 
   StoreDto({
@@ -32,6 +33,7 @@ class StoreDto {
     this.depositEnabled,
     this.depositAmount,
     this.reservationSlotMinutes,
+    this.description,
     this.createdAt,
   });
 
@@ -52,6 +54,7 @@ class StoreDto {
     depositAmount = (json['deposit_amount'] as num?)?.toInt();
     reservationSlotMinutes = (json['reservation_slot_minutes'] as num?)
         ?.toInt();
+    description = json['description'];
     createdAt = json['created_at'];
   }
 
@@ -72,6 +75,7 @@ class StoreDto {
     map['deposit_enabled'] = depositEnabled;
     map['deposit_amount'] = depositAmount;
     map['reservation_slot_minutes'] = reservationSlotMinutes;
+    map['description'] = description;
     map['created_at'] = createdAt;
     return map;
   }

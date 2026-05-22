@@ -38,7 +38,11 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
     @Default(<StoreImage>[]) List<StoreImage> images,
     @Default(_defaultOperatingHours)
     Map<String, Map<String, dynamic>> operatingHours,
+    @Default('') String description,
   }) = _PartnerStoreManagementState;
+
+  /// 최초 업장 등록 완료 후에만 카테고리별 관리·사진 진입 허용.
+  bool get canAccessStoreSubManagers => isEditMode;
 
   bool get canSubmit {
     final parsedDepositAmount = int.tryParse(depositAmount.trim());

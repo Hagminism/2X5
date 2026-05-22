@@ -6,44 +6,51 @@ class PartnerStoreManagementCtaCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const PartnerStoreManagementCtaCard({
     super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(14);
-    return Material(
-      color: AppColors.white,
-      borderRadius: borderRadius,
-      child: InkWell(
+    final isEnabled = onTap != null;
+    return Opacity(
+      opacity: isEnabled ? 1 : 0.45,
+      child: Material(
+        color: AppColors.white,
         borderRadius: borderRadius,
-        onTap: onTap,
-        child: Ink(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.signInTextField,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
+        child: InkWell(
+          borderRadius: borderRadius,
+          onTap: onTap,
+          child: Ink(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.signInTextField,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: isEnabled ? AppColors.primary : AppColors.textSecondary,
+                    size: 20,
+                  ),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 20),
-              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -73,7 +80,8 @@ class PartnerStoreManagementCtaCard extends StatelessWidget {
                 size: 16,
                 color: AppColors.textSecondary,
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

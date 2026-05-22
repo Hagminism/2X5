@@ -57,6 +57,7 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         category: store.category,
         address: store.address,
         displayPhone: store.contact.trim(),
+        storeDescription: store.description?.trim() ?? '',
         operatingHours: store.operatingHours,
         menus: menus,
         imageUrls: imageUrls,

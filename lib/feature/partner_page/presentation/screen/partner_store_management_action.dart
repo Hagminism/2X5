@@ -115,5 +115,8 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
     required String value,
   }) = ChangeDayCloseTime;
 
+  const factory PartnerStoreManagementAction.changeDescription(String value) =
+      ChangeDescription;
+
   const factory PartnerStoreManagementAction.tapSubmit() = TapSubmit;
 }
