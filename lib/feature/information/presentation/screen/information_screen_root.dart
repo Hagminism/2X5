@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/presentation/util/share_store_text.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_event.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_screen.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
@@ -43,6 +44,9 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(content: Text(event.message)));
+          break;
+        case ShareInformationContent(:final text, :final subject):
+          shareStoreText(context, text: text, subject: subject);
           break;
       }
     });

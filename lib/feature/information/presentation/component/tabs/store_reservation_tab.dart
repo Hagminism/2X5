@@ -9,6 +9,7 @@ class StoreReservationStatusTab extends StatelessWidget {
   final List<SalonDesigner> salonDesigners;
   final void Function() onTapReservation;
   final void Function(String designerId)? onTapSalonDesigner;
+  final bool isReservationAvailable;
 
   const StoreReservationStatusTab({
     super.key,
@@ -16,10 +17,18 @@ class StoreReservationStatusTab extends StatelessWidget {
     this.salonDesigners = const [],
     required this.onTapReservation,
     this.onTapSalonDesigner,
+    this.isReservationAvailable = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (!isReservationAvailable) {
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: _NotOnboardedReservationBody(),
+      );
+    }
+
     final storeCategory = StoreCategory.fromDbValue(category);
     return Scaffold(
       backgroundColor: Colors.white,
@@ -41,7 +50,12 @@ class StoreReservationStatusTab extends StatelessWidget {
                   ),
                   child: const Text(
                     '예약/이용하기',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                    ),
                   ),
                 ),
               ),
@@ -56,6 +70,64 @@ class StoreReservationStatusTab extends StatelessWidget {
           ),
           _ => _DefaultReservationAvailabilityBody(category: category),
         },
+      ),
+    );
+  }
+}
+
+class _NotOnboardedReservationBody extends StatelessWidget {
+  const _NotOnboardedReservationBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF7F8FA),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Icon(
+                Icons.storefront_outlined,
+                size: 36,
+                color: AppColors.textSecondary.withValues(alpha: 0.7),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              '아직 입점하지 않은 매장입니다',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+                color: AppColors.textPrimary,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              '이 매장은 정보 조회만 가능합니다.\n예약·이용은 입점 후 이용할 수 있어요.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                letterSpacing: -0.1,
+                color: AppColors.textSecondary,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -77,7 +149,12 @@ class _StudyCafeReservationBody extends StatelessWidget {
         const SizedBox(height: 24),
         const Text(
           '현재 좌석 이용 현황',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
         ),
         const SizedBox(height: 12),
         _TimeSlotRow(
@@ -111,12 +188,22 @@ class _SalonDesignerReservationBody extends StatelessWidget {
       children: [
         const Text(
           '디자이너 선택',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           '카드를 눌러 예약 일정을 잡을 수 있습니다.',
-          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            letterSpacing: -0.1,
+            color: Colors.grey.shade700,
+          ),
         ),
         const SizedBox(height: 16),
         if (salonDesigners.isEmpty)
@@ -124,7 +211,12 @@ class _SalonDesignerReservationBody extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 24),
             child: Text(
               '등록된 디자이너가 없습니다. 아래 버튼으로 예약 화면으로 이동해 주세요.',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade800),
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                letterSpacing: -0.1,
+                color: Colors.grey.shade800,
+              ),
             ),
           )
         else
@@ -213,8 +305,10 @@ class _SalonDesignerCard extends StatelessWidget {
                       Text(
                         designer.name,
                         style: const TextStyle(
+                          fontFamily: 'Pretendard',
                           fontSize: 17,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
                         ),
                       ),
                       if (designer.introduction.trim().isNotEmpty) ...[
@@ -224,8 +318,10 @@ class _SalonDesignerCard extends StatelessWidget {
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
+                            fontFamily: 'Pretendard',
                             fontSize: 14,
                             height: 1.35,
+                            letterSpacing: -0.1,
                             color: Colors.grey.shade800,
                           ),
                         ),
@@ -306,7 +402,12 @@ class _DefaultReservationAvailabilityBodyState
         const SizedBox(height: 24),
         Text(
           '${_selectedDate.month}월 ${_selectedDate.day}일 ${_weekdayKorean(_selectedDate.weekday)}요일 현황',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
         ),
         const SizedBox(height: 12),
         _TimeSlotRow(
@@ -352,7 +453,12 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
         ),
         if (showCalendarButton && onPickDate != null)
           IconButton(
@@ -409,17 +515,21 @@ class _WeekDateStrip extends StatelessWidget {
                   Text(
                     _weekdayKorean(date.weekday),
                     style: TextStyle(
+                      fontFamily: 'Pretendard',
                       color: isSelected ? Colors.white : Colors.grey,
                       fontSize: 13,
+                      letterSpacing: -0.1,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${date.day}',
                     style: TextStyle(
+                      fontFamily: 'Pretendard',
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       color: isSelected ? Colors.white : Colors.black,
+                      letterSpacing: -0.2,
                     ),
                   ),
                 ],
@@ -458,7 +568,12 @@ class _TimeSlotRow extends StatelessWidget {
         children: [
           Text(
             time,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
+            ),
           ),
           Row(
             children: [
@@ -470,7 +585,12 @@ class _TimeSlotRow extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 status,
-                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.1,
+                ),
               ),
             ],
           ),

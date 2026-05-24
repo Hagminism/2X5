@@ -14,7 +14,10 @@ class StoreMenuTab extends StatelessWidget {
       return const Center(
         child: Text(
           '등록된 메뉴가 없습니다.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            color: AppColors.textSecondary,
+          ),
         ),
       );
     }
@@ -22,6 +25,7 @@ class StoreMenuTab extends StatelessWidget {
     final priceFmt = NumberFormat('#,###', 'ko_KR');
 
     return ListView.separated(
+      cacheExtent: 1000.0,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: menus.length,
       separatorBuilder: (_, _) => const Divider(
@@ -49,8 +53,10 @@ class StoreMenuTab extends StatelessWidget {
                       Text(
                         menu.name,
                         style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Pretendard',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -59,8 +65,11 @@ class StoreMenuTab extends StatelessWidget {
                         Text(
                           desc,
                           style: const TextStyle(
-                            fontSize: 14,
-                            height: 1.35,
+                            fontFamily: 'Pretendard',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            height: 1.45,
+                            letterSpacing: -0.1,
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -69,8 +78,10 @@ class StoreMenuTab extends StatelessWidget {
                       Text(
                         '${priceFmt.format(menu.price)}원',
                         style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Pretendard',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -80,8 +91,10 @@ class StoreMenuTab extends StatelessWidget {
                           child: Text(
                             '품절',
                             style: TextStyle(
+                              fontFamily: 'Pretendard',
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.1,
                               color: AppColors.textSecondary,
                             ),
                           ),
@@ -111,8 +124,7 @@ class StoreMenuTab extends StatelessWidget {
                           url,
                           fit: BoxFit.cover,
                           color: muted ? Colors.white : null,
-                          colorBlendMode:
-                              muted ? BlendMode.saturation : null,
+                          colorBlendMode: muted ? BlendMode.saturation : null,
                           errorBuilder: (_, _, _) => const ColoredBox(
                             color: AppColors.surfaceMuted,
                             child: Icon(

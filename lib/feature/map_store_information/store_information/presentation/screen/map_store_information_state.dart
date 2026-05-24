@@ -15,7 +15,7 @@ abstract class MapStoreInformationState with _$MapStoreInformationState {
     @Default('') String category,
     @Default('') String address,
     @Default('') String displayPhone,
-    @Default('') String operatingHoursText,
+    @Default(<String, dynamic>{}) Map<String, dynamic> operatingHours,
     @Default(<StoreMenu>[]) List<StoreMenu> menus,
     @Default(<String>[]) List<String> imageUrls,
     String? imageUrl,
@@ -26,5 +26,6 @@ abstract class MapStoreInformationState with _$MapStoreInformationState {
     @Default([]) List<String> tabs,
     PageController? sliderController,
     @Default(0) int currentSliderPage,
+    @Default(true) bool isReservationAvailable,
   }) = _MapStoreInformationState;
 }

@@ -102,6 +102,7 @@ class InformationScreen extends StatelessWidget {
                       subtitle: state.subtitle,
                       rating: state.rating,
                       imageUrl: state.imageUrl,
+                      showRating: state.isReservationAvailable,
                     ),
                   ),
                   SliverPersistentHeader(
@@ -114,8 +115,16 @@ class InformationScreen extends StatelessWidget {
                         indicatorColor: AppColors.primary,
                         indicatorWeight: 3,
                         labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w600,
                           fontSize: 15,
+                          letterSpacing: -0.2,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          letterSpacing: -0.2,
                         ),
                         tabs: state.tabs
                             .map((title) => Tab(text: title))
@@ -132,7 +141,7 @@ class InformationScreen extends StatelessWidget {
                       return StoreHomeTab(
                         address: state.address,
                         displayPhone: state.displayPhone,
-                        operatingHoursText: state.operatingHoursText,
+                        operatingHours: state.operatingHours,
                         menus: state.menus,
                         onViewMoreMenus: () {
                           final controller = DefaultTabController.of(
@@ -163,6 +172,7 @@ class InformationScreen extends StatelessWidget {
                     StoreMenuTab(menus: state.menus),
                   StoreReservationStatusTab(
                     category: state.category,
+                    isReservationAvailable: state.isReservationAvailable,
                     salonDesigners: state.salonDesigners,
                     onTapReservation: () {
                       final currentLocation = GoRouterState.of(

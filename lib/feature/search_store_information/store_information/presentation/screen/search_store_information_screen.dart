@@ -99,6 +99,7 @@ class SearchStoreInformationScreen extends StatelessWidget {
                       subtitle: state.subtitle,
                       rating: state.rating,
                       imageUrl: state.imageUrl,
+                      showRating: state.isReservationAvailable,
                     ),
                   ),
                   SliverPersistentHeader(
@@ -127,7 +128,7 @@ class SearchStoreInformationScreen extends StatelessWidget {
                       return StoreHomeTab(
                         address: state.address,
                         displayPhone: state.displayPhone,
-                        operatingHoursText: state.operatingHoursText,
+                        operatingHours: state.operatingHours,
                         menus: state.menus,
                         onViewMoreMenus: () {
                           final controller = DefaultTabController.of(innerContext);
@@ -149,6 +150,7 @@ class SearchStoreInformationScreen extends StatelessWidget {
                     StoreMenuTab(menus: state.menus),
                   StoreReservationStatusTab(
                     category: state.category,
+                    isReservationAvailable: state.isReservationAvailable,
                     salonDesigners: state.salonDesigners,
                     onTapReservation: () {
                       final currentLocation = GoRouterState.of(

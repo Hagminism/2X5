@@ -5,7 +5,7 @@ import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
-import 'package:capstone_2026/core/domain/util/format_today_operating_hours.dart';
+import 'package:capstone_2026/core/domain/util/build_store_share_text.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
@@ -61,16 +61,18 @@ class InformationViewModel extends ChangeNotifier {
         category: store.category,
         address: store.address,
         displayPhone: store.contact.trim(),
-        operatingHoursText: formatTodayOperatingHours(store.operatingHours),
+        operatingHours: store.operatingHours,
         menus: menus,
         imageUrls: imageUrls,
         imageUrl: storeHeaderImageUrl(images),
         naverPlaceId: store.naverPlaceId ?? '',
+        isReservationAvailable: store.isOnboarded,
         isBookmarked: isBookmarked,
         isLoading: false,
       );
 
-      if (StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
+      if (store.isOnboarded &&
+          StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
         final designers =
             (await _salonRepository.getDesignersByStoreId(store.id))
                 .where((designer) => designer.isActive && !designer.isDeleted)
@@ -98,10 +100,14 @@ class InformationViewModel extends ChangeNotifier {
   Future<void> _loadNaverMenus(String naverPlaceId) async {
     try {
       final naverDataSource = getIt<NaverStoreSearchDataSource>();
-      final rawMenus = await naverDataSource.fetchStoreMenus(placeId: naverPlaceId);
+      final rawMenus = await naverDataSource.fetchStoreMenus(
+        placeId: naverPlaceId,
+      );
 
       if (rawMenus.isNotEmpty) {
-        final List<StoreMenu> naverMenus = rawMenus.asMap().entries.map((entry) {
+        final List<StoreMenu> naverMenus = rawMenus.asMap().entries.map((
+          entry,
+        ) {
           final index = entry.key;
           final item = entry.value;
           return StoreMenu(
@@ -149,13 +155,28 @@ class InformationViewModel extends ChangeNotifier {
         break;
       case TapInformationShare():
         _eventController.add(
-          const InformationEvent.showSnackBar('공유 기능은 준비 중입니다.'),
+          InformationEvent.share(
+            text: buildStoreShareText(
+              route: StoreShareRoute.home,
+              storeId: _state.storeId,
+              name: _state.name,
+              address: _state.address,
+              naverPlaceId: _state.naverPlaceId,
+            ),
+            subject: _state.name,
+          ),
         );
         break;
       case TapInformationBookmark():
         unawaited(_toggleBookmark());
         break;
       case TapInformationReservation():
+        if (!_state.isReservationAvailable) {
+          _eventController.add(
+            const InformationEvent.showSnackBar('아직 입점하지 않은 매장입니다.'),
+          );
+          return;
+        }
         final category = StoreCategory.fromDbValue(_state.category);
         final target = switch (category) {
           StoreCategory.studyCafe => Routes.seat,
@@ -170,6 +191,12 @@ class InformationViewModel extends ChangeNotifier {
         :final currentLocation,
         :final designerId,
       ):
+        if (!_state.isReservationAvailable) {
+          _eventController.add(
+            const InformationEvent.showSnackBar('아직 입점하지 않은 매장입니다.'),
+          );
+          return;
+        }
         final uri = Uri(
           path: '$currentLocation/${Routes.salonReservation}',
           queryParameters: {'designerId': designerId},
