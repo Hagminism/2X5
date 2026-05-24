@@ -259,25 +259,38 @@ async def get_hours(place_id: str, business_type: str = "restaurant"):
                     if desc and not status_description:
                         status_description = desc
 
+                block_hours = []
                 for item in block.get("businessHours") or []:
                     if not isinstance(item, dict):
                         continue
 
                     day = (item.get("day") or "").strip()
                     business_hours = item.get("businessHours")
+                    break_hours = item.get("breakHours")
                     start = None
                     end = None
+                    break_start = None
+                    break_end = None
                     if isinstance(business_hours, dict):
                         start = business_hours.get("start")
                         end = business_hours.get("end")
+                    if isinstance(break_hours, dict):
+                        break_start = break_hours.get("start")
+                        break_end = break_hours.get("end")
 
-                    weekly_hours.append(
+                    block_hours.append(
                         {
                             "day": day,
                             "start": start,
                             "end": end,
+                            "breakStart": break_start,
+                            "breakEnd": break_end,
                         }
                     )
+
+                if block_hours:
+                    weekly_hours = block_hours[:7]
+                    break
 
             return {
                 "statusDescription": status_description,

@@ -585,6 +585,9 @@ class _MapScreenState extends State<MapScreen> {
               debugPrint(
                 '[MapCrawl] fetchPlaceSummary 결과: ${summary != null ? "성공 (keys: ${summary.keys.toList()})" : "null"}',
               );
+              debugPrint(
+                '[MapCrawl] hoursPayload weeklyHours=${(hoursPayload?['weeklyHours'] as List?)?.length ?? 'null'}',
+              );
 
               final structuredHours = mapNaverWeeklyHoursToStoreOperatingHours(
                 hoursPayload,
@@ -593,6 +596,10 @@ class _MapScreenState extends State<MapScreen> {
                 operatingHours = structuredHours;
                 debugPrint(
                   '[MapCrawl] 구조화 영업시간 저장 keys: ${structuredHours.keys.toList()}',
+                );
+              } else {
+                debugPrint(
+                  '[MapCrawl] 구조화 영업시간 변환 실패 - payload=$hoursPayload',
                 );
               }
 
@@ -606,16 +613,6 @@ class _MapScreenState extends State<MapScreen> {
                   final btnPhone = buttons?['phone'] as String?;
                   if (btnPhone != null && btnPhone.isNotEmpty) {
                     finalContact = btnPhone;
-                  }
-                }
-
-                // 영업시간: GraphQL 실패 시 Summary 한 줄 텍스트 fallback
-                if (operatingHours.isEmpty) {
-                  final bizHoursObj =
-                      summary['businessHours'] as Map<String, dynamic>?;
-                  final bizHours = bizHoursObj?['description'] as String?;
-                  if (bizHours != null && bizHours.isNotEmpty) {
-                    operatingHours = {'text': bizHours};
                   }
                 }
 
