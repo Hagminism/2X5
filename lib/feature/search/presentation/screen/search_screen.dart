@@ -153,8 +153,13 @@ class _SearchScreenState extends State<SearchScreen> {
           )
           .limit(50);
 
+      if (!mounted) return;
+
       final results = List<Map<String, dynamic>>.from(response);
       final coverImageUrls = await _fetchCoverImageUrls(results);
+
+      if (!mounted) return;
+
       final resultsWithImages = results.map((store) {
         final storeId = store['id']?.toString() ?? '';
         return {
@@ -162,8 +167,6 @@ class _SearchScreenState extends State<SearchScreen> {
           'image_url': coverImageUrls[storeId],
         };
       }).toList();
-
-      if (!mounted) return;
 
       setState(() {
         _searchResults = resultsWithImages;
