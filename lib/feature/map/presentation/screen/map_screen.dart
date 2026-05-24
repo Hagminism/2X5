@@ -45,6 +45,7 @@ class _MapScreenState extends State<MapScreen> {
   List<Map<String, dynamic>> _stores = [];
   String? _selectedCategory;
   Map<String, dynamic>? _selectedStore;
+  String? _selectedStoreCoverImage;
   String? _selectedMarkerId;
   DateTime? _lastMarkerClickTime;
   final Set<String> _registeredMarkerIds = {};
@@ -87,8 +88,10 @@ class _MapScreenState extends State<MapScreen> {
           final prev = _selectedMarkerId;
           setState(() {
             _selectedStore = matches.first;
+            _selectedStoreCoverImage = null;
             _selectedMarkerId = markerId;
           });
+          _fetchCoverImage(storeId);
           if (prev != null && prev != markerId && prev.startsWith('store_')) {
             _updateMarkerAppearance(prev, isSelected: false);
           }
@@ -120,6 +123,22 @@ class _MapScreenState extends State<MapScreen> {
         _currentCenter = event.latLng;
       }
     });
+  }
+
+  Future<void> _fetchCoverImage(String storeId) async {
+    try {
+      final response = await Supabase.instance.client
+          .from('store_images')
+          .select('image_url')
+          .eq('store_id', storeId)
+          .eq('is_cover', true)
+          .limit(1);
+      if (!mounted) return;
+      final url = (response as List).isNotEmpty
+          ? response.first['image_url'] as String?
+          : null;
+      setState(() => _selectedStoreCoverImage = url);
+    } catch (_) {}
   }
 
   Future<void> _fetchStores(NLatLng center) async {
@@ -856,6 +875,7 @@ class _MapScreenState extends State<MapScreen> {
               bottom: 0,
               child: _StoreBottomSheet(
                 store: _selectedStore!,
+                coverImageUrl: _selectedStoreCoverImage,
                 categoryEmoji: _categoryEmoji(
                   _selectedStore!['category'] as String? ?? '',
                 ),
@@ -865,7 +885,10 @@ class _MapScreenState extends State<MapScreen> {
                 distanceM: _calcDistance(_selectedStore!),
                 formatDistance: _formatDistance,
                 walkingTime: _walkingTime,
-                onClose: () => setState(() => _selectedStore = null),
+                onClose: () => setState(() {
+                  _selectedStore = null;
+                  _selectedStoreCoverImage = null;
+                }),
                 onSwipeUp: () {
                   final storeId = _selectedStore!['id']?.toString() ?? '';
                   if (storeId.isNotEmpty) {
@@ -1051,6 +1074,7 @@ class _SearchAreaButton extends StatelessWidget {
 
 class _StoreBottomSheet extends StatelessWidget {
   final Map<String, dynamic> store;
+  final String? coverImageUrl;
   final String categoryEmoji;
   final String categoryLabel;
   final double? distanceM;
@@ -1061,6 +1085,7 @@ class _StoreBottomSheet extends StatelessWidget {
 
   const _StoreBottomSheet({
     required this.store,
+    required this.coverImageUrl,
     required this.categoryEmoji,
     required this.categoryLabel,
     required this.distanceM,
@@ -1106,72 +1131,104 @@ class _StoreBottomSheet extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: SizedBox(
+                    width: 64,
+                    height: 64,
+                    child: coverImageUrl != null
+                        ? Image.network(coverImageUrl!, fit: BoxFit.cover)
+                        : Container(
+                            color: const Color(0xFFF3F4F6),
+                            child: const Icon(
+                              Icons.storefront_rounded,
+                              size: 28,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 14),
                 Expanded(
-                  child: Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: onClose,
+                            child: const Icon(
+                              Icons.close,
+                              size: 20,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text(categoryEmoji,
+                              style: const TextStyle(fontSize: 13)),
+                          const SizedBox(width: 4),
+                          Text(
+                            categoryLabel,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          if (distanceM != null) ...[
+                            const Text(
+                              ' · ',
+                              style:
+                                  TextStyle(color: AppColors.textSecondary),
+                            ),
+                            const Icon(
+                              Icons.place_outlined,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              formatDistance(distanceM!),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const Text(
+                              ' · ',
+                              style: TextStyle(
+                                  color: AppColors.textSecondary),
+                            ),
+                            Text(
+                              walkingTime(distanceM!),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: onClose,
-                  child: const Icon(
-                    Icons.close,
-                    size: 20,
-                    color: Color(0xFF9CA3AF),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Text(categoryEmoji, style: const TextStyle(fontSize: 13)),
-                const SizedBox(width: 4),
-                Text(
-                  categoryLabel,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (distanceM != null) ...[
-                  const Text(
-                    ' · ',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  const Icon(
-                    Icons.place_outlined,
-                    size: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 2),
-                  Text(
-                    formatDistance(distanceM!),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const Text(
-                    ' · ',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  Text(
-                    walkingTime(distanceM!),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
               ],
             ),
             const SizedBox(height: 12),
@@ -1188,7 +1245,8 @@ class _StoreBottomSheet extends StatelessWidget {
                   SizedBox(width: 2),
                   Text(
                     '자세히 보기',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                    style:
+                        TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
                   ),
                 ],
               ),

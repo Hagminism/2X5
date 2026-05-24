@@ -6,6 +6,7 @@ import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen_root.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/information_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/notices/presentation/screen/notices_screen.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/core/presentation/component/scope/map_studycafe_pass_selection_scope.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_seat_selection/core/presentation/component/scope/map_studycafe_seat_selection_scope.dart';
 import 'package:capstone_2026/feature/map_store_information/store_information/core/presentation/component/scope/map_store_information_scope.dart';
@@ -548,11 +549,7 @@ final router = GoRouter(
                 GoRoute(
                   path: Routes.notices,
                   parentNavigatorKey: _rootNavigatorKey,
-                  builder: (context, state) => const Scaffold(
-                    body: SafeArea(
-                      child: Center(child: Text('공지사항 페이지')),
-                    ),
-                  ),
+                  builder: (context, state) => const NoticesScreen(),
                 ),
                 GoRoute(
                   path: Routes.terms,
