@@ -25,13 +25,13 @@ class HomeStoreCard extends StatelessWidget {
 
   static Color _categoryColor(String category) {
     switch (category) {
-      case 'restaurant':
+      case '식당':
         return const Color(0xFFFFEBEE);
-      case 'cafe':
+      case '카페':
         return const Color(0xFFEFEBE9);
-      case 'study_cafe':
+      case '스터디카페':
         return const Color(0xFFE3F2FD);
-      case 'salon':
+      case '미용실':
         return const Color(0xFFF3E5F5);
       default:
         return const Color(0xFFF5F5F5);
@@ -40,13 +40,13 @@ class HomeStoreCard extends StatelessWidget {
 
   static Color _categoryIconColor(String category) {
     switch (category) {
-      case 'restaurant':
+      case '식당':
         return const Color(0xFFE53935);
-      case 'cafe':
+      case '카페':
         return const Color(0xFF6D4C41);
-      case 'study_cafe':
+      case '스터디카페':
         return const Color(0xFF1E88E5);
-      case 'salon':
+      case '미용실':
         return const Color(0xFF8E24AA);
       default:
         return AppColors.textSecondary;
@@ -55,16 +55,31 @@ class HomeStoreCard extends StatelessWidget {
 
   static IconData _categoryIcon(String category) {
     switch (category) {
-      case 'restaurant':
+      case '식당':
         return Icons.restaurant_rounded;
-      case 'cafe':
+      case '카페':
         return Icons.local_cafe_rounded;
-      case 'study_cafe':
+      case '스터디카페':
         return Icons.menu_book_rounded;
-      case 'salon':
+      case '미용실':
         return Icons.content_cut_rounded;
       default:
         return Icons.storefront_rounded;
+    }
+  }
+
+  static String _categoryEmoji(String category) {
+    switch (category) {
+      case '식당':
+        return '🍽️';
+      case '카페':
+        return '☕';
+      case '스터디카페':
+        return '📚';
+      case '미용실':
+        return '✂';
+      default:
+        return '🏪';
     }
   }
 
@@ -124,7 +139,30 @@ class HomeStoreCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _categoryColor(category),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${_categoryEmoji(category)} $category',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _categoryIconColor(category),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       const Icon(
@@ -142,9 +180,15 @@ class HomeStoreCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
+                      const Icon(
+                        Icons.place_outlined,
+                        size: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 2),
                       Expanded(
                         child: Text(
-                          ' · $subtitle',
+                          subtitle,
                           style: const TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondary,

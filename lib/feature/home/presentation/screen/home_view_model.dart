@@ -9,6 +9,7 @@ import 'package:capstone_2026/feature/home/presentation/screen/home_action.dart'
 import 'package:capstone_2026/feature/home/presentation/screen/home_event.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_state.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
@@ -23,6 +24,11 @@ class HomeViewModel extends ChangeNotifier {
   HomeState _state = const HomeState();
 
   HomeState get state => _state;
+
+  List<Store> _allStores = [];
+  Map<String, String?> _storeImageMap = {};
+  Set<String> _bookmarkedIds = {};
+  Position? _currentPosition;
 
   final StreamController<HomeEvent> _eventController =
       StreamController<HomeEvent>.broadcast();
@@ -41,7 +47,30 @@ class HomeViewModel extends ChangeNotifier {
       case TapHomeBookmark(:final storeId):
         unawaited(_toggleBookmark(storeId));
         break;
+      case SelectCategory(:final category):
+        _state = state.copyWith(
+          selectedCategory: category,
+          recommendedStores: _buildDisplayStores(category),
+        );
+        notifyListeners();
+        break;
     }
+  }
+
+  Future<Position?> _getCurrentPosition() async {
+    // 한성대 고정 위치
+    return Position(
+      latitude: 37.5826,
+      longitude: 127.0100,
+      timestamp: DateTime.now(),
+      accuracy: 0,
+      altitude: 0,
+      altitudeAccuracy: 0,
+      heading: 0,
+      headingAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+    );
   }
 
   Future<void> _loadStores() async {
@@ -53,7 +82,20 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final stores = await _storeRepository.getStores();
+      final allStores = await _storeRepository.getStores();
+
+      final position = await _getCurrentPosition();
+      final stores = position == null
+          ? allStores
+          : allStores.where((store) {
+              final distance = Geolocator.distanceBetween(
+                position.latitude,
+                position.longitude,
+                store.latitude,
+                store.longitude,
+              );
+              return distance <= 5000;
+            }).toList();
 
       final imagesList = await Future.wait(
         stores.map((store) => _storeRepository.getStoreImagesByStoreId(store.id)),
@@ -73,17 +115,14 @@ class HomeViewModel extends ChangeNotifier {
       }
 
       final myBookmarks = await _bookmarkRepository.getMyBookmarks();
-      final bookmarkedIds = myBookmarks.map((item) => item.storeId).toSet();
-
-      final recommendedStores = _pickOneStorePerCategory(
-        stores,
-        storeImageMap,
-        bookmarkedIds,
-      );
+      _allStores = stores;
+      _storeImageMap = storeImageMap;
+      _bookmarkedIds = myBookmarks.map((item) => item.storeId).toSet();
+      _currentPosition = position;
 
       _state = state.copyWith(
         isLoading: false,
-        recommendedStores: recommendedStores,
+        recommendedStores: _buildDisplayStores(state.selectedCategory),
       );
       notifyListeners();
     } catch (error) {
@@ -98,44 +137,64 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  List<HomeStoreItem> _pickOneStorePerCategory(
-    List<Store> stores,
-    Map<String, String?> storeImageMap,
-    Set<String> bookmarkedIds,
-  ) {
-    final Map<StoreCategory, HomeStoreItem> selectedByCategory =
-        <StoreCategory, HomeStoreItem>{};
+  String _distanceText(Store store) {
+    if (_currentPosition == null) return store.address;
+    final meters = Geolocator.distanceBetween(
+      _currentPosition!.latitude,
+      _currentPosition!.longitude,
+      store.latitude,
+      store.longitude,
+    );
+    final distanceLabel = meters < 1000
+        ? '${meters.round()}m'
+        : '${(meters / 1000).toStringAsFixed(1)}km';
+    return '$distanceLabel · ${store.address}';
+  }
 
-    for (final store in stores) {
-      final category = StoreCategory.fromDbValue(store.category);
-      if (category == null) {
-        continue;
-      }
+  double _distanceMeters(Store store) {
+    if (_currentPosition == null) return 0;
+    return Geolocator.distanceBetween(
+      _currentPosition!.latitude,
+      _currentPosition!.longitude,
+      store.latitude,
+      store.longitude,
+    );
+  }
 
-      final current = selectedByCategory[category];
-      final isParisBaguette = store.name.contains('파리바게트');
-
-      if (current == null || isParisBaguette) {
-        selectedByCategory[category] = HomeStoreItem(
-          storeId: store.id,
-          name: store.name,
-          subtitle: '${category.displayName} · ${store.address}',
-          rating: store.rating,
-          category: category.displayName,
-          imageUrl: storeImageMap[store.id],
-          isBookmarked: bookmarkedIds.contains(store.id),
-        );
-      }
+  List<HomeStoreItem> _buildDisplayStores(StoreCategory? selectedCategory) {
+    if (selectedCategory != null) {
+      final filtered = _allStores
+          .where((s) => StoreCategory.fromDbValue(s.category) == selectedCategory)
+          .toList()
+        ..sort((a, b) => _distanceMeters(a).compareTo(_distanceMeters(b)));
+      return filtered
+          .map((s) => HomeStoreItem(
+                storeId: s.id,
+                name: s.name,
+                subtitle: _distanceText(s),
+                rating: s.rating,
+                category: selectedCategory.displayName,
+                imageUrl: _storeImageMap[s.id],
+                isBookmarked: _bookmarkedIds.contains(s.id),
+              ))
+          .toList();
     }
 
-    final List<HomeStoreItem> orderedStores = <HomeStoreItem>[];
-    for (final category in StoreCategory.values) {
-      final store = selectedByCategory[category];
-      if (store != null) {
-        orderedStores.add(store);
-      }
-    }
-    return orderedStores;
+    // 전체: 모든 가게 (거리순)
+    final sorted = [..._allStores]
+      ..sort((a, b) => _distanceMeters(a).compareTo(_distanceMeters(b)));
+    return sorted.map((s) {
+      final category = StoreCategory.fromDbValue(s.category);
+      return HomeStoreItem(
+        storeId: s.id,
+        name: s.name,
+        subtitle: _distanceText(s),
+        rating: s.rating,
+        category: category?.displayName ?? s.category,
+        imageUrl: _storeImageMap[s.id],
+        isBookmarked: _bookmarkedIds.contains(s.id),
+      );
+    }).toList();
   }
 
   Future<void> _toggleBookmark(String storeId) async {
