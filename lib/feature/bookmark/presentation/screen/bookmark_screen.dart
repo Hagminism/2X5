@@ -1,7 +1,7 @@
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/presentation/component/store_category_filter_chips.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_empty_state.dart';
-import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_filter_chips.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_page_header.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_store_card.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
@@ -36,10 +36,9 @@ class BookmarkScreen extends StatelessWidget {
                     children: [
                       const BookmarkPageHeader(),
                       const SizedBox(height: 14),
-                      BookmarkFilterChips(
-                        filters: BookmarkViewModel.filters,
-                        selectedFilter: viewModel.selectedFilter,
-                        onFilterSelected: viewModel.selectFilter,
+                      StoreCategoryFilterChips(
+                        selected: viewModel.selectedCategory,
+                        onSelect: viewModel.selectCategory,
                       ),
                       const SizedBox(height: 16),
                       if (viewModel.errorMessage != null) ...[
