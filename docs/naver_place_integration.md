@@ -18,7 +18,9 @@
 [2단계] 네이버 모바일 웹 검색 (m.search.naver.com)
    ↓  Place ID, 전화번호 추출
 [3단계] 네이버 플레이스 요약 API (map.naver.com/p/api/place/summary)
-   ↓  영업시간, 대표 이미지, 리뷰 점수 등
+   ↓  전화번호, 대표 이미지, 리뷰 점수, 영업시간 요약 텍스트(fallback)
+[3-1단계] 로컬 프록시 GraphQL `/api/place/{id}/hours` (신규 등록 시 병렬)
+   ↓  요일별 영업시간 → `operating_hours` 구조화 저장
 [4단계] Supabase DB 저장
 ```
 
@@ -93,7 +95,8 @@
 | `category.category` | `String` | `카페`, `미용실`, `육류,고기요리` 등 | 미사용 |
 | `address` | `Map` | `address`, `roadAddress`, `formattedAddress` | 미사용 |
 | `coordinate` | `Map` | `latitude`, `longitude` | 미사용 |
-| `businessHours.description` | `String` | `"08:00에 영업 시작"` 등 요약 텍스트 | ✅ `operating_hours` 저장 |
+| `businessHours.description` | `String` | `"08:00에 영업 시작"` 등 요약 텍스트 | ✅ GraphQL 실패 시 `{text}` fallback |
+| (프록시) `GET /api/place/{id}/hours` | GraphQL | `newBusinessHours` 요일별 start/end | ✅ 신규 등록 시 `monday`~`sunday` 구조 저장 |
 | `images.images` | `List<Map>` | `[{"origin": "https://...jpg"}, ...]` | ✅ 대표 이미지 저장 |
 | `visitorReviews.score` | `double?` | 방문자 리뷰 평균 점수 (예: `4.92`) | ⬜ 미사용 (활용 가능) |
 | `visitorReviews.displayText` | `String` | `"방문자 리뷰 4,072"` | ⬜ 미사용 (활용 가능) |
@@ -125,8 +128,8 @@ _searchAroundCenter()
   └─ 5. 신규 매장별 병렬 등록:
         ├─ fetchPlaceInfoFromMobileSearch(name)
         │     → placeId, phone 추출
-        ├─ fetchPlaceSummary(placeId)
-        │     → 영업시간, 대표 이미지, 전화번호 보강
+        ├─ fetchPlaceSummary(placeId) ∥ fetchPlaceOperatingHours(placeId)
+        │     → 요일별 영업시간(우선) / Summary 텍스트 fallback, 이미지·전화 보강
         ├─ Store 엔티티 생성 → createStoreDynamically()
         └─ 대표 이미지 → addStoreImage()
 ```

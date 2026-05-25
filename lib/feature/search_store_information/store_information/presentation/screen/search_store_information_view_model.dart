@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
-import 'package:capstone_2026/core/domain/util/format_today_operating_hours.dart';
+import 'package:capstone_2026/core/domain/util/build_store_share_text.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
@@ -57,15 +57,17 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         category: store.category,
         address: store.address,
         displayPhone: store.contact.trim(),
-        operatingHoursText: formatTodayOperatingHours(store.operatingHours),
+        operatingHours: store.operatingHours,
         menus: menus,
         imageUrls: imageUrls,
         imageUrl: storeHeaderImageUrl(images),
         naverPlaceId: store.naverPlaceId ?? '',
+        isReservationAvailable: store.isOnboarded,
         isLoading: false,
       );
 
-      if (StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
+      if (store.isOnboarded &&
+          StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
         final designers =
             (await _salonRepository.getDesignersByStoreId(store.id))
                 .where((designer) => designer.isActive && !designer.isDeleted)
@@ -143,7 +145,16 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         break;
       case TapSearchStoreInformationShare():
         _eventController.add(
-          const SearchStoreInformationEvent.showSnackBar('공유 기능은 준비 중입니다.'),
+          SearchStoreInformationEvent.share(
+            text: buildStoreShareText(
+              route: StoreShareRoute.search,
+              storeId: _state.storeId,
+              name: _state.name,
+              address: _state.address,
+              naverPlaceId: _state.naverPlaceId,
+            ),
+            subject: _state.name,
+          ),
         );
         break;
       case TapSearchStoreInformationBookmark():
@@ -157,6 +168,14 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         );
         break;
       case TapSearchStoreInformationReservation(:final currentLocation):
+        if (!_state.isReservationAvailable) {
+          _eventController.add(
+            const SearchStoreInformationEvent.showSnackBar(
+              '아직 입점하지 않은 매장입니다.',
+            ),
+          );
+          return;
+        }
         final category = StoreCategory.fromDbValue(_state.category);
         final target = switch (category) {
           StoreCategory.studyCafe => Routes.seat,
@@ -171,6 +190,14 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         :final currentLocation,
         :final designerId,
       ):
+        if (!_state.isReservationAvailable) {
+          _eventController.add(
+            const SearchStoreInformationEvent.showSnackBar(
+              '아직 입점하지 않은 매장입니다.',
+            ),
+          );
+          return;
+        }
         final uri = Uri(
           path: '$currentLocation/${Routes.salonReservation}',
           queryParameters: {'designerId': designerId},

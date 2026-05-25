@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
-import 'package:capstone_2026/core/domain/util/format_today_operating_hours.dart';
+import 'package:capstone_2026/core/domain/util/build_store_share_text.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
@@ -16,7 +15,6 @@ import 'package:capstone_2026/feature/information/presentation/screen/informatio
 import 'package:capstone_2026/feature/information/presentation/screen/information_state.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 
 class InformationViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
@@ -63,16 +61,18 @@ class InformationViewModel extends ChangeNotifier {
         category: store.category,
         address: store.address,
         displayPhone: store.contact.trim(),
-        operatingHoursText: formatTodayOperatingHours(store.operatingHours),
+        operatingHours: store.operatingHours,
         menus: menus,
         imageUrls: imageUrls,
         imageUrl: storeHeaderImageUrl(images),
         naverPlaceId: store.naverPlaceId ?? '',
+        isReservationAvailable: store.isOnboarded,
         isBookmarked: isBookmarked,
         isLoading: false,
       );
 
-      if (StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
+      if (store.isOnboarded &&
+          StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
         final designers =
             (await _salonRepository.getDesignersByStoreId(store.id))
                 .where((designer) => designer.isActive && !designer.isDeleted)
@@ -98,12 +98,14 @@ class InformationViewModel extends ChangeNotifier {
   Future<void> _loadNaverMenus(String naverPlaceId) async {
     try {
       final naverDataSource = getIt<NaverStoreSearchDataSource>();
-      final rawMenus =
-          await naverDataSource.fetchStoreMenus(placeId: naverPlaceId);
+      final rawMenus = await naverDataSource.fetchStoreMenus(
+        placeId: naverPlaceId,
+      );
 
       if (rawMenus.isNotEmpty) {
-        final List<StoreMenu> naverMenus =
-            rawMenus.asMap().entries.map((entry) {
+        final List<StoreMenu> naverMenus = rawMenus.asMap().entries.map((
+          entry,
+        ) {
           final index = entry.key;
           final item = entry.value;
           return StoreMenu(
@@ -149,13 +151,30 @@ class InformationViewModel extends ChangeNotifier {
       case TapInformationBack():
         _eventController.add(const InformationEvent.pop());
         break;
-      case TapInformationShare(:final shareOrigin):
-        unawaited(_shareStore(shareOrigin: shareOrigin));
+      case TapInformationShare():
+        _eventController.add(
+          InformationEvent.share(
+            text: buildStoreShareText(
+              route: StoreShareRoute.home,
+              storeId: _state.storeId,
+              name: _state.name,
+              address: _state.address,
+              naverPlaceId: _state.naverPlaceId,
+            ),
+            subject: _state.name,
+          ),
+        );
         break;
       case TapInformationBookmark():
         unawaited(_toggleBookmark());
         break;
       case TapInformationReservation():
+        if (!_state.isReservationAvailable) {
+          _eventController.add(
+            const InformationEvent.showSnackBar('아직 입점하지 않은 매장입니다.'),
+          );
+          return;
+        }
         final category = StoreCategory.fromDbValue(_state.category);
         final target = switch (category) {
           StoreCategory.studyCafe => Routes.seat,
@@ -170,6 +189,12 @@ class InformationViewModel extends ChangeNotifier {
         :final currentLocation,
         :final designerId,
       ):
+        if (!_state.isReservationAvailable) {
+          _eventController.add(
+            const InformationEvent.showSnackBar('아직 입점하지 않은 매장입니다.'),
+          );
+          return;
+        }
         final uri = Uri(
           path: '$currentLocation/${Routes.salonReservation}',
           queryParameters: {'designerId': designerId},
@@ -181,62 +206,6 @@ class InformationViewModel extends ChangeNotifier {
         notifyListeners();
         break;
     }
-  }
-
-  Future<void> _shareStore({Rect? shareOrigin}) async {
-    final name = _state.name.trim();
-    if (name.isEmpty) {
-      _eventController.add(
-        const InformationEvent.showSnackBar('매장 정보를 불러온 뒤 공유해 주세요.'),
-      );
-      return;
-    }
-
-    final lines = <String>[
-      'ReverseHub에서 추천하는 매장이에요!',
-      '',
-      name,
-    ];
-
-    if (_state.subtitle.trim().isNotEmpty) {
-      lines.add(_state.subtitle.trim());
-    }
-    if (_state.rating > 0) {
-      lines.add('평점 ${_state.rating}');
-    }
-    if (_state.address.trim().isNotEmpty) {
-      lines.add(_state.address.trim());
-    }
-    if (_state.displayPhone.trim().isNotEmpty) {
-      lines.add(_state.displayPhone.trim());
-    }
-
-    try {
-      await Share.share(
-        lines.join('\n'),
-        subject: name,
-        sharePositionOrigin: shareOrigin ?? _fallbackShareOrigin(),
-      );
-    } catch (e) {
-      debugPrint('매장 공유 실패: $e');
-      _eventController.add(
-        const InformationEvent.showSnackBar('공유를 시작하지 못했습니다.'),
-      );
-    }
-  }
-
-  Rect _fallbackShareOrigin() {
-    final view = PlatformDispatcher.instance.views.first;
-    final size = view.physicalSize / view.devicePixelRatio;
-    const buttonSize = 44.0;
-    const topInset = 52.0;
-
-    return Rect.fromLTWH(
-      size.width - buttonSize - 12,
-      topInset,
-      buttonSize,
-      buttonSize,
-    );
   }
 
   Future<void> _toggleBookmark() async {

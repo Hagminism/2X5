@@ -26,9 +26,7 @@ class MyPageScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              MyPageHeader(
-                onTap: () => onAction(const MyPageAction.viewNotifications()),
-              ),
+              const MyPageHeader(),
               const SizedBox(height: 16),
               MyProfileCard(
                 name: state.userName,
@@ -69,18 +67,6 @@ class MyPageScreen extends StatelessWidget {
                     icon: Icons.person_outline,
                     onTap: () =>
                         onAction(const MyPageAction.tapAccountSettings()),
-                  ),
-                  MyMenuTile(
-                    title: '알림 설정',
-                    icon: Icons.notifications_active_outlined,
-                    onTap: () => onAction(
-                      const MyPageAction.tapNotificationSettings(),
-                    ),
-                  ),
-                  MyMenuTile(
-                    title: '1:1 문의',
-                    icon: Icons.mail_outline_rounded,
-                    onTap: () => onAction(const MyPageAction.tapInquiry()),
                   ),
                   MyMenuTile(
                     title: '공지사항',
