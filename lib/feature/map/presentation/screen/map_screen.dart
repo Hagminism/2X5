@@ -970,8 +970,8 @@ class _CategoryChips extends StatelessWidget {
   const _CategoryChips({required this.selected, required this.onSelect});
 
   static const _items = [
-    (label: '전체', value: null as String?, emoji: '🗺'),
-    (label: '식당', value: 'restaurant', emoji: '🍽'),
+    (label: '전체', value: null as String?, emoji: '🌐'),
+    (label: '식당', value: 'restaurant', emoji: '🍽️'),
     (label: '카페', value: 'cafe', emoji: '☕'),
     (label: '스터디카페', value: 'study_cafe', emoji: '📚'),
     (label: '미용실', value: 'salon', emoji: '✂'),

@@ -25,6 +25,7 @@ class BookmarkFilterChips extends StatelessWidget {
                 child: ChoiceChip(
                   label: Text(filter),
                   selected: selectedFilter == filter,
+                  showCheckmark: false,
                   onSelected: (_) => onFilterSelected(filter),
                   selectedColor: AppColors.primary.withValues(alpha: 0.14),
                   backgroundColor: AppColors.surfaceMuted,
