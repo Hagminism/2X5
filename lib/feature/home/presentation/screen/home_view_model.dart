@@ -58,19 +58,21 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   Future<Position?> _getCurrentPosition() async {
-    // 한성대 고정 위치
-    return Position(
-      latitude: 37.5826,
-      longitude: 127.0100,
-      timestamp: DateTime.now(),
-      accuracy: 0,
-      altitude: 0,
-      altitudeAccuracy: 0,
-      heading: 0,
-      headingAccuracy: 0,
-      speed: 0,
-      speedAccuracy: 0,
-    );
+    try {
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return null;
+      }
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 5),
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _loadStores() async {
