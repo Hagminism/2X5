@@ -47,6 +47,7 @@ import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_s
 import 'package:capstone_2026/feature/partner_store_image/presentation/screen/partner_store_image_view_model.dart';
 import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/partner_store_menu_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/layout/presentation/screen/partner_studycafe_layout_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_layout/presentation/screen/partner_store_layout_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/usage_option/presentation/screen/partner_studycafe_usage_option_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/data/data_source/user_reservation_history_data_source.dart';
@@ -332,6 +333,11 @@ void diSetup() {
   getIt.registerFactory<PartnerStudyCafeLayoutViewModel>(
     () => PartnerStudyCafeLayoutViewModel(
       studyCafeRepository: getIt<StudyCafeRepository>(),
+    ),
+  );
+  getIt.registerFactory<PartnerStoreLayoutViewModel>(
+    () => PartnerStoreLayoutViewModel(
+      storeRepository: getIt<StoreRepository>(),
     ),
   );
   getIt.registerFactory<PartnerStudyCafeUsageOptionViewModel>(
