@@ -41,8 +41,10 @@ import 'package:capstone_2026/feature/partner_salon_schedule_management/presenta
 import 'package:capstone_2026/feature/partner_salon_service_management/core/presentation/component/scope/partner_salon_service_management_scope.dart';
 import 'package:capstone_2026/feature/partner_salon_service_management/presentation/screen/partner_salon_service_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/layout/core/presentation/component/scope/partner_studycafe_layout_scope.dart';
+import 'package:capstone_2026/feature/partner_store_layout/core/presentation/component/scope/partner_store_layout_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/usage_option/core/presentation/component/scope/partner_studycafe_usage_option_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/layout/presentation/screen/partner_studycafe_layout_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_layout/presentation/screen/partner_store_layout_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/usage_option/presentation/screen/partner_studycafe_usage_option_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
@@ -609,6 +611,13 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => PartnerStudyCafeLayoutScope(
                     viewModel: getIt<PartnerStudyCafeLayoutViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerStoreLayout,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => PartnerStoreLayoutScope(
+                    viewModel: getIt<PartnerStoreLayoutViewModel>(),
                   ),
                 ),
                 GoRoute(
