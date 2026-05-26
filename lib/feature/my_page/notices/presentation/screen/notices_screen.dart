@@ -58,7 +58,7 @@ class NoticesScreen extends StatelessWidget {
       ),
       body: ListView.separated(
         itemCount: _notices.length,
-        separatorBuilder: (_, __) =>
+        separatorBuilder: (_, _) =>
             const Divider(height: 1, color: AppColors.border),
         itemBuilder: (context, index) {
           final notice = _notices[index];

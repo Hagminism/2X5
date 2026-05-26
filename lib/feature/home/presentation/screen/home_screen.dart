@@ -20,76 +20,94 @@ class HomeScreen extends StatelessWidget {
     super.key,
   });
 
+  static const double _loadMoreScrollThreshold = 240;
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (state.isLoading || state.isLoadingMore || !state.hasMore) {
+      return false;
+    }
+    if (notification.metrics.pixels <
+        notification.metrics.maxScrollExtent - _loadMoreScrollThreshold) {
+      return false;
+    }
+    onAction(const HomeAction.loadMoreStores());
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const HomeHeader(),
-                    const SizedBox(height: 16),
-                    HomeSearchBar(
-                      onTap: () =>
-                          context.go('${Routes.home}/${Routes.search}'),
-                    ),
-                    const SizedBox(height: 20),
-                    HomeCategorySection(
-                      selectedCategory: state.selectedCategory,
-                      onCategoryTap: (category) =>
-                          onAction(HomeAction.selectCategory(category)),
-                    ),
-                    const SizedBox(height: 24),
-                    const HomeSectionHeader(
-                      title: '추천 업장',
-                      subtitle: '근처 예약 가능한 가게를 확인해보세요!',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-              sliver: state.isLoading
-                  ? const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: CircularProgressIndicator()),
+        child: NotificationListener<ScrollNotification>(
+          onNotification: _onScrollNotification,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const HomeHeader(),
+                      const SizedBox(height: 16),
+                      HomeSearchBar(
+                        onTap: () =>
+                            context.go('${Routes.home}/${Routes.search}'),
                       ),
-                    )
-                  : HomeRecommendedStoreList(
-                      stores: state.recommendedStores,
-                      onStoreTap: (HomeStoreItem store) {
-                        context.push(
-                          '${Routes.home}/information/${store.storeId}',
-                        );
-                      },
-                      onBookmarkTap: (HomeStoreItem store) {
-                        onAction(HomeAction.tapBookmark(store.storeId));
-                      },
-                    ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      onAction(const HomeAction.retryLoadHomeData());
-                    },
-                    child: const Text('업장 데이터 새로고침'),
+                      const SizedBox(height: 20),
+                      HomeCategorySection(
+                        selectedCategory: state.selectedCategory,
+                        onCategoryTap: (category) =>
+                            onAction(HomeAction.selectCategory(category)),
+                      ),
+                      const SizedBox(height: 24),
+                      const HomeSectionHeader(
+                        title: '추천 업장',
+                        subtitle: '근처 예약 가능한 가게를 확인해보세요!',
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-          ],
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                sliver: state.isLoading
+                    ? const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      )
+                    : HomeRecommendedStoreList(
+                        stores: state.recommendedStores,
+                        isLoadingMore: state.isLoadingMore,
+                        onStoreTap: (HomeStoreItem store) {
+                          context.push(
+                            '${Routes.home}/information/${store.storeId}',
+                          );
+                        },
+                        onBookmarkTap: (HomeStoreItem store) {
+                          onAction(HomeAction.tapBookmark(store.storeId));
+                        },
+                      ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        onAction(const HomeAction.retryLoadHomeData());
+                      },
+                      child: const Text('업장 데이터 새로고침'),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

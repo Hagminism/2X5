@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class HomeRecommendedStoreList extends StatelessWidget {
   final List<HomeStoreItem> stores;
+  final bool isLoadingMore;
   final void Function(HomeStoreItem) onStoreTap;
   final void Function(HomeStoreItem) onBookmarkTap;
 
@@ -11,6 +12,7 @@ class HomeRecommendedStoreList extends StatelessWidget {
     required this.stores,
     required this.onStoreTap,
     required this.onBookmarkTap,
+    this.isLoadingMore = false,
     super.key,
   });
 
@@ -28,8 +30,20 @@ class HomeRecommendedStoreList extends StatelessWidget {
     }
 
     return SliverList.separated(
-      itemCount: stores.length,
+      itemCount: stores.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index >= stores.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
         final store = stores[index];
         return HomeStoreCard(
           name: store.name,
