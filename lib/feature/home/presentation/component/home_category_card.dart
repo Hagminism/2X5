@@ -1,4 +1,5 @@
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class HomeCategoryCard extends StatelessWidget {
@@ -42,8 +43,10 @@ class HomeCategoryCard extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
+                letterSpacing: -0.1,
                 color: isSelected ? Colors.white : AppColors.textPrimary,
               ),
             ),

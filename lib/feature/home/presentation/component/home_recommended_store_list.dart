@@ -1,5 +1,7 @@
 import 'package:capstone_2026/feature/home/core/model/home_store_item.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_store_card.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class HomeRecommendedStoreList extends StatelessWidget {
@@ -23,7 +25,16 @@ class HomeRecommendedStoreList extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 28),
           child: Center(
-            child: Text('표시할 업장이 없습니다.'),
+            child: Text(
+              '표시할 업장이 없습니다.',
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                letterSpacing: -0.1,
+                color: AppColors.textSecondary,
+              ),
+            ),
           ),
         ),
       );
@@ -39,7 +50,10 @@ class HomeRecommendedStoreList extends StatelessWidget {
               child: SizedBox(
                 width: 24,
                 height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
               ),
             ),
           );

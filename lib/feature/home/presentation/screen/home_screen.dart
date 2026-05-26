@@ -7,6 +7,8 @@ import 'package:capstone_2026/feature/home/presentation/component/home_search_ba
 import 'package:capstone_2026/feature/home/presentation/component/home_section_header.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_action.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_state.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -37,7 +39,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: NotificationListener<ScrollNotification>(
           onNotification: _onScrollNotification,
@@ -76,7 +78,11 @@ class HomeScreen extends StatelessWidget {
                     ? const SliverToBoxAdapter(
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 24),
-                          child: Center(child: CircularProgressIndicator()),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                            ),
+                          ),
                         ),
                       )
                     : HomeRecommendedStoreList(
@@ -101,7 +107,26 @@ class HomeScreen extends StatelessWidget {
                       onPressed: () {
                         onAction(const HomeAction.retryLoadHomeData());
                       },
-                      child: const Text('업장 데이터 새로고침'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textPrimary,
+                        side: const BorderSide(color: AppColors.border),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        '업장 데이터 새로고침',
+                        style: TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
                     ),
                   ),
                 ),
