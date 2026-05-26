@@ -4,44 +4,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({
-    required this.onNotificationTap,
-    super.key,
-  });
-
-  final VoidCallback onNotificationTap;
+  const HomeHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
     final userName = FirebaseAuth.instance.currentUser?.displayName ?? '사용자';
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '안녕하세요, $userName님',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '오늘은 어떤 예약을 찾고 계신가요?',
-                style: AppTextStyles.subtitle,
-              ),
-            ],
+        Text(
+          '안녕하세요, $userName님',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.textPrimary,
           ),
         ),
-        IconButton.filledTonal(
-          onPressed: onNotificationTap,
-          icon: const Icon(Icons.notifications_none_rounded),
+        const SizedBox(height: 4),
+        const Text(
+          '오늘은 어떤 예약을 찾고 계신가요?',
+          style: AppTextStyles.subtitle,
         ),
       ],
     );

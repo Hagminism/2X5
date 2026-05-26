@@ -34,13 +34,7 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    HomeHeader(
-                      onNotificationTap: () => onAction(
-                        const HomeAction.showSoonMessage(
-                          '알림 화면은 다음 단계에서 연결될 예정입니다.',
-                        ),
-                      ),
-                    ),
+                    const HomeHeader(),
                     const SizedBox(height: 16),
                     HomeSearchBar(
                       onTap: () =>
@@ -48,18 +42,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     HomeCategorySection(
-                      onCategoryTap: (StoreCategory category) {
-                        onAction(
-                          HomeAction.showSoonMessage(
-                            '${category.displayName} 카테고리 상세는 추후 연결됩니다.',
-                          ),
-                        );
-                      },
+                      selectedCategory: state.selectedCategory,
+                      onCategoryTap: (category) =>
+                          onAction(HomeAction.selectCategory(category)),
                     ),
                     const SizedBox(height: 24),
                     const HomeSectionHeader(
                       title: '추천 업장',
-                      subtitle: '지금 예약 가능한 인기 업장을 확인해보세요',
+                      subtitle: '근처 예약 가능한 가게를 확인해보세요!',
                     ),
                   ],
                 ),

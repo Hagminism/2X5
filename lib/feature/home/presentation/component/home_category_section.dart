@@ -4,10 +4,12 @@ import 'package:capstone_2026/feature/home/presentation/component/home_section_c
 import 'package:flutter/material.dart';
 
 class HomeCategorySection extends StatelessWidget {
-  final void Function(StoreCategory) onCategoryTap;
+  final StoreCategory? selectedCategory;
+  final void Function(StoreCategory?) onCategoryTap;
 
   const HomeCategorySection({
     required this.onCategoryTap,
+    this.selectedCategory,
     super.key,
   });
 
@@ -27,21 +29,21 @@ class HomeCategorySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HomeSectionContainer(
-      child: SizedBox(
-        height: 92,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: StoreCategory.values.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 10),
-          itemBuilder: (context, index) {
-            final category = StoreCategory.values[index];
-            return HomeCategoryCard(
-              title: category.displayName,
-              icon: _categoryIcon(category),
-              onTap: () => onCategoryTap(category),
-            );
-          },
-        ),
+      child: Row(
+        children: StoreCategory.values.map((category) {
+          final isSelected = selectedCategory == category;
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: HomeCategoryCard(
+                title: category.displayName,
+                icon: _categoryIcon(category),
+                isSelected: isSelected,
+                onTap: () => onCategoryTap(isSelected ? null : category),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

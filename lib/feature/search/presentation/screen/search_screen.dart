@@ -153,12 +153,23 @@ class _SearchScreenState extends State<SearchScreen> {
           )
           .limit(50);
 
+      if (!mounted) return;
+
       final results = List<Map<String, dynamic>>.from(response);
+      final coverImageUrls = await _fetchCoverImageUrls(results);
 
       if (!mounted) return;
 
+      final resultsWithImages = results.map((store) {
+        final storeId = store['id']?.toString() ?? '';
+        return {
+          ...store,
+          'image_url': coverImageUrls[storeId],
+        };
+      }).toList();
+
       setState(() {
-        _searchResults = results;
+        _searchResults = resultsWithImages;
         _applyFilters();
         _isLoading = false;
       });
@@ -171,6 +182,43 @@ class _SearchScreenState extends State<SearchScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('검색 오류: $e')),
       );
+    }
+  }
+
+  Future<Map<String, String>> _fetchCoverImageUrls(
+    List<Map<String, dynamic>> stores,
+  ) async {
+    final storeIds = stores
+        .map((store) => store['id']?.toString() ?? '')
+        .where((storeId) => storeId.isNotEmpty)
+        .toList();
+    if (storeIds.isEmpty) {
+      return const {};
+    }
+
+    try {
+      final response = await Supabase.instance.client
+          .from('store_images')
+          .select('store_id, image_url, is_cover, sort_order')
+          .inFilter('store_id', storeIds)
+          .order('is_cover', ascending: false)
+          .order('sort_order', ascending: true);
+
+      final imageUrlsByStoreId = <String, String>{};
+      for (final row in response as List) {
+        final storeId = row['store_id']?.toString() ?? '';
+        final imageUrl = row['image_url']?.toString() ?? '';
+        if (storeId.isEmpty ||
+            imageUrl.isEmpty ||
+            imageUrlsByStoreId.containsKey(storeId)) {
+          continue;
+        }
+        imageUrlsByStoreId[storeId] = imageUrl;
+      }
+      return imageUrlsByStoreId;
+    } catch (e) {
+      debugPrint('search cover images fetch error: $e');
+      return const {};
     }
   }
 
@@ -703,12 +751,16 @@ class _SearchResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final storeName = store['name']?.toString() ?? '이름 없음';
+    final imageUrl = store['image_url']?.toString();
+    final ownerId = store['owner_id']?.toString().trim();
+    final hasOwner = ownerId != null && ownerId.isNotEmpty;
     final rating = (store['rating'] as num?)?.toDouble();
+    final shouldShowRating = hasOwner && rating != null;
     final hasMeta =
         categoryLabel.isNotEmpty ||
         distanceLabel != null ||
         walkingTimeLabel != null ||
-        rating != null;
+        shouldShowRating;
 
     return InkWell(
       onTap: onTap,
@@ -736,10 +788,20 @@ class _SearchResultCard extends StatelessWidget {
                 color: AppColors.surfaceMuted,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.storefront_rounded,
-                color: AppColors.textPrimary,
-              ),
+              clipBehavior: Clip.antiAlias,
+              child: (imageUrl == null || imageUrl.isEmpty)
+                  ? const Icon(
+                      Icons.storefront_rounded,
+                      color: AppColors.textPrimary,
+                    )
+                  : Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.storefront_rounded,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -769,7 +831,7 @@ class _SearchResultCard extends StatelessWidget {
                           _MetaChip(label: distanceLabel!),
                         if (walkingTimeLabel != null)
                           _MetaChip(label: walkingTimeLabel!),
-                        if (rating != null)
+                        if (shouldShowRating)
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
