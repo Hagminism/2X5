@@ -3,7 +3,10 @@ import 'dart:math' as math;
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
 import 'package:capstone_2026/core/data/dto/store/store_dto.dart';
 import 'package:capstone_2026/core/data/mapper/store/store_mapper.dart';
+import 'package:capstone_2026/core/data/dto/store/store_layout_detail_dto.dart';
+import 'package:capstone_2026/core/data/mapper/store/store_layout_detail_mapper.dart';
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
+import 'package:capstone_2026/core/domain/model/store/store_layout_detail.dart';
 import 'package:capstone_2026/core/domain/model/store/store_list_entry.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
@@ -402,5 +405,31 @@ class StoreRepositoryImpl implements StoreRepository {
       isCover: isCover,
     );
     await _storeDataSource.createImage(storeId, storeImage);
+  }
+
+  @override
+  Future<StoreLayoutDetail?> getStoreLayoutByStoreId(String storeId) async {
+    final dto = await _storeDataSource.findLayoutByStoreId(storeId);
+    return dto?.toModel();
+  }
+
+  @override
+  Future<StoreLayoutDetail> saveMyStoreLayout(StoreLayoutDetail layout) async {
+    final store = await getMyStore();
+    if (store == null) {
+      throw StateError('업장 정보 저장 후 내부 구조를 설정할 수 있습니다.');
+    }
+
+    final layoutDto = StoreLayoutDetailDto(
+      id: layout.id.isEmpty ? null : layout.id,
+      storeId: store.id,
+      layoutJson: {
+        'seats': layout.seats.map((seat) => seat.toJson()).toList(),
+        'elements': layout.elements.map((element) => element.toJson()).toList(),
+      },
+    );
+
+    final savedDto = await _storeDataSource.upsertLayout(layoutDto);
+    return savedDto.toModel();
   }
 }
