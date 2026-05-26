@@ -1,5 +1,6 @@
 import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
+import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,12 @@ class AppBarNavItem extends StatelessWidget {
     required this.label,
   });
 
+  static const int _homeTabIndex = 0;
+
   void _onTap() {
+    if (index == _homeTabIndex) {
+      getIt<HomeViewModel>().refresh();
+    }
     if (index == _bookmarkTabIndex) {
       getIt<BookmarkViewModel>().loadBookmarks(force: true);
     }

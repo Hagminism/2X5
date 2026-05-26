@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
+import 'package:capstone_2026/core/domain/model/bookmark/bookmark_list_item.dart';
 import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/feature/home/core/model/home_store_item.dart';
@@ -75,6 +76,8 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> refresh() => _loadStores();
+
   Future<void> _loadStores() async {
     if (state.isLoading) {
       return;
@@ -84,43 +87,42 @@ class HomeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final allStores = await _storeRepository.getStores();
+      // 1단계: 가게 목록과 GPS를 병렬로 가져옴
+      List<Store> allStores = [];
+      Position? position;
+      await Future.wait([
+        _storeRepository.getStores().then((v) => allStores = v),
+        _getCurrentPosition().then((v) => position = v),
+      ]);
 
-      final position = await _getCurrentPosition();
       final stores = position == null
           ? allStores
           : allStores.where((store) {
               final distance = Geolocator.distanceBetween(
-                position.latitude,
-                position.longitude,
+                position!.latitude,
+                position!.longitude,
                 store.latitude,
                 store.longitude,
               );
               return distance <= 5000;
             }).toList();
 
-      final imagesList = await Future.wait(
-        stores.map((store) => _storeRepository.getStoreImagesByStoreId(store.id)),
-      );
+      final storeIds = stores.map((s) => s.id).toList();
 
-      final Map<String, String?> storeImageMap = <String, String?>{};
-      for (int i = 0; i < stores.length; i++) {
-        final store = stores[i];
-        final images = imagesList[i];
-        if (images.isNotEmpty) {
-          final coverImage = images.firstWhere(
-            (img) => img.isCover,
-            orElse: () => images.first,
-          );
-          storeImageMap[store.id] = coverImage.imageUrl;
-        }
-      }
+      // 2단계: 커버 이미지 배치 쿼리와 북마크를 병렬로 가져옴
+      Map<String, String?> storeImageMap = {};
+      List<BookmarkListItem> myBookmarks = [];
+      await Future.wait([
+        _storeRepository
+            .getCoverImageUrlsByStoreIds(storeIds)
+            .then((v) => storeImageMap = v),
+        _bookmarkRepository.getMyBookmarks().then((v) => myBookmarks = v),
+      ]);
 
-      final myBookmarks = await _bookmarkRepository.getMyBookmarks();
       _allStores = stores;
       _storeImageMap = storeImageMap;
       _bookmarkedIds = myBookmarks.map((item) => item.storeId).toSet();
-      _currentPosition = position;
+      if (position != null) _currentPosition = position;
 
       _state = state.copyWith(
         isLoading: false,

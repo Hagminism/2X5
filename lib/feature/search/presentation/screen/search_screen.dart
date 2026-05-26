@@ -259,13 +259,6 @@ class _SearchScreenState extends State<SearchScreen> {
     return '도보 $minutes분';
   }
 
-  String _categoryDisplayLabel(String category) {
-    final label = categoryLabels[category] ?? category;
-    final emoji = categoryEmojis[category];
-    if (emoji == null || emoji.isEmpty) return label;
-    return '$emoji $label';
-  }
-
   void _changeRadiusFilter(double? radiusMeters) {
     setState(() {
       _selectedRadiusMeters = radiusMeters;
@@ -377,17 +370,32 @@ class _SearchScreenState extends State<SearchScreen> {
       itemBuilder: (context, index) {
         final category = categories[index];
         final stores = _categorizedResults[category]!;
-        final categoryLabel = _categoryDisplayLabel(category);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '$categoryLabel ${stores.length}',
-              style: AppTextStyles.subtitle.copyWith(
-                fontSize: 16,
-                color: AppColors.textPrimary,
-              ),
+            Row(
+              children: [
+                if (category == 'salon')
+                  const Icon(
+                    Icons.content_cut,
+                    size: 16,
+                    color: AppColors.textPrimary,
+                  )
+                else
+                  Text(
+                    categoryEmojis[category] ?? '',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                const SizedBox(width: 4),
+                Text(
+                  '${categoryLabels[category] ?? category} ${stores.length}',
+                  style: AppTextStyles.subtitle.copyWith(
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
             ...stores.map((store) {
@@ -397,9 +405,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _SearchResultCard(
                   store: store,
-                  categoryLabel: _categoryDisplayLabel(
-                    store['category']?.toString() ?? '',
-                  ),
+                  category: store['category']?.toString() ?? '',
+                  categoryLabel: categoryLabels[store['category']?.toString()] ??
+                      store['category']?.toString() ?? '',
                   distanceLabel: distance == null
                       ? null
                       : _formatDistance(distance),
@@ -736,6 +744,7 @@ class _SearchInput extends StatelessWidget {
 class _SearchResultCard extends StatelessWidget {
   const _SearchResultCard({
     required this.store,
+    required this.category,
     required this.categoryLabel,
     required this.distanceLabel,
     required this.walkingTimeLabel,
@@ -743,6 +752,7 @@ class _SearchResultCard extends StatelessWidget {
   });
 
   final Map<String, dynamic> store;
+  final String category;
   final String categoryLabel;
   final String? distanceLabel;
   final String? walkingTimeLabel;
@@ -826,7 +836,12 @@ class _SearchResultCard extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         if (categoryLabel.isNotEmpty)
-                          _MetaChip(label: categoryLabel),
+                          _MetaChip(
+                            label: categoryLabel,
+                            leadingIcon: category == 'salon'
+                                ? Icons.content_cut
+                                : null,
+                          ),
                         if (distanceLabel != null)
                           _MetaChip(label: distanceLabel!),
                         if (walkingTimeLabel != null)
@@ -870,25 +885,33 @@ class _SearchResultCard extends StatelessWidget {
 }
 
 class _MetaChip extends StatelessWidget {
-  const _MetaChip({required this.label});
+  const _MetaChip({required this.label, this.leadingIcon});
 
   final String label;
+  final IconData? leadingIcon;
 
   @override
   Widget build(BuildContext context) {
+    final textStyle = AppTextStyles.caption.copyWith(
+      fontWeight: FontWeight.w700,
+      color: AppColors.textSecondary,
+    );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        label,
-        style: AppTextStyles.caption.copyWith(
-          fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary,
-        ),
-      ),
+      child: leadingIcon != null
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(leadingIcon!, size: 11, color: AppColors.textSecondary),
+                const SizedBox(width: 3),
+                Text(label, style: textStyle),
+              ],
+            )
+          : Text(label, style: textStyle),
     );
   }
 }

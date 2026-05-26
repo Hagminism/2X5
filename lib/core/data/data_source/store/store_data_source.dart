@@ -17,6 +17,8 @@ abstract interface class StoreDataSource {
 
   Future<List<StoreImage>> findImagesByStoreId(String storeId);
 
+  Future<Map<String, String?>> findCoverImageUrlsByStoreIds(List<String> storeIds);
+
   Future<StoreMenu> createMenu(String storeId, StoreMenu menu);
 
   Future<StoreImage> createImage(String storeId, StoreImage image);

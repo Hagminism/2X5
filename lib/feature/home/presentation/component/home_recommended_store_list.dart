@@ -38,7 +38,6 @@ class HomeRecommendedStoreList extends StatelessWidget {
           category: store.category,
           imageUrl: store.imageUrl,
           isBookmarked: store.isBookmarked,
-          showRating: store.showRating,
           onTap: () => onStoreTap(store),
           onBookmarkTap: () => onBookmarkTap(store),
         );

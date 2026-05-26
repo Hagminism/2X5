@@ -267,7 +267,7 @@ class _MapScreenState extends State<MapScreen> {
         'align-items:center;justify-content:center;gap:1px;'
         'border:2.5px solid white;'
         'box-shadow:0 2px 8px rgba(0,0,0,0.35);">'
-        '<span style="font-size:16px;line-height:1;">$emoji</span>'
+        '<span style="font-size:16px;line-height:1;font-variant-emoji:text;">$emoji</span>'
         '<span style="font-size:${countFontSize}px;font-weight:700;line-height:1.2;">$count</span>'
         '</div>';
   }
@@ -285,7 +285,7 @@ class _MapScreenState extends State<MapScreen> {
         'width:${size}px;height:${size}px;display:flex;align-items:center;'
         'justify-content:center;font-size:${fontSize}px;$border$shadow'
         'transition:all 0.15s;">'
-        '$emoji</div>';
+        '<span style="font-variant-emoji:text;">$emoji</span></div>';
   }
 
   Future<void> _updateMarkerAppearance(
@@ -1007,7 +1007,14 @@ class _CategoryChips extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(item.emoji, style: const TextStyle(fontSize: 13)),
+                      if (item.value == 'salon')
+                        Icon(
+                          Icons.content_cut,
+                          size: 13,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        )
+                      else
+                        Text(item.emoji, style: const TextStyle(fontSize: 13)),
                       const SizedBox(width: 5),
                       Text(
                         item.label,
@@ -1182,8 +1189,14 @@ class _StoreBottomSheet extends StatelessWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          Text(categoryEmoji,
-                              style: const TextStyle(fontSize: 13)),
+                          if (categoryLabel == '미용실')
+                            const Icon(
+                              Icons.content_cut,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            )
+                          else
+                            Text(categoryEmoji, style: const TextStyle(fontSize: 13)),
                           const SizedBox(width: 4),
                           Text(
                             categoryLabel,

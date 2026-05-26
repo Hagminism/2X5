@@ -67,6 +67,13 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
+  Future<Map<String, String?>> getCoverImageUrlsByStoreIds(
+    List<String> storeIds,
+  ) {
+    return _storeDataSource.findCoverImageUrlsByStoreIds(storeIds);
+  }
+
+  @override
   Future<Store> updateMyStore(Store store) async {
     final uid = await _validateAndGetApprovedUid();
     _validateStoreInput(store);

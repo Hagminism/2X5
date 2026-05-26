@@ -14,10 +14,12 @@ import 'package:go_router/go_router.dart';
 class HomeScreen extends StatelessWidget {
   final HomeState state;
   final void Function(HomeAction action) onAction;
+  final Future<void> Function() onRefresh;
 
   const HomeScreen({
     required this.state,
     required this.onAction,
+    required this.onRefresh,
     super.key,
   });
 
@@ -26,7 +28,10 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: CustomScrollView(
+        child: RefreshIndicator(
+          onRefresh: onRefresh,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -91,6 +96,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
