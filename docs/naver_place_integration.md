@@ -1,10 +1,19 @@
 # 네이버 플레이스 연동 구현 문서
 
-> 최종 수정일: 2025-05-19
+> 최종 수정일: 2026-05-26
 
 ## 1. 개요
 
 지도 화면(`MapScreen`)에서 주변 매장을 검색할 때, 네이버 API를 통해 매장의 **상세 정보(전화번호, 영업시간, 대표 이미지, 네이버 플레이스 ID)** 를 수집하여 Supabase DB에 저장하는 기능입니다.
+
+### 시연용 검색 정책 (`MapScreen`)
+
+1. **시연 전** 비공식 API로 Supabase `stores` 사전 적재 (운영 작업).
+2. **신규 enrich**는 mobile search → Summary → Hours 프록시 유지.
+3. **지역 중복 방지**: 이전 크롤 bbox와 겹침 비율(분모=현재 bbox) **≥ 90%** 이면 카카오·네이버 **skip**, Supabase bbox 조회만. **&lt; 90%** 이면 API 1세트, **DB에 없는 매장만** 저장.
+4. **재검색 쿨다운 3초**: 「현 지도에서 검색」 버튼만 회색 비활성. 로딩은 검색·마커 반영 **완료 후** 해제.
+
+유틸: `lib/core/domain/util/map_search_area.dart`
 
 ---
 
@@ -31,6 +40,7 @@
 | `lib/feature/store_detail/data/data_source/naver_store_search_data_source.dart` | 인터페이스 정의 |
 | `lib/feature/store_detail/data/data_source/naver_store_search_data_source_impl.dart` | 구현체 |
 | `lib/feature/map/presentation/screen/map_screen.dart` | 지도 화면 (매장 검색 & 등록 로직) |
+| `lib/core/domain/util/map_search_area.dart` | 검색 bbox·겹침 비율 계산 |
 
 ---
 

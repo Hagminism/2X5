@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/util/map_naver_place_operating_hours.dart';
+import 'package:capstone_2026/core/domain/util/map_search_area.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
@@ -37,9 +38,17 @@ class _MapScreenState extends State<MapScreen> {
   StreamSubscription<MapEvent>? _mapEventSubscription;
 
   static const _fixedCenter = NLatLng(37.5826, 127.0106);
+  static const _searchCooldownDuration = Duration(seconds: 3);
+  static const _overlapDbOnlyThreshold = 0.9;
+  // 검색 배치 속도 조절(높으면 로드 빠르나, 403 확률 올라감)
+  static const _storeRegisterBatchSize = 12;
+
   NLatLng _currentCenter = _fixedCenter;
   NLatLng? _myLocationLatLng;
   bool _isSearching = false;
+  MapAreaBounds? _lastCrawledBounds;
+  Timer? _searchCooldownTimer;
+  bool _isSearchCooldownActive = false;
   int _currentZoom = 15;
   bool _mapReady = false;
   List<Map<String, dynamic>> _stores = [];
@@ -141,29 +150,415 @@ class _MapScreenState extends State<MapScreen> {
     } catch (_) {}
   }
 
+  Future<List<Map<String, dynamic>>> _queryStoresInArea(NLatLng center) async {
+    final bounds = mapAreaBoundsFromCenter(
+      lat: center.lat,
+      lng: center.lng,
+    );
+    final response = await Supabase.instance.client
+        .from('stores')
+        .select('id, name, category, latitude, longitude, address, naver_place_id')
+        .gte('latitude', bounds.minLat)
+        .lte('latitude', bounds.maxLat)
+        .gte('longitude', bounds.minLng)
+        .lte('longitude', bounds.maxLng);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
   Future<void> _fetchStores(NLatLng center) async {
     try {
-      final double latOffset = 0.0135;
-      final double lngOffset = 0.017;
-      final minLat = center.lat - latOffset;
-      final maxLat = center.lat + latOffset;
-      final minLng = center.lng - lngOffset;
-      final maxLng = center.lng + lngOffset;
-
-      final response = await Supabase.instance.client
-          .from('stores')
-          .select('id, name, category, latitude, longitude, address')
-          .gte('latitude', minLat)
-          .lte('latitude', maxLat)
-          .gte('longitude', minLng)
-          .lte('longitude', maxLng);
-
+      final stores = await _queryStoresInArea(center);
       if (!mounted) return;
-      setState(() => _stores = List<Map<String, dynamic>>.from(response));
+      setState(() => _stores = stores);
       if (_mapReady) _addStoreMarkers();
     } catch (e) {
       debugPrint('stores fetch error: $e');
     }
+  }
+
+  Set<String> _existingStoreLookupKeys(List<Map<String, dynamic>> areaStores) {
+    final keys = <String>{};
+    for (final store in areaStores) {
+      final name = store['name']?.toString() ?? '';
+      final address = store['address']?.toString() ?? '';
+      if (name.isNotEmpty && address.isNotEmpty) {
+        keys.add('$name|$address');
+      }
+      final placeId = store['naver_place_id']?.toString() ?? '';
+      if (placeId.isNotEmpty) {
+        keys.add('place:$placeId');
+      }
+    }
+    return keys;
+  }
+
+  bool _isStoreAlreadyRegistered(
+    Map<String, dynamic> candidate,
+    Set<String> lookupKeys,
+  ) {
+    final name = candidate['name'] as String? ?? '';
+    final address = candidate['address'] as String? ?? '';
+    if (name.isNotEmpty &&
+        address.isNotEmpty &&
+        lookupKeys.contains('$name|$address')) {
+      return true;
+    }
+    final fallbackPlaceId = candidate['fallbackPlaceId'] as String? ?? '';
+    if (fallbackPlaceId.isNotEmpty &&
+        lookupKeys.contains('place:$fallbackPlaceId')) {
+      return true;
+    }
+    return false;
+  }
+
+  String _storeDedupeKey(String name, String address) => '$name|$address';
+
+  String _mapCategoryToNaverBusinessType(String category) {
+    switch (category) {
+      case 'cafe':
+      case 'study_cafe':
+        return 'cafe';
+      case 'salon':
+        return 'hairshop';
+      default:
+        return 'restaurant';
+    }
+  }
+
+  void _beginSearchCooldownUi() {
+    _searchCooldownTimer?.cancel();
+    if (!mounted) return;
+    setState(() => _isSearchCooldownActive = true);
+
+    _searchCooldownTimer = Timer(_searchCooldownDuration, () {
+      if (!mounted) return;
+      setState(() {
+        _isSearchCooldownActive = false;
+        _searchCooldownTimer = null;
+      });
+    });
+  }
+
+  void _requestSearchAroundCenter() {
+    if (_isSearching) {
+      return;
+    }
+    if (_isSearchCooldownActive) {
+      debugPrint('[MapSearch] cooldown active');
+      return;
+    }
+    _beginSearchCooldownUi();
+    unawaited(_searchAroundCenter());
+  }
+
+  Future<List<Map<String, dynamic>>> _searchKakaoByCategories({
+    required NLatLng center,
+    required List<String> categories,
+    required KakaoStoreSearchDataSource kakaoSource,
+  }) async {
+    final futures = categories.map((cat) async {
+      final queryKeyword = _categorySearchKeyword(cat);
+      if (queryKeyword.isEmpty) {
+        return <Map<String, dynamic>>[];
+      }
+      try {
+        final kakaoItems = await kakaoSource.searchStoresByCoordinates(
+          keyword: queryKeyword,
+          lat: center.lat,
+          lng: center.lng,
+          radius: 1000,
+        );
+        return kakaoItems
+            .map(
+              (item) => {
+                'item': item,
+                'category': cat,
+              },
+            )
+            .toList();
+      } catch (e) {
+        debugPrint('Error searching category $cat: $e');
+        return <Map<String, dynamic>>[];
+      }
+    });
+    final batches = await Future.wait(futures);
+    return batches.expand((batch) => batch).toList();
+  }
+
+  Map<String, Map<String, dynamic>> _uniqueCandidatesFromKakao(
+    List<Map<String, dynamic>> rawCandidates,
+  ) {
+    final uniqueCandidates = <String, Map<String, dynamic>>{};
+    for (final entry in rawCandidates) {
+      final item = entry['item'] as Map<String, dynamic>;
+      final category = entry['category'] as String;
+
+      final String name = (item['place_name'] as String? ?? '')
+          .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '');
+      final String address = item['address_name'] as String? ?? '';
+      final String roadAddress = item['road_address_name'] as String? ?? '';
+      final String targetCheckAddress =
+          roadAddress.isNotEmpty ? roadAddress : address;
+
+      final xStr = item['x']?.toString() ?? '';
+      final yStr = item['y']?.toString() ?? '';
+
+      double? lat;
+      double? lng;
+
+      if (xStr.isNotEmpty && yStr.isNotEmpty) {
+        lng = double.tryParse(xStr);
+        lat = double.tryParse(yStr);
+      }
+
+      if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
+        continue;
+      }
+
+      final key = _storeDedupeKey(name, targetCheckAddress);
+      if (!uniqueCandidates.containsKey(key)) {
+        uniqueCandidates[key] = {
+          'name': name,
+          'address': targetCheckAddress,
+          'category': category,
+          'latitude': lat,
+          'longitude': lng,
+          'fallbackPlaceId': '',
+          'telephone': item['phone'] as String? ?? '',
+        };
+      }
+    }
+    return uniqueCandidates;
+  }
+
+  Future<void> _registerSingleStore({
+    required Map<String, dynamic> cand,
+    required StoreRepository storeRepo,
+    required NaverStoreSearchDataSource naverSource,
+  }) async {
+    final String name = cand['name'] as String;
+    final String address = cand['address'] as String;
+    final String category = cand['category'] as String;
+    final double lat = cand['latitude'] as double;
+    final double lng = cand['longitude'] as double;
+    final String telephone = cand['telephone'] as String;
+    final String fallbackPlaceId = cand['fallbackPlaceId'] as String;
+
+    String finalPlaceId = fallbackPlaceId;
+    String? finalThumUrl;
+    final List<String> finalImageUrls = [];
+    String finalContact = telephone;
+    Map<String, dynamic> operatingHours = {};
+    double finalRating = 0.0;
+
+    debugPrint('[MapCrawl] === 매장 처리 시작: $name ($address) ===');
+
+    try {
+      String? placeId =
+          fallbackPlaceId.isNotEmpty ? fallbackPlaceId : null;
+      if (placeId == null) {
+        final mobileInfo = await naverSource.fetchPlaceInfoFromMobileSearch(
+          storeName: name,
+        );
+        placeId = mobileInfo?['placeId'];
+        final mobilePhone = mobileInfo?['phone'];
+        if (mobilePhone != null && mobilePhone.isNotEmpty) {
+          finalContact = mobilePhone;
+        }
+        debugPrint(
+          '[MapCrawl] 모바일 검색 - placeId: $placeId, phone: $mobilePhone',
+        );
+      }
+
+      if (placeId == null || placeId.isEmpty) {
+        debugPrint('[MapCrawl] placeId 없음 — 저장 skip: $name');
+        return;
+      }
+
+      finalPlaceId = placeId;
+      final preliminaryBusinessType = _mapCategoryToNaverBusinessType(category);
+
+      final summaryFuture = naverSource.fetchPlaceSummary(placeId: placeId);
+      final hoursFuture = naverSource.fetchPlaceOperatingHours(
+        placeId: placeId,
+        businessType: preliminaryBusinessType,
+      );
+
+      final summary = await summaryFuture;
+      var hoursPayload = await hoursFuture;
+
+      final businessTypeRaw = summary?['businessType'];
+      final businessType = businessTypeRaw is String &&
+              businessTypeRaw.trim().isNotEmpty
+          ? businessTypeRaw.trim()
+          : preliminaryBusinessType;
+
+      if (businessType != preliminaryBusinessType) {
+        hoursPayload = await naverSource.fetchPlaceOperatingHours(
+          placeId: placeId,
+          businessType: businessType,
+        );
+      }
+
+      final structuredHours = mapNaverWeeklyHoursToStoreOperatingHours(
+        hoursPayload,
+      );
+      if (structuredHours != null && structuredHours.isNotEmpty) {
+        operatingHours = structuredHours;
+      }
+
+      if (operatingHours.isEmpty) {
+        debugPrint('[MapCrawl] 영업시간 없음 — 저장 skip: $name');
+        return;
+      }
+
+      if (summary != null) {
+        final summaryPhone = summary['phone'] as String?;
+        if (summaryPhone != null && summaryPhone.isNotEmpty) {
+          finalContact = summaryPhone;
+        } else {
+          final buttons = summary['buttons'] as Map<String, dynamic>?;
+          final btnPhone = buttons?['phone'] as String?;
+          if (btnPhone != null && btnPhone.isNotEmpty) {
+            finalContact = btnPhone;
+          }
+        }
+
+        final imagesObj = summary['images'] as Map<String, dynamic>?;
+        final imagesList = imagesObj?['images'] as List?;
+        if (imagesList != null && imagesList.isNotEmpty) {
+          for (final img in imagesList) {
+            final imgMap = img as Map<String, dynamic>?;
+            final imgUrl =
+                imgMap?['origin'] as String? ?? imgMap?['url'] as String?;
+            if (imgUrl != null && imgUrl.isNotEmpty) {
+              finalImageUrls.add(imgUrl);
+            }
+          }
+          if (finalImageUrls.isNotEmpty) {
+            finalThumUrl = finalImageUrls.first;
+          }
+        }
+
+        final visitorReviews =
+            summary['visitorReviews'] as Map<String, dynamic>?;
+        if (visitorReviews != null) {
+          final scoreRaw = visitorReviews['score'];
+          if (scoreRaw is num) {
+            finalRating = scoreRaw.toDouble();
+          } else if (scoreRaw is String) {
+            finalRating = double.tryParse(scoreRaw) ?? 0.0;
+          }
+        }
+      }
+    } catch (crawlErr) {
+      debugPrint('[MapCrawl] 크롤링 실패 for $name: $crawlErr');
+      return;
+    }
+
+    final store = Store(
+      id: '',
+      ownerId: '',
+      name: name,
+      category: category,
+      businessNumber: '',
+      latitude: lat,
+      longitude: lng,
+      address: address,
+      contact: finalContact,
+      naverPlaceId: finalPlaceId,
+      operatingHours: operatingHours,
+      rating: finalRating,
+    );
+
+    try {
+      final createdStore = await storeRepo.createStoreDynamically(store);
+      debugPrint('[MapCrawl] DB 저장 성공 - storeId=${createdStore.id}');
+      if (finalImageUrls.isNotEmpty) {
+        for (int i = 0; i < finalImageUrls.length; i++) {
+          await storeRepo.addStoreImage(
+            createdStore.id,
+            finalImageUrls[i],
+            isCover: i == 0,
+          );
+        }
+      } else if (finalThumUrl != null && finalThumUrl.isNotEmpty) {
+        await storeRepo.addStoreImage(
+          createdStore.id,
+          finalThumUrl,
+          isCover: true,
+        );
+      }
+    } catch (dbErr) {
+      debugPrint('[MapCrawl] DB 저장 실패 for $name: $dbErr');
+    }
+  }
+
+  Future<void> _registerNewStoresInBatches({
+    required List<Map<String, dynamic>> newStores,
+    required StoreRepository storeRepo,
+    required NaverStoreSearchDataSource naverSource,
+  }) async {
+    for (var i = 0; i < newStores.length; i += _storeRegisterBatchSize) {
+      final end = math.min(i + _storeRegisterBatchSize, newStores.length);
+      final batch = newStores.sublist(i, end);
+      await Future.wait(
+        batch.map(
+          (cand) => _registerSingleStore(
+            cand: cand,
+            storeRepo: storeRepo,
+            naverSource: naverSource,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _runExternalSearchPipeline({
+    required NLatLng center,
+    required MapAreaBounds newBounds,
+  }) async {
+    final categoriesToSearch = _selectedCategory != null
+        ? [_selectedCategory!]
+        : ['restaurant', 'cafe', 'study_cafe', 'salon'];
+
+    final storeRepo = getIt<StoreRepository>();
+    final kakaoSource = getIt<KakaoStoreSearchDataSource>();
+    final naverSource = getIt<NaverStoreSearchDataSource>();
+
+    final results = await Future.wait([
+      _searchKakaoByCategories(
+        center: center,
+        categories: categoriesToSearch,
+        kakaoSource: kakaoSource,
+      ),
+      _queryStoresInArea(center),
+    ]);
+    final rawCandidates = results[0];
+    final areaStores = results[1];
+
+    final uniqueCandidates = _uniqueCandidatesFromKakao(rawCandidates);
+    final lookupKeys = _existingStoreLookupKeys(areaStores);
+    final newStoresToRegister = uniqueCandidates.values
+        .where((cand) => !_isStoreAlreadyRegistered(cand, lookupKeys))
+        .toList();
+
+    debugPrint(
+      '[MapSearch] API path — candidates=${uniqueCandidates.length}, '
+      'new=${newStoresToRegister.length}',
+    );
+
+    if (newStoresToRegister.isNotEmpty) {
+      await _registerNewStoresInBatches(
+        newStores: newStoresToRegister,
+        storeRepo: storeRepo,
+        naverSource: naverSource,
+      );
+    }
+
+    _lastCrawledBounds = _lastCrawledBounds == null
+        ? newBounds
+        : mapAreaBoundsUnion(_lastCrawledBounds!, newBounds);
   }
 
   List<Map<String, dynamic>> get _filteredStores {
@@ -437,292 +832,37 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _searchAroundCenter() async {
     if (_isSearching) return;
     _isSearching = true;
-    setState(() {});
+    if (mounted) setState(() {});
 
     try {
       final center = _currentCenter;
+      final newBounds = mapAreaBoundsFromCenter(
+        lat: center.lat,
+        lng: center.lng,
+      );
 
-      final categoriesToSearch = _selectedCategory != null
-          ? [_selectedCategory!]
-          : ['restaurant', 'cafe', 'study_cafe', 'salon'];
+      final useDbOnly = shouldSkipExternalSearchForOverlap(
+        newBounds: newBounds,
+        lastCrawledBounds: _lastCrawledBounds,
+        threshold: _overlapDbOnlyThreshold,
+      );
 
-      final storeRepo = getIt<StoreRepository>();
-      final kakaoSource = getIt<KakaoStoreSearchDataSource>();
-      final naverSource = getIt<NaverStoreSearchDataSource>();
-      final List<Map<String, dynamic>> rawCandidates = [];
-
-      for (final cat in categoriesToSearch) {
-        final queryKeyword = _categorySearchKeyword(cat);
-        if (queryKeyword.isEmpty) continue;
-
-        try {
-          final kakaoItems = await kakaoSource.searchStoresByCoordinates(
-            keyword: queryKeyword,
-            lat: center.lat,
-            lng: center.lng,
-            radius: 1000,
-          );
-          for (final item in kakaoItems) {
-            rawCandidates.add({
-              'item': item,
-              'category': cat,
-            });
-          }
-        } catch (e) {
-          debugPrint('Error searching category $cat: $e');
-        }
-      }
-
-      final Map<String, Map<String, dynamic>> uniqueCandidates = {};
-
-      for (final entry in rawCandidates) {
-        final item = entry['item'] as Map<String, dynamic>;
-        final category = entry['category'] as String;
-
-        final String name = (item['place_name'] as String? ?? '')
-            .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '');
-        final String address = item['address_name'] as String? ?? '';
-        final String roadAddress = item['road_address_name'] as String? ?? '';
-        final String targetCheckAddress =
-            roadAddress.isNotEmpty ? roadAddress : address;
-
-        final xStr = item['x']?.toString() ?? '';
-        final yStr = item['y']?.toString() ?? '';
-
-        double? lat;
-        double? lng;
-
-        if (xStr.isNotEmpty && yStr.isNotEmpty) {
-          lng = double.tryParse(xStr);
-          lat = double.tryParse(yStr);
-        }
-
-        if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
-          continue;
-        }
-
-        final key = '$name|$targetCheckAddress';
-        if (!uniqueCandidates.containsKey(key)) {
-          uniqueCandidates[key] = {
-            'name': name,
-            'address': targetCheckAddress,
-            'category': category,
-            'latitude': lat,
-            'longitude': lng,
-            'fallbackPlaceId': '',
-            'telephone': item['phone'] as String? ?? '',
-          };
-        }
-      }
-
-      final candidatesList = uniqueCandidates.values.toList();
-      final List<Map<String, dynamic>> newStoresToRegister = [];
-
-      final checkFutures = candidatesList.map((cand) async {
-        try {
-          Map<String, dynamic>? existing;
-
-          final fallbackPlaceId = cand['fallbackPlaceId'] as String;
-          if (fallbackPlaceId.isNotEmpty) {
-            existing = await Supabase.instance.client
-                .from('stores')
-                .select('id')
-                .eq('naver_place_id', fallbackPlaceId)
-                .maybeSingle();
-          }
-
-          existing ??= await Supabase.instance.client
-              .from('stores')
-              .select('id')
-              .eq('name', cand['name'] as String)
-              .eq('address', cand['address'] as String)
-              .maybeSingle();
-
-          if (existing == null) {
-            newStoresToRegister.add(cand);
-          }
-        } catch (e) {
-          debugPrint('Error checking DB existence for ${cand['name']}: $e');
-        }
-      });
-
-      await Future.wait(checkFutures);
-
-      if (newStoresToRegister.isNotEmpty) {
-        final registerFutures = newStoresToRegister.map((cand) async {
-          final String name = cand['name'] as String;
-          final String address = cand['address'] as String;
-          final String category = cand['category'] as String;
-          final double lat = cand['latitude'] as double;
-          final double lng = cand['longitude'] as double;
-          final String telephone = cand['telephone'] as String;
-          final String fallbackPlaceId = cand['fallbackPlaceId'] as String;
-
-          String finalPlaceId = fallbackPlaceId;
-          String? finalThumUrl;
-          final List<String> finalImageUrls = [];
-          String finalContact = telephone;
-          Map<String, dynamic> operatingHours = {};
-          double finalRating = 0.0;
-
-          debugPrint('[MapCrawl] === 매장 처리 시작: $name ($address) ===');
-          debugPrint('[MapCrawl] 좌표: lat=$lat, lng=$lng, fallbackPlaceId=$fallbackPlaceId, telephone=$telephone');
-
-          try {
-            // 1단계: 모바일 웹 검색으로 place ID + 전화번호 확보
-            String? placeId = fallbackPlaceId.isNotEmpty ? fallbackPlaceId : null;
-            if (placeId == null) {
-              final mobileInfo = await naverSource.fetchPlaceInfoFromMobileSearch(
-                storeName: name,
-              );
-              placeId = mobileInfo?['placeId'];
-              final mobilePhone = mobileInfo?['phone'];
-              if (mobilePhone != null && mobilePhone.isNotEmpty) {
-                finalContact = mobilePhone;
-              }
-              debugPrint('[MapCrawl] 모바일 검색 결과 - placeId: $placeId, phone: $mobilePhone');
-            }
-
-            if (placeId != null && placeId.isNotEmpty) {
-              finalPlaceId = placeId;
-
-              // 2단계: Summary → businessType 반영 후 영업시간(GraphQL) 수집
-              final summary = await naverSource.fetchPlaceSummary(
-                placeId: placeId,
-              );
-              final businessTypeRaw = summary?['businessType'];
-              final businessType = businessTypeRaw is String &&
-                      businessTypeRaw.trim().isNotEmpty
-                  ? businessTypeRaw.trim()
-                  : 'restaurant';
-              final hoursPayload =
-                  await naverSource.fetchPlaceOperatingHours(
-                placeId: placeId,
-                businessType: businessType,
-              );
-
-              debugPrint(
-                '[MapCrawl] fetchPlaceSummary 결과: ${summary != null ? "성공 (keys: ${summary.keys.toList()})" : "null"}',
-              );
-              debugPrint(
-                '[MapCrawl] hoursPayload weeklyHours=${(hoursPayload?['weeklyHours'] as List?)?.length ?? 'null'}',
-              );
-
-              final structuredHours = mapNaverWeeklyHoursToStoreOperatingHours(
-                hoursPayload,
-              );
-              if (structuredHours != null && structuredHours.isNotEmpty) {
-                operatingHours = structuredHours;
-                debugPrint(
-                  '[MapCrawl] 구조화 영업시간 저장 keys: ${structuredHours.keys.toList()}',
-                );
-              } else {
-                debugPrint(
-                  '[MapCrawl] 구조화 영업시간 변환 실패 - payload=$hoursPayload',
-                );
-              }
-
-              if (summary != null) {
-                // 전화번호
-                final summaryPhone = summary['phone'] as String?;
-                if (summaryPhone != null && summaryPhone.isNotEmpty) {
-                  finalContact = summaryPhone;
-                } else {
-                  final buttons = summary['buttons'] as Map<String, dynamic>?;
-                  final btnPhone = buttons?['phone'] as String?;
-                  if (btnPhone != null && btnPhone.isNotEmpty) {
-                    finalContact = btnPhone;
-                  }
-                }
-
-                // 대표 이미지 및 다중 이미지
-                final imagesObj = summary['images'] as Map<String, dynamic>?;
-                final imagesList = imagesObj?['images'] as List?;
-                if (imagesList != null && imagesList.isNotEmpty) {
-                  for (final img in imagesList) {
-                    final imgMap = img as Map<String, dynamic>?;
-                    final imgUrl = imgMap?['origin'] as String? ?? imgMap?['url'] as String?;
-                    if (imgUrl != null && imgUrl.isNotEmpty) {
-                      finalImageUrls.add(imgUrl);
-                    }
-                  }
-                  if (finalImageUrls.isNotEmpty) {
-                    finalThumUrl = finalImageUrls.first;
-                  }
-                }
-
-                // 리뷰 평점
-                final visitorReviews = summary['visitorReviews'] as Map<String, dynamic>?;
-                if (visitorReviews != null) {
-                  final scoreRaw = visitorReviews['score'];
-                  if (scoreRaw != null) {
-                    if (scoreRaw is num) {
-                      finalRating = scoreRaw.toDouble();
-                    } else if (scoreRaw is String) {
-                      finalRating = double.tryParse(scoreRaw) ?? 0.0;
-                    }
-                  }
-                }
-
-                debugPrint('[MapCrawl] 최종 - contact=$finalContact, bizHours=$operatingHours, thumUrl=$finalThumUrl, rating=$finalRating');
-              }
-            } else {
-              debugPrint('[MapCrawl] placeId 확보 실패 for $name');
-            }
-          } catch (crawlErr) {
-            debugPrint(
-              '[MapCrawl] 크롤링 실패 for $name: $crawlErr',
-            );
-          }
-
-          debugPrint('[MapCrawl] DB 저장 시도 - name=$name, placeId=$finalPlaceId, contact=$finalContact, operatingHours=$operatingHours, thumUrl=$finalThumUrl, rating=$finalRating');
-
-          final store = Store(
-            id: '',
-            ownerId: '',
-            name: name,
-            category: category,
-            businessNumber: '',
-            latitude: lat,
-            longitude: lng,
-            address: address,
-            contact: finalContact,
-            naverPlaceId: finalPlaceId,
-            operatingHours: operatingHours,
-            rating: finalRating,
-          );
-
-          try {
-            final createdStore = await storeRepo.createStoreDynamically(store);
-            debugPrint('[MapCrawl] DB 저장 성공 - storeId=${createdStore.id}');
-            if (finalImageUrls.isNotEmpty) {
-              for (int i = 0; i < finalImageUrls.length; i++) {
-                final imgUrl = finalImageUrls[i];
-                await storeRepo.addStoreImage(
-                  createdStore.id,
-                  imgUrl,
-                  isCover: i == 0,
-                );
-                debugPrint('[MapCrawl] 이미지 저장 성공 ($i) - $imgUrl, isCover: ${i == 0}');
-              }
-            } else if (finalThumUrl != null && finalThumUrl.isNotEmpty) {
-              await storeRepo.addStoreImage(
-                createdStore.id,
-                finalThumUrl,
-                isCover: true,
-              );
-              debugPrint('[MapCrawl] 이미지 저장 성공 (단일) - $finalThumUrl');
-            }
-          } catch (dbErr) {
-            debugPrint('[MapCrawl] DB 저장 실패 for $name: $dbErr');
-          }
-        });
-
-        await Future.wait(registerFutures);
+      if (useDbOnly) {
+        final ratio = mapAreaOverlapRatioAgainstNew(
+          newBounds: newBounds,
+          previousBounds: _lastCrawledBounds!,
+        );
+        debugPrint(
+          '[MapSearch] DB-only (overlap ${(ratio * 100).toStringAsFixed(0)}%)',
+        );
+      } else {
+        await _runExternalSearchPipeline(
+          center: center,
+          newBounds: newBounds,
+        );
       }
 
       await _fetchStores(center);
-
     } catch (e) {
       debugPrint('Error searching around center: $e');
     } finally {
@@ -797,6 +937,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
+    _searchCooldownTimer?.cancel();
     _mapStatusSubscription.cancel();
     _markerEventSubscription?.cancel();
     _mapEventSubscription?.cancel();
@@ -858,9 +999,10 @@ class _MapScreenState extends State<MapScreen> {
             right: 0,
             child: Center(
               child: _SearchAreaButton(
+                enabled: !_isSearchCooldownActive && !_isSearching,
                 onTap: () {
                   setState(() => _selectedStore = null);
-                  _searchAroundCenter();
+                  _requestSearchAroundCenter();
                 },
               ),
             ),
@@ -1029,17 +1171,26 @@ class _CategoryChips extends StatelessWidget {
 }
 
 class _SearchAreaButton extends StatelessWidget {
+  final bool enabled;
   final VoidCallback onTap;
-  const _SearchAreaButton({required this.onTap});
+
+  const _SearchAreaButton({
+    required this.enabled,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor =
+        enabled ? const Color(0xFF1A1A2E) : const Color(0xFF9CA3AF);
+    final foregroundColor = Colors.white;
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: const [
             BoxShadow(
@@ -1049,15 +1200,15 @@ class _SearchAreaButton extends StatelessWidget {
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.refresh_rounded, color: Colors.white, size: 16),
-            SizedBox(width: 6),
+            Icon(Icons.refresh_rounded, color: foregroundColor, size: 16),
+            const SizedBox(width: 6),
             Text(
               '현 지도에서 검색',
               style: TextStyle(
-                color: Colors.white,
+                color: foregroundColor,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
