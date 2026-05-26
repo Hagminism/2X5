@@ -33,6 +33,13 @@ class CustomTextField extends StatelessWidget {
           const SizedBox(width: 16.0),
           Expanded(
             child: TextFormField(
+              style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                letterSpacing: -0.2,
+                color: AppColors.textPrimary,
+              ),
               keyboardType: switch (textFieldContentType) {
                 TextFieldContentType.phone => TextInputType.phone,
                 TextFieldContentType.email => TextInputType.emailAddress,
@@ -143,8 +150,11 @@ class CustomTextField extends StatelessWidget {
 
     return InputDecoration(
       hintText: hintText,
-      hintStyle: AppTextStyles.body.copyWith(
+      hintStyle: const TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
+        fontSize: 16,
         fontWeight: FontWeight.w500,
+        letterSpacing: -0.2,
         color: AppColors.textSecondary,
       ),
       border: InputBorder.none,
