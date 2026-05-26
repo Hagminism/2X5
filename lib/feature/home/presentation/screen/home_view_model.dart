@@ -80,6 +80,8 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> refresh() => _loadStores(reset: true);
+
   Future<void> _loadStores({required bool reset}) async {
     if (state.isLoading) {
       return;

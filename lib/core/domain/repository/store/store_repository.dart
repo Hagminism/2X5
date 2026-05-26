@@ -29,6 +29,8 @@ abstract interface class StoreRepository {
 
   Future<List<StoreImage>> getStoreImagesByStoreId(String storeId); //이미 조회
 
+  Future<Map<String, String?>> getCoverImageUrlsByStoreIds(List<String> storeIds);
+
   Future<Store> updateMyStore(Store store);
 
   Future<List<StoreMenu>> getStoreMenusByStoreId(String storeId); //메뉴 조회

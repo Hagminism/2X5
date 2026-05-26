@@ -12,7 +12,6 @@ class HomeStoreCard extends StatelessWidget {
     required this.onBookmarkTap,
     required this.isBookmarked,
     this.imageUrl,
-    this.showRating = true,
     super.key,
   });
 
@@ -25,8 +24,6 @@ class HomeStoreCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onBookmarkTap;
 
-  /// 입점 매장만 카드 별점 표시. 크롤(미입점) 매장은 false.
-  final bool showRating;
 
   static Color _categoryColor(String category) {
     switch (category) {
@@ -136,8 +133,8 @@ class HomeStoreCard extends StatelessWidget {
                         behavior: HitTestBehavior.opaque,
                         child: Icon(
                           isBookmarked
-                              ? Icons.bookmark_rounded
-                              : Icons.bookmark_border_rounded,
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
                           size: 20,
                           color: isBookmarked
                               ? AppColors.primary
@@ -158,15 +155,32 @@ class HomeStoreCard extends StatelessWidget {
                           color: _categoryColor(category),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(
-                          '${_categoryEmoji(category)} $category',
-                          style: TextStyle(
-                            fontFamily: AppTextStyles.fontFamily,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.1,
-                            color: _categoryIconColor(category),
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (category == '미용실')
+                              Icon(
+                                Icons.content_cut,
+                                size: 11,
+                                color: _categoryIconColor(category),
+                              )
+                            else
+                              Text(
+                                _categoryEmoji(category),
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            const SizedBox(width: 3),
+                            Text(
+                              category,
+                              style: TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.1,
+                                color: _categoryIconColor(category),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -174,25 +188,6 @@ class HomeStoreCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      if (showRating) ...[
-                        const Icon(
-                          Icons.star_rounded,
-                          size: 14,
-                          color: Colors.amber,
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontFamily: AppTextStyles.fontFamily,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.2,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
                       const Icon(
                         Icons.place_outlined,
                         size: 13,
