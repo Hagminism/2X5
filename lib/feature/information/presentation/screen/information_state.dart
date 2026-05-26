@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:capstone_2026/core/domain/model/store/store_layout_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -28,5 +29,6 @@ abstract class InformationState with _$InformationState {
     @Default(0) int currentSliderPage,
     @Default('') String naverPlaceId,
     @Default(true) bool isReservationAvailable,
+    StoreLayoutDetail? layoutDetail,
   }) = _InformationState;
 }

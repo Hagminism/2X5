@@ -44,10 +44,11 @@ class InformationViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final (store, menus, images) = await (
+      final (store, menus, images, layoutDetail) = await (
         _storeRepository.getStoreById(storeId),
         _storeRepository.getStoreMenusByStoreId(storeId),
         _storeRepository.getStoreImagesByStoreId(storeId),
+        _storeRepository.getStoreLayoutByStoreId(storeId),
       ).wait;
 
       final imageUrls = storeImageDisplayUrls(images);
@@ -70,6 +71,7 @@ class InformationViewModel extends ChangeNotifier {
         naverPlaceId: store.naverPlaceId ?? '',
         isReservationAvailable: store.isOnboarded,
         isBookmarked: isBookmarked,
+        layoutDetail: layoutDetail,
         isLoading: false,
       );
 
@@ -140,7 +142,7 @@ class InformationViewModel extends ChangeNotifier {
         category == StoreCategory.restaurant);
     if (isCafeOrRestaurant) {
       _state = state.copyWith(
-        tabs: const ['홈', '메뉴', '예약', '사진', '리뷰'],
+        tabs: const ['홈', '메뉴', '내부 구조', '예약', '사진', '리뷰'],
         sliderController: PageController(),
       );
     } else {

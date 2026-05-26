@@ -4,6 +4,7 @@ import 'package:capstone_2026/feature/information/presentation/component/informa
 import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_store_header.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_home_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_layout_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_menu_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_photo_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_reservation_tab.dart';
@@ -149,6 +150,12 @@ class MapStoreInformationScreen extends StatelessWidget {
                   if (StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
                       StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant)
                     StoreMenuTab(menus: state.menus),
+                  if (StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
+                      StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant)
+                    StoreLayoutTab(
+                      layoutDetail: state.layoutDetail,
+                      isReservationAvailable: state.isReservationAvailable,
+                    ),
                   StoreReservationStatusTab(
                     category: state.category,
                     isReservationAvailable: state.isReservationAvailable,
