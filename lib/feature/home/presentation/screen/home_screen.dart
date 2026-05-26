@@ -1,5 +1,4 @@
 import 'package:capstone_2026/core/routing/routes.dart';
-import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/feature/home/core/model/home_store_item.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_category_section.dart';
 import 'package:capstone_2026/feature/home/presentation/component/home_header.dart';
