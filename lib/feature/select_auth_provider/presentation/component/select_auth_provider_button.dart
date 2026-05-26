@@ -13,35 +13,36 @@ class SelectAuthProviderButton extends StatelessWidget {
     required this.onTap,
   });
 
+  static const TextStyle _buttonTextBase = TextStyle(
+    fontFamily: AppTextStyles.fontFamily,
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: Ink(
           height: 56,
           decoration: BoxDecoration(
-            border: BoxBorder.all(
-              style: BorderStyle.solid,
-              color: AppColors.authProviderButton,
-            ),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             color: buildColor(authProvider),
+            border:
+                authProvider == AuthProvider.email ||
+                    authProvider == AuthProvider.google
+                ? Border.all(color: AppColors.border)
+                : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 1),
-                  buildIcon(authProvider),
-                ],
-              ),
-              const SizedBox(width: 8),
+              buildIcon(authProvider),
+              const SizedBox(width: 10),
               buildText(authProvider),
             ],
           ),
@@ -63,55 +64,56 @@ class SelectAuthProviderButton extends StatelessWidget {
     }
   }
 
+  Color buildTextColor(AuthProvider authProvider) {
+    switch (authProvider) {
+      case AuthProvider.email:
+        return AppColors.signUpWithEmailButtonText;
+      case AuthProvider.google:
+        return AppColors.signUpWithGoogleButtonText;
+      case AuthProvider.naver:
+        return AppColors.signUpWithNaverButtonText;
+      case AuthProvider.kakao:
+        return AppColors.signUpWithKakaoButtonText;
+    }
+  }
+
   Widget buildIcon(AuthProvider authProvider) {
     switch (authProvider) {
       case AuthProvider.email:
-        return Icon(Icons.email_outlined, size: 24);
+        return Icon(
+          Icons.email_outlined,
+          size: 22,
+          color: buildTextColor(authProvider),
+        );
       case AuthProvider.google:
-        return Image.asset('assets/icons/google.png', width: 20, height: 20);
+        return Image.asset(
+          'assets/icons/google.png',
+          width: 22,
+          height: 22,
+        );
       case AuthProvider.naver:
-        return Image.asset('assets/icons/naver.png', width: 20, height: 20);
+        return Image.asset(
+          'assets/icons/naver.png',
+          width: 22,
+          height: 22,
+        );
       case AuthProvider.kakao:
-        return Image.asset('assets/icons/kakao.png', width: 20, height: 20);
+        return Image.asset(
+          'assets/icons/kakao.png',
+          width: 22,
+          height: 22,
+        );
     }
   }
 
   Widget buildText(AuthProvider authProvider) {
-    final String title = '${authProvider.toDisplayName()}로 회원가입';
+    final title = '${authProvider.toDisplayName()}로 회원가입';
 
-    switch (authProvider) {
-      case AuthProvider.email:
-        return Text(
-          title,
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.signUpWithEmailButtonText,
-          ),
-        );
-      case AuthProvider.google:
-        return Text(
-          title,
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.signUpWithGoogleButtonText,
-          ),
-        );
-      case AuthProvider.naver:
-        return Text(
-          title,
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.signUpWithNaverButtonText,
-          ),
-        );
-      case AuthProvider.kakao:
-        return Text(
-          title,
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.signUpWithKakaoButtonText,
-          ),
-        );
-    }
+    return Text(
+      title,
+      style: _buttonTextBase.copyWith(
+        color: buildTextColor(authProvider),
+      ),
+    );
   }
 }

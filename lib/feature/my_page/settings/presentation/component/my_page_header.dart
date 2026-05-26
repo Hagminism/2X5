@@ -7,10 +7,13 @@ class MyPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '내페이지',
-      style: AppTextStyles.titleLarge.copyWith(
-        fontWeight: FontWeight.w800,
+    return const Text(
+      '마이페이지',
+      style: TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
         color: AppColors.textPrimary,
       ),
     );

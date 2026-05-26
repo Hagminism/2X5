@@ -30,9 +30,11 @@ class MyMenuTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: AppTextStyles.body.copyWith(
+                  style: const TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
+                    letterSpacing: -0.2,
                     color: AppColors.textPrimary,
                   ),
                 ),

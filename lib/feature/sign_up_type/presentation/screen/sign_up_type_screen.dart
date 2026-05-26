@@ -30,17 +30,28 @@ class SignUpTypeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   '회원가입',
-                  style: AppTextStyles.headline.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.5,
+                  style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                    letterSpacing: -0.6,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   '어떤 유형으로 시작할까요?',
-                  style: AppTextStyles.subtitle,
+                  style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: -0.2,
+                    height: 1.3,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 SignUpTypeCard(

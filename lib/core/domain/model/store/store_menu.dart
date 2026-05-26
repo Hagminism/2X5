@@ -9,6 +9,7 @@ abstract class StoreMenu with _$StoreMenu {
     String? id,
     required String name,
     required int price,
+    @Default('') String priceDisplay,
     @Default('') String description,
     @Default('') String imageUrl,
     required int sortOrder,
