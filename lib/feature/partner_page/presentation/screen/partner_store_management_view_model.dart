@@ -97,6 +97,12 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
           const PartnerStoreManagementEvent.openMenuManager(),
         );
         break;
+      case TapOpenLayoutManager():
+        if (!_requireRegisteredStore()) break;
+        _eventController.add(
+          const PartnerStoreManagementEvent.openLayoutManager(),
+        );
+        break;
       case TapOpenSeatLayoutManager():
         if (!_requireRegisteredStore()) break;
         _eventController.add(

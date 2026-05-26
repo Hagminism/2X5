@@ -381,6 +381,23 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                             : null,
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    _buildGatedSection(
+                      title: '구조 관리',
+                      canAccess: state.canAccessStoreSubManagers,
+                      child: PartnerStoreManagementCtaCard(
+                        icon: Icons.layers_outlined,
+                        title: '내부 구조 설정',
+                        subtitle: '매장 내부의 테이블 및 구조물 배치를 설정할 수 있어요.',
+                        onTap: state.canAccessStoreSubManagers
+                            ? () {
+                                onAction(
+                                  const PartnerStoreManagementAction.tapOpenLayoutManager(),
+                                );
+                              }
+                            : null,
+                      ),
+                    ),
                   ],
                   if (state.category == 'study_cafe') ...[
                     const SizedBox(height: 24),
