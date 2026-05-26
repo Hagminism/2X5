@@ -13,15 +13,24 @@ class BookmarkPageHeader extends StatelessWidget {
         Text(
           '저장한 업장',
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
             color: AppColors.textPrimary,
           ),
         ),
         SizedBox(height: 4),
         Text(
           '북마크한 업장을 한눈에 확인해보세요.',
-          style: AppTextStyles.subtitle,
+          style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            letterSpacing: -0.2,
+            height: 1.3,
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
     );
