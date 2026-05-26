@@ -44,7 +44,7 @@ class CustomBottomAppBar extends StatelessWidget {
               navigationShell: navigationShell,
               index: 3,
               icon: Icons.person_outline_rounded,
-              label: '내페이지',
+              label: '마이페이지',
             ),
           ],
         ),
