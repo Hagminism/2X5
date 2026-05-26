@@ -47,6 +47,8 @@ class _MapScreenState extends State<MapScreen> {
   NLatLng? _myLocationLatLng;
   bool _isSearching = false;
   MapAreaBounds? _lastCrawledBounds;
+  /// 직전 API 검색에서 신규 0건이었던 bbox. 겹침 ≥90%이면 카카오 생략.
+  MapAreaBounds? _lastZeroNewSearchBounds;
   Timer? _searchCooldownTimer;
   bool _isSearchCooldownActive = false;
   int _currentZoom = 15;
@@ -165,15 +167,61 @@ class _MapScreenState extends State<MapScreen> {
     return List<Map<String, dynamic>>.from(response);
   }
 
-  Future<void> _fetchStores(NLatLng center) async {
+  bool _storeListsEquivalent(
+    List<Map<String, dynamic>> previous,
+    List<Map<String, dynamic>> next,
+  ) {
+    if (previous.length != next.length) {
+      return false;
+    }
+    final previousIds = previous
+        .map((store) => store['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    final nextIds = next
+        .map((store) => store['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    return previousIds.length == nextIds.length &&
+        previousIds.containsAll(nextIds);
+  }
+
+  Future<void> _fetchStores(
+    NLatLng center, {
+    bool skipMarkerRefreshIfUnchanged = false,
+  }) async {
     try {
       final stores = await _queryStoresInArea(center);
       if (!mounted) return;
+      final storesUnchanged = _storeListsEquivalent(_stores, stores);
       setState(() => _stores = stores);
-      if (_mapReady) _addStoreMarkers();
+      if (!_mapReady) return;
+      if (skipMarkerRefreshIfUnchanged && storesUnchanged) {
+        debugPrint('[MapSearch] Marker refresh skip — stores unchanged');
+        return;
+      }
+      await _addStoreMarkers();
     } catch (e) {
       debugPrint('stores fetch error: $e');
     }
+  }
+
+  bool _shouldSkipKakaoForZeroNewRegion(MapAreaBounds newBounds) {
+    final lastZeroNew = _lastZeroNewSearchBounds;
+    if (lastZeroNew == null) {
+      return false;
+    }
+    final ratio = mapAreaOverlapRatioAgainstNew(
+      newBounds: newBounds,
+      previousBounds: lastZeroNew,
+    );
+    return ratio >= _overlapDbOnlyThreshold;
+  }
+
+  void _rememberZeroNewSearchBounds(MapAreaBounds newBounds) {
+    _lastZeroNewSearchBounds = _lastZeroNewSearchBounds == null
+        ? newBounds
+        : mapAreaBoundsUnion(_lastZeroNewSearchBounds!, newBounds);
   }
 
   Set<String> _existingStoreLookupKeys(List<Map<String, dynamic>> areaStores) {
@@ -526,34 +574,45 @@ class _MapScreenState extends State<MapScreen> {
     final kakaoSource = getIt<KakaoStoreSearchDataSource>();
     final naverSource = getIt<NaverStoreSearchDataSource>();
 
-    final results = await Future.wait([
-      _searchKakaoByCategories(
+    final areaStores = await _queryStoresInArea(center);
+    final lookupKeys = _existingStoreLookupKeys(areaStores);
+
+    final skipKakao = _shouldSkipKakaoForZeroNewRegion(newBounds);
+    var candidateCount = 0;
+    final List<Map<String, dynamic>> newStoresToRegister;
+
+    if (skipKakao) {
+      newStoresToRegister = [];
+      debugPrint(
+        '[MapSearch] Kakao skip — prior search had 0 new in overlapping area',
+      );
+    } else {
+      final rawCandidates = await _searchKakaoByCategories(
         center: center,
         categories: categoriesToSearch,
         kakaoSource: kakaoSource,
-      ),
-      _queryStoresInArea(center),
-    ]);
-    final rawCandidates = results[0];
-    final areaStores = results[1];
-
-    final uniqueCandidates = _uniqueCandidatesFromKakao(rawCandidates);
-    final lookupKeys = _existingStoreLookupKeys(areaStores);
-    final newStoresToRegister = uniqueCandidates.values
-        .where((cand) => !_isStoreAlreadyRegistered(cand, lookupKeys))
-        .toList();
+      );
+      final uniqueCandidates = _uniqueCandidatesFromKakao(rawCandidates);
+      candidateCount = uniqueCandidates.length;
+      newStoresToRegister = uniqueCandidates.values
+          .where((cand) => !_isStoreAlreadyRegistered(cand, lookupKeys))
+          .toList();
+    }
 
     debugPrint(
-      '[MapSearch] API path — candidates=${uniqueCandidates.length}, '
+      '[MapSearch] API path — candidates=$candidateCount, '
       'new=${newStoresToRegister.length}',
     );
 
     if (newStoresToRegister.isNotEmpty) {
+      _lastZeroNewSearchBounds = null;
       await _registerNewStoresInBatches(
         newStores: newStoresToRegister,
         storeRepo: storeRepo,
         naverSource: naverSource,
       );
+    } else {
+      _rememberZeroNewSearchBounds(newBounds);
     }
 
     _lastCrawledBounds = _lastCrawledBounds == null
@@ -862,7 +921,10 @@ class _MapScreenState extends State<MapScreen> {
         );
       }
 
-      await _fetchStores(center);
+      await _fetchStores(
+        center,
+        skipMarkerRefreshIfUnchanged: useDbOnly,
+      );
     } catch (e) {
       debugPrint('Error searching around center: $e');
     } finally {
