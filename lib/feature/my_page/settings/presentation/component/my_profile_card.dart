@@ -1,3 +1,5 @@
+import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class MyProfileCard extends StatelessWidget {
@@ -14,6 +16,9 @@ class MyProfileCard extends StatelessWidget {
     super.key,
   });
 
+  static const Color _cardBackground = Color(0xFF1A1A2E);
+  static const Color _onCardMuted = Color(0xFFAAAAAA);
+
   @override
   Widget build(BuildContext context) {
     final displayName = name ?? '사용자';
@@ -24,7 +29,7 @@ class MyProfileCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
+          color: _cardBackground,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -33,7 +38,7 @@ class MyProfileCard extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: const BoxDecoration(
-                color: Color(0xFFFF3D00),
+                color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
               child: photoUrl != null
@@ -41,13 +46,15 @@ class MyProfileCard extends StatelessWidget {
                       child: Image.network(
                         photoUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, e, st) => Center(
+                        errorBuilder: (_, _, _) => Center(
                           child: Text(
                             firstLetter,
                             style: const TextStyle(
-                              color: Colors.white,
+                              fontFamily: AppTextStyles.fontFamily,
+                              color: AppColors.white,
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
+                              letterSpacing: -0.3,
                             ),
                           ),
                         ),
@@ -57,9 +64,11 @@ class MyProfileCard extends StatelessWidget {
                       child: Text(
                         firstLetter,
                         style: const TextStyle(
-                          color: Colors.white,
+                          fontFamily: AppTextStyles.fontFamily,
+                          color: AppColors.white,
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
                         ),
                       ),
                     ),
@@ -72,25 +81,32 @@ class MyProfileCard extends StatelessWidget {
                   Text(
                     displayName,
                     style: const TextStyle(
-                      color: Colors.white,
+                      fontFamily: AppTextStyles.fontFamily,
+                      color: AppColors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
                     ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     email ?? '',
                     style: const TextStyle(
-                      color: Color(0xFFAAAAAA),
+                      fontFamily: AppTextStyles.fontFamily,
+                      color: _onCardMuted,
                       fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: -0.1,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
             const Icon(
               Icons.chevron_right_rounded,
-              color: Color(0xFFAAAAAA),
+              color: _onCardMuted,
               size: 22,
             ),
           ],

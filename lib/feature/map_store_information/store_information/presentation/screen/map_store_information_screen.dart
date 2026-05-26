@@ -128,6 +128,7 @@ class MapStoreInformationScreen extends StatelessWidget {
                       return StoreHomeTab(
                         address: state.address,
                         displayPhone: state.displayPhone,
+                        description: state.storeDescription,
                         operatingHours: state.operatingHours,
                         menus: state.menus,
                         onViewMoreMenus: () {

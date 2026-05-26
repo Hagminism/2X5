@@ -7,12 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ReservationHistoryScreenRoot extends StatefulWidget {
-  final ReservationHistoryViewModel viewModel;
-
   const ReservationHistoryScreenRoot({
     super.key,
     required this.viewModel,
   });
+
+  final ReservationHistoryViewModel viewModel;
 
   @override
   State<ReservationHistoryScreenRoot> createState() =>
@@ -26,6 +26,8 @@ class _ReservationHistoryScreenRootState
   @override
   void initState() {
     super.initState();
+    widget.viewModel.fetchHistory();
+
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (!mounted) {
         return;
@@ -45,8 +47,6 @@ class _ReservationHistoryScreenRootState
           break;
       }
     });
-
-    widget.viewModel.fetchHistory();
   }
 
   @override

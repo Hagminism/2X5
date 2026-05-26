@@ -293,7 +293,7 @@ void diSetup() {
       bookmarkRepository: getIt<BookmarkRepository>(),
     ),
   );
-    getIt.registerLazySingleton<BookmarkViewModel>(
+    getIt.registerFactory<BookmarkViewModel>(
     () => BookmarkViewModel(
       bookmarkRepository: getIt<BookmarkRepository>(),
     ),

@@ -1,4 +1,5 @@
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class HomeStoreCard extends StatelessWidget {
@@ -116,8 +117,10 @@ class HomeStoreCard extends StatelessWidget {
                         child: Text(
                           name,
                           style: const TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
                             color: AppColors.textPrimary,
                           ),
                           maxLines: 1,
@@ -170,8 +173,10 @@ class HomeStoreCard extends StatelessWidget {
                             Text(
                               category,
                               style: TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
+                                letterSpacing: -0.1,
                                 color: _categoryIconColor(category),
                               ),
                             ),
@@ -193,7 +198,10 @@ class HomeStoreCard extends StatelessWidget {
                         child: Text(
                           subtitle,
                           style: const TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
                             fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -0.1,
                             color: AppColors.textSecondary,
                           ),
                           maxLines: 1,

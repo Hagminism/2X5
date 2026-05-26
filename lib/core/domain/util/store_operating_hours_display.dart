@@ -96,10 +96,17 @@ List<StoreOperatingHoursDayLine> buildWeeklyOperatingHoursLines(
       continue;
     }
 
+    final breakStartTime = dayConfig['breakStartTime']?.toString().trim() ?? '';
+    final breakEndTime = dayConfig['breakEndTime']?.toString().trim() ?? '';
+    final breakSubText = breakStartTime.isNotEmpty && breakEndTime.isNotEmpty
+        ? '브레이크 $breakStartTime - $breakEndTime'
+        : null;
+
     lines.add(
       StoreOperatingHoursDayLine(
         dayLabel: day.label,
         hoursText: '$openTime - $closeTime',
+        subText: breakSubText,
       ),
     );
   }

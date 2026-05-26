@@ -4,6 +4,7 @@ import 'package:capstone_2026/feature/my_page/settings/presentation/component/my
 import 'package:capstone_2026/feature/my_page/settings/presentation/component/my_profile_card.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_action.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/my_page_state.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class MyPageScreen extends StatelessWidget {
@@ -19,7 +20,7 @@ class MyPageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),

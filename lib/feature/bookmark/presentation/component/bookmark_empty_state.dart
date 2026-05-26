@@ -1,4 +1,5 @@
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class BookmarkEmptyState extends StatelessWidget {
@@ -30,8 +31,10 @@ class BookmarkEmptyState extends StatelessWidget {
           const Text(
             '저장한 업장이 없습니다.',
             style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 16,
               fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
               color: AppColors.textPrimary,
             ),
           ),
@@ -40,15 +43,37 @@ class BookmarkEmptyState extends StatelessWidget {
             '관심 있는 업장을 저장해두고 빠르게 확인해보세요.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 13,
+              fontFamily: AppTextStyles.fontFamily,
+              fontSize: 14,
               fontWeight: FontWeight.w400,
+              letterSpacing: -0.2,
+              height: 1.3,
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 14),
           OutlinedButton(
             onPressed: onExploreTap,
-            child: const Text('업장 둘러보기'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.textPrimary,
+              side: const BorderSide(color: AppColors.border),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 14,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              '업장 둘러보기',
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontWeight: FontWeight.w500,
+                fontSize: 15,
+                letterSpacing: -0.2,
+              ),
+            ),
           ),
         ],
       ),

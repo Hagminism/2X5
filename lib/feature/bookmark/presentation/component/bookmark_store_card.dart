@@ -63,8 +63,10 @@ class BookmarkStoreCard extends StatelessWidget {
                     Text(
                       name,
                       style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
                         color: AppColors.textPrimary,
                       ),
                     ),
@@ -72,13 +74,26 @@ class BookmarkStoreCard extends StatelessWidget {
                     Text(
                       category,
                       style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: -0.1,
                         color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: AppTextStyles.subtitle),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: -0.1,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
@@ -91,8 +106,10 @@ class BookmarkStoreCard extends StatelessWidget {
                         Text(
                           '$rating ($reviewCount)',
                           style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: -0.2,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -123,8 +140,8 @@ class BookmarkStoreCard extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
-      placeholder: (_, __) => _thumbnailLoading(),
-      errorWidget: (_, __, ___) => _thumbnailPlaceholder(),
+      placeholder: (_, _) => _thumbnailLoading(),
+      errorWidget: (_, _, _) => _thumbnailPlaceholder(),
     );
   }
 
@@ -144,7 +161,10 @@ class BookmarkStoreCard extends StatelessWidget {
         child: SizedBox(
           width: 20,
           height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primary,
+          ),
         ),
       ),
     );

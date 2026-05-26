@@ -28,9 +28,12 @@ class MyMenuSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 6),
             child: Text(
               title,
-              style: AppTextStyles.caption.copyWith(
+              style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
+                letterSpacing: -0.1,
+                color: AppColors.textSecondary,
               ),
             ),
           ),
