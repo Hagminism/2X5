@@ -234,6 +234,8 @@ class HomeViewModel extends ChangeNotifier {
 
     if (visibleCount >= sorted.length) {
       if (!state.usesDistancePaging && serverPageFull) {
+        _state = state.copyWith(isLoadingMore: false);
+        notifyListeners();
         return;
       }
       _state = state.copyWith(hasMore: false, isLoadingMore: false);
