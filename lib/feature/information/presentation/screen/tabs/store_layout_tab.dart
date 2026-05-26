@@ -3,7 +3,7 @@ import 'package:capstone_2026/feature/seat_selection/presentation/component/seat
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class StoreLayoutTab extends StatelessWidget {
+class StoreLayoutTab extends StatefulWidget {
   final StoreLayoutDetail? layoutDetail;
   final bool isReservationAvailable;
 
@@ -14,7 +14,20 @@ class StoreLayoutTab extends StatelessWidget {
   });
 
   @override
+  State<StoreLayoutTab> createState() => _StoreLayoutTabState();
+}
+
+class _StoreLayoutTabState extends State<StoreLayoutTab>
+    with AutomaticKeepAliveClientMixin<StoreLayoutTab> {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final isReservationAvailable = widget.isReservationAvailable;
+    final layoutDetail = widget.layoutDetail;
+
     if (!isReservationAvailable) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -33,6 +46,7 @@ class StoreLayoutTab extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: SeatSelectionLayoutCanvas(
           elements: detail.elements,
@@ -53,6 +67,7 @@ class _NotOnboardedLayoutBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -111,6 +126,7 @@ class _NoLayoutDataBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-class StoreHomeTab extends StatelessWidget {
+class StoreHomeTab extends StatefulWidget {
   const StoreHomeTab({
     super.key,
     required this.address,
@@ -18,26 +18,41 @@ class StoreHomeTab extends StatelessWidget {
   });
 
   final String address;
-
-  /// 뷰모델 `displayPhone` (`stores.contact`).
   final String displayPhone;
-
-  /// `stores.description` — 줄바꿈 포함.
   final String description;
   final Map<String, dynamic> operatingHours;
   final List<StoreMenu> menus;
   final VoidCallback onViewMoreMenus;
   final bool showMenuSection;
 
-  bool get _hasDescription => description.trim().isNotEmpty;
+  @override
+  State<StoreHomeTab> createState() => _StoreHomeTabState();
+}
+
+class _StoreHomeTabState extends State<StoreHomeTab>
+    with AutomaticKeepAliveClientMixin<StoreHomeTab> {
+  bool get _hasDescription => widget.description.trim().isNotEmpty;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final address = widget.address;
+    final displayPhone = widget.displayPhone;
+    final description = widget.description;
+    final operatingHours = widget.operatingHours;
+    final menus = widget.menus;
+    final onViewMoreMenus = widget.onViewMoreMenus;
+    final showMenuSection = widget.showMenuSection;
+
     final descriptionBlock = _hasDescription
         ? _StoreDescriptionBlock(description: description.trim())
         : null;
 
     return ListView(
+      physics: const ClampingScrollPhysics(),
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),

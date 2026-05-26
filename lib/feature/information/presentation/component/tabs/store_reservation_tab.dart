@@ -4,7 +4,7 @@ import 'package:capstone_2026/core/domain/model/enum/week_day.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class StoreReservationStatusTab extends StatelessWidget {
+class StoreReservationStatusTab extends StatefulWidget {
   final String category;
   final List<SalonDesigner> salonDesigners;
   final void Function() onTapReservation;
@@ -21,7 +21,24 @@ class StoreReservationStatusTab extends StatelessWidget {
   });
 
   @override
+  State<StoreReservationStatusTab> createState() =>
+      _StoreReservationStatusTabState();
+}
+
+class _StoreReservationStatusTabState extends State<StoreReservationStatusTab>
+    with AutomaticKeepAliveClientMixin<StoreReservationStatusTab> {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final category = widget.category;
+    final salonDesigners = widget.salonDesigners;
+    final onTapReservation = widget.onTapReservation;
+    final onTapSalonDesigner = widget.onTapSalonDesigner;
+    final isReservationAvailable = widget.isReservationAvailable;
+
     if (!isReservationAvailable) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -61,6 +78,7 @@ class StoreReservationStatusTab extends StatelessWidget {
               ),
             ),
       body: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.all(20),
         child: switch (storeCategory) {
           StoreCategory.studyCafe => const _StudyCafeReservationBody(),
@@ -82,6 +100,7 @@ class _NotOnboardedReservationBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

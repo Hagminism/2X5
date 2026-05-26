@@ -2,7 +2,7 @@
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class StorePhotoTab extends StatelessWidget {
+class StorePhotoTab extends StatefulWidget {
   const StorePhotoTab({
     super.key,
     required this.imageUrls,
@@ -11,7 +11,18 @@ class StorePhotoTab extends StatelessWidget {
   final List<String> imageUrls;
 
   @override
+  State<StorePhotoTab> createState() => _StorePhotoTabState();
+}
+
+class _StorePhotoTabState extends State<StorePhotoTab>
+    with AutomaticKeepAliveClientMixin<StorePhotoTab> {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final imageUrls = widget.imageUrls;
     if (imageUrls.isEmpty) {
       return const Center(
         child: Text(
@@ -25,6 +36,7 @@ class StorePhotoTab extends StatelessWidget {
     }
 
     return GridView.builder(
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
