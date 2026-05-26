@@ -10,6 +10,7 @@ import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/kakao_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -1132,7 +1133,7 @@ class _SearchBar extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.border),
               boxShadow: const [
@@ -1145,14 +1146,19 @@ class _SearchBar extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Icon(Icons.search_rounded, color: Color(0xFF6B7280)),
+                Icon(
+                  Icons.search_rounded,
+                  color: AppColors.textSecondary,
+                ),
                 SizedBox(width: 10),
                 Text(
                   '업장 검색',
                   style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF9CA3AF),
+                    letterSpacing: -0.2,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -1199,7 +1205,7 @@ class _CategoryChips extends StatelessWidget {
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.white,
+                    color: isSelected ? AppColors.primary : AppColors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected ? AppColors.primary : AppColors.border,
@@ -1208,15 +1214,20 @@ class _CategoryChips extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(item.emoji, style: const TextStyle(fontSize: 13)),
+                      Text(
+                        item.emoji,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                       const SizedBox(width: 5),
                       Text(
                         item.label,
                         style: TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
+                          letterSpacing: -0.1,
                           color: isSelected
-                              ? Colors.white
+                              ? AppColors.white
                               : AppColors.textPrimary,
                         ),
                       ),
@@ -1244,8 +1255,8 @@ class _SearchAreaButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final backgroundColor =
-        enabled ? const Color(0xFF1A1A2E) : const Color(0xFF9CA3AF);
-    final foregroundColor = Colors.white;
+        enabled ? const Color(0xFF1A1A2E) : AppColors.textSecondary;
+    const foregroundColor = AppColors.white;
 
     return GestureDetector(
       onTap: enabled ? onTap : null,
@@ -1267,12 +1278,14 @@ class _SearchAreaButton extends StatelessWidget {
           children: [
             Icon(Icons.refresh_rounded, color: foregroundColor, size: 16),
             const SizedBox(width: 6),
-            Text(
+            const Text(
               '현 지도에서 검색',
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 color: foregroundColor,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                letterSpacing: -0.1,
               ),
             ),
           ],
@@ -1315,7 +1328,7 @@ class _StoreBottomSheet extends StatelessWidget {
       },
       child: Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
             BoxShadow(
@@ -1334,7 +1347,7 @@ class _StoreBottomSheet extends StatelessWidget {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD1D5DB),
+                  color: AppColors.signOutArrow,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1351,11 +1364,11 @@ class _StoreBottomSheet extends StatelessWidget {
                     child: coverImageUrl != null
                         ? Image.network(coverImageUrl!, fit: BoxFit.cover)
                         : Container(
-                            color: const Color(0xFFF3F4F6),
+                            color: AppColors.signUpWithEmailButton,
                             child: const Icon(
                               Icons.storefront_rounded,
                               size: 28,
-                              color: Color(0xFF9CA3AF),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                   ),
@@ -1371,8 +1384,10 @@ class _StoreBottomSheet extends StatelessWidget {
                             child: Text(
                               name,
                               style: const TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3,
                                 color: AppColors.textPrimary,
                               ),
                               maxLines: 1,
@@ -1384,7 +1399,7 @@ class _StoreBottomSheet extends StatelessWidget {
                             child: const Icon(
                               Icons.close,
                               size: 20,
-                              color: Color(0xFF9CA3AF),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -1398,7 +1413,10 @@ class _StoreBottomSheet extends StatelessWidget {
                           Text(
                             categoryLabel,
                             style: const TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
                               fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: -0.1,
                               color: AppColors.textSecondary,
                             ),
                           ),
@@ -1417,19 +1435,27 @@ class _StoreBottomSheet extends StatelessWidget {
                             Text(
                               formatDistance(distanceM!),
                               style: const TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: -0.1,
                                 color: AppColors.textSecondary,
                               ),
                             ),
                             const Text(
                               ' · ',
                               style: TextStyle(
-                                  color: AppColors.textSecondary),
+                                fontFamily: AppTextStyles.fontFamily,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                             Text(
                               walkingTime(distanceM!),
                               style: const TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: -0.1,
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -1450,13 +1476,18 @@ class _StoreBottomSheet extends StatelessWidget {
                   Icon(
                     Icons.chevron_right_rounded,
                     size: 16,
-                    color: Color(0xFF9CA3AF),
+                    color: AppColors.textSecondary,
                   ),
                   SizedBox(width: 2),
                   Text(
                     '자세히 보기',
-                    style:
-                        TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: -0.1,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -1486,10 +1517,14 @@ class _MapButton extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Icon(icon, size: 20, color: Colors.black87),
+          child: Icon(
+            icon,
+            size: 20,
+            color: AppColors.textPrimary,
+          ),
         ),
       ),
     );
