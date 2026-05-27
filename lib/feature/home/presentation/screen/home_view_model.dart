@@ -16,11 +16,18 @@ class HomeViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
   final BookmarkRepository _bookmarkRepository;
 
+  StreamSubscription<Set<String>>? _bookmarkedIdsSubscription;
+
   HomeViewModel({
     required StoreRepository storeRepository,
     required BookmarkRepository bookmarkRepository,
   }) : _storeRepository = storeRepository,
-       _bookmarkRepository = bookmarkRepository;
+       _bookmarkRepository = bookmarkRepository {
+    _bookmarkedIdsSubscription =
+        _bookmarkRepository.watchBookmarkedStoreIds().listen(
+      _onBookmarkedStoreIdsChanged,
+    );
+  }
 
   HomeState _state = const HomeState();
 
@@ -142,8 +149,7 @@ class HomeViewModel extends ChangeNotifier {
         _poolEntries.addAll(firstPage);
       }
 
-      final myBookmarks = await _bookmarkRepository.getMyBookmarks();
-      final bookmarkedIds = myBookmarks.map((item) => item.storeId).toSet();
+      final bookmarkedIds = state.bookmarkedStoreIds;
 
       _state = state.copyWith(
         isLoading: false,
@@ -365,8 +371,27 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
+  void _onBookmarkedStoreIdsChanged(Set<String> bookmarkedIds) {
+    _state = state.copyWith(bookmarkedStoreIds: bookmarkedIds);
+
+    if (state.recommendedStores.isNotEmpty) {
+      _state = state.copyWith(
+        recommendedStores: state.recommendedStores
+            .map(
+              (item) => item.copyWith(
+                isBookmarked: bookmarkedIds.contains(item.storeId),
+              ),
+            )
+            .toList(),
+      );
+    }
+
+    notifyListeners();
+  }
+
   @override
   void dispose() {
+    _bookmarkedIdsSubscription?.cancel();
     _eventController.close();
     super.dispose();
   }
