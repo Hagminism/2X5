@@ -65,15 +65,16 @@ class BookmarkScreen extends StatelessWidget {
                                 StoreCategory.fromDbValue(item.category)
                                     ?.displayName ??
                                 item.category;
+                            final address = item.address.trim();
 
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: BookmarkStoreCard(
                                 name: item.name,
                                 category: categoryLabel,
-                                subtitle: viewModel.subtitleFor(item),
-                                rating: item.rating,
-                                reviewCount: item.reviewCount,
+                                subtitle: address.isEmpty
+                                    ? categoryLabel
+                                    : address,
                                 imageUrl: item.imageUrl,
                                 onTap: () async {
                                   await context.pushNamed(
