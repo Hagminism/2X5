@@ -26,110 +26,164 @@ class ReservationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CustomAppBar(
-        title: '날짜와 시간을 선택해 주세요',
-        showBackButton: true,
-        onTap: () {
-          onAction(const ReservationAction.tapBack());
-        },
-      ),
-      body: Stack(
-        children: [
-          if (state.loadError != null)
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(state.loadError!),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      onAction(const ReservationAction.tapRetry());
-                    },
-                    child: const Text('다시 시도'),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.white,
+          appBar: CustomAppBar(
+            title: '날짜와 시간을 선택해 주세요',
+            showBackButton: true,
+            onTap: () {
+              onAction(const ReservationAction.tapBack());
+            },
+          ),
+          body: Stack(
+            children: [
+              if (state.loadError != null)
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        state.loadError!,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodySecondary,
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: () {
+                          onAction(const ReservationAction.tapRetry());
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textPrimary,
+                          side: const BorderSide(color: AppColors.border),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          '다시 시도',
+                          style: TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )
-          else
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TableCalendar(
-                    locale: 'ko_KR',
-                    firstDay: DateTime.now(),
-                    lastDay: DateTime.now().add(const Duration(days: 30)),
-                    focusedDay: state.focusedDay ?? DateTime.now(),
-                    selectedDayPredicate: (day) =>
-                        isSameDay(state.selectedDay, day),
-                    enabledDayPredicate: isDaySelectable,
-                    onDaySelected: (selectedDay, focusedDay) {
-                      onAction(ReservationAction.selectDay(selectedDay));
-                    },
-                    onPageChanged: (focusedDay) {},
-                    headerStyle: const HeaderStyle(
-                      formatButtonVisible: false,
-                      titleCentered: true,
-                      titleTextStyle: AppTextStyles.subtitle,
-                    ),
-                    calendarStyle: CalendarStyle(
-                      selectedDecoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
+                )
+              else
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TableCalendar(
+                        locale: 'ko_KR',
+                        firstDay: DateTime.now(),
+                        lastDay: DateTime.now().add(const Duration(days: 30)),
+                        focusedDay: state.focusedDay ?? DateTime.now(),
+                        selectedDayPredicate: (day) =>
+                            isSameDay(state.selectedDay, day),
+                        enabledDayPredicate: isDaySelectable,
+                        onDaySelected: (selectedDay, focusedDay) {
+                          onAction(ReservationAction.selectDay(selectedDay));
+                        },
+                        onPageChanged: (focusedDay) {},
+                        headerStyle: HeaderStyle(
+                          formatButtonVisible: false,
+                          titleCentered: true,
+                          titleTextStyle: AppTextStyles.subtitle,
+                          leftChevronIcon: const Icon(
+                            Icons.chevron_left,
+                            color: AppColors.textPrimary,
+                          ),
+                          rightChevronIcon: const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        daysOfWeekStyle: DaysOfWeekStyle(
+                          weekdayStyle: AppTextStyles.caption,
+                          weekendStyle: AppTextStyles.caption.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        calendarStyle: CalendarStyle(
+                          defaultTextStyle: AppTextStyles.body,
+                          weekendTextStyle: AppTextStyles.body.copyWith(
+                            color: AppColors.primary,
+                          ),
+                          selectedDecoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          selectedTextStyle: AppTextStyles.body.copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          todayDecoration: BoxDecoration(
+                            color: AppColors.border,
+                            shape: BoxShape.circle,
+                          ),
+                          todayTextStyle: AppTextStyles.body.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          disabledTextStyle: AppTextStyles.body.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ),
-                      todayDecoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        shape: BoxShape.circle,
-                      ),
-                      todayTextStyle: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      disabledTextStyle: const TextStyle(color: Colors.grey),
-                    ),
+                      const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
+                      if (state.selectedDay != null) ...[
+                        _buildTimeSection(state.slots),
+                        const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
+                        _buildGuestCounter(state),
+                      ] else
+                        const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text(
+                            '날짜를 먼저 선택해 주세요.',
+                            style: AppTextStyles.body,
+                          ),
+                        ),
+                      const SizedBox(height: 80),
+                    ],
                   ),
-                  const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
-                  if (state.selectedDay != null) ...[
-                    _buildTimeSection(state.slots),
-                    const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
-                    _buildGuestCounter(state),
-                  ] else
-                    const Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Text(
-                        '날짜를 먼저 선택해 주세요.',
-                        style: AppTextStyles.body,
-                      ),
-                    ),
-                  const SizedBox(height: 80),
-                ],
-              ),
+                ),
+            ],
+          ),
+          bottomSheet: Ink(
+            color: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: PrimaryButton(
+              text: _submitLabel(state),
+              onTap: canSubmit && !(state.isLoading || state.isSubmitting)
+                  ? () {
+                      onAction(const ReservationAction.tapSubmit());
+                    }
+                  : () {},
             ),
-          if (state.isLoading || state.isSubmitting)
-            Container(
-              color: Colors.black12,
-              child: const Center(child: CircularProgressIndicator()),
+          ),
+        ),
+        if (state.isLoading || state.isSubmitting)
+          ModalBarrier(
+            dismissible: false,
+            color: AppColors.black.withValues(alpha: 0.2588),
+          ),
+        if (state.isLoading || state.isSubmitting)
+          const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.primary,
             ),
-        ],
-      ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFEEEEEE))),
-        ),
-        child: PrimaryButton(
-          text: _submitLabel(state),
-          onTap: canSubmit && !(state.isLoading || state.isSubmitting)
-              ? () {
-                  onAction(const ReservationAction.tapSubmit());
-                }
-              : () {},
-        ),
-      ),
+          ),
+      ],
     );
   }
 
@@ -179,7 +233,7 @@ class ReservationScreen extends StatelessWidget {
               }),
             ],
           ),
-        const SizedBox(height: 24),
+          const SizedBox(height: 24),
         ],
       ),
     );
@@ -195,9 +249,13 @@ class ReservationScreen extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFEEEEEE)),
+            border: Border.all(color: AppColors.border),
           ),
-          child: Icon(icon, size: 20),
+          child: Icon(
+            icon,
+            size: 20,
+            color: AppColors.textPrimary,
+          ),
         ),
       ),
     );
@@ -207,7 +265,10 @@ class ReservationScreen extends StatelessWidget {
     if (slots.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(20),
-        child: Text('선택한 날짜에 예약 가능한 시간이 없습니다.'),
+        child: Text(
+          '선택한 날짜에 예약 가능한 시간이 없습니다.',
+          style: AppTextStyles.bodySecondary,
+        ),
       );
     }
 
@@ -292,11 +353,11 @@ class ReservationScreen extends StatelessWidget {
           color: isSelected
               ? AppColors.primary
               : isEnabled
-              ? Colors.white
-              : const Color(0xFFF0F0F0),
+              ? AppColors.white
+              : AppColors.signUpWithEmailButton,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : const Color(0xFFEEEEEE),
+            color: isSelected ? AppColors.primary : AppColors.border,
           ),
         ),
         child: Text(
@@ -304,11 +365,11 @@ class ReservationScreen extends StatelessWidget {
           textAlign: TextAlign.center,
           style: AppTextStyles.body.copyWith(
             color: isSelected
-                ? Colors.white
+                ? AppColors.white
                 : isEnabled
-                ? Colors.black
-                : Colors.grey,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ? AppColors.textPrimary
+                : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
       ),
