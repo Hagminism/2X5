@@ -94,6 +94,9 @@ class ReservationViewModel extends ChangeNotifier {
         notifyListeners();
         break;
       case ReservationTapSubmit():
+        _requestSubmit();
+        break;
+      case ReservationConfirmSubmit():
         unawaited(_submit());
         break;
       case ReservationTapBack():
@@ -178,6 +181,30 @@ class ReservationViewModel extends ChangeNotifier {
     }
   }
 
+  void _requestSubmit() {
+    final selectedDay = _state.selectedDay;
+    final selectedTime = _state.selectedTime;
+    if (!canSubmit || selectedDay == null || selectedTime == null) {
+      return;
+    }
+
+    final uid = _authRepository.getCurrentUser()?.uid;
+    if (uid == null || uid.isEmpty) {
+      _eventController.add(
+        const ReservationEvent.showSnackBar('로그인이 필요합니다.'),
+      );
+      return;
+    }
+
+    _eventController.add(
+      ReservationEvent.showConfirmDialog(
+        bookingDate: selectedDay,
+        bookingTime: selectedTime,
+        guestCount: _state.guestCount,
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     final selectedDay = _state.selectedDay;
     final selectedTime = _state.selectedTime;
@@ -208,9 +235,9 @@ class ReservationViewModel extends ChangeNotifier {
       notifyListeners();
       _eventController.add(
         ReservationEvent.showSuccessDialog(
-          message:
-              '${selectedDay.month}월 ${selectedDay.day}일 $selectedTime\n'
-              '${_state.guestCount}명 예약이 완료되었습니다.',
+          bookingDate: selectedDay,
+          bookingTime: selectedTime,
+          guestCount: _state.guestCount,
         ),
       );
     } catch (error) {

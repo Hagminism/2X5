@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:capstone_2026/feature/reservation/presentation/component/reservation_confirm_dialog.dart';
+import 'package:capstone_2026/feature/reservation/presentation/component/reservation_success_dialog.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_action.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_event.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
@@ -38,32 +40,46 @@ class _ReservationScreenRootState extends State<ReservationScreenRoot> {
             SnackBar(content: Text(event.message)),
           );
           break;
+        case ReservationShowConfirmDialog():
+          _showConfirmDialog(event);
+          break;
         case ReservationShowSuccessDialog():
-          _showSuccessDialog(event.message);
+          _showSuccessDialog(event);
           break;
       }
     });
   }
 
-  void _showSuccessDialog(String message) {
+  void _showConfirmDialog(ReservationShowConfirmDialog event) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => ReservationConfirmDialog(
+        bookingDate: event.bookingDate,
+        bookingTime: event.bookingTime,
+        guestCount: event.guestCount,
+        onCancel: () {
+          Navigator.pop(dialogContext);
+        },
+        onConfirm: () {
+          Navigator.pop(dialogContext);
+          widget.viewModel.onAction(const ReservationAction.confirmSubmit());
+        },
+      ),
+    );
+  }
+
+  void _showSuccessDialog(ReservationShowSuccessDialog event) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('예약 성공'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              context.pop();
-            },
-            child: const Text(
-              '확인',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
+      builder: (dialogContext) => ReservationSuccessDialog(
+        bookingDate: event.bookingDate,
+        bookingTime: event.bookingTime,
+        guestCount: event.guestCount,
+        onConfirm: () {
+          Navigator.pop(dialogContext);
+          context.pop();
+        },
       ),
     );
   }
@@ -89,6 +105,7 @@ class _ReservationScreenRootState extends State<ReservationScreenRoot> {
               case ReservationTapIncreaseGuestCount():
               case ReservationTapDecreaseGuestCount():
               case ReservationTapSubmit():
+              case ReservationConfirmSubmit():
                 widget.viewModel.onAction(action);
                 break;
             }

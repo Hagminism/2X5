@@ -18,5 +18,7 @@ sealed class ReservationAction with _$ReservationAction {
 
   const factory ReservationAction.tapSubmit() = ReservationTapSubmit;
 
+  const factory ReservationAction.confirmSubmit() = ReservationConfirmSubmit;
+
   const factory ReservationAction.tapRetry() = ReservationTapRetry;
 }
