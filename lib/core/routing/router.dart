@@ -79,7 +79,8 @@ import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partn
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
-import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
+import 'package:capstone_2026/feature/reservation/core/presentation/component/scope/reservation_scope.dart';
+import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_view_model.dart';
 import 'package:capstone_2026/feature/salon_reservation/core/presentation/component/scope/salon_reservation_scope.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_view_model.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/core/presentation/component/scope/salon_reservation_confirm_scope.dart';
@@ -180,7 +181,10 @@ final router = GoRouter(
                     GoRoute(
                       path: Routes.reservation,
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => const ReservationScreen(),
+                      builder: (context, state) => ReservationScope(
+                        viewModel: getIt<ReservationViewModel>(),
+                        storeId: state.pathParameters['storeId'] ?? '',
+                      ),
                     ),
                     GoRoute(
                       path: Routes.salonReservation,
@@ -270,7 +274,10 @@ final router = GoRouter(
                     GoRoute(
                       path: Routes.reservation,
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => const ReservationScreen(),
+                      builder: (context, state) => ReservationScope(
+                        viewModel: getIt<ReservationViewModel>(),
+                        storeId: state.pathParameters['storeId'] ?? '',
+                      ),
                     ),
                     GoRoute(
                       path: Routes.salonReservation,
@@ -358,8 +365,10 @@ final router = GoRouter(
                         GoRoute(
                           path: Routes.reservation,
                           parentNavigatorKey: _rootNavigatorKey,
-                          builder: (context, state) =>
-                              const ReservationScreen(),
+                          builder: (context, state) => ReservationScope(
+                            viewModel: getIt<ReservationViewModel>(),
+                            storeId: state.pathParameters['storeId'] ?? '',
+                          ),
                         ),
                         GoRoute(
                           path: Routes.salonReservation,
