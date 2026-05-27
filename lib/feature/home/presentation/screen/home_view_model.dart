@@ -41,7 +41,7 @@ class HomeViewModel extends ChangeNotifier {
     switch (action) {
       case LoadHomeData():
       case RetryLoadHomeData():
-        unawaited(_loadStores(reset: true));
+        unawaited(_loadStores());
         break;
       case LoadMoreStores():
         unawaited(_loadMoreStores());
@@ -80,9 +80,9 @@ class HomeViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> refresh() => _loadStores(reset: true);
+  Future<void> refresh() => _loadStores();
 
-  Future<void> _loadStores({required bool reset}) async {
+  Future<void> _loadStores() async {
     if (state.isLoading) {
       return;
     }
@@ -92,9 +92,7 @@ class HomeViewModel extends ChangeNotifier {
       isLoadingMore: false,
       hasMore: true,
       visibleStoreCount: 0,
-      recommendedStores: reset
-          ? const <HomeStoreItem>[]
-          : state.recommendedStores,
+      recommendedStores: state.recommendedStores,
     );
     notifyListeners();
 

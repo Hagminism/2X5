@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -224,21 +225,53 @@ class HomeStoreCard extends StatelessWidget {
               child: SizedBox(
                 height: 130,
                 width: double.infinity,
-                child: imageUrl != null
-                    ? Image.network(imageUrl!, fit: BoxFit.cover)
-                    : Container(
-                        color: _categoryColor(category),
-                        child: Center(
-                          child: Icon(
-                            _categoryIcon(category),
-                            size: 48,
-                            color: _categoryIconColor(category),
-                          ),
-                        ),
-                      ),
+                child: _buildCoverImage(),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCoverImage() {
+    final url = imageUrl?.trim();
+    if (url == null || url.isEmpty) {
+      return ColoredBox(
+        color: _categoryColor(category),
+        child: Center(
+          child: Icon(
+            _categoryIcon(category),
+            size: 48,
+            color: _categoryIconColor(category),
+          ),
+        ),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      fadeInDuration: Duration.zero,
+      fadeOutDuration: Duration.zero,
+      placeholder: (_, _) => ColoredBox(
+        color: _categoryColor(category),
+        child: Center(
+          child: Icon(
+            _categoryIcon(category),
+            size: 48,
+            color: _categoryIconColor(category),
+          ),
+        ),
+      ),
+      errorWidget: (_, _, _) => ColoredBox(
+        color: _categoryColor(category),
+        child: Center(
+          child: Icon(
+            _categoryIcon(category),
+            size: 48,
+            color: _categoryIconColor(category),
+          ),
         ),
       ),
     );

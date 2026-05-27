@@ -90,6 +90,7 @@ class BookmarkScreen extends StatelessWidget {
                             final address = item.address.trim();
 
                             return Padding(
+                              key: ValueKey(item.storeId),
                               padding: const EdgeInsets.only(bottom: 12),
                               child: BookmarkStoreCard(
                                 name: item.name,
@@ -98,16 +99,13 @@ class BookmarkScreen extends StatelessWidget {
                                     ? categoryLabel
                                     : address,
                                 imageUrl: item.imageUrl,
-                                onTap: () async {
-                                  await context.pushNamed(
+                                onTap: () {
+                                  context.pushNamed(
                                     Routes.bookmarkInformationName,
                                     pathParameters: {
                                       'storeId': item.storeId,
                                     },
                                   );
-                                  if (context.mounted) {
-                                    await viewModel.loadBookmarks();
-                                  }
                                 },
                                 onBookmarkTap: () async {
                                   try {

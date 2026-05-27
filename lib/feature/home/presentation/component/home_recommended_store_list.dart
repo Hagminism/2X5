@@ -60,6 +60,7 @@ class HomeRecommendedStoreList extends StatelessWidget {
         }
         final store = stores[index];
         return HomeStoreCard(
+          key: ValueKey(store.storeId),
           name: store.name,
           subtitle: store.subtitle,
           rating: store.rating,

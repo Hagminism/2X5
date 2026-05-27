@@ -215,13 +215,15 @@ class BookmarkStoreCard extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
-      placeholder: (_, _) => const ColoredBox(
-        color: AppColors.surfaceMuted,
+      fadeInDuration: Duration.zero,
+      fadeOutDuration: Duration.zero,
+      placeholder: (_, _) => ColoredBox(
+        color: _categoryColor(category),
         child: Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
+          child: Icon(
+            _categoryIcon(category),
+            size: 48,
+            color: _categoryIconColor(category),
           ),
         ),
       ),
