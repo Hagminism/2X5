@@ -93,6 +93,7 @@ import 'package:capstone_2026/feature/search_store_information/store_information
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_view_model.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_view_model.dart';
+import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_view_model.dart';
 import 'package:capstone_2026/core/data/data_source/bookmark/bookmark_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/bookmark/bookmark_data_source_impl.dart';
 import 'package:capstone_2026/core/data/repository/bookmark/bookmark_repository_impl.dart';
@@ -171,7 +172,10 @@ void diSetup() {
     ),
   );
   getIt.registerLazySingleton<ReservationDataSource>(
-        () => ReservationDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
+        () => ReservationDataSourceImpl(
+      supabaseClient: getIt<SupabaseClient>(),
+      firebaseFunctions: getIt<FirebaseFunctions>(),
+    ),
   );
   getIt.registerLazySingleton<StudyCafeDataSource>(
     () => StudyCafeDataSourceImpl(
@@ -328,7 +332,10 @@ void diSetup() {
     ),
   );
   getIt.registerFactory<PartnerReservationSlotSettingsViewModel>(
-        () => PartnerReservationSlotSettingsViewModel(),
+        () => PartnerReservationSlotSettingsViewModel(
+      storeRepository: getIt<StoreRepository>(),
+      reservationRepository: getIt<ReservationRepository>(),
+    ),
   );
   getIt.registerFactory<PartnerStudyCafeLayoutViewModel>(
     () => PartnerStudyCafeLayoutViewModel(
@@ -431,6 +438,7 @@ void diSetup() {
       storeRepository: getIt<StoreRepository>(),
       salonRepository: getIt<SalonRepository>(),
       bookmarkRepository: getIt<BookmarkRepository>(),
+      reservationRepository: getIt<ReservationRepository>(),
     ),
   );
   
@@ -438,12 +446,14 @@ void diSetup() {
     () => SearchStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
       salonRepository: getIt<SalonRepository>(),
+      reservationRepository: getIt<ReservationRepository>(),
     ),
   );
   getIt.registerFactory<MapStoreInformationViewModel>(
     () => MapStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
       salonRepository: getIt<SalonRepository>(),
+      reservationRepository: getIt<ReservationRepository>(),
     ),
   );
   getIt.registerFactory<SeatSelectionViewModel>(
@@ -492,6 +502,13 @@ void diSetup() {
     () => SalonReservationConfirmViewModel(
       salonRepository: getIt<SalonRepository>(),
       storeRepository: getIt<StoreRepository>(),
+    ),
+  );
+  getIt.registerFactory<ReservationViewModel>(
+    () => ReservationViewModel(
+      storeRepository: getIt<StoreRepository>(),
+      reservationRepository: getIt<ReservationRepository>(),
+      authRepository: getIt<AuthRepository>(),
     ),
   );
 }
