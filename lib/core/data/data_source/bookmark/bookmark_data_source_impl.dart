@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:capstone_2026/core/data/data_source/bookmark/bookmark_data_source.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -72,5 +74,59 @@ class BookmarkDataSourceImpl implements BookmarkDataSource {
         .order('created_at', ascending: false);
 
     return List<Map<String, dynamic>>.from(rows as List);
+  }
+
+  @override
+  Stream<List<Map<String, dynamic>>> watchByUserId(String userId) {
+    late final StreamController<List<Map<String, dynamic>>> controller;
+    RealtimeChannel? channel;
+
+    Future<void> emitLatest() async {
+      if (controller.isClosed) {
+        return;
+      }
+      try {
+        final rows = await findByUserId(userId);
+        if (!controller.isClosed) {
+          controller.add(rows);
+        }
+      } catch (error, stack) {
+        if (!controller.isClosed) {
+          controller.addError(error, stack);
+        }
+      }
+    }
+
+    controller = StreamController<List<Map<String, dynamic>>>.broadcast(
+      onListen: () {
+        unawaited(emitLatest());
+
+        channel = _supabaseClient
+            .channel('store_bookmarks:$userId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: 'store_bookmarks',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'user_id',
+                value: userId,
+              ),
+              callback: (_) {
+                unawaited(emitLatest());
+              },
+            )
+            .subscribe();
+      },
+      onCancel: () async {
+        if (channel != null) {
+          await _supabaseClient.removeChannel(channel!);
+          channel = null;
+        }
+        await controller.close();
+      },
+    );
+
+    return controller.stream;
   }
 }
