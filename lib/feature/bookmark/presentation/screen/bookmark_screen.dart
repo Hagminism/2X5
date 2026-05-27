@@ -1,27 +1,28 @@
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/presentation/component/store_category_filter_chips.dart';
-import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_empty_state.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_page_header.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_store_card.dart';
-import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
+import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_action.dart';
+import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class BookmarkScreen extends StatelessWidget {
   const BookmarkScreen({
-    required this.viewModel,
+    required this.state,
+    required this.onAction,
     super.key,
   });
 
-  final BookmarkViewModel viewModel;
+  final BookmarkState state;
+  final void Function(BookmarkAction action) onAction;
 
   @override
   Widget build(BuildContext context) {
-    final visibleStores = viewModel.visibleItems;
-    final isInitialLoading = viewModel.isLoading && viewModel.items.isEmpty;
+    final visibleStores = state.visibleItems;
+    final isInitialLoading = state.isLoading && state.items.isEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -33,7 +34,9 @@ class BookmarkScreen extends StatelessWidget {
                 ),
               )
             : RefreshIndicator(
-                onRefresh: viewModel.loadBookmarks,
+                onRefresh: () async {
+                  onAction(const BookmarkAction.refresh());
+                },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -43,11 +46,13 @@ class BookmarkScreen extends StatelessWidget {
                       const BookmarkPageHeader(),
                       const SizedBox(height: 14),
                       StoreCategoryFilterChips(
-                        selected: viewModel.selectedCategory,
-                        onSelect: viewModel.selectCategory,
+                        selected: state.selectedCategory,
+                        onSelect: (category) {
+                          onAction(BookmarkAction.selectCategory(category));
+                        },
                       ),
                       const SizedBox(height: 16),
-                      if (viewModel.errorMessage != null) ...[
+                      if (state.errorMessage != null) ...[
                         const Text(
                           '목록을 불러오지 못했습니다.',
                           style: TextStyle(
@@ -60,7 +65,9 @@ class BookmarkScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         TextButton(
-                          onPressed: viewModel.loadBookmarks,
+                          onPressed: () {
+                            onAction(const BookmarkAction.retryLoad());
+                          },
                           style: TextButton.styleFrom(
                             foregroundColor: AppColors.primary,
                             textStyle: const TextStyle(
@@ -74,10 +81,11 @@ class BookmarkScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                       ],
-                      if (visibleStores.isEmpty &&
-                          viewModel.errorMessage == null)
+                      if (visibleStores.isEmpty && state.errorMessage == null)
                         BookmarkEmptyState(
-                          onExploreTap: () => context.go(Routes.home),
+                          onExploreTap: () {
+                            onAction(const BookmarkAction.tapExplore());
+                          },
                         )
                       else
                         Column(
@@ -100,58 +108,16 @@ class BookmarkScreen extends StatelessWidget {
                                     : address,
                                 imageUrl: item.imageUrl,
                                 onTap: () {
-                                  context.pushNamed(
-                                    Routes.bookmarkInformationName,
-                                    pathParameters: {
-                                      'storeId': item.storeId,
-                                    },
+                                  onAction(
+                                    BookmarkAction.tapStore(item.storeId),
                                   );
                                 },
-                                onBookmarkTap: () async {
-                                  try {
-                                    await viewModel.removeBookmark(
+                                onBookmarkTap: () {
+                                  onAction(
+                                    BookmarkAction.removeBookmark(
                                       item.storeId,
-                                    );
-                                    if (!context.mounted) {
-                                      return;
-                                    }
-                                    ScaffoldMessenger.of(context)
-                                      ..hideCurrentSnackBar()
-                                      ..showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            '저장 목록에서 제거했습니다.',
-                                            style: TextStyle(
-                                              fontFamily:
-                                                  AppTextStyles.fontFamily,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500,
-                                              letterSpacing: -0.2,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                  } catch (_) {
-                                    if (!context.mounted) {
-                                      return;
-                                    }
-                                    ScaffoldMessenger.of(context)
-                                      ..hideCurrentSnackBar()
-                                      ..showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            '제거에 실패했습니다.',
-                                            style: TextStyle(
-                                              fontFamily:
-                                                  AppTextStyles.fontFamily,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500,
-                                              letterSpacing: -0.2,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                  }
+                                    ),
+                                  );
                                 },
                               ),
                             );
