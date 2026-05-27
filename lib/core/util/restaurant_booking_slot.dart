@@ -239,18 +239,12 @@ abstract final class RestaurantBookingSlot {
     required List<Reservation> reservations,
     required DateTime targetDate,
   }) {
-    final dateKey =
-        '${targetDate.year.toString().padLeft(4, '0')}-'
-        '${targetDate.month.toString().padLeft(2, '0')}-'
-        '${targetDate.day.toString().padLeft(2, '0')}';
-
     final map = <String, int>{};
     for (final reservation in reservations) {
-      final bookingDateKey =
-          '${reservation.bookingDate.year.toString().padLeft(4, '0')}-'
-          '${reservation.bookingDate.month.toString().padLeft(2, '0')}-'
-          '${reservation.bookingDate.day.toString().padLeft(2, '0')}';
-      if (bookingDateKey != dateKey) {
+      final bookingDate = reservation.bookingDate;
+      if (bookingDate.year != targetDate.year ||
+          bookingDate.month != targetDate.month ||
+          bookingDate.day != targetDate.day) {
         continue;
       }
       if (reservation.status.dbValue != 'confirmed') {
