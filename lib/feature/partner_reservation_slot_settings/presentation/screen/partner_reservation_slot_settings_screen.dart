@@ -1,5 +1,7 @@
+import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/component/partner_reservation_policy_section.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/component/partner_reservation_slot_card.dart';
+import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/component/partner_schedule_exception_section.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_action.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -33,69 +35,99 @@ class PartnerReservationSlotSettingsScreen extends StatelessWidget {
         ),
         foregroundColor: AppColors.textPrimary,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PartnerReservationPolicySection(
-              selectedInterval: state.slotInterval,
-              onSelectInterval: (interval) {
-                onAction(ChangeSlotInterval(interval));
-              },
-            ),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.white,
-                border: Border.all(color: const Color(0xFFEDEDED)),
-              ),
+      body: state.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : state.loadError != null
+          ? Center(child: Text(state.loadError!))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        '시간대 운영',
-                        style: AppTextStyles.body.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton.icon(
-                        onPressed: () {
-                          onAction(const TapDatePicker());
-                        },
-                        icon: const Icon(Icons.calendar_month, size: 16),
-                        label: Text(_formatDate(state.selectedDate)),
-                      ),
-                    ],
+                  PartnerReservationPolicySection(
+                    reservationSlotMinutes: state.reservationSlotMinutes,
                   ),
-                  const SizedBox(height: 8),
-                  ...state.slots.map(
-                    (slot) => PartnerReservationSlotCard(
-                      slot: slot,
-                      onToggleOpen: (isOpen) {
-                        onAction(
-                          ToggleSlotOpen(time: slot.time, isOpen: isOpen),
-                        );
-                      },
-                      onTapDecreaseTeamCount: () {
-                        onAction(TapDecreaseMaxTeamCount(slot.time));
-                      },
-                      onTapIncreaseTeamCount: () {
-                        onAction(TapIncreaseMaxTeamCount(slot.time));
-                      },
+                  PartnerScheduleExceptionSection(
+                    isClosed: state.isClosed,
+                    openTime: state.exceptionOpenTime,
+                    closeTime: state.exceptionCloseTime,
+                    onAction: onAction,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.white,
+                      border: Border.all(color: const Color(0xFFEDEDED)),
                     ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              '시간대 운영',
+                              style: AppTextStyles.body.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton.icon(
+                              onPressed: () {
+                                onAction(
+                                  const TapDatePicker(),
+                                );
+                              },
+                              icon: const Icon(Icons.calendar_month, size: 16),
+                              label: Text(_formatDate(state.selectedDate)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (state.isClosed)
+                          const Text('선택한 날짜는 전체 휴무입니다.')
+                        else if (state.slots.isEmpty)
+                          const Text('영업 시간 내 예약 슬롯이 없습니다.')
+                        else
+                          ...state.slots.map(
+                            (slot) => PartnerReservationSlotCard(
+                              slot: slot,
+                              onToggleOpen: (isOpen) {
+                                onAction(
+                                  ToggleSlotOpen(
+                                    time: slot.time,
+                                    isOpen: isOpen,
+                                  ),
+                                );
+                              },
+                              onTapDecreaseGuestCount: () {
+                                onAction(
+                                  TapDecreaseMaxGuestCount(slot.time),
+                                );
+                              },
+                              onTapIncreaseGuestCount: () {
+                                onAction(
+                                  TapIncreaseMaxGuestCount(slot.time),
+                                );
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  PrimaryButton(
+                    text: state.isSaving ? '저장 중...' : '저장',
+                    onTap: state.isSaving
+                        ? () {}
+                        : () {
+                            onAction(const TapSave());
+                          },
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 

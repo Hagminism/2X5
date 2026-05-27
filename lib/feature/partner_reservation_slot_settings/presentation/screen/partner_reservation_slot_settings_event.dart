@@ -8,4 +8,8 @@ sealed class PartnerReservationSlotSettingsEvent
   const factory PartnerReservationSlotSettingsEvent.openDatePicker(
     DateTime selectedDate,
   ) = OpenDatePicker;
+
+  const factory PartnerReservationSlotSettingsEvent.showSnackBar(
+    String message,
+  ) = ShowSnackBar;
 }
