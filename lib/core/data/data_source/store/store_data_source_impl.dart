@@ -187,6 +187,26 @@ store_images (
   }
 
   @override
+  Future<Map<String, String?>> findCoverImageUrlsByStoreIds(
+    List<String> storeIds,
+  ) async {
+    if (storeIds.isEmpty) return {};
+    final jsonList = await _supabaseClient
+        .from('store_images')
+        .select('store_id, image_url')
+        .inFilter('store_id', storeIds)
+        .eq('is_cover', true);
+    final result = <String, String?>{};
+    for (final json in jsonList) {
+      final storeId = json['store_id'] as String?;
+      if (storeId != null && !result.containsKey(storeId)) {
+        result[storeId] = json['image_url'] as String?;
+      }
+    }
+    return result;
+  }
+
+  @override
   Future<StoreMenu> createMenu(String storeId, StoreMenu menu) async {
     final payload = <String, dynamic>{
       'store_id': storeId,

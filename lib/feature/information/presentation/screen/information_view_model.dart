@@ -102,10 +102,8 @@ class InformationViewModel extends ChangeNotifier {
         _state = _state.copyWith(salonDesigners: designers);
       }
 
-      // 가져온 업장 종류에 따라 탭 정의
       _initTabs();
 
-      // 네이버 플레이스 실시간 메뉴가 있는 경우 비동기로 가져와 덮어씌움
       if (store.naverPlaceId != null && store.naverPlaceId!.trim().isNotEmpty) {
         _loadNaverMenus(store.naverPlaceId!.trim());
       }
