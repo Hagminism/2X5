@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/reservation/restaurant_time_slot.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/model/store/store_layout_detail.dart';
@@ -30,5 +31,8 @@ abstract class InformationState with _$InformationState {
     @Default('') String naverPlaceId,
     @Default(true) bool isReservationAvailable,
     StoreLayoutDetail? layoutDetail,
+    @Default(false) bool isReservationAvailabilityLoading,
+    DateTime? reservationAvailabilityDate,
+    @Default([]) List<RestaurantTimeSlot> reservationAvailabilitySlots,
   }) = _InformationState;
 }

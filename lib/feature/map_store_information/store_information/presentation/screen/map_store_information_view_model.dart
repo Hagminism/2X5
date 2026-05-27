@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/util/build_store_share_text.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart'
     show formatMenuPriceLabel, parseIntegerPrice;
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
+import 'package:capstone_2026/core/domain/repository/reservation/reservation_repository.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
@@ -19,12 +21,17 @@ import 'package:flutter/material.dart';
 class MapStoreInformationViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
   final SalonRepository _salonRepository;
+  final ReservationRepository _reservationRepository;
+
+  Store? _cachedStore;
 
   MapStoreInformationViewModel({
     required StoreRepository storeRepository,
     required SalonRepository salonRepository,
+    required ReservationRepository reservationRepository,
   }) : _storeRepository = storeRepository,
-       _salonRepository = salonRepository;
+       _salonRepository = salonRepository,
+       _reservationRepository = reservationRepository;
 
   MapStoreInformationState _state = const MapStoreInformationState();
 
@@ -69,8 +76,19 @@ class MapStoreInformationViewModel extends ChangeNotifier {
         isLoading: false,
       );
 
+      _cachedStore = store;
+
+      final storeCategory = StoreCategory.fromDbValue(store.category);
       if (store.isOnboarded &&
-          StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
+          (storeCategory == StoreCategory.restaurant ||
+              storeCategory == StoreCategory.cafe)) {
+        final today = DateTime.now();
+        final todayDate = DateTime(today.year, today.month, today.day);
+        _state = _state.copyWith(reservationAvailabilityDate: todayDate);
+        unawaited(_loadReservationAvailability(todayDate));
+      }
+
+      if (store.isOnboarded && storeCategory == StoreCategory.salon) {
         final designers =
             (await _salonRepository.getDesignersByStoreId(store.id))
                 .where((designer) => designer.isActive && !designer.isDeleted)
@@ -131,7 +149,7 @@ class MapStoreInformationViewModel extends ChangeNotifier {
         category == StoreCategory.restaurant);
     if (isCafeOrRestaurant) {
       _state = state.copyWith(
-        tabs: const ['홈', '메뉴', '내부 구조', '예약', '사진', '리뷰'],
+        tabs: const ['홈', '메뉴', '내부', '예약', '사진', '리뷰'],
         sliderController: PageController(),
       );
     } else {
@@ -212,6 +230,40 @@ class MapStoreInformationViewModel extends ChangeNotifier {
         _state = _state.copyWith(currentSliderPage: index);
         notifyListeners();
         break;
+      case ChangeMapStoreInformationReservationAvailabilityDate(:final date):
+        final calendarDate = DateTime(date.year, date.month, date.day);
+        _state = _state.copyWith(reservationAvailabilityDate: calendarDate);
+        notifyListeners();
+        unawaited(_loadReservationAvailability(calendarDate));
+        break;
+    }
+  }
+
+  Future<void> _loadReservationAvailability(DateTime date) async {
+    final store = _cachedStore;
+    if (store == null || !store.isOnboarded) {
+      return;
+    }
+
+    _state = _state.copyWith(isReservationAvailabilityLoading: true);
+    notifyListeners();
+
+    try {
+      final slots = await _reservationRepository.getAvailabilityForDate(
+        store: store,
+        date: date,
+      );
+      _state = _state.copyWith(
+        isReservationAvailabilityLoading: false,
+        reservationAvailabilitySlots: slots,
+      );
+      notifyListeners();
+    } catch (_) {
+      _state = _state.copyWith(
+        isReservationAvailabilityLoading: false,
+        reservationAvailabilitySlots: const [],
+      );
+      notifyListeners();
     }
   }
 

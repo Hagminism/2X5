@@ -160,6 +160,37 @@ class SearchStoreInformationScreen extends StatelessWidget {
                     category: state.category,
                     isReservationAvailable: state.isReservationAvailable,
                     salonDesigners: state.salonDesigners,
+                    operatingHours: state.operatingHours,
+                    reservationAvailabilityDate:
+                        state.reservationAvailabilityDate,
+                    reservationAvailabilitySlots:
+                        state.reservationAvailabilitySlots,
+                    isReservationAvailabilityLoading:
+                        state.isReservationAvailabilityLoading,
+                    onSelectReservationDate: (date) {
+                      onAction(
+                        SearchStoreInformationAction.changeReservationAvailabilityDate(
+                          date,
+                        ),
+                      );
+                    },
+                    onPickReservationDate: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate:
+                            state.reservationAvailabilityDate ??
+                            DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 90)),
+                      );
+                      if (picked != null) {
+                        onAction(
+                          SearchStoreInformationAction.changeReservationAvailabilityDate(
+                            picked,
+                          ),
+                        );
+                      }
+                    },
                     onTapReservation: () {
                       final currentLocation = GoRouterState.of(
                         context,
