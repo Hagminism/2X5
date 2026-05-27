@@ -291,7 +291,7 @@ void diSetup() {
   getIt.registerFactory<SignInViewModel>(
     () => SignInViewModel(authRepository: getIt<AuthRepository>()),
   );
-  getIt.registerLazySingleton<HomeViewModel>(
+  getIt.registerFactory<HomeViewModel>(
     () => HomeViewModel(
       storeRepository: getIt<StoreRepository>(),
       bookmarkRepository: getIt<BookmarkRepository>(),
@@ -446,6 +446,7 @@ void diSetup() {
     () => SearchStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
       salonRepository: getIt<SalonRepository>(),
+      bookmarkRepository: getIt<BookmarkRepository>(),
       reservationRepository: getIt<ReservationRepository>(),
     ),
   );
@@ -453,6 +454,7 @@ void diSetup() {
     () => MapStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),
       salonRepository: getIt<SalonRepository>(),
+      bookmarkRepository: getIt<BookmarkRepository>(),
       reservationRepository: getIt<ReservationRepository>(),
     ),
   );
