@@ -44,11 +44,11 @@ class ReservationRepositoryImpl implements ReservationRepository {
     required String storeId,
     required DateTime date,
   }) async {
-    final reservations =
-        await _reservationDataSource.findReservationsByStoreIdAndDate(
-      storeId: storeId,
-      bookingDate: _formatDate(date),
-    );
+    final reservations = await _reservationDataSource
+        .findReservationsByStoreIdAndDate(
+          storeId: storeId,
+          bookingDate: _formatDate(date),
+        );
     return reservations.map((dto) => dto.toModel()).toList();
   }
 
@@ -72,8 +72,9 @@ class ReservationRepositoryImpl implements ReservationRepository {
   Future<List<StoreReservationSlotDefault>> getSlotDefaultsByStoreId(
     String storeId,
   ) async {
-    final dtos =
-        await _reservationDataSource.findSlotDefaultsByStoreId(storeId);
+    final dtos = await _reservationDataSource.findSlotDefaultsByStoreId(
+      storeId,
+    );
     return dtos.map((dto) => dto.toModel()).toList();
   }
 

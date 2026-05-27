@@ -12,8 +12,10 @@ abstract class HomeState with _$HomeState {
     @Default(true) bool hasMore,
     @Default(<HomeStoreItem>[]) List<HomeStoreItem> recommendedStores,
     StoreCategory? selectedCategory,
+
     /// GPS 기준 거리순 페이징 vs 서버 range 페이징.
     @Default(false) bool usesDistancePaging,
+
     /// [recommendedStores]에 노출된 누적 개수 (풀 대비 hasMore 계산).
     @Default(0) int visibleStoreCount,
     @Default(<String>{}) Set<String> bookmarkedStoreIds,

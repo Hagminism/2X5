@@ -67,7 +67,8 @@ abstract final class RestaurantBookingSlot {
 
     final current = now ?? DateTime.now();
     final today = SalonBookingTime.seoulTodayCalendar();
-    final isToday = calendarDate.year == today.year &&
+    final isToday =
+        calendarDate.year == today.year &&
         calendarDate.month == today.month &&
         calendarDate.day == today.day;
     final nowMinutes = isToday ? _seoulNowMinutes(current) : null;
@@ -87,9 +88,8 @@ abstract final class RestaurantBookingSlot {
 
       final reservedGuestCount = reservedByTime[time] ?? 0;
       final slotMinutesValue = _timeToMinutes(time);
-      final isPast = isToday &&
-          nowMinutes != null &&
-          slotMinutesValue <= nowMinutes;
+      final isPast =
+          isToday && nowMinutes != null && slotMinutesValue <= nowMinutes;
       final remaining = (maxGuestCount - reservedGuestCount).clamp(0, 9999);
       final isSelectable = isOpen && !isPast && remaining > 0;
 

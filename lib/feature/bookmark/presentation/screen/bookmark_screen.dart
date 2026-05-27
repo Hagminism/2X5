@@ -83,8 +83,9 @@ class BookmarkScreen extends StatelessWidget {
                         Column(
                           children: visibleStores.map((item) {
                             final categoryLabel =
-                                StoreCategory.fromDbValue(item.category)
-                                    ?.displayName ??
+                                StoreCategory.fromDbValue(
+                                  item.category,
+                                )?.displayName ??
                                 item.category;
                             final address = item.address.trim();
 

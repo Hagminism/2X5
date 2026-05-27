@@ -23,9 +23,7 @@ class BookmarkViewModel extends ChangeNotifier {
     if (_selectedCategory == null) {
       return _items;
     }
-    return _items
-        .where((item) => item.category == _selectedCategory)
-        .toList();
+    return _items.where((item) => item.category == _selectedCategory).toList();
   }
 
   Future<void> loadBookmarks({bool force = false}) async {

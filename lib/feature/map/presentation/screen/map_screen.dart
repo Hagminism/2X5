@@ -51,6 +51,7 @@ class _MapScreenState extends State<MapScreen> {
   NLatLng? _myLocationLatLng;
   bool _isSearching = false;
   MapAreaBounds? _lastCrawledBounds;
+
   /// 직전 API 검색에서 신규 0건이었던 bbox. 겹침 ≥90%이면 카카오 생략.
   MapAreaBounds? _lastZeroNewSearchBounds;
   Timer? _searchCooldownTimer;
@@ -165,7 +166,9 @@ class _MapScreenState extends State<MapScreen> {
     );
     final response = await Supabase.instance.client
         .from('stores')
-        .select('id, name, category, latitude, longitude, address, naver_place_id')
+        .select(
+          'id, name, category, latitude, longitude, address, naver_place_id',
+        )
         .gte('latitude', bounds.minLat)
         .lte('latitude', bounds.maxLat)
         .gte('longitude', bounds.minLng)
@@ -347,12 +350,15 @@ class _MapScreenState extends State<MapScreen> {
       final item = entry['item'] as Map<String, dynamic>;
       final category = entry['category'] as String;
 
-      final String name = (item['place_name'] as String? ?? '')
-          .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '');
+      final String name = (item['place_name'] as String? ?? '').replaceAll(
+        RegExp(r'<[^>]*>|&[^;]+;'),
+        '',
+      );
       final String address = item['address_name'] as String? ?? '';
       final String roadAddress = item['road_address_name'] as String? ?? '';
-      final String targetCheckAddress =
-          roadAddress.isNotEmpty ? roadAddress : address;
+      final String targetCheckAddress = roadAddress.isNotEmpty
+          ? roadAddress
+          : address;
 
       final xStr = item['x']?.toString() ?? '';
       final yStr = item['y']?.toString() ?? '';
@@ -408,8 +414,7 @@ class _MapScreenState extends State<MapScreen> {
     debugPrint('[MapCrawl] === 매장 처리 시작: $name ($address) ===');
 
     try {
-      String? placeId =
-          fallbackPlaceId.isNotEmpty ? fallbackPlaceId : null;
+      String? placeId = fallbackPlaceId.isNotEmpty ? fallbackPlaceId : null;
       if (placeId == null) {
         final mobileInfo = await naverSource.fetchPlaceInfoFromMobileSearch(
           storeName: name,
@@ -442,8 +447,8 @@ class _MapScreenState extends State<MapScreen> {
       var hoursPayload = await hoursFuture;
 
       final businessTypeRaw = summary?['businessType'];
-      final businessType = businessTypeRaw is String &&
-              businessTypeRaw.trim().isNotEmpty
+      final businessType =
+          businessTypeRaw is String && businessTypeRaw.trim().isNotEmpty
           ? businessTypeRaw.trim()
           : preliminaryBusinessType;
 
@@ -720,8 +725,16 @@ class _MapScreenState extends State<MapScreen> {
   String _buildClusterHtml(int count, String category) {
     final color = _categoryColor(category);
     final emoji = _categoryEmoji(category);
-    final size = count > 99 ? 56 : count > 9 ? 50 : 44;
-    final countFontSize = count > 99 ? 11 : count > 9 ? 12 : 13;
+    final size = count > 99
+        ? 56
+        : count > 9
+        ? 50
+        : 44;
+    final countFontSize = count > 99
+        ? 11
+        : count > 9
+        ? 12
+        : 13;
     return '<div style="background:$color;color:white;border-radius:50%;'
         'width:${size}px;height:${size}px;display:flex;flex-direction:column;'
         'align-items:center;justify-content:center;gap:1px;'
@@ -808,11 +821,11 @@ class _MapScreenState extends State<MapScreen> {
         _registeredMarkerIds.add('store_$id');
       } else {
         // 클러스터 마커 — 중심점 계산
-        final lat = stores
-                .map((s) => s['latitude'] as double)
-                .reduce((a, b) => a + b) /
+        final lat =
+            stores.map((s) => s['latitude'] as double).reduce((a, b) => a + b) /
             stores.length;
-        final lng = stores
+        final lng =
+            stores
                 .map((s) => s['longitude'] as double)
                 .reduce((a, b) => a + b) /
             stores.length;
@@ -966,7 +979,9 @@ class _MapScreenState extends State<MapScreen> {
       await _naverMapManager.setCenter(center: pos);
       await _addMyLocationMarker();
     } else {
-      await _naverMapManager.setCenter(center: _myLocationLatLng ?? _fixedCenter);
+      await _naverMapManager.setCenter(
+        center: _myLocationLatLng ?? _fixedCenter,
+      );
       _currentCenter = _myLocationLatLng ?? _fixedCenter;
     }
   }
@@ -1230,7 +1245,9 @@ class _CategoryChips extends StatelessWidget {
                         Icon(
                           Icons.content_cut,
                           size: 13,
-                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                          color: isSelected
+                              ? Colors.white
+                              : AppColors.textPrimary,
                         )
                       else
                         Text(item.emoji, style: const TextStyle(fontSize: 13)),
@@ -1270,8 +1287,9 @@ class _SearchAreaButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-        enabled ? const Color(0xFF1A1A2E) : AppColors.textSecondary;
+    final backgroundColor = enabled
+        ? const Color(0xFF1A1A2E)
+        : AppColors.textSecondary;
     const foregroundColor = AppColors.white;
 
     return GestureDetector(
@@ -1430,7 +1448,10 @@ class _StoreBottomSheet extends StatelessWidget {
                               color: AppColors.textSecondary,
                             )
                           else
-                            Text(categoryEmoji, style: const TextStyle(fontSize: 13)),
+                            Text(
+                              categoryEmoji,
+                              style: const TextStyle(fontSize: 13),
+                            ),
                           const SizedBox(width: 4),
                           Text(
                             categoryLabel,
@@ -1445,8 +1466,7 @@ class _StoreBottomSheet extends StatelessWidget {
                           if (distanceM != null) ...[
                             const Text(
                               ' · ',
-                              style:
-                                  TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(color: AppColors.textSecondary),
                             ),
                             const Icon(
                               Icons.place_outlined,

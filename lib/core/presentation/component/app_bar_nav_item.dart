@@ -66,8 +66,7 @@ class AppBarNavItem extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: AppTextStyles.fontFamily,
                   fontSize: 11,
-                  fontWeight:
-                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   letterSpacing: -0.1,
                   color: isSelected
                       ? AppColors.primary

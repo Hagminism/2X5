@@ -17,7 +17,7 @@ class StoreLayoutTab extends StatefulWidget {
   State<StoreLayoutTab> createState() => _StoreLayoutTabState();
 }
 
-class _StoreLayoutTabState extends State<StoreLayoutTab>{
+class _StoreLayoutTabState extends State<StoreLayoutTab> {
   @override
   Widget build(BuildContext context) {
     final isReservationAvailable = widget.isReservationAvailable;

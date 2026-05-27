@@ -493,7 +493,9 @@ store_images (
   }
 
   @override
-  Future<StoreLayoutDetailDto> upsertLayout(StoreLayoutDetailDto layoutDto) async {
+  Future<StoreLayoutDetailDto> upsertLayout(
+    StoreLayoutDetailDto layoutDto,
+  ) async {
     final payload = layoutDto.toJson()
       ..remove('id')
       ..remove('created_at')

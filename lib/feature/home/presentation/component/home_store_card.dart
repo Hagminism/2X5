@@ -24,7 +24,6 @@ class HomeStoreCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onBookmarkTap;
 
-
   static Color _categoryColor(String category) {
     switch (category) {
       case '식당':

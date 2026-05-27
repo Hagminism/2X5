@@ -163,8 +163,12 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
       if (data.naverPlaceId.isEmpty) return;
       try {
         final (menus, reviews) = await (
-          _naverStoreSearchDataSource.fetchStoreMenus(placeId: data.naverPlaceId),
-          _naverStoreSearchDataSource.fetchStoreReviews(placeId: data.naverPlaceId),
+          _naverStoreSearchDataSource.fetchStoreMenus(
+            placeId: data.naverPlaceId,
+          ),
+          _naverStoreSearchDataSource.fetchStoreReviews(
+            placeId: data.naverPlaceId,
+          ),
         ).wait;
 
         if (!mounted) return;

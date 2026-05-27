@@ -70,8 +70,7 @@ class InformationScreen extends StatelessWidget {
                       final box =
                           buttonContext.findRenderObject() as RenderBox?;
                       if (box != null && box.hasSize) {
-                        shareOrigin =
-                            box.localToGlobal(Offset.zero) & box.size;
+                        shareOrigin = box.localToGlobal(Offset.zero) & box.size;
                       }
                       onAction(
                         InformationAction.tapShare(shareOrigin: shareOrigin),
@@ -99,8 +98,7 @@ class InformationScreen extends StatelessWidget {
                 return [
                   SliverToBoxAdapter(
                     child: InformationImageSlider(
-                      controller:
-                          state.sliderController ?? PageController(),
+                      controller: state.sliderController ?? PageController(),
                       currentPage: state.currentSliderPage,
                       onPageChanged: (int index) {
                         onAction(InformationAction.sliderPageChanged(index));
@@ -184,7 +182,7 @@ class InformationScreen extends StatelessWidget {
                           StoreCategory.restaurant)
                     StoreMenuTab(menus: state.menus),
                   if (StoreCategory.fromDbValue(state.category) ==
-                      StoreCategory.cafe ||
+                          StoreCategory.cafe ||
                       StoreCategory.fromDbValue(state.category) ==
                           StoreCategory.restaurant)
                     StoreLayoutTab(
@@ -213,8 +211,7 @@ class InformationScreen extends StatelessWidget {
                       final picked = await showDatePicker(
                         context: context,
                         initialDate:
-                            state.reservationAvailabilityDate ??
-                            DateTime.now(),
+                            state.reservationAvailabilityDate ?? DateTime.now(),
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(const Duration(days: 90)),
                       );

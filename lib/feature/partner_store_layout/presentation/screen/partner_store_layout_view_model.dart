@@ -27,8 +27,7 @@ class PartnerStoreLayoutViewModel extends ChangeNotifier {
   final StreamController<PartnerStoreLayoutEvent> _eventController =
       StreamController<PartnerStoreLayoutEvent>.broadcast();
 
-  Stream<PartnerStoreLayoutEvent> get eventStream =>
-      _eventController.stream;
+  Stream<PartnerStoreLayoutEvent> get eventStream => _eventController.stream;
 
   Future<void> initialize() async {
     _state = state.copyWith(isLoading: true);
@@ -39,7 +38,7 @@ class PartnerStoreLayoutViewModel extends ChangeNotifier {
         throw StateError('등록된 업장 정보가 없습니다.');
       }
       final layout = await _storeRepository.getStoreLayoutByStoreId(myStore.id);
-      
+
       _state = state.copyWith(
         isLoading: false,
         detailId: layout?.id ?? '',

@@ -114,10 +114,14 @@ class MapStoreInformationViewModel extends ChangeNotifier {
   Future<void> _loadNaverMenus(String naverPlaceId) async {
     try {
       final naverDataSource = getIt<NaverStoreSearchDataSource>();
-      final rawMenus = await naverDataSource.fetchStoreMenus(placeId: naverPlaceId);
+      final rawMenus = await naverDataSource.fetchStoreMenus(
+        placeId: naverPlaceId,
+      );
 
       if (rawMenus.isNotEmpty) {
-        final List<StoreMenu> naverMenus = rawMenus.asMap().entries.map((entry) {
+        final List<StoreMenu> naverMenus = rawMenus.asMap().entries.map((
+          entry,
+        ) {
           final index = entry.key;
           final item = entry.value;
           return StoreMenu(
@@ -136,11 +140,12 @@ class MapStoreInformationViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e, stack) {
-      debugPrint('[MapStoreInformationViewModel] Failed to load Naver menus: $e');
+      debugPrint(
+        '[MapStoreInformationViewModel] Failed to load Naver menus: $e',
+      );
       debugPrint('[MapStoreInformationViewModel] Stacktrace: $stack');
     }
   }
-
 
   void _initTabs() {
     final category = StoreCategory.fromDbValue(state.category);

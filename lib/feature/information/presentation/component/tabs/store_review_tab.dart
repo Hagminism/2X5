@@ -39,7 +39,7 @@ class StoreReviewTab extends StatefulWidget {
   State<StoreReviewTab> createState() => _StoreReviewTabState();
 }
 
-class _StoreReviewTabState extends State<StoreReviewTab>{
+class _StoreReviewTabState extends State<StoreReviewTab> {
   ReviewPlatform _selectedPlatform = ReviewPlatform.internal;
   bool _isLoading = true;
   List<InternalReview> _reviews = const [];
@@ -55,7 +55,8 @@ class _StoreReviewTabState extends State<StoreReviewTab>{
 
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
   StampService get _stampService => getIt<StampService>();
-  NaverStoreSearchDataSource get _naverStoreSearchDataSource => getIt<NaverStoreSearchDataSource>();
+  NaverStoreSearchDataSource get _naverStoreSearchDataSource =>
+      getIt<NaverStoreSearchDataSource>();
 
   StoreDetail get _reviewTarget {
     final mockDetail = storeDetailMockMap[widget.storeId];
@@ -166,13 +167,20 @@ class _StoreReviewTabState extends State<StoreReviewTab>{
       Future<List<Map<String, dynamic>>> loadNaverReviews() async {
         if (data.naverPlaceId.isEmpty) return const [];
         try {
-          return await _naverStoreSearchDataSource.fetchStoreReviews(placeId: data.naverPlaceId);
+          return await _naverStoreSearchDataSource.fetchStoreReviews(
+            placeId: data.naverPlaceId,
+          );
         } catch (_) {
           return const [];
         }
       }
 
-      final (reviews, stampStatus, googlePlaceReviewInfo, naverReviews) = await (
+      final (
+        reviews,
+        stampStatus,
+        googlePlaceReviewInfo,
+        naverReviews,
+      ) = await (
         _storeReviewService.loadStoreReviews(storeId: widget.storeId),
         _stampService.loadStoreStampStatus(storeId: widget.storeId),
         _storeReviewService.fetchGooglePlaceReviewInfo(

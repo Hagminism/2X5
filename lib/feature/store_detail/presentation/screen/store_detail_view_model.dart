@@ -62,8 +62,12 @@ class StoreDetailViewModel extends ChangeNotifier {
       if (storeDetail.naverPlaceId.isEmpty) return;
       try {
         final (menus, reviews) = await (
-          _naverStoreSearchDataSource.fetchStoreMenus(placeId: storeDetail.naverPlaceId),
-          _naverStoreSearchDataSource.fetchStoreReviews(placeId: storeDetail.naverPlaceId),
+          _naverStoreSearchDataSource.fetchStoreMenus(
+            placeId: storeDetail.naverPlaceId,
+          ),
+          _naverStoreSearchDataSource.fetchStoreReviews(
+            placeId: storeDetail.naverPlaceId,
+          ),
         ).wait;
 
         _state = state.copyWith(
@@ -93,12 +97,14 @@ class StoreDetailViewModel extends ChangeNotifier {
       );
       notifyListeners();
     } catch (_) {
-      _state = state.copyWith(isReviewLoading: false, isNaverDataLoading: false);
+      _state = state.copyWith(
+        isReviewLoading: false,
+        isNaverDataLoading: false,
+      );
       notifyListeners();
       _showSoonMessage('데이터를 불러오는 중 오류가 발생했습니다.');
     }
   }
-
 
   Future<void> submitReview(ReviewWriteResult review) async {
     final stampStatus = state.stampStatus;

@@ -18,7 +18,11 @@ class SalonReservationDateSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final firstDay = DateTime(now.year, now.month, now.day);
-    final lastDay = DateTime(now.year, now.month, now.day + 30); // 30 days ahead
+    final lastDay = DateTime(
+      now.year,
+      now.month,
+      now.day + 30,
+    ); // 30 days ahead
 
     return Container(
       decoration: BoxDecoration(
@@ -43,25 +47,43 @@ class SalonReservationDateSelector extends StatelessWidget {
         headerStyle: HeaderStyle(
           formatButtonVisible: false,
           titleCentered: true,
-          titleTextStyle: AppTextStyles.body.copyWith(fontWeight: FontWeight.w700),
-          leftChevronIcon: const Icon(Icons.chevron_left, color: AppColors.textPrimary),
-          rightChevronIcon: const Icon(Icons.chevron_right, color: AppColors.textPrimary),
+          titleTextStyle: AppTextStyles.body.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+          leftChevronIcon: const Icon(
+            Icons.chevron_left,
+            color: AppColors.textPrimary,
+          ),
+          rightChevronIcon: const Icon(
+            Icons.chevron_right,
+            color: AppColors.textPrimary,
+          ),
         ),
         daysOfWeekStyle: DaysOfWeekStyle(
-          weekdayStyle: AppTextStyles.caption.copyWith(color: AppColors.textSecondary),
-          weekendStyle: AppTextStyles.caption.copyWith(color: AppColors.primary),
+          weekdayStyle: AppTextStyles.caption.copyWith(
+            color: AppColors.textSecondary,
+          ),
+          weekendStyle: AppTextStyles.caption.copyWith(
+            color: AppColors.primary,
+          ),
         ),
         calendarStyle: CalendarStyle(
           todayDecoration: BoxDecoration(
             color: AppColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          todayTextStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          todayTextStyle: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
           selectedDecoration: const BoxDecoration(
             color: AppColors.primary,
             shape: BoxShape.circle,
           ),
-          selectedTextStyle: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+          selectedTextStyle: const TextStyle(
+            color: AppColors.white,
+            fontWeight: FontWeight.bold,
+          ),
           outsideDaysVisible: false,
           weekendTextStyle: const TextStyle(color: AppColors.primary),
         ),

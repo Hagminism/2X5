@@ -13,17 +13,21 @@ sealed class PartnerStoreLayoutAction with _$PartnerStoreLayoutAction {
 
   const factory PartnerStoreLayoutAction.selectSeat(String seatId) = SelectSeat;
 
-  const factory PartnerStoreLayoutAction.selectSeats(List<String> seatIds) = SelectSeats;
+  const factory PartnerStoreLayoutAction.selectSeats(List<String> seatIds) =
+      SelectSeats;
 
-  const factory PartnerStoreLayoutAction.selectElement(String elementId) = SelectElement;
+  const factory PartnerStoreLayoutAction.selectElement(String elementId) =
+      SelectElement;
 
   const factory PartnerStoreLayoutAction.selectElements(
     List<String> elementIds,
   ) = SelectElements;
 
-  const factory PartnerStoreLayoutAction.removeSelectedSeat() = RemoveSelectedSeat;
+  const factory PartnerStoreLayoutAction.removeSelectedSeat() =
+      RemoveSelectedSeat;
 
-  const factory PartnerStoreLayoutAction.removeSelectedElement() = RemoveSelectedElement;
+  const factory PartnerStoreLayoutAction.removeSelectedElement() =
+      RemoveSelectedElement;
 
   const factory PartnerStoreLayoutAction.moveSeat({
     required String seatId,
@@ -61,11 +65,14 @@ sealed class PartnerStoreLayoutAction with _$PartnerStoreLayoutAction {
     String value,
   ) = ChangeSelectedElementRotation;
 
-  const factory PartnerStoreLayoutAction.alignSelectedSeatsHorizontally() = AlignSelectedSeatsHorizontally;
+  const factory PartnerStoreLayoutAction.alignSelectedSeatsHorizontally() =
+      AlignSelectedSeatsHorizontally;
 
-  const factory PartnerStoreLayoutAction.alignSelectedSeatsVertically() = AlignSelectedSeatsVertically;
+  const factory PartnerStoreLayoutAction.alignSelectedSeatsVertically() =
+      AlignSelectedSeatsVertically;
 
-  const factory PartnerStoreLayoutAction.duplicateSelectedSeats() = DuplicateSelectedSeats;
+  const factory PartnerStoreLayoutAction.duplicateSelectedSeats() =
+      DuplicateSelectedSeats;
 
   const factory PartnerStoreLayoutAction.tapSave() = TapSave;
 }

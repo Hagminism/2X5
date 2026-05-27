@@ -3,7 +3,8 @@ import 'package:capstone_2026/core/data/dto/reservation/store_schedule_exception
 import 'package:capstone_2026/core/domain/model/reservation/store_reservation_slot_default.dart';
 import 'package:capstone_2026/core/domain/model/reservation/store_schedule_exception.dart';
 
-extension StoreReservationSlotDefaultDtoMapper on StoreReservationSlotDefaultDto {
+extension StoreReservationSlotDefaultDtoMapper
+    on StoreReservationSlotDefaultDto {
   StoreReservationSlotDefault toModel() {
     return StoreReservationSlotDefault(
       storeId: storeId ?? '',
@@ -22,7 +23,8 @@ extension StoreReservationSlotDefaultDtoMapper on StoreReservationSlotDefaultDto
   }
 }
 
-extension StoreReservationSlotDefaultToDtoMapper on StoreReservationSlotDefault {
+extension StoreReservationSlotDefaultToDtoMapper
+    on StoreReservationSlotDefault {
   StoreReservationSlotDefaultDto toDto() {
     return StoreReservationSlotDefaultDto(
       storeId: storeId,

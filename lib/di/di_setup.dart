@@ -105,26 +105,26 @@ GetIt getIt = GetIt.instance;
 void diSetup() {
   // Auth
   getIt.registerLazySingleton<GoogleSignIn>(
-        () => GoogleSignIn.instance,
+    () => GoogleSignIn.instance,
   );
   getIt.registerLazySingleton<FirebaseAuth>(
-        () => FirebaseAuth.instance,
+    () => FirebaseAuth.instance,
   );
   getIt.registerLazySingleton<FirebaseFunctions>(
-        () => FirebaseFunctions.instance,
+    () => FirebaseFunctions.instance,
   );
 
   // Util
   getIt.registerLazySingleton<AppLinks>(
-        () => AppLinks(),
+    () => AppLinks(),
   );
   getIt.registerLazySingleton<StoreOperatingHoursValidator>(
-        () => const StoreOperatingHoursValidator(),
+    () => const StoreOperatingHoursValidator(),
   );
 
   // Redirect
   getIt.registerLazySingleton<UserRegistrationStatusNotifier>(
-        () => UserRegistrationStatusNotifier(
+    () => UserRegistrationStatusNotifier(
       authRepository: getIt<AuthRepository>(),
       userRepository: getIt<UserRepository>(),
     ),
@@ -132,7 +132,7 @@ void diSetup() {
 
   // DB
   getIt.registerLazySingleton<SupabaseClient>(
-        () => SupabaseClient(
+    () => SupabaseClient(
       dotenv.env['SUPABASE_URL']!,
       dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
     ),
@@ -140,7 +140,7 @@ void diSetup() {
 
   // Service
   getIt.registerLazySingleton<SignUpWithEmailService>(
-        () => SignUpWithEmailService(
+    () => SignUpWithEmailService(
       authRepository: getIt<AuthRepository>(),
       userRepository: getIt<UserRepository>(),
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
@@ -149,30 +149,30 @@ void diSetup() {
 
   // DataSource
   getIt.registerLazySingleton<NaverStoreSearchDataSource>(
-        () => NaverStoreSearchDataSourceImpl(),
+    () => NaverStoreSearchDataSourceImpl(),
   );
   getIt.registerLazySingleton<KakaoStoreSearchDataSource>(
-        () => KakaoStoreSearchDataSourceImpl(),
+    () => KakaoStoreSearchDataSourceImpl(),
   );
   getIt.registerLazySingleton<GooglePlacesDataSource>(
-        () => GooglePlacesDataSourceImpl(),
+    () => GooglePlacesDataSourceImpl(),
   );
   getIt.registerLazySingleton<UserDataSource>(
-        () => UserDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
+    () => UserDataSourceImpl(supabaseClient: getIt<SupabaseClient>()),
   );
   getIt.registerLazySingleton<OwnerVerificationDataSource>(
-        () => OwnerVerificationDataSourceImpl(
+    () => OwnerVerificationDataSourceImpl(
       supabaseClient: getIt<SupabaseClient>(),
     ),
   );
   getIt.registerLazySingleton<StoreDataSource>(
-        () => StoreDataSourceImpl(
+    () => StoreDataSourceImpl(
       supabaseClient: getIt<SupabaseClient>(),
       firebaseFunctions: getIt<FirebaseFunctions>(),
     ),
   );
   getIt.registerLazySingleton<ReservationDataSource>(
-        () => ReservationDataSourceImpl(
+    () => ReservationDataSourceImpl(
       supabaseClient: getIt<SupabaseClient>(),
       firebaseFunctions: getIt<FirebaseFunctions>(),
     ),
@@ -190,29 +190,28 @@ void diSetup() {
     ),
   );
   getIt.registerLazySingleton<AddressSearchDataSource>(
-        () => AddressSearchDataSourceImpl(),
+    () => AddressSearchDataSourceImpl(),
   );
   getIt.registerLazySingleton<UserReservationHistoryDataSource>(
     () => UserReservationHistoryDataSourceImpl(
       supabaseClient: getIt<SupabaseClient>(),
     ),
   );
-    getIt.registerLazySingleton<BookmarkDataSource>(
+  getIt.registerLazySingleton<BookmarkDataSource>(
     () => BookmarkDataSourceImpl(
       supabaseClient: getIt<SupabaseClient>(),
     ),
   );
 
-
   // Repository
   getIt.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(
+    () => AuthRepositoryImpl(
       firebaseAuth: getIt<FirebaseAuth>(),
       googleSignIn: getIt<GoogleSignIn>(),
       firebaseFunctions: getIt<FirebaseFunctions>(),
     ),
   );
-    getIt.registerLazySingleton<BookmarkRepository>(
+  getIt.registerLazySingleton<BookmarkRepository>(
     () => BookmarkRepositoryImpl(
       bookmarkDataSource: getIt<BookmarkDataSource>(),
       authRepository: getIt<AuthRepository>(),
@@ -220,23 +219,23 @@ void diSetup() {
   );
 
   getIt.registerLazySingleton<StoreDetailRepository>(
-        () => MockStoreDetailRepositoryImpl(),
+    () => MockStoreDetailRepositoryImpl(),
   );
   getIt.registerLazySingleton<StoreReviewRepository>(
-        () => StoreReviewRepositoryImpl(
+    () => StoreReviewRepositoryImpl(
       googlePlacesDataSource: getIt<GooglePlacesDataSource>(),
       naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
       supabase: getIt<SupabaseClient>(),
     ),
   );
   getIt.registerLazySingleton<StoreReviewService>(
-        () => StoreReviewService(
+    () => StoreReviewService(
       storeReviewRepository: getIt<StoreReviewRepository>(),
       authRepository: getIt<AuthRepository>(),
     ),
   );
   getIt.registerLazySingleton<StampRepository>(
-        () => StampRepositoryImpl(supabase: getIt<SupabaseClient>()),
+    () => StampRepositoryImpl(supabase: getIt<SupabaseClient>()),
   );
   getIt.registerLazySingleton<UserReservationHistoryRepository>(
     () => UserReservationHistoryRepositoryImpl(
@@ -244,22 +243,22 @@ void diSetup() {
     ),
   );
   getIt.registerLazySingleton<StampService>(
-        () => StampService(
+    () => StampService(
       stampRepository: getIt<StampRepository>(),
       authRepository: getIt<AuthRepository>(),
     ),
   );
   getIt.registerLazySingleton<UserRepository>(
-        () => UserRepositoryImpl(userDataSource: getIt<UserDataSource>()),
+    () => UserRepositoryImpl(userDataSource: getIt<UserDataSource>()),
   );
   getIt.registerLazySingleton<OwnerVerificationRepository>(
-        () => OwnerVerificationRepositoryImpl(
+    () => OwnerVerificationRepositoryImpl(
       ownerVerificationDataSource: getIt<OwnerVerificationDataSource>(),
       authRepository: getIt<AuthRepository>(),
     ),
   );
   getIt.registerLazySingleton<StoreRepository>(
-        () => StoreRepositoryImpl(
+    () => StoreRepositoryImpl(
       storeDataSource: getIt<StoreDataSource>(),
       authRepository: getIt<AuthRepository>(),
       userRepository: getIt<UserRepository>(),
@@ -267,7 +266,7 @@ void diSetup() {
     ),
   );
   getIt.registerLazySingleton<ReservationRepository>(
-        () => ReservationRepositoryImpl(
+    () => ReservationRepositoryImpl(
       reservationDataSource: getIt<ReservationDataSource>(),
       storeDataSource: getIt<StoreDataSource>(),
       authRepository: getIt<AuthRepository>(),
@@ -290,49 +289,49 @@ void diSetup() {
 
   // ViewModel
   getIt.registerFactory<SignInViewModel>(
-        () => SignInViewModel(authRepository: getIt<AuthRepository>()),
+    () => SignInViewModel(authRepository: getIt<AuthRepository>()),
   );
-    getIt.registerLazySingleton<HomeViewModel>(
-        () => HomeViewModel(
+  getIt.registerLazySingleton<HomeViewModel>(
+    () => HomeViewModel(
       storeRepository: getIt<StoreRepository>(),
       bookmarkRepository: getIt<BookmarkRepository>(),
     ),
   );
-    getIt.registerFactory<BookmarkViewModel>(
+  getIt.registerFactory<BookmarkViewModel>(
     () => BookmarkViewModel(
       bookmarkRepository: getIt<BookmarkRepository>(),
     ),
   );
   getIt.registerFactory<PartnerOnboardingViewModel>(
-        () => PartnerOnboardingViewModel(
+    () => PartnerOnboardingViewModel(
       authRepository: getIt<AuthRepository>(),
       firebaseFunctions: getIt<FirebaseFunctions>(),
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
   );
   getIt.registerFactory<PartnerStoreManagementViewModel>(
-        () => PartnerStoreManagementViewModel(
+    () => PartnerStoreManagementViewModel(
       ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
       storeRepository: getIt<StoreRepository>(),
     ),
   );
   getIt.registerFactory<PartnerStoreMenuViewModel>(
-        () => PartnerStoreMenuViewModel(
+    () => PartnerStoreMenuViewModel(
       storeRepository: getIt<StoreRepository>(),
     ),
   );
   getIt.registerFactory<PartnerStoreImageViewModel>(
-        () => PartnerStoreImageViewModel(
+    () => PartnerStoreImageViewModel(
       storeRepository: getIt<StoreRepository>(),
     ),
   );
   getIt.registerFactory<PartnerReservationsViewModel>(
-        () => PartnerReservationsViewModel(
+    () => PartnerReservationsViewModel(
       reservationRepository: getIt<ReservationRepository>(),
     ),
   );
   getIt.registerFactory<PartnerReservationSlotSettingsViewModel>(
-        () => PartnerReservationSlotSettingsViewModel(
+    () => PartnerReservationSlotSettingsViewModel(
       storeRepository: getIt<StoreRepository>(),
       reservationRepository: getIt<ReservationRepository>(),
     ),
@@ -372,44 +371,44 @@ void diSetup() {
     ),
   );
   getIt.registerFactory<AddressSearchViewModel>(
-        () => AddressSearchViewModel(
+    () => AddressSearchViewModel(
       addressSearchDataSource: getIt<AddressSearchDataSource>(),
     ),
   );
   getIt.registerFactory<FindPasswordViewModel>(
-        () => FindPasswordViewModel(),
+    () => FindPasswordViewModel(),
   );
   getIt.registerFactory<SignUpCustomerViewModel>(
-        () => SignUpCustomerViewModel(
+    () => SignUpCustomerViewModel(
       signUpWithEmailService: getIt<SignUpWithEmailService>(),
     ),
   );
   getIt.registerFactory<OnBoardingViewModel>(
-        () => OnBoardingViewModel(
+    () => OnBoardingViewModel(
       authRepository: getIt<AuthRepository>(),
       userRepository: getIt<UserRepository>(),
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
   );
   getIt.registerFactory<SignUpPartnerViewModel>(
-        () => SignUpPartnerViewModel(
+    () => SignUpPartnerViewModel(
       signUpWithEmailService: getIt<SignUpWithEmailService>(),
     ),
   );
   getIt.registerFactory<SelectAuthProviderViewModel>(
-        () => SelectAuthProviderViewModel(authRepository: getIt<AuthRepository>()),
+    () => SelectAuthProviderViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<AccountSettingViewModel>(
-        () => AccountSettingViewModel(authRepository: getIt<AuthRepository>()),
+    () => AccountSettingViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<MyPageViewModel>(
-        () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
+    () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<PartnerMyPageViewModel>(
-        () => PartnerMyPageViewModel(authRepository: getIt<AuthRepository>()),
+    () => PartnerMyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
   getIt.registerFactory<ReviewHistoryViewModel>(
-        () => ReviewHistoryViewModel(
+    () => ReviewHistoryViewModel(
       authRepository: getIt<AuthRepository>(),
       storeReviewRepository: getIt<StoreReviewRepository>(),
       stampService: getIt<StampService>(),
@@ -418,14 +417,15 @@ void diSetup() {
   getIt.registerFactory<ReservationHistoryViewModel>(
     () => ReservationHistoryViewModel(
       authRepository: getIt<AuthRepository>(),
-      userReservationHistoryRepository: getIt<UserReservationHistoryRepository>(),
+      userReservationHistoryRepository:
+          getIt<UserReservationHistoryRepository>(),
     ),
   );
   getIt.registerFactory<StampHistoryViewModel>(
-        () => StampHistoryViewModel(stampService: getIt<StampService>()),
+    () => StampHistoryViewModel(stampService: getIt<StampService>()),
   );
   getIt.registerFactory<StoreDetailViewModel>(
-        () => StoreDetailViewModel(
+    () => StoreDetailViewModel(
       storeDetailRepository: getIt<StoreDetailRepository>(),
       storeReviewService: getIt<StoreReviewService>(),
       stampService: getIt<StampService>(),
@@ -434,14 +434,14 @@ void diSetup() {
   );
 
   getIt.registerFactory<InformationViewModel>(
-        () => InformationViewModel(
+    () => InformationViewModel(
       storeRepository: getIt<StoreRepository>(),
       salonRepository: getIt<SalonRepository>(),
       bookmarkRepository: getIt<BookmarkRepository>(),
       reservationRepository: getIt<ReservationRepository>(),
     ),
   );
-  
+
   getIt.registerFactory<SearchStoreInformationViewModel>(
     () => SearchStoreInformationViewModel(
       storeRepository: getIt<StoreRepository>(),

@@ -30,7 +30,9 @@ abstract interface class StoreRepository {
 
   Future<List<StoreImage>> getStoreImagesByStoreId(String storeId); //이미 조회
 
-  Future<Map<String, String?>> getCoverImageUrlsByStoreIds(List<String> storeIds);
+  Future<Map<String, String?>> getCoverImageUrlsByStoreIds(
+    List<String> storeIds,
+  );
 
   Future<Store> updateMyStore(Store store);
 

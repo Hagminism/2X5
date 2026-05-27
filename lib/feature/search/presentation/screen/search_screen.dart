@@ -427,8 +427,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: _SearchResultCard(
                   store: store,
                   category: store['category']?.toString() ?? '',
-                  categoryLabel: categoryLabels[store['category']?.toString()] ??
-                      store['category']?.toString() ?? '',
+                  categoryLabel:
+                      categoryLabels[store['category']?.toString()] ??
+                      store['category']?.toString() ??
+                      '',
                   distanceLabel: distance == null
                       ? null
                       : _formatDistance(distance),

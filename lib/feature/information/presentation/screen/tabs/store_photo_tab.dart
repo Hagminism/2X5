@@ -24,7 +24,7 @@ class StorePhotoTab extends StatefulWidget {
   State<StorePhotoTab> createState() => _StorePhotoTabState();
 }
 
-class _StorePhotoTabState extends State<StorePhotoTab>{
+class _StorePhotoTabState extends State<StorePhotoTab> {
   @override
   Widget build(BuildContext context) {
     final imageUrls = widget.imageUrls;

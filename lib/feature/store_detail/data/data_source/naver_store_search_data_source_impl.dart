@@ -188,13 +188,15 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     debugPrint('[MobileSearch] 요청 URL: $url');
 
     try {
-      final response = await http.get(
-        url,
-        headers: {
-          'User-Agent':
-              'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-        },
-      ).timeout(const Duration(seconds: 8));
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'User-Agent':
+                  'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+            },
+          )
+          .timeout(const Duration(seconds: 8));
 
       debugPrint('[MobileSearch] HTTP Status: ${response.statusCode}');
 
@@ -214,8 +216,9 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
         if (telHrefMatch != null) {
           phone = telHrefMatch.group(1);
         } else {
-          final phoneJsonMatch =
-              RegExp(r'"phone"\s*:\s*"([^"]+)"').firstMatch(html);
+          final phoneJsonMatch = RegExp(
+            r'"phone"\s*:\s*"([^"]+)"',
+          ).firstMatch(html);
           if (phoneJsonMatch != null) {
             phone = phoneJsonMatch.group(1);
           }
@@ -245,31 +248,46 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     debugPrint('[NaverSummary] 요청 URL: $url');
 
     try {
-      final response = await http.get(
-        url,
-        headers: {
-          'User-Agent':
-              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Referer': 'https://map.naver.com/',
-        },
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'User-Agent':
+                  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              'Referer': 'https://map.naver.com/',
+            },
+          )
+          .timeout(const Duration(seconds: 5));
 
       debugPrint('[NaverSummary] HTTP Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body) as Map<String, dynamic>;
-        final placeDetail = decoded['data']?['placeDetail'] as Map<String, dynamic>?;
+        final placeDetail =
+            decoded['data']?['placeDetail'] as Map<String, dynamic>?;
         if (placeDetail != null) {
-          debugPrint('[NaverSummary] placeDetail 키: ${placeDetail.keys.toList()}');
-          debugPrint('[NaverSummary] name=${placeDetail['name']}, phone=${placeDetail['phone']}');
-          debugPrint('[NaverSummary] businessHours=${placeDetail['businessHours']}');
-          debugPrint('[NaverSummary] images keys=${placeDetail['images']?.keys?.toList()}');
+          debugPrint(
+            '[NaverSummary] placeDetail 키: ${placeDetail.keys.toList()}',
+          );
+          debugPrint(
+            '[NaverSummary] name=${placeDetail['name']}, phone=${placeDetail['phone']}',
+          );
+          debugPrint(
+            '[NaverSummary] businessHours=${placeDetail['businessHours']}',
+          );
+          debugPrint(
+            '[NaverSummary] images keys=${placeDetail['images']?.keys?.toList()}',
+          );
         } else {
-          debugPrint('[NaverSummary] placeDetail이 null입니다. decoded keys: ${decoded.keys.toList()}');
+          debugPrint(
+            '[NaverSummary] placeDetail이 null입니다. decoded keys: ${decoded.keys.toList()}',
+          );
         }
         return placeDetail;
       } else {
-        debugPrint('[NaverSummary] 비정상 응답 body: ${response.body.substring(0, response.body.length > 300 ? 300 : response.body.length)}');
+        debugPrint(
+          '[NaverSummary] 비정상 응답 body: ${response.body.substring(0, response.body.length > 300 ? 300 : response.body.length)}',
+        );
       }
     } catch (e) {
       debugPrint('[NaverSummary] Exception: $e');
@@ -302,7 +320,9 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
         if (decoded is Map) {
           return Map<String, dynamic>.from(decoded);
         }
-        debugPrint('[NaverHours] Unexpected response body format: ${response.body}');
+        debugPrint(
+          '[NaverHours] Unexpected response body format: ${response.body}',
+        );
       } else {
         debugPrint(
           '[NaverHours] Fail status: ${response.statusCode}, Body: ${response.body}',
@@ -337,12 +357,18 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
         if (decoded is Map && decoded.containsKey('menus')) {
           final menusList = decoded['menus'] as List?;
           if (menusList != null) {
-            return menusList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+            return menusList
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList();
           }
         }
-        debugPrint('[NaverMenus] Unexpected response body format: ${response.body}');
+        debugPrint(
+          '[NaverMenus] Unexpected response body format: ${response.body}',
+        );
       } else {
-        debugPrint('[NaverMenus] Fail status: ${response.statusCode}, Body: ${response.body}');
+        debugPrint(
+          '[NaverMenus] Fail status: ${response.statusCode}, Body: ${response.body}',
+        );
       }
     } catch (e, stack) {
       debugPrint('[NaverMenus] Exception occurred: $e');
@@ -368,8 +394,9 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     if (after != null) {
       queryParams['after'] = after;
     }
-    final url = Uri.parse('$_proxyUrl/api/place/$placeId/review')
-        .replace(queryParameters: queryParams);
+    final url = Uri.parse(
+      '$_proxyUrl/api/place/$placeId/review',
+    ).replace(queryParameters: queryParams);
     debugPrint('[NaverReviews] Requesting URL: $url');
 
     try {
@@ -381,13 +408,20 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
           if (reviewsList != null) {
             return reviewsList
                 .map((e) => Map<String, dynamic>.from(e as Map))
-                .where((review) => (review['body'] as String? ?? '').trim().isNotEmpty)
+                .where(
+                  (review) =>
+                      (review['body'] as String? ?? '').trim().isNotEmpty,
+                )
                 .toList();
           }
         }
-        debugPrint('[NaverReviews] Unexpected response body format: ${response.body}');
+        debugPrint(
+          '[NaverReviews] Unexpected response body format: ${response.body}',
+        );
       } else {
-        debugPrint('[NaverReviews] Fail status: ${response.statusCode}, Body: ${response.body}');
+        debugPrint(
+          '[NaverReviews] Fail status: ${response.statusCode}, Body: ${response.body}',
+        );
       }
     } catch (e, stack) {
       debugPrint('[NaverReviews] Exception occurred: $e');
@@ -397,4 +431,3 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     return const [];
   }
 }
-

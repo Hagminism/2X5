@@ -349,8 +349,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         PartnerFormTextField(
-                          hintText:
-                              '매장 소개, 주차 안내, 이용 안내 등을 자유롭게 입력해 주세요.',
+                          hintText: '매장 소개, 주차 안내, 이용 안내 등을 자유롭게 입력해 주세요.',
                           initialValue: state.description,
                           maxLines: 8,
                           onChanged: (value) => onAction(

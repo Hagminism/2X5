@@ -40,7 +40,7 @@ class StoreReservationStatusTab extends StatefulWidget {
       _StoreReservationStatusTabState();
 }
 
-class _StoreReservationStatusTabState extends State<StoreReservationStatusTab>{
+class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
   @override
   Widget build(BuildContext context) {
     final category = widget.category;
@@ -97,8 +97,7 @@ class _StoreReservationStatusTabState extends State<StoreReservationStatusTab>{
             onTapSalonDesigner: onTapSalonDesigner,
           ),
           _ => _DefaultReservationAvailabilityBody(
-            selectedDate:
-                widget.reservationAvailabilityDate ?? DateTime.now(),
+            selectedDate: widget.reservationAvailabilityDate ?? DateTime.now(),
             slots: widget.reservationAvailabilitySlots,
             isLoading: widget.isReservationAvailabilityLoading,
             operatingHours: widget.operatingHours,

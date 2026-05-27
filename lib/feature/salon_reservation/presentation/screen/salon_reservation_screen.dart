@@ -146,7 +146,10 @@ class SalonReservationScreen extends StatelessWidget {
                         ? null
                         : NetworkImage(selectedDesigner.imageUrl),
                     child: selectedDesigner.imageUrl.isEmpty
-                        ? const Icon(Icons.person, color: AppColors.textSecondary)
+                        ? const Icon(
+                            Icons.person,
+                            color: AppColors.textSecondary,
+                          )
                         : null,
                   ),
                   const SizedBox(width: 16),
@@ -163,9 +166,9 @@ class SalonReservationScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          selectedDesigner.introduction.isEmpty 
-                            ? '전문 헤어 디자이너' 
-                            : selectedDesigner.introduction,
+                          selectedDesigner.introduction.isEmpty
+                              ? '전문 헤어 디자이너'
+                              : selectedDesigner.introduction,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: AppTextStyles.caption.copyWith(

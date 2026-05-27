@@ -1,7 +1,8 @@
 enum UserReservationHistoryType {
   restaurant,
   studyCafe,
-  salon;
+  salon
+  ;
 
   String get label => switch (this) {
     UserReservationHistoryType.restaurant => '식당',

@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/store_
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_action.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_state.dart';
 import 'package:flutter/material.dart';
+
 class StoreDetailScreen extends StatelessWidget {
   final String storeId;
   final StoreDetailState state;

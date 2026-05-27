@@ -89,7 +89,9 @@ class SearchStoreInformationScreen extends StatelessWidget {
                       controller: state.sliderController ?? PageController(),
                       currentPage: state.currentSliderPage,
                       onPageChanged: (int index) {
-                        onAction(SearchStoreInformationAction.sliderPageChanged(index));
+                        onAction(
+                          SearchStoreInformationAction.sliderPageChanged(index),
+                        );
                       },
                       images: storeSliderImages(state.imageUrls),
                     ),
@@ -116,7 +118,9 @@ class SearchStoreInformationScreen extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                         ),
-                        tabs: state.tabs.map((title) => Tab(text: title)).toList(),
+                        tabs: state.tabs
+                            .map((title) => Tab(text: title))
+                            .toList(),
                       ),
                     ),
                   ),
@@ -133,25 +137,36 @@ class SearchStoreInformationScreen extends StatelessWidget {
                         operatingHours: state.operatingHours,
                         menus: state.menus,
                         onViewMoreMenus: () {
-                          final controller = DefaultTabController.of(innerContext);
-                          final category = StoreCategory.fromDbValue(state.category);
+                          final controller = DefaultTabController.of(
+                            innerContext,
+                          );
+                          final category = StoreCategory.fromDbValue(
+                            state.category,
+                          );
                           final isCafeOrRestaurant =
-                              category == StoreCategory.cafe || category == StoreCategory.restaurant;
+                              category == StoreCategory.cafe ||
+                              category == StoreCategory.restaurant;
                           if (isCafeOrRestaurant) {
                             controller.animateTo(1);
                           }
                         },
                         showMenuSection:
-                            StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
-                                StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant,
+                            StoreCategory.fromDbValue(state.category) ==
+                                StoreCategory.cafe ||
+                            StoreCategory.fromDbValue(state.category) ==
+                                StoreCategory.restaurant,
                       );
                     },
                   ),
-                  if (StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
-                      StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant)
+                  if (StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.cafe ||
+                      StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.restaurant)
                     StoreMenuTab(menus: state.menus),
-                  if (StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
-                      StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant)
+                  if (StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.cafe ||
+                      StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.restaurant)
                     StoreLayoutTab(
                       layoutDetail: state.layoutDetail,
                       isReservationAvailable: state.isReservationAvailable,
@@ -178,8 +193,7 @@ class SearchStoreInformationScreen extends StatelessWidget {
                       final picked = await showDatePicker(
                         context: context,
                         initialDate:
-                            state.reservationAvailabilityDate ??
-                            DateTime.now(),
+                            state.reservationAvailabilityDate ?? DateTime.now(),
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(const Duration(days: 90)),
                       );

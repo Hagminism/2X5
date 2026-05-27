@@ -6,9 +6,11 @@ part 'reservation_action.freezed.dart';
 sealed class ReservationAction with _$ReservationAction {
   const factory ReservationAction.tapBack() = ReservationTapBack;
 
-  const factory ReservationAction.selectDay(DateTime day) = ReservationSelectDay;
+  const factory ReservationAction.selectDay(DateTime day) =
+      ReservationSelectDay;
 
-  const factory ReservationAction.selectTime(String time) = ReservationSelectTime;
+  const factory ReservationAction.selectTime(String time) =
+      ReservationSelectTime;
 
   const factory ReservationAction.tapIncreaseGuestCount() =
       ReservationTapIncreaseGuestCount;

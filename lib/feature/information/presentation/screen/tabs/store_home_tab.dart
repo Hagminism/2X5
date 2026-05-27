@@ -265,8 +265,7 @@ class _OperatingHoursSectionState extends State<_OperatingHoursSection> {
   @override
   Widget build(BuildContext context) {
     final summary = resolveOperatingHoursSummary(widget.operatingHours);
-    final summaryText =
-        summary.isEmpty ? '영업시간 정보 없음' : summary;
+    final summaryText = summary.isEmpty ? '영업시간 정보 없음' : summary;
     final weeklyLines = buildWeeklyOperatingHoursLines(widget.operatingHours);
     final canExpand = weeklyLines.isNotEmpty;
 

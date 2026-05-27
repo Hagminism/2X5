@@ -130,8 +130,9 @@ class PartnerReservationSlotSettingsViewModel extends ChangeNotifier {
         state.selectedDate.day,
       );
 
-      final defaults =
-          await _reservationRepository.getSlotDefaultsByStoreId(store.id);
+      final defaults = await _reservationRepository.getSlotDefaultsByStoreId(
+        store.id,
+      );
       _templateSlots = RestaurantBookingSlot.buildSlotsForDate(
         store: store,
         targetDate: selectedDate,
@@ -144,11 +145,11 @@ class PartnerReservationSlotSettingsViewModel extends ChangeNotifier {
         storeId: store.id,
         date: selectedDate,
       );
-      final reservations =
-          await _reservationRepository.getReservationsByStoreAndDate(
-        storeId: store.id,
-        date: selectedDate,
-      );
+      final reservations = await _reservationRepository
+          .getReservationsByStoreAndDate(
+            storeId: store.id,
+            date: selectedDate,
+          );
       final effectiveSlots = RestaurantBookingSlot.buildSlotsForDate(
         store: store,
         targetDate: selectedDate,
@@ -229,7 +230,8 @@ class PartnerReservationSlotSettingsViewModel extends ChangeNotifier {
         }
       }
 
-      final hasException = state.isClosed ||
+      final hasException =
+          state.isClosed ||
           (state.exceptionOpenTime?.isNotEmpty ?? false) ||
           (state.exceptionCloseTime?.isNotEmpty ?? false) ||
           overrides.isNotEmpty;

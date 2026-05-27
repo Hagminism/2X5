@@ -12,7 +12,7 @@ class StoreMenuTab extends StatefulWidget {
   State<StoreMenuTab> createState() => _StoreMenuTabState();
 }
 
-class _StoreMenuTabState extends State<StoreMenuTab>{
+class _StoreMenuTabState extends State<StoreMenuTab> {
   @override
   Widget build(BuildContext context) {
     final menus = widget.menus;

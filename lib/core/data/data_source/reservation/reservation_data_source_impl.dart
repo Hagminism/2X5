@@ -50,8 +50,9 @@ class ReservationDataSourceImpl implements ReservationDataSource {
     required String bookingTime,
     required int guestCount,
   }) async {
-    final callable =
-        _firebaseFunctions.httpsCallable('createRestaurantReservation');
+    final callable = _firebaseFunctions.httpsCallable(
+      'createRestaurantReservation',
+    );
     final result = await callable.call<Map<String, dynamic>>({
       'storeId': storeId,
       'bookingDate': bookingDate,

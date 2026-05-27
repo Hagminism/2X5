@@ -24,10 +24,12 @@ class SalonReservationConfirmScreenRoot extends StatefulWidget {
   });
 
   @override
-  State<SalonReservationConfirmScreenRoot> createState() => _SalonReservationConfirmScreenRootState();
+  State<SalonReservationConfirmScreenRoot> createState() =>
+      _SalonReservationConfirmScreenRootState();
 }
 
-class _SalonReservationConfirmScreenRootState extends State<SalonReservationConfirmScreenRoot> {
+class _SalonReservationConfirmScreenRootState
+    extends State<SalonReservationConfirmScreenRoot> {
   StreamSubscription<SalonReservationConfirmEvent>? _eventSubscription;
 
   @override

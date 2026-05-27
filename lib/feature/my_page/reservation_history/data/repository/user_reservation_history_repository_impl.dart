@@ -60,7 +60,9 @@ class UserReservationHistoryRepositoryImpl
     final store = _readStore(row);
     final seatId = row['seat_id']?.toString() ?? '';
     final durationMinutes = (row['duration_minutes'] as num?)?.toInt() ?? 0;
-    final seatLabel = seatId.length <= 8 ? seatId : '${seatId.substring(0, 8)}…';
+    final seatLabel = seatId.length <= 8
+        ? seatId
+        : '${seatId.substring(0, 8)}…';
 
     return UserReservationHistoryItem(
       id: row['id']?.toString() ?? '',
@@ -68,7 +70,8 @@ class UserReservationHistoryRepositoryImpl
       storeName: store.name,
       categoryLabel: store.categoryLabel,
       type: UserReservationHistoryType.studyCafe,
-      scheduledAt: _parseDateTime(row['start_at']) ??
+      scheduledAt:
+          _parseDateTime(row['start_at']) ??
           _parseDateTime(row['created_at']) ??
           DateTime.fromMillisecondsSinceEpoch(0),
       summary: '좌석 $seatLabel · $durationMinutes분',
@@ -90,7 +93,8 @@ class UserReservationHistoryRepositoryImpl
       storeName: store.name,
       categoryLabel: store.categoryLabel,
       type: UserReservationHistoryType.salon,
-      scheduledAt: _parseDateTime(row['start_at']) ??
+      scheduledAt:
+          _parseDateTime(row['start_at']) ??
           _parseDateTime(row['created_at']) ??
           DateTime.fromMillisecondsSinceEpoch(0),
       summary: '시술 $serviceCount개',
