@@ -71,7 +71,9 @@ abstract final class RestaurantBookingSlot {
         calendarDate.year == today.year &&
         calendarDate.month == today.month &&
         calendarDate.day == today.day;
-    final nowMinutes = isToday ? _seoulNowMinutes(current) : null;
+    final nowMinutes = isToday
+        ? _timeToMinutes(SalonBookingTime.seoulClockHHmm(current.toUtc()))
+        : null;
 
     return times.map((time) {
       final slotDefault = defaultsByTime[time];
@@ -258,14 +260,6 @@ abstract final class RestaurantBookingSlot {
       map[time] = (map[time] ?? 0) + reservation.guestCount;
     }
     return map;
-  }
-
-  static int _seoulNowMinutes(DateTime now) {
-    const seoulOffset = Duration(hours: 9);
-    final shiftedMs =
-        now.toUtc().millisecondsSinceEpoch + seoulOffset.inMilliseconds;
-    final labeled = DateTime.fromMillisecondsSinceEpoch(shiftedMs, isUtc: true);
-    return labeled.hour * 60 + labeled.minute;
   }
 
   static int _timeToMinutes(String time) {
