@@ -338,17 +338,9 @@ class ReservationScreen extends StatelessWidget {
     final isSelected = state.selectedTime == slot.time;
     final isEnabled = slot.isSelectable;
 
-    return InkWell(
-      onTap: isEnabled
-          ? () {
-              onAction(ReservationAction.selectTime(slot.time));
-            }
-          : null,
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+    return Material(
+      color: Colors.transparent,
+      child: Ink(
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primary
@@ -360,16 +352,27 @@ class ReservationScreen extends StatelessWidget {
             color: isSelected ? AppColors.primary : AppColors.border,
           ),
         ),
-        child: Text(
-          slot.time,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.body.copyWith(
-            color: isSelected
-                ? AppColors.white
-                : isEnabled
-                ? AppColors.textPrimary
-                : AppColors.textSecondary,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+        child: InkWell(
+          onTap: isEnabled
+              ? () {
+                  onAction(ReservationAction.selectTime(slot.time));
+                }
+              : null,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Text(
+              slot.time,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body.copyWith(
+                color: isSelected
+                    ? AppColors.white
+                    : isEnabled
+                    ? AppColors.textPrimary
+                    : AppColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
           ),
         ),
       ),
