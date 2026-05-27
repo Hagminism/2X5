@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:capstone_2026/core/domain/model/reservation/restaurant_time_slot.dart';
-import 'package:capstone_2026/core/domain/model/reservation/store_reservation_slot_default.dart';
 import 'package:capstone_2026/core/domain/model/reservation/store_schedule_exception.dart';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/repository/reservation/reservation_repository.dart';
@@ -194,27 +192,12 @@ class PartnerReservationSlotSettingsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final defaults = state.slots
-          .map(
-            (slot) => StoreReservationSlotDefault(
-              storeId: store.id,
-              slotTime: slot.time,
-              maxGuestCount: slot.maxGuestCount,
-              isOpen: slot.isOpen,
-            ),
-          )
-          .toList();
-
-      await _reservationRepository.saveSlotDefaults(
-        storeId: store.id,
-        defaults: defaults,
-      );
-
       final overrides = <StoreScheduleSlotOverride>[];
+      final templateByTime = {
+        for (final slot in _templateSlots) slot.time: slot,
+      };
       for (final slot in state.slots) {
-        final template = _templateSlots
-            .where((item) => item.time == slot.time)
-            .firstOrNull;
+        final template = templateByTime[slot.time];
         if (template == null) {
           continue;
         }
