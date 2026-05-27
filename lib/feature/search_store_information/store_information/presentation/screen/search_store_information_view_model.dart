@@ -7,6 +7,7 @@ import 'package:capstone_2026/core/domain/util/build_store_share_text.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart'
     show formatMenuPriceLabel, parseIntegerPrice;
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
+import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
 import 'package:capstone_2026/core/domain/repository/reservation/reservation_repository.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
@@ -21,6 +22,7 @@ import 'package:flutter/material.dart';
 class SearchStoreInformationViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
   final SalonRepository _salonRepository;
+  final BookmarkRepository _bookmarkRepository;
   final ReservationRepository _reservationRepository;
 
   Store? _cachedStore;
@@ -28,9 +30,11 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
   SearchStoreInformationViewModel({
     required StoreRepository storeRepository,
     required SalonRepository salonRepository,
+    required BookmarkRepository bookmarkRepository,
     required ReservationRepository reservationRepository,
   }) : _storeRepository = storeRepository,
        _salonRepository = salonRepository,
+       _bookmarkRepository = bookmarkRepository,
        _reservationRepository = reservationRepository;
 
   SearchStoreInformationState _state = const SearchStoreInformationState();
@@ -56,6 +60,7 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
       ).wait;
 
       final imageUrls = storeImageDisplayUrls(images);
+      final isBookmarked = await _bookmarkRepository.isBookmarked(storeId);
 
       _state = _state.copyWith(
         storeId: store.id,
@@ -73,6 +78,7 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         imageUrl: storeHeaderImageUrl(images),
         naverPlaceId: store.naverPlaceId ?? '',
         isReservationAvailable: store.isOnboarded,
+        isBookmarked: isBookmarked,
         layoutDetail: layoutDetail,
         isLoading: false,
       );
@@ -186,14 +192,7 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         );
         break;
       case TapSearchStoreInformationBookmark():
-        final isBookmarked = !_state.isBookmarked;
-        _state = _state.copyWith(isBookmarked: isBookmarked);
-        notifyListeners();
-        _eventController.add(
-          SearchStoreInformationEvent.showSnackBar(
-            isBookmarked ? '즐겨찾기에 추가했습니다.' : '즐겨찾기를 해제했습니다.',
-          ),
-        );
+        unawaited(_toggleBookmark());
         break;
       case TapSearchStoreInformationReservation(:final currentLocation):
         if (!_state.isReservationAvailable) {
@@ -270,6 +269,36 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         reservationAvailabilitySlots: const [],
       );
       notifyListeners();
+    }
+  }
+
+  Future<void> _toggleBookmark() async {
+    final storeId = _state.storeId;
+    if (storeId.isEmpty) {
+      return;
+    }
+
+    final wasBookmarked = _state.isBookmarked;
+
+    try {
+      if (wasBookmarked) {
+        await _bookmarkRepository.removeBookmark(storeId);
+        _state = _state.copyWith(isBookmarked: false);
+        _eventController.add(
+          const SearchStoreInformationEvent.showSnackBar('즐겨찾기를 해제했습니다.'),
+        );
+      } else {
+        await _bookmarkRepository.addBookmark(storeId);
+        _state = _state.copyWith(isBookmarked: true);
+        _eventController.add(
+          const SearchStoreInformationEvent.showSnackBar('즐겨찾기에 추가했습니다.'),
+        );
+      }
+      notifyListeners();
+    } catch (_) {
+      _eventController.add(
+        const SearchStoreInformationEvent.showSnackBar('즐겨찾기 처리에 실패했습니다.'),
+      );
     }
   }
 
