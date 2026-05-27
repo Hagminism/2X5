@@ -105,10 +105,10 @@ class _ZoomableStoreImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InteractiveViewer(
-      minScale: 1,
-      maxScale: 4,
-      child: Center(
+    return Center(
+      child: InteractiveViewer(
+        minScale: 1,
+        maxScale: 4,
         child: CachedNetworkImage(
           imageUrl: url,
           fit: BoxFit.contain,

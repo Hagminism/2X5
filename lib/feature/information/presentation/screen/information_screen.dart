@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
@@ -60,22 +58,25 @@ class InformationScreen extends StatelessWidget {
                 },
               ),
               actions: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.share_outlined,
-                    color: AppColors.textPrimary,
+                Builder(
+                  builder: (buttonContext) => IconButton(
+                    icon: const Icon(
+                      Icons.share_outlined,
+                      color: AppColors.textPrimary,
+                    ),
+                    onPressed: () {
+                      Rect? shareOrigin;
+                      final box =
+                          buttonContext.findRenderObject() as RenderBox?;
+                      if (box != null && box.hasSize) {
+                        shareOrigin =
+                            box.localToGlobal(Offset.zero) & box.size;
+                      }
+                      onAction(
+                        InformationAction.tapShare(shareOrigin: shareOrigin),
+                      );
+                    },
                   ),
-                  onPressed: () {
-                    Rect? shareOrigin;
-                    final box = context.findRenderObject() as RenderBox?;
-                    if (box != null && box.hasSize) {
-                      shareOrigin =
-                          box.localToGlobal(Offset.zero) & box.size;
-                    }
-                    onAction(
-                      InformationAction.tapShare(shareOrigin: shareOrigin),
-                    );
-                  },
                 ),
                 IconButton(
                   icon: Icon(

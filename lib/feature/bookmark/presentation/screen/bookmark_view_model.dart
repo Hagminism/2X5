@@ -1,5 +1,4 @@
 import 'package:capstone_2026/core/domain/model/bookmark/bookmark_list_item.dart';
-import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
 import 'package:flutter/material.dart';
 
@@ -27,20 +26,6 @@ class BookmarkViewModel extends ChangeNotifier {
     return _items
         .where((item) => item.category == _selectedCategory)
         .toList();
-  }
-
-  String _categoryLabel(BookmarkListItem item) {
-    return StoreCategory.fromDbValue(item.category)?.displayName ??
-        item.category;
-  }
-
-  String subtitleFor(BookmarkListItem item) {
-    final label = _categoryLabel(item);
-    final address = item.address.trim();
-    if (address.isEmpty) {
-      return label;
-    }
-    return '$label · $address';
   }
 
   Future<void> loadBookmarks({bool force = false}) async {
