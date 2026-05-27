@@ -340,8 +340,16 @@ class ReservationScreen extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      child: Ink(
-        decoration: BoxDecoration(
+      child: InkWell(
+        onTap: isEnabled
+              ? () {
+                  onAction(ReservationAction.selectTime(slot.time));
+                }
+              : null,
+          borderRadius: BorderRadius.circular(12),
+          splashColor: Colors.transparent,
+        child: Ink(
+          decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primary
               : isEnabled
@@ -352,25 +360,20 @@ class ReservationScreen extends StatelessWidget {
             color: isSelected ? AppColors.primary : AppColors.border,
           ),
         ),
-        child: InkWell(
-          onTap: isEnabled
-              ? () {
-                  onAction(ReservationAction.selectTime(slot.time));
-                }
-              : null,
-          borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-            child: Text(
-              slot.time,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body.copyWith(
-                color: isSelected
-                    ? AppColors.white
-                    : isEnabled
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            child: Center(
+              child: Text(
+                slot.time,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body.copyWith(
+                  color: isSelected
+                      ? AppColors.white
+                      : isEnabled
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
               ),
             ),
           ),
