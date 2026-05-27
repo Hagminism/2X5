@@ -1,15 +1,24 @@
+import 'package:capstone_2026/core/domain/model/enum/reservation_congestion_level.dart';
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/domain/model/reservation/restaurant_time_slot.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/enum/week_day.dart';
+import 'package:capstone_2026/core/util/restaurant_booking_slot.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class StoreReservationStatusTab extends StatelessWidget {
+class StoreReservationStatusTab extends StatefulWidget {
   final String category;
   final List<SalonDesigner> salonDesigners;
   final void Function() onTapReservation;
   final void Function(String designerId)? onTapSalonDesigner;
   final bool isReservationAvailable;
+  final DateTime? reservationAvailabilityDate;
+  final List<RestaurantTimeSlot> reservationAvailabilitySlots;
+  final bool isReservationAvailabilityLoading;
+  final void Function(DateTime date)? onSelectReservationDate;
+  final Future<void> Function()? onPickReservationDate;
+  final Map<String, dynamic> operatingHours;
 
   const StoreReservationStatusTab({
     super.key,
@@ -18,10 +27,28 @@ class StoreReservationStatusTab extends StatelessWidget {
     required this.onTapReservation,
     this.onTapSalonDesigner,
     this.isReservationAvailable = true,
+    this.reservationAvailabilityDate,
+    this.reservationAvailabilitySlots = const [],
+    this.isReservationAvailabilityLoading = false,
+    this.onSelectReservationDate,
+    this.onPickReservationDate,
+    this.operatingHours = const {},
   });
 
   @override
+  State<StoreReservationStatusTab> createState() =>
+      _StoreReservationStatusTabState();
+}
+
+class _StoreReservationStatusTabState extends State<StoreReservationStatusTab> {
+  @override
   Widget build(BuildContext context) {
+    final category = widget.category;
+    final salonDesigners = widget.salonDesigners;
+    final onTapReservation = widget.onTapReservation;
+    final onTapSalonDesigner = widget.onTapSalonDesigner;
+    final isReservationAvailable = widget.isReservationAvailable;
+
     if (!isReservationAvailable) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -61,6 +88,7 @@ class StoreReservationStatusTab extends StatelessWidget {
               ),
             ),
       body: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.all(20),
         child: switch (storeCategory) {
           StoreCategory.studyCafe => const _StudyCafeReservationBody(),
@@ -68,7 +96,14 @@ class StoreReservationStatusTab extends StatelessWidget {
             salonDesigners: salonDesigners,
             onTapSalonDesigner: onTapSalonDesigner,
           ),
-          _ => _DefaultReservationAvailabilityBody(category: category),
+          _ => _DefaultReservationAvailabilityBody(
+            selectedDate: widget.reservationAvailabilityDate ?? DateTime.now(),
+            slots: widget.reservationAvailabilitySlots,
+            isLoading: widget.isReservationAvailabilityLoading,
+            operatingHours: widget.operatingHours,
+            onSelectDate: widget.onSelectReservationDate,
+            onPickDate: widget.onPickReservationDate,
+          ),
         },
       ),
     );
@@ -82,6 +117,7 @@ class _NotOnboardedReservationBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -340,44 +376,25 @@ class _SalonDesignerCard extends StatelessWidget {
   }
 }
 
-class _DefaultReservationAvailabilityBody extends StatefulWidget {
-  final String category;
+class _DefaultReservationAvailabilityBody extends StatelessWidget {
+  final DateTime selectedDate;
+  final List<RestaurantTimeSlot> slots;
+  final bool isLoading;
+  final Map<String, dynamic> operatingHours;
+  final void Function(DateTime date)? onSelectDate;
+  final Future<void> Function()? onPickDate;
 
-  const _DefaultReservationAvailabilityBody({required this.category});
-
-  @override
-  State<_DefaultReservationAvailabilityBody> createState() =>
-      _DefaultReservationAvailabilityBodyState();
-}
-
-class _DefaultReservationAvailabilityBodyState
-    extends State<_DefaultReservationAvailabilityBody> {
-  DateTime _selectedDate = DateTime.now();
+  const _DefaultReservationAvailabilityBody({
+    required this.selectedDate,
+    required this.slots,
+    required this.isLoading,
+    required this.operatingHours,
+    required this.onSelectDate,
+    required this.onPickDate,
+  });
 
   String _weekdayKorean(int weekday) {
     return WeekDay.values[weekday - 1].label;
-  }
-
-  Future<void> _pickDate() async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 90)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(primary: AppColors.primary),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
   }
 
   @override
@@ -387,21 +404,21 @@ class _DefaultReservationAvailabilityBodyState
       children: [
         _SectionTitle(
           title: '방문 예정일 선택',
-          showCalendarButton: true,
-          onPickDate: _pickDate,
+          showCalendarButton: onPickDate != null,
+          onPickDate: onPickDate,
         ),
         const SizedBox(height: 12),
         _WeekDateStrip(
-          selectedDate: _selectedDate,
+          selectedDate: selectedDate,
+          operatingHours: operatingHours,
           onSelect: (date) {
-            setState(() {
-              _selectedDate = date;
-            });
+            onSelectDate?.call(date);
           },
         ),
         const SizedBox(height: 24),
         Text(
-          '${_selectedDate.month}월 ${_selectedDate.day}일 ${_weekdayKorean(_selectedDate.weekday)}요일 현황',
+          '${selectedDate.month}월 ${selectedDate.day}일 '
+          '${_weekdayKorean(selectedDate.weekday)}요일 현황',
           style: const TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 16,
@@ -410,28 +427,42 @@ class _DefaultReservationAvailabilityBodyState
           ),
         ),
         const SizedBox(height: 12),
-        _TimeSlotRow(
-          time: '12:00',
-          status: '여유',
-          color: Colors.green,
-        ),
-        _TimeSlotRow(
-          time: '13:00',
-          status: '혼잡',
-          color: Colors.orange,
-        ),
-        _TimeSlotRow(
-          time: '14:00',
-          status: '마감',
-          color: Colors.red,
-        ),
-        _TimeSlotRow(
-          time: '18:00',
-          status: '보통',
-          color: Colors.blue,
-        ),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (slots.isEmpty)
+          const Text(
+            '예약 가능한 시간대가 없습니다.',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          )
+        else
+          ...slots.map((slot) {
+            return _TimeSlotRow(
+              time: slot.time,
+              status: slot.congestionLevel.label,
+              color: _congestionColor(slot.congestionLevel),
+            );
+          }),
       ],
     );
+  }
+
+  Color _congestionColor(ReservationCongestionLevel level) {
+    switch (level) {
+      case ReservationCongestionLevel.relaxed:
+        return Colors.green;
+      case ReservationCongestionLevel.normal:
+        return Colors.blue;
+      case ReservationCongestionLevel.busy:
+        return Colors.orange;
+      case ReservationCongestionLevel.saturated:
+        return Colors.deepOrange;
+      case ReservationCongestionLevel.closed:
+        return Colors.red;
+    }
   }
 }
 
@@ -472,10 +503,12 @@ class _SectionTitle extends StatelessWidget {
 
 class _WeekDateStrip extends StatelessWidget {
   final DateTime selectedDate;
+  final Map<String, dynamic> operatingHours;
   final void Function(DateTime date) onSelect;
 
   const _WeekDateStrip({
     required this.selectedDate,
+    required this.operatingHours,
     required this.onSelect,
   });
 
@@ -483,27 +516,61 @@ class _WeekDateStrip extends StatelessWidget {
     return WeekDay.values[weekday - 1].label;
   }
 
+  bool _isDateSelectable(DateTime date) {
+    if (operatingHours.isEmpty) {
+      return true;
+    }
+
+    return !RestaurantBookingSlot.isDateClosedFromOperatingHours(
+      operatingHours: operatingHours,
+      targetDate: date,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final startDate = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
+
     return SizedBox(
       height: 90,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: 7,
         itemBuilder: (context, index) {
-          final date = DateTime.now().add(Duration(days: index));
+          final date = startDate.add(Duration(days: index));
           final isSelected =
               date.year == selectedDate.year &&
               date.month == selectedDate.month &&
               date.day == selectedDate.day;
+          final isSelectable = _isDateSelectable(date);
+
+          final backgroundColor = isSelected
+              ? AppColors.primary
+              : isSelectable
+              ? Colors.white
+              : const Color(0xFFF5F5F5);
+          final weekdayTextColor = isSelected
+              ? Colors.white
+              : isSelectable
+              ? Colors.grey
+              : Colors.grey.shade400;
+          final dayTextColor = isSelected
+              ? Colors.white
+              : isSelectable
+              ? Colors.black
+              : Colors.grey.shade400;
 
           return GestureDetector(
-            onTap: () => onSelect(date),
+            onTap: isSelectable ? () => onSelect(date) : null,
             child: Container(
               width: 65,
               margin: const EdgeInsets.only(right: 10),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : const Color(0xFFF5F5F5),
+                color: backgroundColor,
                 borderRadius: BorderRadius.circular(16),
                 border: isSelected
                     ? null
@@ -516,7 +583,7 @@ class _WeekDateStrip extends StatelessWidget {
                     _weekdayKorean(date.weekday),
                     style: TextStyle(
                       fontFamily: 'Pretendard',
-                      color: isSelected ? Colors.white : Colors.grey,
+                      color: weekdayTextColor,
                       fontSize: 13,
                       letterSpacing: -0.1,
                     ),
@@ -528,7 +595,7 @@ class _WeekDateStrip extends StatelessWidget {
                       fontFamily: 'Pretendard',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : Colors.black,
+                      color: dayTextColor,
                       letterSpacing: -0.2,
                     ),
                   ),

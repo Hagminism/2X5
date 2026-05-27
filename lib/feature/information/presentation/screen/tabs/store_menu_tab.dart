@@ -3,13 +3,19 @@ import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
-class StoreMenuTab extends StatelessWidget {
+class StoreMenuTab extends StatefulWidget {
   const StoreMenuTab({super.key, required this.menus});
 
   final List<StoreMenu> menus;
 
   @override
+  State<StoreMenuTab> createState() => _StoreMenuTabState();
+}
+
+class _StoreMenuTabState extends State<StoreMenuTab> {
+  @override
   Widget build(BuildContext context) {
+    final menus = widget.menus;
     if (menus.isEmpty) {
       return const Center(
         child: Text(

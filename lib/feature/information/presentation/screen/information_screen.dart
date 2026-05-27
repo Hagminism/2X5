@@ -6,6 +6,7 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_image_slider.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_store_header.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_home_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_layout_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_menu_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_photo_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_reservation_tab.dart';
@@ -69,8 +70,7 @@ class InformationScreen extends StatelessWidget {
                       final box =
                           buttonContext.findRenderObject() as RenderBox?;
                       if (box != null && box.hasSize) {
-                        shareOrigin =
-                            box.localToGlobal(Offset.zero) & box.size;
+                        shareOrigin = box.localToGlobal(Offset.zero) & box.size;
                       }
                       onAction(
                         InformationAction.tapShare(shareOrigin: shareOrigin),
@@ -98,8 +98,7 @@ class InformationScreen extends StatelessWidget {
                 return [
                   SliverToBoxAdapter(
                     child: InformationImageSlider(
-                      controller:
-                          state.sliderController ?? PageController(),
+                      controller: state.sliderController ?? PageController(),
                       currentPage: state.currentSliderPage,
                       onPageChanged: (int index) {
                         onAction(InformationAction.sliderPageChanged(index));
@@ -182,10 +181,48 @@ class InformationScreen extends StatelessWidget {
                       StoreCategory.fromDbValue(state.category) ==
                           StoreCategory.restaurant)
                     StoreMenuTab(menus: state.menus),
+                  if (StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.cafe ||
+                      StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.restaurant)
+                    StoreLayoutTab(
+                      layoutDetail: state.layoutDetail,
+                      isReservationAvailable: state.isReservationAvailable,
+                    ),
                   StoreReservationStatusTab(
                     category: state.category,
                     isReservationAvailable: state.isReservationAvailable,
                     salonDesigners: state.salonDesigners,
+                    operatingHours: state.operatingHours,
+                    reservationAvailabilityDate:
+                        state.reservationAvailabilityDate,
+                    reservationAvailabilitySlots:
+                        state.reservationAvailabilitySlots,
+                    isReservationAvailabilityLoading:
+                        state.isReservationAvailabilityLoading,
+                    onSelectReservationDate: (date) {
+                      onAction(
+                        InformationAction.changeReservationAvailabilityDate(
+                          date,
+                        ),
+                      );
+                    },
+                    onPickReservationDate: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate:
+                            state.reservationAvailabilityDate ?? DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 90)),
+                      );
+                      if (picked != null) {
+                        onAction(
+                          InformationAction.changeReservationAvailabilityDate(
+                            picked,
+                          ),
+                        );
+                      }
+                    },
                     onTapReservation: () {
                       final currentLocation = GoRouterState.of(
                         context,

@@ -8,4 +8,16 @@ abstract interface class BookmarkRepository {
   Future<void> removeBookmark(String storeId);
 
   Future<List<BookmarkListItem>> getMyBookmarks();
+
+  Stream<List<BookmarkListItem>> watchMyBookmarks();
+
+  Stream<Set<String>> watchBookmarkedStoreIds();
+
+  Future<void> refresh();
+
+  void startWatching();
+
+  void stopWatching();
+
+  void clearCache();
 }

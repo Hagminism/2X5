@@ -4,6 +4,7 @@ import 'package:capstone_2026/feature/information/presentation/component/informa
 import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_store_header.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_home_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_layout_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_menu_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_photo_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_reservation_tab.dart';
@@ -88,7 +89,9 @@ class SearchStoreInformationScreen extends StatelessWidget {
                       controller: state.sliderController ?? PageController(),
                       currentPage: state.currentSliderPage,
                       onPageChanged: (int index) {
-                        onAction(SearchStoreInformationAction.sliderPageChanged(index));
+                        onAction(
+                          SearchStoreInformationAction.sliderPageChanged(index),
+                        );
                       },
                       images: storeSliderImages(state.imageUrls),
                     ),
@@ -115,7 +118,9 @@ class SearchStoreInformationScreen extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                         ),
-                        tabs: state.tabs.map((title) => Tab(text: title)).toList(),
+                        tabs: state.tabs
+                            .map((title) => Tab(text: title))
+                            .toList(),
                       ),
                     ),
                   ),
@@ -132,27 +137,74 @@ class SearchStoreInformationScreen extends StatelessWidget {
                         operatingHours: state.operatingHours,
                         menus: state.menus,
                         onViewMoreMenus: () {
-                          final controller = DefaultTabController.of(innerContext);
-                          final category = StoreCategory.fromDbValue(state.category);
+                          final controller = DefaultTabController.of(
+                            innerContext,
+                          );
+                          final category = StoreCategory.fromDbValue(
+                            state.category,
+                          );
                           final isCafeOrRestaurant =
-                              category == StoreCategory.cafe || category == StoreCategory.restaurant;
+                              category == StoreCategory.cafe ||
+                              category == StoreCategory.restaurant;
                           if (isCafeOrRestaurant) {
                             controller.animateTo(1);
                           }
                         },
                         showMenuSection:
-                            StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
-                                StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant,
+                            StoreCategory.fromDbValue(state.category) ==
+                                StoreCategory.cafe ||
+                            StoreCategory.fromDbValue(state.category) ==
+                                StoreCategory.restaurant,
                       );
                     },
                   ),
-                  if (StoreCategory.fromDbValue(state.category) == StoreCategory.cafe ||
-                      StoreCategory.fromDbValue(state.category) == StoreCategory.restaurant)
+                  if (StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.cafe ||
+                      StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.restaurant)
                     StoreMenuTab(menus: state.menus),
+                  if (StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.cafe ||
+                      StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.restaurant)
+                    StoreLayoutTab(
+                      layoutDetail: state.layoutDetail,
+                      isReservationAvailable: state.isReservationAvailable,
+                    ),
                   StoreReservationStatusTab(
                     category: state.category,
                     isReservationAvailable: state.isReservationAvailable,
                     salonDesigners: state.salonDesigners,
+                    operatingHours: state.operatingHours,
+                    reservationAvailabilityDate:
+                        state.reservationAvailabilityDate,
+                    reservationAvailabilitySlots:
+                        state.reservationAvailabilitySlots,
+                    isReservationAvailabilityLoading:
+                        state.isReservationAvailabilityLoading,
+                    onSelectReservationDate: (date) {
+                      onAction(
+                        SearchStoreInformationAction.changeReservationAvailabilityDate(
+                          date,
+                        ),
+                      );
+                    },
+                    onPickReservationDate: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate:
+                            state.reservationAvailabilityDate ?? DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 90)),
+                      );
+                      if (picked != null) {
+                        onAction(
+                          SearchStoreInformationAction.changeReservationAvailabilityDate(
+                            picked,
+                          ),
+                        );
+                      }
+                    },
                     onTapReservation: () {
                       final currentLocation = GoRouterState.of(
                         context,

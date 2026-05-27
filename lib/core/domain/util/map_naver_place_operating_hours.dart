@@ -102,10 +102,7 @@ Map<String, dynamic> _buildDayConfig({
   required String? breakStart,
   required String? breakEnd,
 }) {
-  if (start != null &&
-      end != null &&
-      start.isNotEmpty &&
-      end.isNotEmpty) {
+  if (start != null && end != null && start.isNotEmpty && end.isNotEmpty) {
     final config = <String, dynamic>{
       'isOpened': true,
       'openTime': start,

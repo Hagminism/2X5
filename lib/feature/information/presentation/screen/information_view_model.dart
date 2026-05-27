@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
+import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repository.dart';
+import 'package:capstone_2026/core/domain/repository/reservation/reservation_repository.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/domain/util/build_store_share_text.dart';
@@ -21,14 +23,19 @@ class InformationViewModel extends ChangeNotifier {
   final StoreRepository _storeRepository;
   final SalonRepository _salonRepository;
   final BookmarkRepository _bookmarkRepository;
+  final ReservationRepository _reservationRepository;
+
+  Store? _cachedStore;
 
   InformationViewModel({
     required StoreRepository storeRepository,
     required SalonRepository salonRepository,
     required BookmarkRepository bookmarkRepository,
+    required ReservationRepository reservationRepository,
   }) : _storeRepository = storeRepository,
        _salonRepository = salonRepository,
-       _bookmarkRepository = bookmarkRepository;
+       _bookmarkRepository = bookmarkRepository,
+       _reservationRepository = reservationRepository;
 
   InformationState _state = const InformationState();
 
@@ -44,10 +51,11 @@ class InformationViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final (store, menus, images) = await (
+      final (store, menus, images, layoutDetail) = await (
         _storeRepository.getStoreById(storeId),
         _storeRepository.getStoreMenusByStoreId(storeId),
         _storeRepository.getStoreImagesByStoreId(storeId),
+        _storeRepository.getStoreLayoutByStoreId(storeId),
       ).wait;
 
       final imageUrls = storeImageDisplayUrls(images);
@@ -70,11 +78,23 @@ class InformationViewModel extends ChangeNotifier {
         naverPlaceId: store.naverPlaceId ?? '',
         isReservationAvailable: store.isOnboarded,
         isBookmarked: isBookmarked,
+        layoutDetail: layoutDetail,
         isLoading: false,
       );
 
+      _cachedStore = store;
+
+      final storeCategory = StoreCategory.fromDbValue(store.category);
       if (store.isOnboarded &&
-          StoreCategory.fromDbValue(store.category) == StoreCategory.salon) {
+          (storeCategory == StoreCategory.restaurant ||
+              storeCategory == StoreCategory.cafe)) {
+        final today = DateTime.now();
+        final todayDate = DateTime(today.year, today.month, today.day);
+        _state = _state.copyWith(reservationAvailabilityDate: todayDate);
+        unawaited(_loadReservationAvailability(todayDate));
+      }
+
+      if (store.isOnboarded && storeCategory == StoreCategory.salon) {
         final designers =
             (await _salonRepository.getDesignersByStoreId(store.id))
                 .where((designer) => designer.isActive && !designer.isDeleted)
@@ -138,7 +158,7 @@ class InformationViewModel extends ChangeNotifier {
         category == StoreCategory.restaurant);
     if (isCafeOrRestaurant) {
       _state = state.copyWith(
-        tabs: const ['홈', '메뉴', '예약', '사진', '리뷰'],
+        tabs: const ['홈', '메뉴', '내부', '예약', '사진', '리뷰'],
         sliderController: PageController(),
       );
     } else {
@@ -208,6 +228,40 @@ class InformationViewModel extends ChangeNotifier {
         _state = _state.copyWith(currentSliderPage: index);
         notifyListeners();
         break;
+      case ChangeReservationAvailabilityDate(:final date):
+        final calendarDate = DateTime(date.year, date.month, date.day);
+        _state = _state.copyWith(reservationAvailabilityDate: calendarDate);
+        notifyListeners();
+        unawaited(_loadReservationAvailability(calendarDate));
+        break;
+    }
+  }
+
+  Future<void> _loadReservationAvailability(DateTime date) async {
+    final store = _cachedStore;
+    if (store == null || !store.isOnboarded) {
+      return;
+    }
+
+    _state = _state.copyWith(isReservationAvailabilityLoading: true);
+    notifyListeners();
+
+    try {
+      final slots = await _reservationRepository.getAvailabilityForDate(
+        store: store,
+        date: date,
+      );
+      _state = _state.copyWith(
+        isReservationAvailabilityLoading: false,
+        reservationAvailabilitySlots: slots,
+      );
+      notifyListeners();
+    } catch (_) {
+      _state = _state.copyWith(
+        isReservationAvailabilityLoading: false,
+        reservationAvailabilitySlots: const [],
+      );
+      notifyListeners();
     }
   }
 

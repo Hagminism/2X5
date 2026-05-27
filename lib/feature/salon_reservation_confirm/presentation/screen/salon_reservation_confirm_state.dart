@@ -6,7 +6,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'salon_reservation_confirm_state.freezed.dart';
 
 @freezed
-abstract class SalonReservationConfirmState with _$SalonReservationConfirmState {
+abstract class SalonReservationConfirmState
+    with _$SalonReservationConfirmState {
   const factory SalonReservationConfirmState({
     @Default(false) bool isLoading,
     @Default('') String storeId,

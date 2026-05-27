@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/data/dto/store/store_dto.dart';
+import 'package:capstone_2026/core/data/dto/store/store_layout_detail_dto.dart';
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 
@@ -31,7 +32,9 @@ abstract interface class StoreDataSource {
 
   Future<List<StoreImage>> findImagesByStoreId(String storeId);
 
-  Future<Map<String, String?>> findCoverImageUrlsByStoreIds(List<String> storeIds);
+  Future<Map<String, String?>> findCoverImageUrlsByStoreIds(
+    List<String> storeIds,
+  );
 
   Future<StoreMenu> createMenu(String storeId, StoreMenu menu);
 
@@ -69,4 +72,8 @@ abstract interface class StoreDataSource {
     required String storeId,
     required String imageUrl,
   });
+
+  Future<StoreLayoutDetailDto?> findLayoutByStoreId(String storeId);
+
+  Future<StoreLayoutDetailDto> upsertLayout(StoreLayoutDetailDto layoutDto);
 }

@@ -78,7 +78,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                  sliver: state.isLoading
+                  sliver: state.isLoading && state.recommendedStores.isEmpty
                       ? const SliverToBoxAdapter(
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 24),

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
 import 'package:capstone_2026/core/data/dto/store/store_dto.dart';
+import 'package:capstone_2026/core/data/dto/store/store_layout_detail_dto.dart';
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -475,5 +476,37 @@ store_images (
     }
     final encodedPath = trimmed.substring(markerIndex + marker.length);
     return Uri.decodeComponent(encodedPath);
+  }
+
+  @override
+  Future<StoreLayoutDetailDto?> findLayoutByStoreId(String storeId) async {
+    final json = await _supabaseClient
+        .from('store_layout_detail')
+        .select()
+        .eq('store_id', storeId)
+        .maybeSingle();
+
+    if (json == null) {
+      return null;
+    }
+    return StoreLayoutDetailDto.fromJson(json);
+  }
+
+  @override
+  Future<StoreLayoutDetailDto> upsertLayout(
+    StoreLayoutDetailDto layoutDto,
+  ) async {
+    final payload = layoutDto.toJson()
+      ..remove('id')
+      ..remove('created_at')
+      ..remove('updated_at');
+
+    final json = await _supabaseClient
+        .from('store_layout_detail')
+        .upsert(payload, onConflict: 'store_id')
+        .select()
+        .single();
+
+    return StoreLayoutDetailDto.fromJson(json);
   }
 }

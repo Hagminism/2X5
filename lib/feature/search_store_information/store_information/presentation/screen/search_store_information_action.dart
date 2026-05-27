@@ -24,4 +24,8 @@ sealed class SearchStoreInformationAction with _$SearchStoreInformationAction {
 
   const factory SearchStoreInformationAction.sliderPageChanged(int index) =
       SliderSearchStoreInformationPageChanged;
+
+  const factory SearchStoreInformationAction.changeReservationAvailabilityDate(
+    DateTime date,
+  ) = ChangeSearchStoreInformationReservationAvailabilityDate;
 }

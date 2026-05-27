@@ -349,8 +349,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         PartnerFormTextField(
-                          hintText:
-                              '매장 소개, 주차 안내, 이용 안내 등을 자유롭게 입력해 주세요.',
+                          hintText: '매장 소개, 주차 안내, 이용 안내 등을 자유롭게 입력해 주세요.',
                           initialValue: state.description,
                           maxLines: 8,
                           onChanged: (value) => onAction(
@@ -376,6 +375,23 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                             ? () {
                                 onAction(
                                   const PartnerStoreManagementAction.tapOpenMenuManager(),
+                                );
+                              }
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildGatedSection(
+                      title: '구조 관리',
+                      canAccess: state.canAccessStoreSubManagers,
+                      child: PartnerStoreManagementCtaCard(
+                        icon: Icons.layers_outlined,
+                        title: '내부 구조 설정',
+                        subtitle: '매장 내부의 테이블 및 구조물 배치를 설정할 수 있어요.',
+                        onTap: state.canAccessStoreSubManagers
+                            ? () {
+                                onAction(
+                                  const PartnerStoreManagementAction.tapOpenLayoutManager(),
                                 );
                               }
                             : null,

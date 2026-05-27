@@ -24,4 +24,8 @@ sealed class MapStoreInformationAction with _$MapStoreInformationAction {
 
   const factory MapStoreInformationAction.sliderPageChanged(int index) =
       SliderMapStoreInformationPageChanged;
+
+  const factory MapStoreInformationAction.changeReservationAvailabilityDate(
+    DateTime date,
+  ) = ChangeMapStoreInformationReservationAvailabilityDate;
 }

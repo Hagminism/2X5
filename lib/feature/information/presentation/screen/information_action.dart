@@ -24,4 +24,8 @@ sealed class InformationAction with _$InformationAction {
 
   const factory InformationAction.sliderPageChanged(int index) =
       SliderPageChanged;
+
+  const factory InformationAction.changeReservationAvailabilityDate(
+    DateTime date,
+  ) = ChangeReservationAvailabilityDate;
 }

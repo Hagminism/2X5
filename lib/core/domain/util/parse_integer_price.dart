@@ -31,7 +31,9 @@ int parseIntegerPrice(Object? raw, {int fallback = 0}) {
     return fallback;
   }
 
-  return amounts.reduce((minValue, value) => value < minValue ? value : minValue);
+  return amounts.reduce(
+    (minValue, value) => value < minValue ? value : minValue,
+  );
 }
 
 String formatMenuPriceLabel(Object? raw) {
@@ -45,8 +47,12 @@ String formatMenuPriceLabel(Object? raw) {
     return '${formatter.format(amounts.first)}원';
   }
 
-  final minPrice = amounts.reduce((minValue, value) => value < minValue ? value : minValue);
-  final maxPrice = amounts.reduce((maxValue, value) => value > maxValue ? value : maxValue);
+  final minPrice = amounts.reduce(
+    (minValue, value) => value < minValue ? value : minValue,
+  );
+  final maxPrice = amounts.reduce(
+    (maxValue, value) => value > maxValue ? value : maxValue,
+  );
   if (minPrice == maxPrice) {
     return '${formatter.format(minPrice)}원';
   }

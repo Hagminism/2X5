@@ -19,4 +19,7 @@ abstract interface class BookmarkDataSource {
 
   /// 내 찜 목록 (store_id 목록 + stores 정보는 impl에서 join)
   Future<List<Map<String, dynamic>>> findByUserId(String userId);
+
+  /// 초기 목록 + Realtime 변경 시 갱신된 목록을 emit.
+  Stream<List<Map<String, dynamic>>> watchByUserId(String userId);
 }

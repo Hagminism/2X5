@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
+import 'package:capstone_2026/core/domain/model/store/store_layout_detail.dart';
 import 'package:capstone_2026/core/domain/model/store/store_list_entry.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
@@ -29,7 +30,9 @@ abstract interface class StoreRepository {
 
   Future<List<StoreImage>> getStoreImagesByStoreId(String storeId); //이미 조회
 
-  Future<Map<String, String?>> getCoverImageUrlsByStoreIds(List<String> storeIds);
+  Future<Map<String, String?>> getCoverImageUrlsByStoreIds(
+    List<String> storeIds,
+  );
 
   Future<Store> updateMyStore(Store store);
 
@@ -60,4 +63,8 @@ abstract interface class StoreRepository {
     String imageUrl, {
     bool isCover = false,
   });
+
+  Future<StoreLayoutDetail?> getStoreLayoutByStoreId(String storeId);
+
+  Future<StoreLayoutDetail> saveMyStoreLayout(StoreLayoutDetail layout);
 }

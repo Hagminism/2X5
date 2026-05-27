@@ -26,6 +26,7 @@ class Routes {
   static const String bookmarkStoreDetail = 'store/:storeId';
   static const String bookmarkStoreInformation =
       'bookmark_information/:storeId';
+
   /// GoRoute.name — 북마크 탭 상세 (pushNamed용)
   static const String bookmarkInformationName = 'bookmark_information';
 
@@ -55,6 +56,7 @@ class Routes {
   static const String partnerAddressSearch = 'address-search';
   static const String partnerStoreMenus = 'menus';
   static const String partnerStoreImages = 'images';
+  static const String partnerStoreLayout = 'store-layout';
   static const String partnerStudyCafeLayout = 'study-cafe-layout';
   static const String partnerStudyCafeUsageOptions = 'study-cafe-usage-options';
   static const String partnerSalonManagement = 'salon-management';

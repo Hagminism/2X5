@@ -1,4 +1,4 @@
-import 'package:capstone_2026/feature/partner_reservation_slot_settings/domain/enum/reservation_congestion_level.dart';
+import 'package:capstone_2026/core/domain/model/enum/reservation_congestion_level.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/domain/model/partner_reservation_slot.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/component/partner_reservation_slot_count_button.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -8,15 +8,15 @@ import 'package:flutter/material.dart';
 class PartnerReservationSlotCard extends StatelessWidget {
   final PartnerReservationSlot slot;
   final void Function(bool isOpen) onToggleOpen;
-  final VoidCallback onTapDecreaseTeamCount;
-  final VoidCallback onTapIncreaseTeamCount;
+  final VoidCallback onTapDecreaseGuestCount;
+  final VoidCallback onTapIncreaseGuestCount;
 
   const PartnerReservationSlotCard({
     super.key,
     required this.slot,
     required this.onToggleOpen,
-    required this.onTapDecreaseTeamCount,
-    required this.onTapIncreaseTeamCount,
+    required this.onTapDecreaseGuestCount,
+    required this.onTapIncreaseGuestCount,
   });
 
   @override
@@ -68,18 +68,18 @@ class PartnerReservationSlotCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                '예약 ${slot.reservedTeamCount}팀 / 최대 ${slot.maxTeamCount}팀 (잔여 ${slot.remainingTeamCount}팀)',
+                '예약 ${slot.reservedGuestCount}명 / 최대 ${slot.maxGuestCount}명 (잔여 ${slot.remainingGuestCount}명)',
                 style: AppTextStyles.bodySecondary.copyWith(fontSize: 12),
               ),
               const Spacer(),
               PartnerReservationSlotCountButton(
                 icon: Icons.remove,
-                onTap: onTapDecreaseTeamCount,
+                onTap: onTapDecreaseGuestCount,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
-                  '${slot.maxTeamCount}팀',
+                  '${slot.maxGuestCount}명',
                   style: AppTextStyles.body.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -87,7 +87,7 @@ class PartnerReservationSlotCard extends StatelessWidget {
               ),
               PartnerReservationSlotCountButton(
                 icon: Icons.add,
-                onTap: onTapIncreaseTeamCount,
+                onTap: onTapIncreaseGuestCount,
               ),
             ],
           ),

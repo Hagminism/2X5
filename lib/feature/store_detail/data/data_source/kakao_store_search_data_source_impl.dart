@@ -23,7 +23,9 @@ class KakaoStoreSearchDataSourceImpl implements KakaoStoreSearchDataSource {
     int radius = 1000,
   }) async {
     if (_restApiKey == 'NOT_FOUND' || _restApiKey.isEmpty) {
-      debugPrint('[Kakao API] Missing KAKAO_REST_API_KEY in .env or --dart-define');
+      debugPrint(
+        '[Kakao API] Missing KAKAO_REST_API_KEY in .env or --dart-define',
+      );
       return const [];
     }
 
@@ -36,19 +38,23 @@ class KakaoStoreSearchDataSourceImpl implements KakaoStoreSearchDataSource {
     });
 
     try {
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': 'KakaoAK $_restApiKey',
-        },
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'Authorization': 'KakaoAK $_restApiKey',
+            },
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         final docs = (data['documents'] as List?) ?? const [];
         return docs.cast<Map<String, dynamic>>();
       } else {
-        debugPrint('[Kakao API] Request failed: ${response.statusCode} ${response.body}');
+        debugPrint(
+          '[Kakao API] Request failed: ${response.statusCode} ${response.body}',
+        );
       }
     } catch (e) {
       debugPrint('[Kakao API] Exception: $e');

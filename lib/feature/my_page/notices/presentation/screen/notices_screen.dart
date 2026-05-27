@@ -6,14 +6,19 @@ class _Notice {
   final String title;
   final String date;
   final String content;
-  const _Notice({required this.title, required this.date, required this.content});
+  const _Notice({
+    required this.title,
+    required this.date,
+    required this.content,
+  });
 }
 
 const _notices = [
   _Notice(
     title: '20260528 업데이트',
     date: '2026.05.28',
-    content: '• 지도 마커 클러스터링 기능이 추가되었습니다.\n'
+    content:
+        '• 지도 마커 클러스터링 기능이 추가되었습니다.\n'
         '• 카테고리별로 마커가 구분되어 표시됩니다.\n'
         '• 홈 화면 UI가 개선되었습니다.\n'
         '• 일부 버그가 수정되었습니다.',
@@ -21,7 +26,8 @@ const _notices = [
   _Notice(
     title: '20260523 업데이트',
     date: '2026.05.23',
-    content: '• 북마크 기능이 추가되었습니다.\n'
+    content:
+        '• 북마크 기능이 추가되었습니다.\n'
         '• 가게 상세 페이지에서 리뷰를 작성할 수 있습니다.\n'
         '• 스탬프 시스템이 도입되었습니다.\n'
         '• 앱 성능이 개선되었습니다.',
@@ -29,7 +35,8 @@ const _notices = [
   _Notice(
     title: '서비스 오픈 안내',
     date: '2026.05.01',
-    content: '2X5 서비스가 정식 오픈되었습니다.\n\n'
+    content:
+        '2X5 서비스가 정식 오픈되었습니다.\n\n'
         '한성대학교 주변 업장 예약 및 정보 조회 서비스를 이용해보세요.\n\n'
         '더 나은 서비스를 위해 지속적으로 업데이트할 예정입니다.\n'
         '이용해 주셔서 감사합니다.',
@@ -63,8 +70,10 @@ class NoticesScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final notice = _notices[index];
           return ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 4,
+            ),
             title: Text(
               notice.title,
               style: const TextStyle(
