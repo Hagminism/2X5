@@ -17,14 +17,9 @@ class StoreLayoutTab extends StatefulWidget {
   State<StoreLayoutTab> createState() => _StoreLayoutTabState();
 }
 
-class _StoreLayoutTabState extends State<StoreLayoutTab>
-    with AutomaticKeepAliveClientMixin<StoreLayoutTab> {
-  @override
-  bool get wantKeepAlive => true;
-
+class _StoreLayoutTabState extends State<StoreLayoutTab>{
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final isReservationAvailable = widget.isReservationAvailable;
     final layoutDetail = widget.layoutDetail;
 

@@ -12,14 +12,9 @@ class StoreMenuTab extends StatefulWidget {
   State<StoreMenuTab> createState() => _StoreMenuTabState();
 }
 
-class _StoreMenuTabState extends State<StoreMenuTab>
-    with AutomaticKeepAliveClientMixin<StoreMenuTab> {
-  @override
-  bool get wantKeepAlive => true;
-
+class _StoreMenuTabState extends State<StoreMenuTab>{
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final menus = widget.menus;
     if (menus.isEmpty) {
       return const Center(
@@ -34,7 +29,6 @@ class _StoreMenuTabState extends State<StoreMenuTab>
     }
 
     return ListView.separated(
-      physics: const ClampingScrollPhysics(),
       cacheExtent: 1000.0,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: menus.length,

@@ -14,14 +14,9 @@ class StorePhotoTab extends StatefulWidget {
   State<StorePhotoTab> createState() => _StorePhotoTabState();
 }
 
-class _StorePhotoTabState extends State<StorePhotoTab>
-    with AutomaticKeepAliveClientMixin<StorePhotoTab> {
-  @override
-  bool get wantKeepAlive => true;
-
+class _StorePhotoTabState extends State<StorePhotoTab>{
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final imageUrls = widget.imageUrls;
     if (imageUrls.isEmpty) {
       return const Center(

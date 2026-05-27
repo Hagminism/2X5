@@ -29,16 +29,11 @@ class StoreHomeTab extends StatefulWidget {
   State<StoreHomeTab> createState() => _StoreHomeTabState();
 }
 
-class _StoreHomeTabState extends State<StoreHomeTab>
-    with AutomaticKeepAliveClientMixin<StoreHomeTab> {
+class _StoreHomeTabState extends State<StoreHomeTab> {
   bool get _hasDescription => widget.description.trim().isNotEmpty;
 
   @override
-  bool get wantKeepAlive => true;
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context);
     final address = widget.address;
     final displayPhone = widget.displayPhone;
     final description = widget.description;
@@ -52,7 +47,6 @@ class _StoreHomeTabState extends State<StoreHomeTab>
         : null;
 
     return ListView(
-      physics: const ClampingScrollPhysics(),
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),

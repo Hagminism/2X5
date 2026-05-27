@@ -40,14 +40,9 @@ class StoreReservationStatusTab extends StatefulWidget {
       _StoreReservationStatusTabState();
 }
 
-class _StoreReservationStatusTabState extends State<StoreReservationStatusTab>
-    with AutomaticKeepAliveClientMixin<StoreReservationStatusTab> {
-  @override
-  bool get wantKeepAlive => true;
-
+class _StoreReservationStatusTabState extends State<StoreReservationStatusTab>{
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final category = widget.category;
     final salonDesigners = widget.salonDesigners;
     final onTapReservation = widget.onTapReservation;
