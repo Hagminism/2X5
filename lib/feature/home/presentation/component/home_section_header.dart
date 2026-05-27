@@ -20,13 +20,25 @@ class HomeSectionHeader extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
             fontSize: 18,
             fontWeight: FontWeight.w700,
+            letterSpacing: -0.3,
             color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
-        Text(subtitle, style: AppTextStyles.subtitle),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            letterSpacing: -0.2,
+            height: 1.3,
+            color: AppColors.textSecondary,
+          ),
+        ),
       ],
     );
   }

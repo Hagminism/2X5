@@ -6,7 +6,8 @@ import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repositor
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/domain/util/build_store_share_text.dart';
-import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
+import 'package:capstone_2026/core/domain/util/parse_integer_price.dart'
+    show formatMenuPriceLabel, parseIntegerPrice;
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
@@ -61,6 +62,7 @@ class InformationViewModel extends ChangeNotifier {
         category: store.category,
         address: store.address,
         displayPhone: store.contact.trim(),
+        storeDescription: store.description?.trim() ?? '',
         operatingHours: store.operatingHours,
         menus: menus,
         imageUrls: imageUrls,
@@ -112,6 +114,7 @@ class InformationViewModel extends ChangeNotifier {
             id: item['id']?.toString(),
             name: item['name']?.toString() ?? '',
             price: parseIntegerPrice(item['price']),
+            priceDisplay: formatMenuPriceLabel(item['price']),
             description: item['description']?.toString() ?? '',
             imageUrl: item['imageUrl']?.toString() ?? '',
             sortOrder: index,

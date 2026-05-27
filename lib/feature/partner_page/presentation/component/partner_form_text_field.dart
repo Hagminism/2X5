@@ -2,7 +2,7 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-class PartnerFormTextField extends StatelessWidget {
+class PartnerFormTextField extends StatefulWidget {
   final String initialValue;
   final ValueChanged<String> onChanged;
   final String? hintText;
@@ -23,19 +23,49 @@ class PartnerFormTextField extends StatelessWidget {
   });
 
   @override
+  State<PartnerFormTextField> createState() => _PartnerFormTextFieldState();
+}
+
+class _PartnerFormTextFieldState extends State<PartnerFormTextField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void didUpdateWidget(PartnerFormTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue &&
+        _controller.text != widget.initialValue) {
+      _controller.text = widget.initialValue;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textField = TextFormField(
-      initialValue: initialValue,
-      enabled: isInteractive,
-      onChanged: isInteractive ? onChanged : null,
-      onTap: isInteractive ? onTap : null,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
+      controller: _controller,
+      enabled: widget.isInteractive,
+      onChanged: widget.isInteractive ? widget.onChanged : null,
+      onTap: widget.isInteractive ? widget.onTap : null,
+      keyboardType: widget.keyboardType,
+      maxLines: widget.maxLines,
       style: AppTextStyles.body.copyWith(
-        color: isInteractive ? AppColors.textPrimary : AppColors.textSecondary,
+        color: widget.isInteractive
+            ? AppColors.textPrimary
+            : AppColors.textSecondary,
       ),
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: widget.hintText,
         filled: true,
         fillColor: AppColors.signInTextField,
         contentPadding: const EdgeInsets.symmetric(
@@ -61,14 +91,14 @@ class PartnerFormTextField extends StatelessWidget {
       ),
     );
 
-    if (onTap == null || isInteractive) {
+    if (widget.onTap == null || widget.isInteractive) {
       return textField;
     }
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: BorderRadius.circular(12),
         child: AbsorbPointer(child: textField),
       ),

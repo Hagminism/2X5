@@ -28,6 +28,47 @@ class StoreDataSourceImpl implements StoreDataSource {
     return jsonList.map((json) => StoreDto.fromJson(json)).toList();
   }
 
+  static const _homeStoreListSelect = '''
+id, name, category, address, latitude, longitude, rating, owner_id,
+store_images (
+  image_url,
+  is_cover,
+  sort_order
+)
+''';
+
+  @override
+  Future<List<Map<String, dynamic>>> findStoresInBoundingBoxWithCoverImages({
+    required double minLat,
+    required double maxLat,
+    required double minLng,
+    required double maxLng,
+  }) async {
+    final jsonList = await _supabaseClient
+        .from('stores')
+        .select(_homeStoreListSelect)
+        .gte('latitude', minLat)
+        .lte('latitude', maxLat)
+        .gte('longitude', minLng)
+        .lte('longitude', maxLng);
+
+    return List<Map<String, dynamic>>.from(jsonList as List);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> findStoresPageWithCoverImages({
+    required int from,
+    required int to,
+  }) async {
+    final jsonList = await _supabaseClient
+        .from('stores')
+        .select(_homeStoreListSelect)
+        .order('created_at', ascending: false)
+        .range(from, to);
+
+    return List<Map<String, dynamic>>.from(jsonList as List);
+  }
+
   @override
   Future<StoreDto?> findStoreById(String storeId) async {
     final json = await _supabaseClient
@@ -142,6 +183,26 @@ class StoreDataSourceImpl implements StoreDataSource {
           ),
         )
         .toList();
+  }
+
+  @override
+  Future<Map<String, String?>> findCoverImageUrlsByStoreIds(
+    List<String> storeIds,
+  ) async {
+    if (storeIds.isEmpty) return {};
+    final jsonList = await _supabaseClient
+        .from('store_images')
+        .select('store_id, image_url')
+        .inFilter('store_id', storeIds)
+        .eq('is_cover', true);
+    final result = <String, String?>{};
+    for (final json in jsonList) {
+      final storeId = json['store_id'] as String?;
+      if (storeId != null && !result.containsKey(storeId)) {
+        result[storeId] = json['image_url'] as String?;
+      }
+    }
+    return result;
   }
 
   @override

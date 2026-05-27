@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/presentation/component/app_bar_nav_item.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,54 +14,53 @@ class CustomBottomAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: navigationShell,
-      bottomNavigationBar: BottomAppBar(
-        // shape: const CircularNotchedRectangle(), // 노치 모양 생성
-        // notchMargin: 8.0, // 노치와 floatingActionButton 사이의 간격
-        color: Colors.white,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            AppBarNavItem(
-              navigationShell: navigationShell,
-              index: 0,
-              icon: Icons.home_outlined,
-              label: '홈',
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          border: Border(
+            top: BorderSide(color: AppColors.border, width: 1),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              children: [
+                AppBarNavItem(
+                  navigationShell: navigationShell,
+                  index: 0,
+                  icon: Icons.home_outlined,
+                  selectedIcon: Icons.home_rounded,
+                  label: '홈',
+                ),
+                AppBarNavItem(
+                  navigationShell: navigationShell,
+                  index: 1,
+                  icon: Icons.travel_explore_outlined,
+                  selectedIcon: Icons.travel_explore_rounded,
+                  label: '지도',
+                ),
+                AppBarNavItem(
+                  navigationShell: navigationShell,
+                  index: 2,
+                  icon: Icons.favorite_border_rounded,
+                  selectedIcon: Icons.favorite_rounded,
+                  label: '북마크',
+                ),
+                AppBarNavItem(
+                  navigationShell: navigationShell,
+                  index: 3,
+                  icon: Icons.person_outline_rounded,
+                  selectedIcon: Icons.person_rounded,
+                  label: '마이페이지',
+                ),
+              ],
             ),
-            AppBarNavItem(
-              navigationShell: navigationShell,
-              index: 1,
-              icon: Icons.travel_explore_rounded,
-              label: '지도',
-            ),
-            AppBarNavItem(
-              navigationShell: navigationShell,
-              index: 2,
-              icon: Icons.favorite_border_rounded,
-              label: '북마크',
-            ),
-            AppBarNavItem(
-              navigationShell: navigationShell,
-              index: 3,
-              icon: Icons.person_outline_rounded,
-              label: '내페이지',
-            ),
-          ],
+          ),
         ),
       ),
-      // floatingActionButton: (navigationShell.currentIndex == 0)
-      //     ? FloatingActionButton(
-      //         onPressed: () {},
-      //         shape: CircleBorder(),
-      //         backgroundColor: AppColors.primary,
-      //         child: Icon(
-      //           Icons.add,
-      //           color: Colors.white,
-      //           size: 32,
-      //         ),
-      //       )
-      //     : null,
     );
   }
 }

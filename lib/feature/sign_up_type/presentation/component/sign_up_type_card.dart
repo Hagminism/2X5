@@ -21,16 +21,23 @@ class SignUpTypeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.red,
-      borderRadius: BorderRadius.circular(20),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         child: Ink(
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.border),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x080F172A),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -41,9 +48,9 @@ class SignUpTypeCard extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: accentColor),
+                  child: Icon(icon, color: accentColor, size: 24),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -52,8 +59,11 @@ class SignUpTypeCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: AppTextStyles.body.copyWith(
+                        style: const TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
                           color: AppColors.textPrimary,
                         ),
                       ),
@@ -61,11 +71,12 @@ class SignUpTypeCard extends StatelessWidget {
                       Text(
                         description,
                         style: const TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
                           fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: -0.1,
                           height: 1.35,
-                          letterSpacing: 0,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -75,6 +86,7 @@ class SignUpTypeCard extends StatelessWidget {
                 const Icon(
                   Icons.chevron_right_rounded,
                   color: AppColors.textSecondary,
+                  size: 20,
                 ),
               ],
             ),

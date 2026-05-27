@@ -50,6 +50,7 @@ class _HomeScreenRootState extends State<HomeScreenRoot> {
         return HomeScreen(
           state: widget.viewModel.state,
           onAction: widget.viewModel.onAction,
+          onRefresh: widget.viewModel.refresh,
         );
       },
     );

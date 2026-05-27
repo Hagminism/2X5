@@ -1,5 +1,6 @@
 import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
+import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ class AppBarNavItem extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
   final int index;
   final IconData icon;
+  final IconData selectedIcon;
   final String label;
 
   static const int _bookmarkTabIndex = 2;
@@ -18,14 +20,19 @@ class AppBarNavItem extends StatelessWidget {
     required this.navigationShell,
     required this.index,
     required this.icon,
+    required this.selectedIcon,
     required this.label,
   });
 
+  static const int _homeTabIndex = 0;
+
   void _onTap() {
+    if (index == _homeTabIndex) {
+      getIt<HomeViewModel>().refresh();
+    }
     if (index == _bookmarkTabIndex) {
       getIt<BookmarkViewModel>().loadBookmarks(force: true);
     }
-
     navigationShell.goBranch(
       index,
       initialLocation: navigationShell.currentIndex == index,
@@ -34,35 +41,55 @@ class AppBarNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 80,
-      child: InkWell(
+    final isSelected = navigationShell.currentIndex == index;
+
+    return Expanded(
+      child: GestureDetector(
         onTap: _onTap,
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: (navigationShell.currentIndex == index)
-                  ? AppColors.primary
-                  : const Color(0xFF9CA3AF),
-              size: 28,
-            ),
-            Text(
-              label,
-              style: AppTextStyles.label.copyWith(
-                color: (navigationShell.currentIndex == index)
-                    ? AppColors.primary
-                    : const Color(0xFF9CA3AF),
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary.withValues(alpha: 0.10)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(
+                  isSelected ? selectedIcon : icon,
+                  size: 24,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: 11,
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  letterSpacing: -0.1,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
+                ),
+                child: Text(label),
+              ),
+            ],
+          ),
         ),
       ),
     );

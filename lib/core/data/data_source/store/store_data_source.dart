@@ -5,6 +5,20 @@ import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 abstract interface class StoreDataSource {
   Future<List<StoreDto>> findStores();
 
+  /// bbox 내 매장 + nested store_images (홈 목록용).
+  Future<List<Map<String, dynamic>>> findStoresInBoundingBoxWithCoverImages({
+    required double minLat,
+    required double maxLat,
+    required double minLng,
+    required double maxLng,
+  });
+
+  /// GPS 없을 때 created_at 순 페이지 (0-based inclusive range).
+  Future<List<Map<String, dynamic>>> findStoresPageWithCoverImages({
+    required int from,
+    required int to,
+  });
+
   Future<StoreDto?> findStoreById(String storeId);
 
   Future<StoreDto?> findStoreByOwnerId(String ownerId);
@@ -16,6 +30,8 @@ abstract interface class StoreDataSource {
   Future<List<StoreMenu>> findMenusByStoreId(String storeId);
 
   Future<List<StoreImage>> findImagesByStoreId(String storeId);
+
+  Future<Map<String, String?>> findCoverImageUrlsByStoreIds(List<String> storeIds);
 
   Future<StoreMenu> createMenu(String storeId, StoreMenu menu);
 

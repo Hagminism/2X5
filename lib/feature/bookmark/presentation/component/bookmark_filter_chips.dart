@@ -1,4 +1,5 @@
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class BookmarkFilterChips extends StatelessWidget {
@@ -31,11 +32,13 @@ class BookmarkFilterChips extends StatelessWidget {
                   backgroundColor: AppColors.surfaceMuted,
                   side: const BorderSide(color: AppColors.border),
                   labelStyle: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
                     color: selectedFilter == filter
                         ? AppColors.primary
                         : AppColors.textSecondary,
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
+                    letterSpacing: -0.1,
                   ),
                 ),
               ),

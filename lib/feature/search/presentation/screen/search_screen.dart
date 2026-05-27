@@ -180,7 +180,16 @@ class _SearchScreenState extends State<SearchScreen> {
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('검색 오류: $e')),
+        SnackBar(
+          content: Text(
+            '검색 오류: $e',
+            style: AppTextStyles.body.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.white,
+            ),
+          ),
+        ),
       );
     }
   }
@@ -226,7 +235,16 @@ class _SearchScreenState extends State<SearchScreen> {
     final storeId = store['id']?.toString() ?? '';
     if (storeId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('업장 정보를 찾을 수 없습니다.')),
+        SnackBar(
+          content: Text(
+            '업장 정보를 찾을 수 없습니다.',
+            style: AppTextStyles.body.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.white,
+            ),
+          ),
+        ),
       );
       return;
     }
@@ -259,13 +277,6 @@ class _SearchScreenState extends State<SearchScreen> {
     return '도보 $minutes분';
   }
 
-  String _categoryDisplayLabel(String category) {
-    final label = categoryLabels[category] ?? category;
-    final emoji = categoryEmojis[category];
-    if (emoji == null || emoji.isEmpty) return label;
-    return '$emoji $label';
-  }
-
   void _changeRadiusFilter(double? radiusMeters) {
     setState(() {
       _selectedRadiusMeters = radiusMeters;
@@ -295,7 +306,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void _showFilterBottomSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -324,7 +335,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -377,17 +388,35 @@ class _SearchScreenState extends State<SearchScreen> {
       itemBuilder: (context, index) {
         final category = categories[index];
         final stores = _categorizedResults[category]!;
-        final categoryLabel = _categoryDisplayLabel(category);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '$categoryLabel ${stores.length}',
-              style: AppTextStyles.subtitle.copyWith(
-                fontSize: 16,
-                color: AppColors.textPrimary,
-              ),
+            Row(
+              children: [
+                if (category == 'salon')
+                  const Icon(
+                    Icons.content_cut,
+                    size: 18,
+                    color: AppColors.textPrimary,
+                  )
+                else
+                  Text(
+                    categoryEmojis[category] ?? '',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                const SizedBox(width: 4),
+                Text(
+                  '${categoryLabels[category] ?? category} ${stores.length}',
+                  style: const TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
             ...stores.map((store) {
@@ -397,9 +426,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _SearchResultCard(
                   store: store,
-                  categoryLabel: _categoryDisplayLabel(
-                    store['category']?.toString() ?? '',
-                  ),
+                  category: store['category']?.toString() ?? '',
+                  categoryLabel: categoryLabels[store['category']?.toString()] ??
+                      store['category']?.toString() ?? '',
                   distanceLabel: distance == null
                       ? null
                       : _formatDistance(distance),
@@ -513,9 +542,13 @@ class _SearchFilterBottomSheetState extends State<_SearchFilterBottomSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               '검색 필터',
-              style: AppTextStyles.subtitle.copyWith(
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -585,9 +618,12 @@ class _FilterSectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: AppTextStyles.label.copyWith(
-        color: AppColors.textSecondary,
+      style: const TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
+        fontSize: 12,
         fontWeight: FontWeight.w700,
+        letterSpacing: 0.4,
+        color: AppColors.textSecondary,
       ),
     );
   }
@@ -611,9 +647,12 @@ class _FilterOptionChip extends StatelessWidget {
       selected: isSelected,
       onSelected: (_) => onTap(),
       showCheckmark: false,
-      labelStyle: AppTextStyles.caption.copyWith(
+      labelStyle: TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
+        fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: isSelected ? Colors.white : AppColors.textSecondary,
+        letterSpacing: -0.1,
+        color: isSelected ? AppColors.white : AppColors.textSecondary,
       ),
       selectedColor: AppColors.primary,
       backgroundColor: AppColors.surfaceMuted,
@@ -686,7 +725,7 @@ class _SearchInput extends StatelessWidget {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
+        color: AppColors.signUpWithEmailButton,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
       ),
@@ -701,16 +740,20 @@ class _SearchInput extends StatelessWidget {
               decoration: const InputDecoration(
                 hintText: '업장, 지역, 키워드로 검색',
                 hintStyle: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF4B5563),
+                  letterSpacing: -0.2,
+                  color: AppColors.signUpWithEmailButtonText,
                 ),
                 border: InputBorder.none,
                 isCollapsed: true,
               ),
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
                 color: AppColors.textPrimary,
               ),
               textInputAction: TextInputAction.search,
@@ -736,6 +779,7 @@ class _SearchInput extends StatelessWidget {
 class _SearchResultCard extends StatelessWidget {
   const _SearchResultCard({
     required this.store,
+    required this.category,
     required this.categoryLabel,
     required this.distanceLabel,
     required this.walkingTimeLabel,
@@ -743,6 +787,7 @@ class _SearchResultCard extends StatelessWidget {
   });
 
   final Map<String, dynamic> store;
+  final String category;
   final String categoryLabel;
   final String? distanceLabel;
   final String? walkingTimeLabel;
@@ -813,8 +858,10 @@ class _SearchResultCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
                       color: AppColors.textPrimary,
                     ),
                   ),
@@ -826,7 +873,12 @@ class _SearchResultCard extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         if (categoryLabel.isNotEmpty)
-                          _MetaChip(label: categoryLabel),
+                          _MetaChip(
+                            label: categoryLabel,
+                            leadingIcon: category == 'salon'
+                                ? Icons.content_cut
+                                : null,
+                          ),
                         if (distanceLabel != null)
                           _MetaChip(label: distanceLabel!),
                         if (walkingTimeLabel != null)
@@ -844,8 +896,10 @@ class _SearchResultCard extends StatelessWidget {
                               Text(
                                 rating.toStringAsFixed(1),
                                 style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
+                                  fontFamily: AppTextStyles.fontFamily,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: -0.2,
                                   color: AppColors.textPrimary,
                                 ),
                               ),
@@ -870,25 +924,33 @@ class _SearchResultCard extends StatelessWidget {
 }
 
 class _MetaChip extends StatelessWidget {
-  const _MetaChip({required this.label});
+  const _MetaChip({required this.label, this.leadingIcon});
 
   final String label;
+  final IconData? leadingIcon;
 
   @override
   Widget build(BuildContext context) {
+    final textStyle = AppTextStyles.caption.copyWith(
+      fontWeight: FontWeight.w700,
+      color: AppColors.textSecondary,
+    );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        label,
-        style: AppTextStyles.caption.copyWith(
-          fontWeight: FontWeight.w700,
-          color: AppColors.textSecondary,
-        ),
-      ),
+      child: leadingIcon != null
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(leadingIcon!, size: 11, color: AppColors.textSecondary),
+                const SizedBox(width: 3),
+                Text(label, style: textStyle),
+              ],
+            )
+          : Text(label, style: textStyle),
     );
   }
 }
@@ -922,8 +984,11 @@ class _SearchEmptyState extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               hasSearched ? '검색 결과가 없습니다' : '업장을 검색해보세요',
-              style: AppTextStyles.subtitle.copyWith(
+              style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -933,7 +998,14 @@ class _SearchEmptyState extends StatelessWidget {
                   ? '다른 키워드나 지역명으로 다시 찾아보세요'
                   : '이름, 주소, 키워드로 업장을 찾을 수 있어요',
               textAlign: TextAlign.center,
-              style: AppTextStyles.caption.copyWith(fontSize: 13),
+              style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                letterSpacing: -0.2,
+                height: 1.3,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

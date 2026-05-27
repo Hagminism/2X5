@@ -5,6 +5,8 @@ import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_e
 import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_page_header.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/component/bookmark_store_card.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
+import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,10 +24,14 @@ class BookmarkScreen extends StatelessWidget {
     final isInitialLoading = viewModel.isLoading && viewModel.items.isEmpty;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: isInitialLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.primary,
+                ),
+              )
             : RefreshIndicator(
                 onRefresh: viewModel.loadBookmarks,
                 child: SingleChildScrollView(
@@ -42,13 +48,28 @@ class BookmarkScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       if (viewModel.errorMessage != null) ...[
-                        Text(
+                        const Text(
                           '목록을 불러오지 못했습니다.',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -0.1,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TextButton(
                           onPressed: viewModel.loadBookmarks,
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            textStyle: const TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
                           child: const Text('다시 시도'),
                         ),
                         const SizedBox(height: 16),
@@ -101,6 +122,13 @@ class BookmarkScreen extends StatelessWidget {
                                         const SnackBar(
                                           content: Text(
                                             '저장 목록에서 제거했습니다.',
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  AppTextStyles.fontFamily,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              letterSpacing: -0.2,
+                                            ),
                                           ),
                                         ),
                                       );
@@ -112,7 +140,16 @@ class BookmarkScreen extends StatelessWidget {
                                       ..hideCurrentSnackBar()
                                       ..showSnackBar(
                                         const SnackBar(
-                                          content: Text('제거에 실패했습니다.'),
+                                          content: Text(
+                                            '제거에 실패했습니다.',
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  AppTextStyles.fontFamily,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              letterSpacing: -0.2,
+                                            ),
+                                          ),
                                         ),
                                       );
                                   }
