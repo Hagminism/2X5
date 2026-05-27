@@ -41,6 +41,9 @@ class _MapScreenState extends State<MapScreen> {
   static const _fixedCenter = NLatLng(37.5826, 127.0106);
   static const _searchCooldownDuration = Duration(seconds: 3);
   static const _overlapDbOnlyThreshold = 0.9;
+  static const _storePreviewSheetHeight = 148.0;
+  static const _searchButtonGapAboveSheet = 12.0;
+  static const _searchAreaButtonHeight = 40.0;
   // 검색 배치 속도 조절(높으면 로드 빠르나, 403 확률 올라감)
   static const _storeRegisterBatchSize = 12;
 
@@ -1047,7 +1050,12 @@ class _MapScreenState extends State<MapScreen> {
           ),
           Positioned(
             right: 16,
-            bottom: _selectedStore != null ? 148 : 24,
+            bottom: _selectedStore != null
+                ? _storePreviewSheetHeight +
+                      _searchButtonGapAboveSheet +
+                      _searchAreaButtonHeight +
+                      8
+                : 24,
             child: Column(
               children: [
                 _MapButton(icon: Icons.my_location, onTap: _moveToMyLocation),
@@ -1059,7 +1067,9 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            bottom: _selectedStore != null ? 144 : 20,
+            bottom: _selectedStore != null
+                ? _storePreviewSheetHeight + _searchButtonGapAboveSheet
+                : 20,
             left: 0,
             right: 0,
             child: Center(

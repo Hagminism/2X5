@@ -79,7 +79,7 @@ class _StorePhotoTabState extends State<StorePhotoTab>{
           onTap: () => StoreImageViewerScreen.open(
             context,
             imageUrls: imageUrls,
-            initialIndex: _validIndexForGridIndex(index),
+            initialIndex: widget._validIndexForGridIndex(index),
           ),
           child: tile,
         );

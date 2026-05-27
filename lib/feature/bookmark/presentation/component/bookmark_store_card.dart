@@ -215,7 +215,7 @@ class BookmarkStoreCard extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
-      placeholder: (_, __) => const ColoredBox(
+      placeholder: (_, _) => const ColoredBox(
         color: AppColors.surfaceMuted,
         child: Center(
           child: SizedBox(
@@ -225,7 +225,7 @@ class BookmarkStoreCard extends StatelessWidget {
           ),
         ),
       ),
-      errorWidget: (_, __, ___) => ColoredBox(
+      errorWidget: (_, _, _) => ColoredBox(
         color: _categoryColor(category),
         child: Center(
           child: Icon(
