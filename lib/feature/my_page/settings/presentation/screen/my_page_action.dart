@@ -14,6 +14,8 @@ sealed class MyPageAction with _$MyPageAction {
 
   const factory MyPageAction.viewStampHistory() = ViewStampHistory;
 
+  const factory MyPageAction.viewCouponBox() = ViewCouponBox;
+
   const factory MyPageAction.tapAccountSettings() = TapAccountSettings;
 
   const factory MyPageAction.tapNotificationSettings() =
