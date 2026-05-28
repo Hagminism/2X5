@@ -84,13 +84,11 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   @override
   void initState() {
     super.initState();
-    _loadReviewData();
-    
-    if (widget.initialShowWriteReview) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    _loadReviewData().then((_) {
+      if (widget.initialShowWriteReview && mounted) {
         _showWriteReviewBottomSheetExternally();
-      });
-    }
+      }
+    });
   }
 
   void _showWriteReviewBottomSheetExternally() {

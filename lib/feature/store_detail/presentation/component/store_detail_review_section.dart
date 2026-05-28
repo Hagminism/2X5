@@ -1000,11 +1000,12 @@ class _NaverReviewItem extends StatelessWidget {
                           .map((m) => (m as Map<String, dynamic>?)?['thumbnail'] as String? ?? '')
                           .where((url) => url.isNotEmpty)
                           .toList();
+                      final targetIndex = allImages.indexOf(thumbnailUrl);
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => FullScreenImageViewer(
                             imageUrls: allImages,
-                            initialIndex: index,
+                            initialIndex: targetIndex >= 0 ? targetIndex : 0,
                           ),
                         ),
                       );

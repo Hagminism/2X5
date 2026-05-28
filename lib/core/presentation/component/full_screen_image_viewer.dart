@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 
-class FullScreenImageViewer extends StatelessWidget {
+class FullScreenImageViewer extends StatefulWidget {
   final List<String> imageUrls;
   final int initialIndex;
 
@@ -10,6 +10,25 @@ class FullScreenImageViewer extends StatelessWidget {
     required this.imageUrls,
     this.initialIndex = 0,
   });
+
+  @override
+  State<FullScreenImageViewer> createState() => _FullScreenImageViewerState();
+}
+
+class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +43,10 @@ class FullScreenImageViewer extends StatelessWidget {
         ),
       ),
       body: PageView.builder(
-        itemCount: imageUrls.length,
-        controller: PageController(initialPage: initialIndex),
+        itemCount: widget.imageUrls.length,
+        controller: _pageController,
         itemBuilder: (context, index) {
-          final imageUrl = imageUrls[index];
+          final imageUrl = widget.imageUrls[index];
           return Center(
             child: InteractiveViewer(
               minScale: 0.5,

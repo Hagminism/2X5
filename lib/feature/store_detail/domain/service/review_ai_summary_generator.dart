@@ -198,7 +198,8 @@ class ReviewAiSummaryGenerator {
     }
 
     // 평균 별점 및 긍정 비율 계산 (가중치 이미 적용됨)
-    final double divisor = (reviews.length * internalWeight + googleReviews.length * googleWeight);
+    final int googleRatingCount = googleReviews.where((r) => r.rating != null).length;
+    final double divisor = (reviews.length * internalWeight + googleRatingCount * googleWeight);
     final averageRating = divisor > 0 ? (ratingTotal / divisor) : 0.0;
     final ratingScore = averageRating / 5;
     final sentimentTotal = positiveSignals + negativeSignals;
