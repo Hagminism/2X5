@@ -361,6 +361,88 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '스탬프 및 쿠폰 설정',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '스탬프 시스템 사용',
+                                style: AppTextStyles.body.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            Switch(
+                              value: state.isStampEnabled,
+                              activeThumbColor: AppColors.primary,
+                              onChanged: (value) => onAction(
+                                PartnerStoreManagementAction.changeStampEnabled(
+                                  value,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (state.isStampEnabled) ...[
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<int>(
+                            initialValue: state.stampGoalCount,
+                            borderRadius: BorderRadius.circular(12),
+                            dropdownColor: AppColors.white,
+                            decoration: _inputDecoration(hintText: '목표 스탬프 개수'),
+                            items: [5, 10, 15, 20]
+                                .map(
+                                  (count) => DropdownMenuItem(
+                                    value: count,
+                                    child: Text('$count개'),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              onAction(
+                                PartnerStoreManagementAction.changeStampGoalCount(
+                                  value,
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          PartnerFormTextField(
+                            hintText: '쿠폰 보상 혜택 제목 (예: 제조 음료 1잔 무료 제공)',
+                            initialValue: state.stampRewardTitle,
+                            onChanged: (value) => onAction(
+                              PartnerStoreManagementAction.changeStampRewardTitle(
+                                value,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          PartnerFormTextField(
+                            hintText: '쿠폰 보상 상세 설명 (예: 제조 음료 중 원하는 음료 1잔을 선택할 수 있는 쿠폰입니다.)',
+                            initialValue: state.stampRewardDescription,
+                            maxLines: 3,
+                            onChanged: (value) => onAction(
+                              PartnerStoreManagementAction.changeStampRewardDescription(
+                                value,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '스탬프 적립을 설정하면 이용 완료 리뷰 작성 시 고객에게 자동으로 스탬프가 지급됩니다.',
+                            style: AppTextStyles.bodySecondary,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                   if (state.category == 'restaurant' ||
                       state.category == 'cafe') ...[
                     const SizedBox(height: 24),

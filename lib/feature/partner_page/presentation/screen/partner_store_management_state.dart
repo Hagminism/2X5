@@ -39,6 +39,10 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
     @Default(_defaultOperatingHours)
     Map<String, Map<String, dynamic>> operatingHours,
     @Default('') String description,
+    @Default(false) bool isStampEnabled,
+    @Default(10) int stampGoalCount,
+    @Default('') String stampRewardTitle,
+    @Default('') String stampRewardDescription,
   }) = _PartnerStoreManagementState;
 
   /// 최초 업장 등록 완료 후에만 카테고리별 관리·사진 진입 허용.
@@ -80,6 +84,11 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
       }
     }
 
+    final isStampValid = !isStampEnabled ||
+        (stampGoalCount > 0 &&
+            stampRewardTitle.trim().isNotEmpty &&
+            stampRewardDescription.trim().isNotEmpty);
+
     return storeName.trim().isNotEmpty &&
         category.trim().isNotEmpty &&
         businessNumber.trim().isNotEmpty &&
@@ -93,6 +102,7 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
         isImagesValid &&
         coverCount <= 1 &&
         hasOpenedDay &&
+        isStampValid &&
         !isLoadingInitialData &&
         !isSubmitting;
   }
