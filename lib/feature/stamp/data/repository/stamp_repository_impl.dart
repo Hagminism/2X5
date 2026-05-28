@@ -19,63 +19,45 @@ class StampRepositoryImpl implements StampRepository {
   static const String _reviewPromptMessage = '스탬프 적립을 위해 리뷰를 작성해 주세요!';
   static const String _reviewCompletedMessage = '리뷰 작성이 완료된 매장입니다.';
 
-  static const Map<String, StampRewardPolicy> _mockPolicies = {
-    's1': StampRewardPolicy(
-      storeId: 's1',
-      storeName: '돈블랑 여의도점',
-      goalCount: 10,
-      rewardTitle: '와인 콜키지 1병 무료',
-      rewardDescription: '스탬프 10개 적립 시 와인 콜키지 1병을 무료로 제공합니다.',
-    ),
-    's2': StampRewardPolicy(
-      storeId: 's2',
-      storeName: '블루보틀 여의도 카페',
-      goalCount: 10,
-      rewardTitle: '제조 음료 1잔 무료',
-      rewardDescription: '스탬프 10개 적립 시 제조 음료 1잔을 무료로 제공합니다.',
-    ),
-    's3': StampRewardPolicy(
-      storeId: 's3',
-      storeName: '아이디헤어 브라이튼여의도점',
-      goalCount: 10,
-      rewardTitle: '두피 케어 서비스 제공',
-      rewardDescription: '스탬프 10개 적립 시 두피 케어 서비스를 제공합니다.',
-    ),
-  };
-
   final SupabaseClient _supabase;
-
-  final Map<String, Map<String, int>> _mockStampCountsByUserId = {};
-  final Map<String, Set<String>> _mockVisitedStoreIdsByUserId = {};
-  final Map<String, Set<String>> _mockReviewedStoreIdsByUserId = {};
-  final Map<String, Set<String>> _mockClaimedRewardStoreIdsByUserId = {};
 
   @override
   Future<StoreStampStatus> fetchStoreStampStatus({
     required String userId,
     required String storeId,
   }) async {
-    try {
-      final resolvedStore = await _resolveStore(storeId);
-      if (resolvedStore == null || resolvedStore.dbStoreId == null) {
-        return _buildMockStatus(userId: userId, storeId: storeId);
-      }
-
-      final status = await _buildDbStatusForStore(
-        userId: userId,
-        resolvedStore: resolvedStore,
-      );
-      if (_shouldUseMockStatusFallback(
-        resolvedStore: resolvedStore,
-        status: status,
-      )) {
-        return _buildMockStatus(userId: userId, storeId: storeId);
-      }
-      return status ?? _buildMockStatus(userId: userId, storeId: storeId);
-    } catch (e) {
-      debugPrint('[StampRepository] fetchStoreStampStatus fallback: $e');
-      return _buildMockStatus(userId: userId, storeId: storeId);
+    final resolvedStore = await _resolveStore(storeId);
+    if (resolvedStore == null || resolvedStore.dbStoreId == null) {
+      throw ArgumentError('해당 가게 정보를 찾을 수 없습니다.');
     }
+
+    final status = await _buildDbStatusForStore(
+      userId: userId,
+      resolvedStore: resolvedStore,
+    );
+
+    if (status == null) {
+      final policyRows = await _supabase
+          .from('stamp_policies')
+          .select('goal_count, reward_title, reward_description, is_active')
+          .eq('store_id', resolvedStore.dbStoreId!)
+          .limit(1);
+
+      final policy = _buildPolicyForStore(
+        resolvedStore: resolvedStore,
+        policyRow: policyRows.isNotEmpty
+            ? Map<String, dynamic>.from(policyRows.first as Map)
+            : null,
+      );
+      return _buildStatus(
+        appStoreId: storeId,
+        policy: policy,
+        currentCount: 0,
+        hasVisited: false,
+        hasWrittenReview: false,
+      );
+    }
+    return status;
   }
 
   @override
@@ -126,9 +108,8 @@ class StampRepositoryImpl implements StampRepository {
           continue;
         }
 
-        final appStoreId = _findAppStoreIdByName(storeName) ?? dbStoreId;
         storeMap[dbStoreId] = _ResolvedStore(
-          appStoreId: appStoreId,
+          appStoreId: dbStoreId,
           dbStoreId: dbStoreId,
           storeName: storeName,
         );
@@ -169,7 +150,7 @@ class StampRepositoryImpl implements StampRepository {
 
       return statuses;
     } catch (e) {
-      debugPrint('[StampRepository] fetchUserStampStatuses fallback: $e');
+      debugPrint('[StampRepository] fetchUserStampStatuses failed: $e');
       return const [];
     }
   }
@@ -179,54 +160,39 @@ class StampRepositoryImpl implements StampRepository {
     required String userId,
     required String storeId,
   }) async {
-    try {
-      final resolvedStore = await _resolveStore(storeId);
-      if (resolvedStore == null || resolvedStore.dbStoreId == null) {
-        return _accrueMockStampForReview(userId: userId, storeId: storeId);
-      }
-
-      final currentStatus = await _buildDbStatusForStore(
-        userId: userId,
-        resolvedStore: resolvedStore,
-      );
-      if (_shouldUseMockStatusFallback(
-        resolvedStore: resolvedStore,
-        status: currentStatus,
-      )) {
-        return _accrueMockStampForReview(userId: userId, storeId: storeId);
-      }
-
-      if (currentStatus == null) {
-        return _buildMockStatus(userId: userId, storeId: storeId);
-      }
-
-      if (!_allowReviewStampTestingBypass && !currentStatus.showInHistory) {
-        return currentStatus;
-      }
-
-      final reservationId = await _fetchLatestCompletedReservationId(
-        userId: userId,
-        dbStoreId: resolvedStore.dbStoreId!,
-      );
-
-      await _accrueStampAtomically(
-        userId: userId,
-        dbStoreId: resolvedStore.dbStoreId!,
-        reservationId: reservationId,
-        currentStatus: currentStatus.copyWith(
-          canWriteReview: true,
-          hasWrittenReview: false,
-        ),
-      );
-
-      return await fetchStoreStampStatus(userId: userId, storeId: storeId);
-    } catch (e) {
-      debugPrint('[StampRepository] accrueStampForReview failed: $e');
-      if (_isUuid(storeId)) {
-        rethrow;
-      }
-      return _accrueMockStampForReview(userId: userId, storeId: storeId);
+    final resolvedStore = await _resolveStore(storeId);
+    if (resolvedStore == null || resolvedStore.dbStoreId == null) {
+      throw ArgumentError('해당 가게 정보를 찾을 수 없습니다.');
     }
+
+    final currentStatus = await _buildDbStatusForStore(
+      userId: userId,
+      resolvedStore: resolvedStore,
+    );
+    if (currentStatus == null) {
+      throw StateError('스탬프 적립을 진행할 수 없습니다. 스탬프 정책이 존재하지 않습니다.');
+    }
+
+    if (!_allowReviewStampTestingBypass && !currentStatus.showInHistory) {
+      return currentStatus;
+    }
+
+    final reservationId = await _fetchLatestCompletedReservationId(
+      userId: userId,
+      dbStoreId: resolvedStore.dbStoreId!,
+    );
+
+    await _accrueStampAtomically(
+      userId: userId,
+      dbStoreId: resolvedStore.dbStoreId!,
+      reservationId: reservationId,
+      currentStatus: currentStatus.copyWith(
+        canWriteReview: true,
+        hasWrittenReview: false,
+      ),
+    );
+
+    return await fetchStoreStampStatus(userId: userId, storeId: storeId);
   }
 
   @override
@@ -234,59 +200,51 @@ class StampRepositoryImpl implements StampRepository {
     required String userId,
     required String storeId,
   }) async {
-    try {
-      final resolvedStore = await _resolveStore(storeId);
-      if (resolvedStore == null || resolvedStore.dbStoreId == null) {
-        return _revokeMockStampForDeletedReview(
-          userId: userId,
-          storeId: storeId,
-        );
-      }
-
-      final currentStatus = await _buildDbStatusForStore(
-        userId: userId,
-        resolvedStore: resolvedStore,
-      );
-      if (currentStatus == null) {
-        return _buildMockStatus(userId: userId, storeId: storeId);
-      }
-
-      final nextCount = currentStatus.currentCount > 0
-          ? currentStatus.currentCount - 1
-          : 0;
-
-      await _saveStampCount(
-        userId: userId,
-        dbStoreId: resolvedStore.dbStoreId!,
-        stampCount: nextCount,
-        reservationId: null,
-        rewardUnlockedAt: nextCount >= currentStatus.goalCount
-            ? DateTime.now()
-            : null,
-      );
-      if (nextCount < currentStatus.goalCount) {
-        await _supabase
-            .from('user_store_stamps')
-            .update({
-              'reward_claimed_at': null,
-              'updated_at': DateTime.now().toIso8601String(),
-            })
-            .eq('user_id', userId)
-            .eq('store_id', resolvedStore.dbStoreId!);
-      }
-
-      await _supabase.from('stamp_events').insert({
-        'store_id': resolvedStore.dbStoreId,
-        'user_id': userId,
-        'delta': -1,
-        'reason': 'review_deleted',
-      });
-
-      return await fetchStoreStampStatus(userId: userId, storeId: storeId);
-    } catch (e) {
-      debugPrint('[StampRepository] revokeStampForDeletedReview fallback: $e');
-      return _revokeMockStampForDeletedReview(userId: userId, storeId: storeId);
+    final resolvedStore = await _resolveStore(storeId);
+    if (resolvedStore == null || resolvedStore.dbStoreId == null) {
+      throw ArgumentError('해당 가게 정보를 찾을 수 없습니다.');
     }
+
+    final currentStatus = await _buildDbStatusForStore(
+      userId: userId,
+      resolvedStore: resolvedStore,
+    );
+    if (currentStatus == null) {
+      throw StateError('스탬프 정보가 존재하지 않습니다.');
+    }
+
+    final nextCount = currentStatus.currentCount > 0
+        ? currentStatus.currentCount - 1
+        : 0;
+
+    await _saveStampCount(
+      userId: userId,
+      dbStoreId: resolvedStore.dbStoreId!,
+      stampCount: nextCount,
+      reservationId: null,
+      rewardUnlockedAt: nextCount >= currentStatus.goalCount
+          ? DateTime.now()
+          : null,
+    );
+    if (nextCount < currentStatus.goalCount) {
+      await _supabase
+          .from('user_store_stamps')
+          .update({
+            'reward_claimed_at': null,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', userId)
+          .eq('store_id', resolvedStore.dbStoreId!);
+    }
+
+    await _supabase.from('stamp_events').insert({
+      'store_id': resolvedStore.dbStoreId,
+      'user_id': userId,
+      'delta': -1,
+      'reason': 'review_deleted',
+    });
+
+    return await fetchStoreStampStatus(userId: userId, storeId: storeId);
   }
 
   @override
@@ -294,80 +252,57 @@ class StampRepositoryImpl implements StampRepository {
     required String userId,
     required String storeId,
   }) async {
-    try {
-      final resolvedStore = await _resolveStore(storeId);
-      if (resolvedStore == null || resolvedStore.dbStoreId == null) {
-        return _claimMockReward(userId: userId, storeId: storeId);
-      }
-
-      final currentStatus = await _buildDbStatusForStore(
-        userId: userId,
-        resolvedStore: resolvedStore,
-      );
-      if (currentStatus == null) {
-        return _buildMockStatus(userId: userId, storeId: storeId);
-      }
-      if (!currentStatus.isRewardUnlocked) {
-        return currentStatus;
-      }
-      final nextCount = currentStatus.currentCount - currentStatus.goalCount;
-      final now = DateTime.now();
-
-      await _supabase
-          .from('user_store_stamps')
-          .update({
-            'stamp_count': nextCount,
-            'reward_unlocked_at': nextCount >= currentStatus.goalCount
-                ? now.toIso8601String()
-                : null,
-            'reward_claimed_at': now.toIso8601String(),
-            'updated_at': now.toIso8601String(),
-          })
-          .eq('user_id', userId)
-          .eq('store_id', resolvedStore.dbStoreId!);
-
-      await _supabase.from('stamp_events').insert({
-        'store_id': resolvedStore.dbStoreId,
-        'user_id': userId,
-        'delta': -currentStatus.goalCount,
-        'reason': 'reward_claimed',
-      });
-
-      return await fetchStoreStampStatus(userId: userId, storeId: storeId);
-    } catch (e) {
-      debugPrint('[StampRepository] claimReward fallback: $e');
-      if (_isUuid(storeId)) {
-        rethrow;
-      }
-      return _claimMockReward(userId: userId, storeId: storeId);
+    final resolvedStore = await _resolveStore(storeId);
+    if (resolvedStore == null || resolvedStore.dbStoreId == null) {
+      throw ArgumentError('해당 가게 정보를 찾을 수 없습니다.');
     }
+
+    final currentStatus = await _buildDbStatusForStore(
+      userId: userId,
+      resolvedStore: resolvedStore,
+    );
+    if (currentStatus == null) {
+      throw StateError('스탬프 정보가 존재하지 않습니다.');
+    }
+    if (!currentStatus.isRewardUnlocked) {
+      return currentStatus;
+    }
+    final nextCount = currentStatus.currentCount - currentStatus.goalCount;
+    final now = DateTime.now();
+
+    await _supabase
+        .from('user_store_stamps')
+        .update({
+          'stamp_count': nextCount,
+          'reward_unlocked_at': nextCount >= currentStatus.goalCount
+              ? now.toIso8601String()
+              : null,
+          'reward_claimed_at': now.toIso8601String(),
+          'updated_at': now.toIso8601String(),
+        })
+        .eq('user_id', userId)
+        .eq('store_id', resolvedStore.dbStoreId!);
+
+    await _supabase.from('stamp_events').insert({
+      'store_id': resolvedStore.dbStoreId,
+      'user_id': userId,
+      'delta': -currentStatus.goalCount,
+      'reason': 'reward_claimed',
+    });
+
+    // 쿠폰 발급 연동
+    await _supabase.from('coupons').insert({
+      'user_id': userId,
+      'store_id': resolvedStore.dbStoreId!,
+      'reward_title': currentStatus.rewardTitle,
+      'reward_description': currentStatus.rewardDescription,
+      'expired_at': now.add(const Duration(days: 365)).toIso8601String(),
+    });
+
+    return await fetchStoreStampStatus(userId: userId, storeId: storeId);
   }
 
   Future<_ResolvedStore?> _resolveStore(String storeId) async {
-    final mockPolicy = _mockPolicies[storeId];
-    if (mockPolicy != null) {
-      final row = await _supabase
-          .from('stores')
-          .select('id, name')
-          .eq('name', mockPolicy.storeName)
-          .maybeSingle();
-
-      if (row != null) {
-        final mapped = Map<String, dynamic>.from(row);
-        return _ResolvedStore(
-          appStoreId: storeId,
-          dbStoreId: mapped['id']?.toString(),
-          storeName: mapped['name']?.toString() ?? mockPolicy.storeName,
-        );
-      }
-
-      return _ResolvedStore(
-        appStoreId: storeId,
-        dbStoreId: null,
-        storeName: mockPolicy.storeName,
-      );
-    }
-
     if (_isUuid(storeId)) {
       final row = await _supabase
           .from('stores')
@@ -379,13 +314,12 @@ class StampRepositoryImpl implements StampRepository {
         final mapped = Map<String, dynamic>.from(row);
         final storeName = mapped['name']?.toString() ?? storeId;
         return _ResolvedStore(
-          appStoreId: _findAppStoreIdByName(storeName) ?? storeId,
+          appStoreId: storeId,
           dbStoreId: mapped['id']?.toString(),
           storeName: storeName,
         );
       }
     }
-
     return null;
   }
 
@@ -548,14 +482,6 @@ class StampRepositoryImpl implements StampRepository {
     );
   }
 
-  bool _shouldUseMockStatusFallback({
-    required _ResolvedStore resolvedStore,
-    required StoreStampStatus? status,
-  }) {
-    return _mockPolicies.containsKey(resolvedStore.appStoreId) &&
-        (status == null || !status.showInHistory);
-  }
-
   Future<Set<String>> _fetchCompletedReservationStoreIds(String userId) async {
     final List<dynamic> rows = await _supabase
         .from('reservations')
@@ -670,22 +596,14 @@ class StampRepositoryImpl implements StampRepository {
     required _ResolvedStore resolvedStore,
     required Map<String, dynamic>? policyRow,
   }) {
-    final fallbackPolicy = _mockPolicies[resolvedStore.appStoreId];
     return StampRewardPolicy(
       storeId: resolvedStore.appStoreId,
       storeName: resolvedStore.storeName,
-      goalCount:
-          ((policyRow?['goal_count'] as num?)?.toInt()) ??
-          fallbackPolicy?.goalCount ??
-          10,
-      rewardTitle:
-          policyRow?['reward_title']?.toString() ??
-          fallbackPolicy?.rewardTitle ??
-          '사장님 지정 보상',
-      rewardDescription:
-          policyRow?['reward_description']?.toString() ??
-          fallbackPolicy?.rewardDescription ??
+      goalCount: ((policyRow?['goal_count'] as num?)?.toInt()) ?? 10,
+      rewardTitle: policyRow?['reward_title']?.toString() ?? '사장님 지정 보상',
+      rewardDescription: policyRow?['reward_description']?.toString() ??
           '스탬프 목표 달성 시 매장별 보상을 받을 수 있습니다.',
+      isActive: policyRow?['is_active'] == true,
     );
   }
 
@@ -730,115 +648,58 @@ class StampRepositoryImpl implements StampRepository {
     return _defaultEligibilityMessage;
   }
 
-  StoreStampStatus _buildMockStatus({
-    required String userId,
+  @override
+  Future<StampRewardPolicy?> fetchStampRewardPolicy({
     required String storeId,
-  }) {
-    _ensureMockUserState(userId);
-
-    final policy =
-        _mockPolicies[storeId] ??
-        StampRewardPolicy(
-          storeId: storeId,
-          storeName: storeId,
-          goalCount: 10,
-          rewardTitle: '사장님 지정 보상',
-          rewardDescription: '스탬프 목표 달성 시 매장별 보상을 받을 수 있습니다.',
-        );
-
-    final currentCount = _mockStampCountsByUserId[userId]![storeId] ?? 0;
-    final hasVisited = _mockVisitedStoreIdsByUserId[userId]!.contains(storeId);
-    final hasWrittenReview = _mockReviewedStoreIdsByUserId[userId]!.contains(
-      storeId,
-    );
-    final rewardClaimedAt =
-        _mockClaimedRewardStoreIdsByUserId[userId]!.contains(storeId)
-        ? DateTime.now()
-        : null;
-
-    return _buildStatus(
-      appStoreId: policy.storeId,
-      policy: policy,
-      currentCount: currentCount,
-      hasVisited: hasVisited,
-      hasWrittenReview: hasWrittenReview,
-      rewardClaimedAt: rewardClaimedAt,
-    );
-  }
-
-  StoreStampStatus _accrueMockStampForReview({
-    required String userId,
-    required String storeId,
-  }) {
-    _ensureMockUserState(userId);
-
-    final current = _buildMockStatus(userId: userId, storeId: storeId);
-    if (!_allowReviewStampTestingBypass && !current.canWriteReview) {
-      return current;
-    }
-
-    final nextCount = (current.currentCount + 1).clamp(0, current.goalCount);
-    _mockStampCountsByUserId[userId]![storeId] = nextCount;
-    _mockReviewedStoreIdsByUserId[userId]!.add(storeId);
-
-    return _buildMockStatus(userId: userId, storeId: storeId);
-  }
-
-  StoreStampStatus _revokeMockStampForDeletedReview({
-    required String userId,
-    required String storeId,
-  }) {
-    _ensureMockUserState(userId);
-
-    final current = _buildMockStatus(userId: userId, storeId: storeId);
-    final nextCount = (current.currentCount - 1).clamp(0, current.goalCount);
-    _mockStampCountsByUserId[userId]![storeId] = nextCount;
-    _mockReviewedStoreIdsByUserId[userId]!.remove(storeId);
-    if (nextCount < current.goalCount) {
-      _mockClaimedRewardStoreIdsByUserId[userId]!.remove(storeId);
-    }
-
-    return _buildMockStatus(userId: userId, storeId: storeId);
-  }
-
-  StoreStampStatus _claimMockReward({
-    required String userId,
-    required String storeId,
-  }) {
-    _ensureMockUserState(userId);
-
-    final current = _buildMockStatus(userId: userId, storeId: storeId);
-    if (!current.isRewardUnlocked) {
-      return current;
-    }
-
-    final nextCount = current.currentCount - current.goalCount;
-    _mockStampCountsByUserId[userId]![storeId] = nextCount;
-    _mockClaimedRewardStoreIdsByUserId[userId]!.add(storeId);
-    return _buildMockStatus(userId: userId, storeId: storeId);
-  }
-
-  void _ensureMockUserState(String userId) {
-    _mockStampCountsByUserId.putIfAbsent(
-      userId,
-      () => {
-        's1': 3,
-        's2': 0,
-        's3': 0,
-      },
-    );
-    _mockVisitedStoreIdsByUserId.putIfAbsent(userId, () => {'s1', 's2'});
-    _mockReviewedStoreIdsByUserId.putIfAbsent(userId, () => <String>{});
-    _mockClaimedRewardStoreIdsByUserId.putIfAbsent(userId, () => <String>{});
-  }
-
-  String? _findAppStoreIdByName(String storeName) {
-    for (final entry in _mockPolicies.entries) {
-      if (entry.value.storeName == storeName) {
-        return entry.key;
+  }) async {
+    try {
+      final resolvedStore = await _resolveStore(storeId);
+      if (resolvedStore == null || resolvedStore.dbStoreId == null) {
+        return null;
       }
+      final row = await _supabase
+          .from('stamp_policies')
+          .select(
+            'store_id, goal_count, reward_title, reward_description, is_active',
+          )
+          .eq('store_id', resolvedStore.dbStoreId!)
+          .maybeSingle();
+
+      if (row == null) return null;
+      final mapped = Map<String, dynamic>.from(row);
+      return StampRewardPolicy(
+        storeId: storeId,
+        storeName: resolvedStore.storeName,
+        goalCount: ((mapped['goal_count'] as num?)?.toInt()) ?? 10,
+        rewardTitle: mapped['reward_title']?.toString() ?? '',
+        rewardDescription: mapped['reward_description']?.toString() ?? '',
+        isActive: mapped['is_active'] == true,
+      );
+    } catch (e) {
+      debugPrint('[StampRepository] fetchStampRewardPolicy failed: $e');
+      return null;
     }
-    return null;
+  }
+
+  @override
+  Future<void> saveStampRewardPolicy({
+    required String storeId,
+    required int goalCount,
+    required String rewardTitle,
+    required String rewardDescription,
+    required bool isActive,
+  }) async {
+    final resolvedStore = await _resolveStore(storeId);
+    final dbStoreId = resolvedStore?.dbStoreId ?? storeId;
+
+    await _supabase.from('stamp_policies').upsert({
+      'store_id': dbStoreId,
+      'goal_count': goalCount,
+      'reward_title': rewardTitle,
+      'reward_description': rewardDescription,
+      'is_active': isActive,
+      'updated_at': DateTime.now().toIso8601String(),
+    });
   }
 
   bool _isUuid(String value) {
