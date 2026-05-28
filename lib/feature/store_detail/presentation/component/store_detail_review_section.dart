@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:capstone_2026/core/presentation/component/full_screen_image_viewer.dart';
 import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
@@ -803,10 +804,22 @@ class _InternalReviewItem extends StatelessWidget {
               itemCount: review.imageUrls.length,
               separatorBuilder: (context, index) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: _ReviewImageThumbnail(
-                    imagePath: review.imageUrls[index],
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => FullScreenImageViewer(
+                          imageUrls: review.imageUrls,
+                          initialIndex: index,
+                        ),
+                      ),
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: _ReviewImageThumbnail(
+                      imagePath: review.imageUrls[index],
+                    ),
                   ),
                 );
               },
@@ -981,20 +994,37 @@ class _NaverReviewItem extends StatelessWidget {
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      thumbnailUrl,
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+                  child: GestureDetector(
+                    onTap: () {
+                      final allImages = mediaList
+                          .map((m) => (m as Map<String, dynamic>?)?['thumbnail'] as String? ?? '')
+                          .where((url) => url.isNotEmpty)
+                          .toList();
+                      final targetIndex = allImages.indexOf(thumbnailUrl);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => FullScreenImageViewer(
+                            imageUrls: allImages,
+                            initialIndex: targetIndex >= 0 ? targetIndex : 0,
+                          ),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        thumbnailUrl,
                         width: 100,
                         height: 100,
-                        color: const Color(0xFFF3F4F6),
-                        child: const Icon(
-                          Icons.broken_image_outlined,
-                          color: Color(0xFF9CA3AF),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 100,
+                          height: 100,
+                          color: const Color(0xFFF3F4F6),
+                          child: const Icon(
+                            Icons.broken_image_outlined,
+                            color: Color(0xFF9CA3AF),
+                          ),
                         ),
                       ),
                     ),

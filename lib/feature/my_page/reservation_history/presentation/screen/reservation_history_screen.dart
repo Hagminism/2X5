@@ -54,6 +54,14 @@ class ReservationHistoryScreen extends StatelessWidget {
                             ),
                           );
                         },
+                        onTapReview: () {
+                          onAction(
+                            ReservationHistoryAction.tapReview(
+                              storeId: item.storeId,
+                              storeName: item.storeName,
+                            ),
+                          );
+                        },
                       );
                     },
                   ),

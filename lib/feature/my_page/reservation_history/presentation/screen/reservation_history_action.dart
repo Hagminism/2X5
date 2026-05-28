@@ -9,4 +9,9 @@ sealed class ReservationHistoryAction with _$ReservationHistoryAction {
   const factory ReservationHistoryAction.tapReservationItem({
     required String storeId,
   }) = TapReservationHistoryItem;
+
+  const factory ReservationHistoryAction.tapReview({
+    required String storeId,
+    required String storeName,
+  }) = TapReservationHistoryReview;
 }
