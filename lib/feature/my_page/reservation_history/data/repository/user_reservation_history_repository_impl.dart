@@ -25,15 +25,15 @@ class UserReservationHistoryRepositoryImpl
       _dataSource.fetchReviewsByUserId(userId),
     ).wait;
 
-    final reviewedStoreIds = reviewRows
-        .map((row) => row['store_id']?.toString())
+    final reviewedReservationIds = reviewRows
+        .map((row) => row['reservation_id']?.toString())
         .whereType<String>()
         .toSet();
 
     final items = <UserReservationHistoryItem>[
-      ...restaurantRows.map((row) => _mapRestaurantRow(row, reviewedStoreIds)),
-      ...studyCafeRows.map((row) => _mapStudyCafeRow(row, reviewedStoreIds)),
-      ...salonRows.map((row) => _mapSalonRow(row, reviewedStoreIds)),
+      ...restaurantRows.map((row) => _mapRestaurantRow(row, reviewedReservationIds)),
+      ...studyCafeRows.map((row) => _mapStudyCafeRow(row, reviewedReservationIds)),
+      ...salonRows.map((row) => _mapSalonRow(row, reviewedReservationIds)),
     ]..sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
 
     return items;
@@ -41,7 +41,7 @@ class UserReservationHistoryRepositoryImpl
 
   UserReservationHistoryItem _mapRestaurantRow(
     Map<String, dynamic> row,
-    Set<String> reviewedStoreIds,
+    Set<String> reviewedReservationIds,
   ) {
     final store = _readStore(row);
     final guestCount = (row['guest_count'] as num?)?.toInt() ?? 0;
@@ -50,9 +50,10 @@ class UserReservationHistoryRepositoryImpl
         ? ' · 예약금 ${NumberFormat('#,###', 'ko_KR').format(totalPrice)}원'
         : '';
     final storeId = row['store_id']?.toString() ?? '';
+    final id = row['id']?.toString() ?? '';
 
     return UserReservationHistoryItem(
-      id: row['id']?.toString() ?? '',
+      id: id,
       storeId: storeId,
       storeName: store.name,
       categoryLabel: store.categoryLabel,
@@ -63,22 +64,23 @@ class UserReservationHistoryRepositoryImpl
       ),
       summary: '인원 $guestCount명$priceText',
       status: _parseStatus(row['status']?.toString()),
-      hasWrittenReview: reviewedStoreIds.contains(storeId),
+      hasWrittenReview: reviewedReservationIds.contains(id),
     );
   }
 
   UserReservationHistoryItem _mapStudyCafeRow(
     Map<String, dynamic> row,
-    Set<String> reviewedStoreIds,
+    Set<String> reviewedReservationIds,
   ) {
     final store = _readStore(row);
     final seatId = row['seat_id']?.toString() ?? '';
     final durationMinutes = (row['duration_minutes'] as num?)?.toInt() ?? 0;
     final seatLabel = seatId.length <= 8 ? seatId : '${seatId.substring(0, 8)}…';
     final storeId = row['store_id']?.toString() ?? '';
+    final id = row['id']?.toString() ?? '';
 
     return UserReservationHistoryItem(
-      id: row['id']?.toString() ?? '',
+      id: id,
       storeId: storeId,
       storeName: store.name,
       categoryLabel: store.categoryLabel,
@@ -89,13 +91,13 @@ class UserReservationHistoryRepositoryImpl
           DateTime.fromMillisecondsSinceEpoch(0),
       summary: '좌석 $seatLabel · $durationMinutes분',
       status: _parseStatus(row['status']?.toString()),
-      hasWrittenReview: reviewedStoreIds.contains(storeId),
+      hasWrittenReview: reviewedReservationIds.contains(id),
     );
   }
 
   UserReservationHistoryItem _mapSalonRow(
     Map<String, dynamic> row,
-    Set<String> reviewedStoreIds,
+    Set<String> reviewedReservationIds,
   ) {
     final store = _readStore(row);
     final serviceIds = row['service_ids'];
@@ -104,9 +106,10 @@ class UserReservationHistoryRepositoryImpl
       _ => 0,
     };
     final storeId = row['store_id']?.toString() ?? '';
+    final id = row['id']?.toString() ?? '';
 
     return UserReservationHistoryItem(
-      id: row['id']?.toString() ?? '',
+      id: id,
       storeId: storeId,
       storeName: store.name,
       categoryLabel: store.categoryLabel,
@@ -117,7 +120,7 @@ class UserReservationHistoryRepositoryImpl
           DateTime.fromMillisecondsSinceEpoch(0),
       summary: '시술 $serviceCount개',
       status: _parseStatus(row['status']?.toString()),
-      hasWrittenReview: reviewedStoreIds.contains(storeId),
+      hasWrittenReview: reviewedReservationIds.contains(id),
     );
   }
 

@@ -33,6 +33,7 @@ abstract interface class StoreReviewRepository {
     required String userId,
     required String userName,
     required ReviewWriteResult review,
+    String? reservationId,
   });
 
   Future<InternalReview> updateReview({

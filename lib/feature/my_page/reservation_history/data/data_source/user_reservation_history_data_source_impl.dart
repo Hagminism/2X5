@@ -84,7 +84,7 @@ class UserReservationHistoryDataSourceImpl
   ) async {
     final jsonList = await _supabaseClient
         .from('reviews')
-        .select('id, store_id')
+        .select('id, store_id, reservation_id')
         .eq('user_id', userId)
         .eq('is_visible', true);
 

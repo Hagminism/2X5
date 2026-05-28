@@ -29,6 +29,7 @@ class StoreReviewService {
     required String storeId,
     required String storeName,
     required ReviewWriteResult review,
+    String? reservationId,
   }) {
     return _storeReviewRepository.submitReview(
       storeId: storeId,
@@ -36,6 +37,7 @@ class StoreReviewService {
       userId: _authRepository.getCurrentUserId(),
       userName: _authRepository.getCurrentUserDisplayName(),
       review: review,
+      reservationId: reservationId,
     );
   }
 

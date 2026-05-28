@@ -234,6 +234,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required String userId,
     required String userName,
     required ReviewWriteResult review,
+    String? reservationId,
   }) async {
     if (_isUuid(storeId)) {
       try {
@@ -247,6 +248,7 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
               'visit_purpose': review.visitTag,
               'image_urls': List<String>.from(review.imagePaths),
               'is_visible': true,
+              'reservation_id': reservationId,
             })
             .select(_reviewSelectColumns)
             .limit(1);
