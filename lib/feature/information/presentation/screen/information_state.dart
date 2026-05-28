@@ -27,5 +27,7 @@ abstract class InformationState with _$InformationState {
     @Default(0) int currentSliderPage,
     @Default('') String naverPlaceId,
     @Default(true) bool isReservationAvailable,
+    @Default(0) int initialTabIndex,
+    @Default(false) bool showReviewWrite,
   }) = _InformationState;
 }

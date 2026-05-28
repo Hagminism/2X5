@@ -18,32 +18,42 @@ class UserReservationHistoryRepositoryImpl
   Future<List<UserReservationHistoryItem>> fetchUserReservationHistory({
     required String userId,
   }) async {
-    final (restaurantRows, studyCafeRows, salonRows) = await (
+    final (restaurantRows, studyCafeRows, salonRows, reviewRows) = await (
       _dataSource.fetchRestaurantReservationsByUserId(userId),
       _dataSource.fetchStudyCafeReservationsByUserId(userId),
       _dataSource.fetchSalonReservationsByUserId(userId),
+      _dataSource.fetchReviewsByUserId(userId),
     ).wait;
 
+    final reviewedStoreIds = reviewRows
+        .map((row) => row['store_id']?.toString())
+        .whereType<String>()
+        .toSet();
+
     final items = <UserReservationHistoryItem>[
-      ...restaurantRows.map(_mapRestaurantRow),
-      ...studyCafeRows.map(_mapStudyCafeRow),
-      ...salonRows.map(_mapSalonRow),
+      ...restaurantRows.map((row) => _mapRestaurantRow(row, reviewedStoreIds)),
+      ...studyCafeRows.map((row) => _mapStudyCafeRow(row, reviewedStoreIds)),
+      ...salonRows.map((row) => _mapSalonRow(row, reviewedStoreIds)),
     ]..sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
 
     return items;
   }
 
-  UserReservationHistoryItem _mapRestaurantRow(Map<String, dynamic> row) {
+  UserReservationHistoryItem _mapRestaurantRow(
+    Map<String, dynamic> row,
+    Set<String> reviewedStoreIds,
+  ) {
     final store = _readStore(row);
     final guestCount = (row['guest_count'] as num?)?.toInt() ?? 0;
     final totalPrice = (row['total_price'] as num?)?.toInt() ?? 0;
     final priceText = totalPrice > 0
         ? ' · 예약금 ${NumberFormat('#,###', 'ko_KR').format(totalPrice)}원'
         : '';
+    final storeId = row['store_id']?.toString() ?? '';
 
     return UserReservationHistoryItem(
       id: row['id']?.toString() ?? '',
-      storeId: row['store_id']?.toString() ?? '',
+      storeId: storeId,
       storeName: store.name,
       categoryLabel: store.categoryLabel,
       type: UserReservationHistoryType.restaurant,
@@ -53,18 +63,23 @@ class UserReservationHistoryRepositoryImpl
       ),
       summary: '인원 $guestCount명$priceText',
       status: _parseStatus(row['status']?.toString()),
+      hasWrittenReview: reviewedStoreIds.contains(storeId),
     );
   }
 
-  UserReservationHistoryItem _mapStudyCafeRow(Map<String, dynamic> row) {
+  UserReservationHistoryItem _mapStudyCafeRow(
+    Map<String, dynamic> row,
+    Set<String> reviewedStoreIds,
+  ) {
     final store = _readStore(row);
     final seatId = row['seat_id']?.toString() ?? '';
     final durationMinutes = (row['duration_minutes'] as num?)?.toInt() ?? 0;
     final seatLabel = seatId.length <= 8 ? seatId : '${seatId.substring(0, 8)}…';
+    final storeId = row['store_id']?.toString() ?? '';
 
     return UserReservationHistoryItem(
       id: row['id']?.toString() ?? '',
-      storeId: row['store_id']?.toString() ?? '',
+      storeId: storeId,
       storeName: store.name,
       categoryLabel: store.categoryLabel,
       type: UserReservationHistoryType.studyCafe,
@@ -73,20 +88,25 @@ class UserReservationHistoryRepositoryImpl
           DateTime.fromMillisecondsSinceEpoch(0),
       summary: '좌석 $seatLabel · $durationMinutes분',
       status: _parseStatus(row['status']?.toString()),
+      hasWrittenReview: reviewedStoreIds.contains(storeId),
     );
   }
 
-  UserReservationHistoryItem _mapSalonRow(Map<String, dynamic> row) {
+  UserReservationHistoryItem _mapSalonRow(
+    Map<String, dynamic> row,
+    Set<String> reviewedStoreIds,
+  ) {
     final store = _readStore(row);
     final serviceIds = row['service_ids'];
     final serviceCount = switch (serviceIds) {
       final List<dynamic> values => values.length,
       _ => 0,
     };
+    final storeId = row['store_id']?.toString() ?? '';
 
     return UserReservationHistoryItem(
       id: row['id']?.toString() ?? '',
-      storeId: row['store_id']?.toString() ?? '',
+      storeId: storeId,
       storeName: store.name,
       categoryLabel: store.categoryLabel,
       type: UserReservationHistoryType.salon,
@@ -95,6 +115,7 @@ class UserReservationHistoryRepositoryImpl
           DateTime.fromMillisecondsSinceEpoch(0),
       summary: '시술 $serviceCount개',
       status: _parseStatus(row['status']?.toString()),
+      hasWrittenReview: reviewedStoreIds.contains(storeId),
     );
   }
 

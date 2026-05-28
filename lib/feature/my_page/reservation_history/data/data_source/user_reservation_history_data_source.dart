@@ -10,4 +10,8 @@ abstract interface class UserReservationHistoryDataSource {
   Future<List<Map<String, dynamic>>> fetchSalonReservationsByUserId(
     String userId,
   );
+
+  Future<List<Map<String, dynamic>>> fetchReviewsByUserId(
+    String userId,
+  );
 }

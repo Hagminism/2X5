@@ -38,8 +38,17 @@ class InformationViewModel extends ChangeNotifier {
 
   Stream<InformationEvent> get eventStream => _eventController.stream;
 
-  Future<void> initialize(String storeId) async {
-    _state = _state.copyWith(isLoading: true);
+  Future<void> initialize(
+    String storeId, {
+    int initialTabIndex = 0,
+    bool showReviewWrite = false,
+  }) async {
+    _state = _state.copyWith(
+      storeId: storeId,
+      initialTabIndex: initialTabIndex,
+      showReviewWrite: showReviewWrite,
+      isLoading: true,
+    );
     notifyListeners();
 
     try {
@@ -82,6 +91,11 @@ class InformationViewModel extends ChangeNotifier {
 
       // 가져온 업장 종류에 따라 탭 정의
       _initTabs();
+
+      // initialTabIndex가 탭 범위를 벗어나지 않도록 조정 (예: 리뷰 탭으로 이동 시)
+      if (_state.initialTabIndex >= _state.tabs.length) {
+        _state = _state.copyWith(initialTabIndex: _state.tabs.length - 1);
+      }
 
       // 네이버 플레이스 실시간 메뉴가 있는 경우 비동기로 가져와 덮어씌움
       if (store.naverPlaceId != null && store.naverPlaceId!.trim().isNotEmpty) {

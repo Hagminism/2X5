@@ -15,5 +15,6 @@ abstract class UserReservationHistoryItem with _$UserReservationHistoryItem {
     required DateTime scheduledAt,
     required String summary,
     required ReservationStatus status,
+    @Default(false) bool hasWrittenReview,
   }) = _UserReservationHistoryItem;
 }

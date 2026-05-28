@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/enum/reservation_status.dart';
 import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/domain/model/user_reservation_history_item.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/component/reservation_history_status_badge.dart';
@@ -8,11 +9,13 @@ import 'package:intl/intl.dart';
 class ReservationHistoryCard extends StatelessWidget {
   final UserReservationHistoryItem item;
   final VoidCallback onTap;
+  final VoidCallback? onTapReview;
 
   const ReservationHistoryCard({
     super.key,
     required this.item,
     required this.onTap,
+    this.onTapReview,
   });
 
   @override
@@ -21,6 +24,8 @@ class ReservationHistoryCard extends StatelessWidget {
     final categoryText = item.categoryLabel.trim().isNotEmpty
         ? item.categoryLabel.trim()
         : item.type.label;
+    final isReviewable = item.status == ReservationStatus.completed || 
+                        item.status == ReservationStatus.confirmed;
 
     return Material(
       color: Colors.transparent,
@@ -80,6 +85,30 @@ class ReservationHistoryCard extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
+                if (isReviewable && !item.hasWrittenReview && onTapReview != null) ...[
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: onTapReview,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        '리뷰 쓰러가기',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

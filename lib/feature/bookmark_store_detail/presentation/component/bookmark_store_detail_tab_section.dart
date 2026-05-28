@@ -121,6 +121,7 @@ class _BookmarkStoreDetailTabSectionState
           aiSummary: ReviewAiSummaryGenerator.generate(
             storeName: widget.storeName,
             reviews: widget.reviews,
+            googleReviews: widget.googlePlaceReviewInfo?.reviews ?? const [],
           ),
           reviews: widget.reviews,
           isReviewLoading: widget.isReviewLoading,
