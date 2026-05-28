@@ -67,15 +67,15 @@ class SalonReservationSlotGrid extends StatelessWidget {
               color: selected
                   ? AppColors.primary
                   : slot.isEnabled
-                      ? AppColors.white
-                      : AppColors.surfaceMuted,
+                  ? AppColors.white
+                  : AppColors.surfaceMuted,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: selected
                     ? AppColors.primary
                     : slot.isEnabled
-                        ? AppColors.border
-                        : AppColors.border.withValues(alpha: 0.5),
+                    ? AppColors.border
+                    : AppColors.border.withValues(alpha: 0.5),
               ),
               boxShadow: selected
                   ? [
@@ -83,7 +83,7 @@ class SalonReservationSlotGrid extends StatelessWidget {
                         color: AppColors.primary.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ]
                   : null,
             ),
@@ -93,8 +93,8 @@ class SalonReservationSlotGrid extends StatelessWidget {
                 color: selected
                     ? AppColors.white
                     : slot.isEnabled
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary.withValues(alpha: 0.5),
+                    ? AppColors.textPrimary
+                    : AppColors.textSecondary.withValues(alpha: 0.5),
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),

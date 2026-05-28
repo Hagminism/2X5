@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 class PartnerStoreSectionCard extends StatelessWidget {
   final String title;
   final Widget child;
+  final bool isRequired;
 
   const PartnerStoreSectionCard({
     super.key,
     required this.title,
     required this.child,
+    this.isRequired = false,
   });
 
   @override
@@ -31,12 +33,27 @@ class PartnerStoreSectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: AppTextStyles.subtitle.copyWith(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Flexible(
+                child: Text(
+                  title,
+                  style: AppTextStyles.subtitle.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (isRequired)
+                Text(
+                  ' *',
+                  style: AppTextStyles.subtitle.copyWith(
+                    color: AppColors.danger,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 12),
           child,

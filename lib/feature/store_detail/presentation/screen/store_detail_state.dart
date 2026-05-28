@@ -18,4 +18,3 @@ abstract class StoreDetailState with _$StoreDetailState {
     @Default(false) bool isNaverDataLoading,
   }) = _StoreDetailState;
 }
-

@@ -92,29 +92,44 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         notifyListeners();
         break;
       case TapOpenMenuManager():
+        if (!_requireRegisteredStore()) break;
         _eventController.add(
           const PartnerStoreManagementEvent.openMenuManager(),
         );
         break;
+      case TapOpenLayoutManager():
+        if (!_requireRegisteredStore()) break;
+        _eventController.add(
+          const PartnerStoreManagementEvent.openLayoutManager(),
+        );
+        break;
       case TapOpenSeatLayoutManager():
+        if (!_requireRegisteredStore()) break;
         _eventController.add(
           const PartnerStoreManagementEvent.openSeatLayoutManager(),
         );
         break;
       case TapOpenStudyCafeUsageOptionManager():
+        if (!_requireRegisteredStore()) break;
         _eventController.add(
           const PartnerStoreManagementEvent.openStudyCafeUsageOptionManager(),
         );
         break;
       case TapOpenSalonManager():
+        if (!_requireRegisteredStore()) break;
         _eventController.add(
           const PartnerStoreManagementEvent.openSalonManager(),
         );
         break;
       case TapOpenImageManager():
+        if (!_requireRegisteredStore()) break;
         _eventController.add(
           const PartnerStoreManagementEvent.openImageManager(),
         );
+        break;
+      case ChangeDescription():
+        _state = state.copyWith(description: action.value);
+        notifyListeners();
         break;
       case AddMenu():
       case RemoveMenu():
@@ -202,6 +217,7 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
           depositAmount: _myStore!.depositAmount.toString(),
           reservationSlotMinutes: _myStore!.reservationSlotMinutes,
           operatingHours: operatingHours,
+          description: _myStore!.description ?? '',
         );
         notifyListeners();
         return;
@@ -268,6 +284,9 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         depositEnabled: state.depositEnabled,
         depositAmount: parsedDepositAmount,
         reservationSlotMinutes: state.reservationSlotMinutes,
+        description: state.description.trim().isEmpty
+            ? null
+            : state.description,
       );
 
       final savedStore = _myStore == null
@@ -301,6 +320,18 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         ),
       );
     }
+  }
+
+  bool _requireRegisteredStore() {
+    if (state.canAccessStoreSubManagers) {
+      return true;
+    }
+    _eventController.add(
+      const PartnerStoreManagementEvent.showMessage(
+        '최초 업장 등록을 완료한 뒤 설정할 수 있어요.',
+      ),
+    );
+    return false;
   }
 
   void _updateDayConfig({

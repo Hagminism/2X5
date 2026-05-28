@@ -1,5 +1,7 @@
+import 'package:capstone_2026/core/domain/model/reservation/restaurant_time_slot.dart';
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:capstone_2026/core/domain/model/store/store_layout_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -15,6 +17,7 @@ abstract class InformationState with _$InformationState {
     @Default('') String category,
     @Default('') String address,
     @Default('') String displayPhone,
+    @Default('') String storeDescription,
     @Default(<String, dynamic>{}) Map<String, dynamic> operatingHours,
     @Default(<StoreMenu>[]) List<StoreMenu> menus,
     @Default(<String>[]) List<String> imageUrls,
@@ -29,5 +32,9 @@ abstract class InformationState with _$InformationState {
     @Default(true) bool isReservationAvailable,
     @Default(0) int initialTabIndex,
     @Default(false) bool showReviewWrite,
+    StoreLayoutDetail? layoutDetail,
+    @Default(false) bool isReservationAvailabilityLoading,
+    DateTime? reservationAvailabilityDate,
+    @Default([]) List<RestaurantTimeSlot> reservationAvailabilitySlots,
   }) = _InformationState;
 }

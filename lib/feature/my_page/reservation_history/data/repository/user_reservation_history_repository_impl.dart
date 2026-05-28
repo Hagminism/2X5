@@ -83,7 +83,8 @@ class UserReservationHistoryRepositoryImpl
       storeName: store.name,
       categoryLabel: store.categoryLabel,
       type: UserReservationHistoryType.studyCafe,
-      scheduledAt: _parseDateTime(row['start_at']) ??
+      scheduledAt:
+          _parseDateTime(row['start_at']) ??
           _parseDateTime(row['created_at']) ??
           DateTime.fromMillisecondsSinceEpoch(0),
       summary: '좌석 $seatLabel · $durationMinutes분',
@@ -110,7 +111,8 @@ class UserReservationHistoryRepositoryImpl
       storeName: store.name,
       categoryLabel: store.categoryLabel,
       type: UserReservationHistoryType.salon,
-      scheduledAt: _parseDateTime(row['start_at']) ??
+      scheduledAt:
+          _parseDateTime(row['start_at']) ??
           _parseDateTime(row['created_at']) ??
           DateTime.fromMillisecondsSinceEpoch(0),
       summary: '시술 $serviceCount개',

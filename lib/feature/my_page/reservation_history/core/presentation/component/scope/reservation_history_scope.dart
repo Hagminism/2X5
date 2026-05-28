@@ -11,7 +11,8 @@ class ReservationHistoryScope extends StatefulWidget {
   final ReservationHistoryViewModel viewModel;
 
   @override
-  State<ReservationHistoryScope> createState() => _ReservationHistoryScopeState();
+  State<ReservationHistoryScope> createState() =>
+      _ReservationHistoryScopeState();
 }
 
 class _ReservationHistoryScopeState extends State<ReservationHistoryScope> {

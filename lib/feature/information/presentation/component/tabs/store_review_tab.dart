@@ -41,7 +41,7 @@ class StoreReviewTab extends StatefulWidget {
   State<StoreReviewTab> createState() => _StoreReviewTabState();
 }
 
-class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAliveClientMixin<StoreReviewTab> {
+class _StoreReviewTabState extends State<StoreReviewTab> {
   ReviewPlatform _selectedPlatform = ReviewPlatform.internal;
   bool _isLoading = true;
   List<InternalReview> _reviews = const [];
@@ -57,7 +57,8 @@ class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAlive
 
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
   StampService get _stampService => getIt<StampService>();
-  NaverStoreSearchDataSource get _naverStoreSearchDataSource => getIt<NaverStoreSearchDataSource>();
+  NaverStoreSearchDataSource get _naverStoreSearchDataSource =>
+      getIt<NaverStoreSearchDataSource>();
 
   StoreDetail get _reviewTarget {
     final mockDetail = storeDetailMockMap[widget.storeId];
@@ -79,9 +80,6 @@ class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAlive
       googleSearchQuery: query.isEmpty ? storeName : query,
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -129,7 +127,6 @@ class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAlive
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     final data = _reviewTarget;
 
     return NotificationListener<ScrollNotification>(
@@ -203,13 +200,20 @@ class _StoreReviewTabState extends State<StoreReviewTab> with AutomaticKeepAlive
       Future<List<Map<String, dynamic>>> loadNaverReviews() async {
         if (data.naverPlaceId.isEmpty) return const [];
         try {
-          return await _naverStoreSearchDataSource.fetchStoreReviews(placeId: data.naverPlaceId);
+          return await _naverStoreSearchDataSource.fetchStoreReviews(
+            placeId: data.naverPlaceId,
+          );
         } catch (_) {
           return const [];
         }
       }
 
-      final (reviews, stampStatus, googlePlaceReviewInfo, naverReviews) = await (
+      final (
+        reviews,
+        stampStatus,
+        googlePlaceReviewInfo,
+        naverReviews,
+      ) = await (
         _storeReviewService.loadStoreReviews(storeId: widget.storeId),
         _stampService.loadStoreStampStatus(storeId: widget.storeId),
         _storeReviewService.fetchGooglePlaceReviewInfo(

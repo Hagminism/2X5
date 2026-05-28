@@ -3,6 +3,7 @@ import 'package:capstone_2026/feature/store_detail/domain/service/review_ai_summ
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
+import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_review_tab.dart';
@@ -185,17 +186,7 @@ class _StoreDetailTabSectionState extends State<StoreDetailTabSection> {
             final imageUrl = menu['imageUrl'] as String? ?? '';
 
             // 가격 포맷팅
-            String formattedPrice = '';
-            if (priceRaw != null) {
-              final priceStr = priceRaw.toString().replaceAll(RegExp(r'[^0-9]'), '');
-              final priceInt = int.tryParse(priceStr);
-              if (priceInt != null) {
-                final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
-                formattedPrice = '${priceInt.toString().replaceAllMapped(reg, (match) => ',')}원';
-              } else {
-                formattedPrice = priceRaw.toString();
-              }
-            }
+            final formattedPrice = formatMenuPriceLabel(priceRaw);
 
             return Container(
               padding: const EdgeInsets.all(16),

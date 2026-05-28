@@ -41,4 +41,3 @@ abstract interface class NaverStoreSearchDataSource {
     String? after,
   });
 }
-

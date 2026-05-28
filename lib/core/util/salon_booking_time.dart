@@ -35,7 +35,8 @@ abstract final class SalonBookingTime {
   /// 현재 시각 기준 서울 달력의 연·월·일.
   static ({int year, int month, int day}) seoulTodayCalendar() {
     final nowUtc = DateTime.now().toUtc();
-    final shiftedMs = nowUtc.millisecondsSinceEpoch + _seoulOffset.inMilliseconds;
+    final shiftedMs =
+        nowUtc.millisecondsSinceEpoch + _seoulOffset.inMilliseconds;
     final labeled = DateTime.fromMillisecondsSinceEpoch(shiftedMs, isUtc: true);
     return (year: labeled.year, month: labeled.month, day: labeled.day);
   }
@@ -59,8 +60,10 @@ abstract final class SalonBookingTime {
       final utc = DateTime.parse(isoDate).toUtc();
       final shiftedMs =
           utc.millisecondsSinceEpoch + _seoulOffset.inMilliseconds;
-      final labeled =
-          DateTime.fromMillisecondsSinceEpoch(shiftedMs, isUtc: true);
+      final labeled = DateTime.fromMillisecondsSinceEpoch(
+        shiftedMs,
+        isUtc: true,
+      );
       final h = labeled.hour.toString().padLeft(2, '0');
       final m = labeled.minute.toString().padLeft(2, '0');
       return '${labeled.year}년 ${labeled.month}월 ${labeled.day}일 $h:$m';

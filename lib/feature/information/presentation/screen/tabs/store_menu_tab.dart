@@ -1,15 +1,21 @@
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
+import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-class StoreMenuTab extends StatelessWidget {
+class StoreMenuTab extends StatefulWidget {
   const StoreMenuTab({super.key, required this.menus});
 
   final List<StoreMenu> menus;
 
   @override
+  State<StoreMenuTab> createState() => _StoreMenuTabState();
+}
+
+class _StoreMenuTabState extends State<StoreMenuTab> {
+  @override
   Widget build(BuildContext context) {
+    final menus = widget.menus;
     if (menus.isEmpty) {
       return const Center(
         child: Text(
@@ -21,8 +27,6 @@ class StoreMenuTab extends StatelessWidget {
         ),
       );
     }
-
-    final priceFmt = NumberFormat('#,###', 'ko_KR');
 
     return ListView.separated(
       cacheExtent: 1000.0,
@@ -38,6 +42,7 @@ class StoreMenuTab extends StatelessWidget {
         final url = menu.imageUrl.trim();
         final desc = menu.description.trim();
         final muted = !menu.isAvailable;
+        final priceLabel = resolveMenuPriceLabel(menu);
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -74,17 +79,19 @@ class StoreMenuTab extends StatelessWidget {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 10),
-                      Text(
-                        '${priceFmt.format(menu.price)}원',
-                        style: const TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.2,
-                          color: AppColors.textPrimary,
+                      if (priceLabel.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          priceLabel,
+                          style: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                      ),
+                      ],
                       if (muted)
                         const Padding(
                           padding: EdgeInsets.only(top: 6),

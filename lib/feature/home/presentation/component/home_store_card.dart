@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class HomeStoreCard extends StatelessWidget {
@@ -11,7 +13,6 @@ class HomeStoreCard extends StatelessWidget {
     required this.onBookmarkTap,
     required this.isBookmarked,
     this.imageUrl,
-    this.showRating = true,
     super.key,
   });
 
@@ -23,9 +24,6 @@ class HomeStoreCard extends StatelessWidget {
   final bool isBookmarked;
   final VoidCallback onTap;
   final VoidCallback onBookmarkTap;
-
-  /// 입점 매장만 카드 별점 표시. 크롤(미입점) 매장은 false.
-  final bool showRating;
 
   static Color _categoryColor(String category) {
     switch (category) {
@@ -119,8 +117,10 @@ class HomeStoreCard extends StatelessWidget {
                         child: Text(
                           name,
                           style: const TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
                             color: AppColors.textPrimary,
                           ),
                           maxLines: 1,
@@ -133,8 +133,8 @@ class HomeStoreCard extends StatelessWidget {
                         behavior: HitTestBehavior.opaque,
                         child: Icon(
                           isBookmarked
-                              ? Icons.bookmark_rounded
-                              : Icons.bookmark_border_rounded,
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
                           size: 20,
                           color: isBookmarked
                               ? AppColors.primary
@@ -155,13 +155,32 @@ class HomeStoreCard extends StatelessWidget {
                           color: _categoryColor(category),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(
-                          '${_categoryEmoji(category)} $category',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: _categoryIconColor(category),
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (category == '미용실')
+                              Icon(
+                                Icons.content_cut,
+                                size: 11,
+                                color: _categoryIconColor(category),
+                              )
+                            else
+                              Text(
+                                _categoryEmoji(category),
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                            const SizedBox(width: 3),
+                            Text(
+                              category,
+                              style: TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.1,
+                                color: _categoryIconColor(category),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -169,23 +188,6 @@ class HomeStoreCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      if (showRating) ...[
-                        const Icon(
-                          Icons.star_rounded,
-                          size: 14,
-                          color: Colors.amber,
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
                       const Icon(
                         Icons.place_outlined,
                         size: 13,
@@ -196,7 +198,10 @@ class HomeStoreCard extends StatelessWidget {
                         child: Text(
                           subtitle,
                           style: const TextStyle(
+                            fontFamily: AppTextStyles.fontFamily,
                             fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -0.1,
                             color: AppColors.textSecondary,
                           ),
                           maxLines: 1,
@@ -220,21 +225,53 @@ class HomeStoreCard extends StatelessWidget {
               child: SizedBox(
                 height: 130,
                 width: double.infinity,
-                child: imageUrl != null
-                    ? Image.network(imageUrl!, fit: BoxFit.cover)
-                    : Container(
-                        color: _categoryColor(category),
-                        child: Center(
-                          child: Icon(
-                            _categoryIcon(category),
-                            size: 48,
-                            color: _categoryIconColor(category),
-                          ),
-                        ),
-                      ),
+                child: _buildCoverImage(),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCoverImage() {
+    final url = imageUrl?.trim();
+    if (url == null || url.isEmpty) {
+      return ColoredBox(
+        color: _categoryColor(category),
+        child: Center(
+          child: Icon(
+            _categoryIcon(category),
+            size: 48,
+            color: _categoryIconColor(category),
+          ),
+        ),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      fadeInDuration: Duration.zero,
+      fadeOutDuration: Duration.zero,
+      placeholder: (_, _) => ColoredBox(
+        color: _categoryColor(category),
+        child: Center(
+          child: Icon(
+            _categoryIcon(category),
+            size: 48,
+            color: _categoryIconColor(category),
+          ),
+        ),
+      ),
+      errorWidget: (_, _, _) => ColoredBox(
+        color: _categoryColor(category),
+        child: Center(
+          child: Icon(
+            _categoryIcon(category),
+            size: 48,
+            color: _categoryIconColor(category),
+          ),
         ),
       ),
     );

@@ -77,7 +77,7 @@ class _DesignerCard extends StatelessWidget {
                       color: AppColors.primary.withValues(alpha: 0.1),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
-                    )
+                    ),
                   ]
                 : null,
           ),
@@ -99,7 +99,11 @@ class _DesignerCard extends StatelessWidget {
                       ? null
                       : NetworkImage(designer.imageUrl),
                   child: designer.imageUrl.isEmpty
-                      ? const Icon(Icons.person, color: AppColors.textSecondary, size: 28)
+                      ? const Icon(
+                          Icons.person,
+                          color: AppColors.textSecondary,
+                          size: 28,
+                        )
                       : null,
                 ),
               ),
@@ -115,7 +119,9 @@ class _DesignerCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                designer.introduction.isEmpty ? '헤어 디자이너' : designer.introduction,
+                designer.introduction.isEmpty
+                    ? '헤어 디자이너'
+                    : designer.introduction,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.caption.copyWith(

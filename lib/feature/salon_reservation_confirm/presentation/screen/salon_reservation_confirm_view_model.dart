@@ -15,8 +15,8 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
   SalonReservationConfirmViewModel({
     required SalonRepository salonRepository,
     required StoreRepository storeRepository,
-  })  : _salonRepository = salonRepository,
-        _storeRepository = storeRepository;
+  }) : _salonRepository = salonRepository,
+       _storeRepository = storeRepository;
 
   SalonReservationConfirmState _state = const SalonReservationConfirmState();
   SalonReservationConfirmState get state => _state;
@@ -24,7 +24,8 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
   final StreamController<SalonReservationConfirmEvent> _eventController =
       StreamController<SalonReservationConfirmEvent>.broadcast();
 
-  Stream<SalonReservationConfirmEvent> get eventStream => _eventController.stream;
+  Stream<SalonReservationConfirmEvent> get eventStream =>
+      _eventController.stream;
 
   Future<void> initialize({
     required String storeId,
@@ -56,7 +57,9 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
         return;
       }
 
-      final storeServices = await _salonRepository.getServicesByStoreId(storeId);
+      final storeServices = await _salonRepository.getServicesByStoreId(
+        storeId,
+      );
       final services = storeServices
           .where((s) => selectedServices.contains(s.id))
           .toList();
@@ -95,12 +98,18 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
             serviceIds: _state.selectedServiceIds,
             startAt: DateTime.parse(_state.selectedDateTime).toUtc(),
           );
-          
-          _eventController.add(const SalonReservationConfirmEvent.showSnackBar('예약이 확정되었습니다.'));
-          _eventController.add(const SalonReservationConfirmEvent.navigateHome());
+
+          _eventController.add(
+            const SalonReservationConfirmEvent.showSnackBar('예약이 확정되었습니다.'),
+          );
+          _eventController.add(
+            const SalonReservationConfirmEvent.navigateHome(),
+          );
         } catch (e) {
           _state = _state.copyWith(submitError: e.toString());
-          _eventController.add(SalonReservationConfirmEvent.showSnackBar('예약에 실패했습니다: $e'));
+          _eventController.add(
+            SalonReservationConfirmEvent.showSnackBar('예약에 실패했습니다: $e'),
+          );
         } finally {
           _state = _state.copyWith(isSubmitting: false);
           notifyListeners();

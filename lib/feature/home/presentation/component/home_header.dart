@@ -18,15 +18,24 @@ class HomeHeader extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
             fontSize: 22,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
             color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
         const Text(
           '오늘은 어떤 예약을 찾고 계신가요?',
-          style: AppTextStyles.subtitle,
+          style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            letterSpacing: -0.2,
+            height: 1.3,
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
     );

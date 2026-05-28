@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
 import 'package:capstone_2026/core/data/dto/store/store_dto.dart';
+import 'package:capstone_2026/core/data/dto/store/store_layout_detail_dto.dart';
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -26,6 +27,47 @@ class StoreDataSourceImpl implements StoreDataSource {
         .order('created_at');
 
     return jsonList.map((json) => StoreDto.fromJson(json)).toList();
+  }
+
+  static const _homeStoreListSelect = '''
+id, name, category, address, latitude, longitude, rating, owner_id,
+store_images (
+  image_url,
+  is_cover,
+  sort_order
+)
+''';
+
+  @override
+  Future<List<Map<String, dynamic>>> findStoresInBoundingBoxWithCoverImages({
+    required double minLat,
+    required double maxLat,
+    required double minLng,
+    required double maxLng,
+  }) async {
+    final jsonList = await _supabaseClient
+        .from('stores')
+        .select(_homeStoreListSelect)
+        .gte('latitude', minLat)
+        .lte('latitude', maxLat)
+        .gte('longitude', minLng)
+        .lte('longitude', maxLng);
+
+    return List<Map<String, dynamic>>.from(jsonList as List);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> findStoresPageWithCoverImages({
+    required int from,
+    required int to,
+  }) async {
+    final jsonList = await _supabaseClient
+        .from('stores')
+        .select(_homeStoreListSelect)
+        .order('created_at', ascending: false)
+        .range(from, to);
+
+    return List<Map<String, dynamic>>.from(jsonList as List);
   }
 
   @override
@@ -142,6 +184,26 @@ class StoreDataSourceImpl implements StoreDataSource {
           ),
         )
         .toList();
+  }
+
+  @override
+  Future<Map<String, String?>> findCoverImageUrlsByStoreIds(
+    List<String> storeIds,
+  ) async {
+    if (storeIds.isEmpty) return {};
+    final jsonList = await _supabaseClient
+        .from('store_images')
+        .select('store_id, image_url')
+        .inFilter('store_id', storeIds)
+        .eq('is_cover', true);
+    final result = <String, String?>{};
+    for (final json in jsonList) {
+      final storeId = json['store_id'] as String?;
+      if (storeId != null && !result.containsKey(storeId)) {
+        result[storeId] = json['image_url'] as String?;
+      }
+    }
+    return result;
   }
 
   @override
@@ -414,5 +476,37 @@ class StoreDataSourceImpl implements StoreDataSource {
     }
     final encodedPath = trimmed.substring(markerIndex + marker.length);
     return Uri.decodeComponent(encodedPath);
+  }
+
+  @override
+  Future<StoreLayoutDetailDto?> findLayoutByStoreId(String storeId) async {
+    final json = await _supabaseClient
+        .from('store_layout_detail')
+        .select()
+        .eq('store_id', storeId)
+        .maybeSingle();
+
+    if (json == null) {
+      return null;
+    }
+    return StoreLayoutDetailDto.fromJson(json);
+  }
+
+  @override
+  Future<StoreLayoutDetailDto> upsertLayout(
+    StoreLayoutDetailDto layoutDto,
+  ) async {
+    final payload = layoutDto.toJson()
+      ..remove('id')
+      ..remove('created_at')
+      ..remove('updated_at');
+
+    final json = await _supabaseClient
+        .from('store_layout_detail')
+        .upsert(payload, onConflict: 'store_id')
+        .select()
+        .single();
+
+    return StoreLayoutDetailDto.fromJson(json);
   }
 }

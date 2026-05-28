@@ -5,28 +5,47 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-class StoreHomeTab extends StatelessWidget {
+class StoreHomeTab extends StatefulWidget {
   const StoreHomeTab({
     super.key,
     required this.address,
     required this.displayPhone,
     required this.operatingHours,
+    required this.description,
     required this.menus,
     required this.onViewMoreMenus,
     required this.showMenuSection,
   });
 
   final String address;
-
-  /// 뷰모델 `displayPhone` (`stores.contact`).
   final String displayPhone;
+  final String description;
   final Map<String, dynamic> operatingHours;
   final List<StoreMenu> menus;
   final VoidCallback onViewMoreMenus;
   final bool showMenuSection;
 
   @override
+  State<StoreHomeTab> createState() => _StoreHomeTabState();
+}
+
+class _StoreHomeTabState extends State<StoreHomeTab> {
+  bool get _hasDescription => widget.description.trim().isNotEmpty;
+
+  @override
   Widget build(BuildContext context) {
+    final address = widget.address;
+    final displayPhone = widget.displayPhone;
+    final description = widget.description;
+    final operatingHours = widget.operatingHours;
+    final menus = widget.menus;
+    final onViewMoreMenus = widget.onViewMoreMenus;
+    final showMenuSection = widget.showMenuSection;
+
+    final descriptionBlock = _hasDescription
+        ? _StoreDescriptionBlock(description: description.trim())
+        : null;
+
     return ListView(
       children: [
         Padding(
@@ -96,6 +115,18 @@ class StoreHomeTab extends StatelessWidget {
                   ],
                 ),
               ),
+              if (!showMenuSection && descriptionBlock != null) ...[
+                const SizedBox(height: 8),
+                Container(
+                  height: 8,
+                  margin: const EdgeInsets.only(top: 4),
+                  color: const Color(0xFFF3F4F6),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: descriptionBlock,
+                ),
+              ],
             ],
           ),
         ),
@@ -154,7 +185,7 @@ class StoreHomeTab extends StatelessWidget {
                   ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
             child: SizedBox(
               width: double.infinity,
               child: OutlinedButton(
@@ -178,6 +209,13 @@ class StoreHomeTab extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+        ],
+        if (showMenuSection && descriptionBlock != null) ...[
+          Container(height: 8, color: const Color(0xFFF3F4F6)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+            child: descriptionBlock,
           ),
         ],
       ],
@@ -227,8 +265,7 @@ class _OperatingHoursSectionState extends State<_OperatingHoursSection> {
   @override
   Widget build(BuildContext context) {
     final summary = resolveOperatingHoursSummary(widget.operatingHours);
-    final summaryText =
-        summary.isEmpty ? '영업시간 정보 없음' : summary;
+    final summaryText = summary.isEmpty ? '영업시간 정보 없음' : summary;
     final weeklyLines = buildWeeklyOperatingHoursLines(widget.operatingHours);
     final canExpand = weeklyLines.isNotEmpty;
 
@@ -307,6 +344,69 @@ class _OperatingHoursSectionState extends State<_OperatingHoursSection> {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _StoreDescriptionBlock extends StatelessWidget {
+  const _StoreDescriptionBlock({required this.description});
+
+  final String description;
+
+  static const TextStyle _titleStyle = TextStyle(
+    fontFamily: 'Pretendard',
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.2,
+    color: AppColors.textSecondary,
+  );
+
+  static const TextStyle _bodyStyle = TextStyle(
+    fontFamily: 'Pretendard',
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    height: 1.55,
+    letterSpacing: -0.15,
+    color: AppColors.textPrimary,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE8ECF0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE8ECF0)),
+                ),
+                child: const Icon(
+                  Icons.storefront_outlined,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text('매장 소개', style: _titleStyle),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(description, style: _bodyStyle),
+        ],
+      ),
     );
   }
 }

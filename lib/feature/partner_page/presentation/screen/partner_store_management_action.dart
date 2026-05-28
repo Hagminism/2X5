@@ -41,6 +41,9 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
   const factory PartnerStoreManagementAction.tapOpenMenuManager() =
       TapOpenMenuManager;
 
+  const factory PartnerStoreManagementAction.tapOpenLayoutManager() =
+      TapOpenLayoutManager;
+
   const factory PartnerStoreManagementAction.tapOpenSeatLayoutManager() =
       TapOpenSeatLayoutManager;
 
@@ -114,6 +117,9 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
     required String day,
     required String value,
   }) = ChangeDayCloseTime;
+
+  const factory PartnerStoreManagementAction.changeDescription(String value) =
+      ChangeDescription;
 
   const factory PartnerStoreManagementAction.tapSubmit() = TapSubmit;
 }

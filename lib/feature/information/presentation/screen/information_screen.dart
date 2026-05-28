@@ -6,6 +6,7 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_image_slider.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_store_header.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_home_tab.dart';
+import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_layout_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_menu_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/screen/tabs/store_photo_tab.dart';
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_reservation_tab.dart';
@@ -59,14 +60,24 @@ class InformationScreen extends StatelessWidget {
                 },
               ),
               actions: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.share_outlined,
-                    color: AppColors.textPrimary,
+                Builder(
+                  builder: (buttonContext) => IconButton(
+                    icon: const Icon(
+                      Icons.share_outlined,
+                      color: AppColors.textPrimary,
+                    ),
+                    onPressed: () {
+                      Rect? shareOrigin;
+                      final box =
+                          buttonContext.findRenderObject() as RenderBox?;
+                      if (box != null && box.hasSize) {
+                        shareOrigin = box.localToGlobal(Offset.zero) & box.size;
+                      }
+                      onAction(
+                        InformationAction.tapShare(shareOrigin: shareOrigin),
+                      );
+                    },
                   ),
-                  onPressed: () {
-                    onAction(const InformationAction.tapShare());
-                  },
                 ),
                 IconButton(
                   icon: Icon(
@@ -88,8 +99,7 @@ class InformationScreen extends StatelessWidget {
                 return [
                   SliverToBoxAdapter(
                     child: InformationImageSlider(
-                      controller:
-                      state.sliderController ?? PageController(),
+                      controller: state.sliderController ?? PageController(),
                       currentPage: state.currentSliderPage,
                       onPageChanged: (int index) {
                         onAction(InformationAction.sliderPageChanged(index));
@@ -97,7 +107,7 @@ class InformationScreen extends StatelessWidget {
                       images: storeSliderImages(state.imageUrls),
                     ),
                   ),
-                  SliverToBoxAdapter( 
+                  SliverToBoxAdapter(
                     child: InformationStoreHeader(
                       name: state.name,
                       subtitle: state.subtitle,
@@ -142,6 +152,7 @@ class InformationScreen extends StatelessWidget {
                       return StoreHomeTab(
                         address: state.address,
                         displayPhone: state.displayPhone,
+                        description: state.storeDescription,
                         operatingHours: state.operatingHours,
                         menus: state.menus,
                         onViewMoreMenus: () {
@@ -153,28 +164,66 @@ class InformationScreen extends StatelessWidget {
                           );
                           final isCafeOrRestaurant =
                               category == StoreCategory.cafe ||
-                                  category == StoreCategory.restaurant;
+                              category == StoreCategory.restaurant;
                           if (isCafeOrRestaurant) {
                             controller.animateTo(1);
                           }
                         },
                         showMenuSection:
-                        StoreCategory.fromDbValue(state.category) ==
-                            StoreCategory.cafe ||
+                            StoreCategory.fromDbValue(state.category) ==
+                                StoreCategory.cafe ||
                             StoreCategory.fromDbValue(state.category) ==
                                 StoreCategory.restaurant,
                       );
                     },
                   ),
                   if (StoreCategory.fromDbValue(state.category) ==
-                      StoreCategory.cafe ||
+                          StoreCategory.cafe ||
                       StoreCategory.fromDbValue(state.category) ==
                           StoreCategory.restaurant)
                     StoreMenuTab(menus: state.menus),
+                  if (StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.cafe ||
+                      StoreCategory.fromDbValue(state.category) ==
+                          StoreCategory.restaurant)
+                    StoreLayoutTab(
+                      layoutDetail: state.layoutDetail,
+                      isReservationAvailable: state.isReservationAvailable,
+                    ),
                   StoreReservationStatusTab(
                     category: state.category,
                     isReservationAvailable: state.isReservationAvailable,
                     salonDesigners: state.salonDesigners,
+                    operatingHours: state.operatingHours,
+                    reservationAvailabilityDate:
+                        state.reservationAvailabilityDate,
+                    reservationAvailabilitySlots:
+                        state.reservationAvailabilitySlots,
+                    isReservationAvailabilityLoading:
+                        state.isReservationAvailabilityLoading,
+                    onSelectReservationDate: (date) {
+                      onAction(
+                        InformationAction.changeReservationAvailabilityDate(
+                          date,
+                        ),
+                      );
+                    },
+                    onPickReservationDate: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate:
+                            state.reservationAvailabilityDate ?? DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 90)),
+                      );
+                      if (picked != null) {
+                        onAction(
+                          InformationAction.changeReservationAvailabilityDate(
+                            picked,
+                          ),
+                        );
+                      }
+                    },
                     onTapReservation: () {
                       final currentLocation = GoRouterState.of(
                         context,
@@ -184,19 +233,19 @@ class InformationScreen extends StatelessWidget {
                       );
                     },
                     onTapSalonDesigner:
-                    StoreCategory.fromDbValue(state.category) ==
-                        StoreCategory.salon
+                        StoreCategory.fromDbValue(state.category) ==
+                            StoreCategory.salon
                         ? (String designerId) {
-                      final currentLocation = GoRouterState.of(
-                        context,
-                      ).matchedLocation;
-                      onAction(
-                        InformationAction.tapSalonDesignerReservation(
-                          currentLocation: currentLocation,
-                          designerId: designerId,
-                        ),
-                      );
-                    }
+                            final currentLocation = GoRouterState.of(
+                              context,
+                            ).matchedLocation;
+                            onAction(
+                              InformationAction.tapSalonDesignerReservation(
+                                currentLocation: currentLocation,
+                                designerId: designerId,
+                              ),
+                            );
+                          }
                         : null,
                   ),
                   StorePhotoTab(imageUrls: state.imageUrls),

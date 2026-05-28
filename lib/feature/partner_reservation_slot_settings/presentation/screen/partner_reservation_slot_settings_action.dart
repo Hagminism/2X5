@@ -1,4 +1,3 @@
-import 'package:capstone_2026/feature/partner_reservation_slot_settings/domain/enum/reservation_slot_interval.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'partner_reservation_slot_settings_action.freezed.dart';
@@ -13,20 +12,30 @@ sealed class PartnerReservationSlotSettingsAction
     DateTime date,
   ) = SelectDate;
 
-  const factory PartnerReservationSlotSettingsAction.changeSlotInterval(
-    ReservationSlotInterval interval,
-  ) = ChangeSlotInterval;
-
   const factory PartnerReservationSlotSettingsAction.toggleSlotOpen({
     required String time,
     required bool isOpen,
   }) = ToggleSlotOpen;
 
-  const factory PartnerReservationSlotSettingsAction.tapIncreaseMaxTeamCount(
+  const factory PartnerReservationSlotSettingsAction.tapIncreaseMaxGuestCount(
     String time,
-  ) = TapIncreaseMaxTeamCount;
+  ) = TapIncreaseMaxGuestCount;
 
-  const factory PartnerReservationSlotSettingsAction.tapDecreaseMaxTeamCount(
+  const factory PartnerReservationSlotSettingsAction.tapDecreaseMaxGuestCount(
     String time,
-  ) = TapDecreaseMaxTeamCount;
+  ) = TapDecreaseMaxGuestCount;
+
+  const factory PartnerReservationSlotSettingsAction.toggleExceptionClosed(
+    bool isClosed,
+  ) = ToggleExceptionClosed;
+
+  const factory PartnerReservationSlotSettingsAction.changeExceptionOpenTime(
+    String? openTime,
+  ) = ChangeExceptionOpenTime;
+
+  const factory PartnerReservationSlotSettingsAction.changeExceptionCloseTime(
+    String? closeTime,
+  ) = ChangeExceptionCloseTime;
+
+  const factory PartnerReservationSlotSettingsAction.tapSave() = TapSave;
 }

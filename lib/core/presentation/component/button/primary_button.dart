@@ -40,10 +40,12 @@ class PrimaryButton extends StatelessWidget {
           child: Center(
             child: Text(
               text,
-              style: AppTextStyles.subtitle.copyWith(
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: fontSize ?? 18,
                 fontWeight: FontWeight.w700,
-                fontSize: (fontSize != null) ? fontSize! : null,
-                color: (textColor != null) ? textColor : AppColors.white,
+                letterSpacing: -0.3,
+                color: textColor ?? AppColors.white,
               ),
             ),
           ),

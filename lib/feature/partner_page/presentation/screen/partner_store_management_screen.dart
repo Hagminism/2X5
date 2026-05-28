@@ -127,6 +127,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   PartnerStoreSectionCard(
                     title: '기본 정보',
+                    isRequired: true,
                     child: Column(
                       children: [
                         PartnerFormTextField(
@@ -192,12 +193,11 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   PartnerStoreSectionCard(
                     title: '위치 정보',
+                    isRequired: true,
                     child: Column(
                       children: [
                         PartnerFormTextField(
-                          hintText: (state.address == '')
-                              ? '주소'
-                              : state.address,
+                          hintText: '주소',
                           initialValue: state.address,
                           isInteractive: false,
                           onTap: () => onAction(
@@ -223,6 +223,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                     PartnerStoreSectionCard(
                       title: '예약금 설정',
+                      isRequired: true,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -271,111 +272,10 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       ),
                     ),
                   ],
-                  if (state.category == 'restaurant' ||
-                      state.category == 'cafe') ...[
-                    const SizedBox(height: 24),
-                    PartnerStoreSectionCard(
-                      title: '메뉴 정보',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PartnerStoreManagementCtaCard(
-                            icon: Icons.restaurant_menu_rounded,
-                            title: '메뉴 관리',
-                            subtitle: '대표 메뉴, 가격, 설명을 등록하고 수정할 수 있어요.',
-                            onTap: () {
-                              onAction(
-                                const PartnerStoreManagementAction.tapOpenMenuManager(),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  if (state.category == 'study_cafe') ...[
-                    const SizedBox(height: 24),
-                    PartnerStoreSectionCard(
-                      title: '좌석 관리',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PartnerStoreManagementCtaCard(
-                            icon: Icons.chair_alt_rounded,
-                            title: '좌석 배치',
-                            subtitle: '스터디카페 좌석 구성을 확인하고 조정할 수 있어요.',
-                            onTap: () {
-                              onAction(
-                                const PartnerStoreManagementAction.tapOpenSeatLayoutManager(),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    PartnerStoreSectionCard(
-                      title: '이용권 관리',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PartnerStoreManagementCtaCard(
-                            icon: Icons.confirmation_number_outlined,
-                            title: '이용권 설정',
-                            subtitle: '이용 시간·가격·판매 여부를 설정할 수 있어요.',
-                            onTap: () {
-                              onAction(
-                                const PartnerStoreManagementAction.tapOpenStudyCafeUsageOptionManager(),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  if (state.category == 'salon') ...[
-                    const SizedBox(height: 24),
-                    PartnerStoreSectionCard(
-                      title: '미용실 관리',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PartnerStoreManagementCtaCard(
-                            icon: Icons.content_cut_rounded,
-                            title: '디자이너/시술 관리',
-                            subtitle: '디자이너, 시술, 근무표와 예약 슬롯 단위를 관리해요.',
-                            onTap: () {
-                              onAction(
-                                const PartnerStoreManagementAction.tapOpenSalonManager(),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  PartnerStoreSectionCard(
-                    title: '업장 사진',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PartnerStoreManagementCtaCard(
-                          icon: Icons.add_a_photo_outlined,
-                          title: '업장 사진 관리',
-                          subtitle: '갤러리에서 선택한 사진을 업로드해 노출할 수 있어요.',
-                          onTap: () {
-                            onAction(
-                              const PartnerStoreManagementAction.tapOpenImageManager(),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 24),
                   PartnerStoreSectionCard(
                     title: '예약 슬롯 설정',
+                    isRequired: true,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -400,6 +300,7 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   PartnerStoreSectionCard(
                     title: '운영 정보',
+                    isRequired: true,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -441,6 +342,134 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  PartnerStoreSectionCard(
+                    title: '가게 정보',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PartnerFormTextField(
+                          hintText: '매장 소개, 주차 안내, 이용 안내 등을 자유롭게 입력해 주세요.',
+                          initialValue: state.description,
+                          maxLines: 8,
+                          onChanged: (value) => onAction(
+                            PartnerStoreManagementAction.changeDescription(
+                              value,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (state.category == 'restaurant' ||
+                      state.category == 'cafe') ...[
+                    const SizedBox(height: 24),
+                    _buildGatedSection(
+                      title: '메뉴 정보',
+                      canAccess: state.canAccessStoreSubManagers,
+                      child: PartnerStoreManagementCtaCard(
+                        icon: Icons.restaurant_menu_rounded,
+                        title: '메뉴 관리',
+                        subtitle: '대표 메뉴, 가격, 설명을 등록하고 수정할 수 있어요.',
+                        onTap: state.canAccessStoreSubManagers
+                            ? () {
+                                onAction(
+                                  const PartnerStoreManagementAction.tapOpenMenuManager(),
+                                );
+                              }
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildGatedSection(
+                      title: '구조 관리',
+                      canAccess: state.canAccessStoreSubManagers,
+                      child: PartnerStoreManagementCtaCard(
+                        icon: Icons.layers_outlined,
+                        title: '내부 구조 설정',
+                        subtitle: '매장 내부의 테이블 및 구조물 배치를 설정할 수 있어요.',
+                        onTap: state.canAccessStoreSubManagers
+                            ? () {
+                                onAction(
+                                  const PartnerStoreManagementAction.tapOpenLayoutManager(),
+                                );
+                              }
+                            : null,
+                      ),
+                    ),
+                  ],
+                  if (state.category == 'study_cafe') ...[
+                    const SizedBox(height: 24),
+                    _buildGatedSection(
+                      title: '좌석 관리',
+                      canAccess: state.canAccessStoreSubManagers,
+                      child: PartnerStoreManagementCtaCard(
+                        icon: Icons.chair_alt_rounded,
+                        title: '좌석 배치',
+                        subtitle: '스터디카페 좌석 구성을 확인하고 조정할 수 있어요.',
+                        onTap: state.canAccessStoreSubManagers
+                            ? () {
+                                onAction(
+                                  const PartnerStoreManagementAction.tapOpenSeatLayoutManager(),
+                                );
+                              }
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildGatedSection(
+                      title: '이용권 관리',
+                      canAccess: state.canAccessStoreSubManagers,
+                      child: PartnerStoreManagementCtaCard(
+                        icon: Icons.confirmation_number_outlined,
+                        title: '이용권 설정',
+                        subtitle: '이용 시간·가격·판매 여부를 설정할 수 있어요.',
+                        onTap: state.canAccessStoreSubManagers
+                            ? () {
+                                onAction(
+                                  const PartnerStoreManagementAction.tapOpenStudyCafeUsageOptionManager(),
+                                );
+                              }
+                            : null,
+                      ),
+                    ),
+                  ],
+                  if (state.category == 'salon') ...[
+                    const SizedBox(height: 24),
+                    _buildGatedSection(
+                      title: '미용실 관리',
+                      canAccess: state.canAccessStoreSubManagers,
+                      child: PartnerStoreManagementCtaCard(
+                        icon: Icons.content_cut_rounded,
+                        title: '디자이너/시술 관리',
+                        subtitle: '디자이너, 시술, 근무표와 예약 슬롯 단위를 관리해요.',
+                        onTap: state.canAccessStoreSubManagers
+                            ? () {
+                                onAction(
+                                  const PartnerStoreManagementAction.tapOpenSalonManager(),
+                                );
+                              }
+                            : null,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  _buildGatedSection(
+                    title: '업장 사진',
+                    canAccess: state.canAccessStoreSubManagers,
+                    child: PartnerStoreManagementCtaCard(
+                      icon: Icons.add_a_photo_outlined,
+                      title: '업장 사진 관리',
+                      subtitle: '갤러리에서 선택한 사진을 업로드해 노출할 수 있어요.',
+                      onTap: state.canAccessStoreSubManagers
+                          ? () {
+                              onAction(
+                                const PartnerStoreManagementAction.tapOpenImageManager(),
+                              );
+                            }
+                          : null,
+                    ),
+                  ),
                   const SizedBox(height: 18),
                   Opacity(
                     opacity: state.canSubmit ? 1 : 0.45,
@@ -475,6 +504,31 @@ class PartnerStoreManagementScreen extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildGatedSection({
+    required String title,
+    required bool canAccess,
+    required Widget child,
+  }) {
+    return PartnerStoreSectionCard(
+      title: title,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          child,
+          if (!canAccess) ...[
+            const SizedBox(height: 10),
+            Text(
+              '최초 업장 등록을 완료한 뒤 설정할 수 있어요.',
+              style: AppTextStyles.bodySecondary.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 

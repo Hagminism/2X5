@@ -1,9 +1,17 @@
+import 'dart:math' as math;
+
 import 'package:capstone_2026/core/data/data_source/store/store_data_source.dart';
+import 'package:capstone_2026/core/data/dto/store/store_dto.dart';
 import 'package:capstone_2026/core/data/mapper/store/store_mapper.dart';
+import 'package:capstone_2026/core/data/dto/store/store_layout_detail_dto.dart';
+import 'package:capstone_2026/core/data/mapper/store/store_layout_detail_mapper.dart';
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
+import 'package:capstone_2026/core/domain/model/store/store_layout_detail.dart';
+import 'package:capstone_2026/core/domain/model/store/store_list_entry.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/model/enum/partner_status.dart';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
+import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
@@ -29,6 +37,49 @@ class StoreRepositoryImpl implements StoreRepository {
   Future<List<Store>> getStores() async {
     final storeDtos = await _storeDataSource.findStores();
     return storeDtos.map((storeDto) => storeDto.toModel()).toList();
+  }
+
+  @override
+  Future<List<StoreListEntry>> findStoresNearWithCoverImages({
+    required double latitude,
+    required double longitude,
+    required double radiusMeters,
+  }) async {
+    final latDelta = radiusMeters / 111000.0;
+    final lngDelta =
+        radiusMeters / (111000.0 * math.cos(latitude * math.pi / 180));
+
+    final rows = await _storeDataSource.findStoresInBoundingBoxWithCoverImages(
+      minLat: latitude - latDelta,
+      maxLat: latitude + latDelta,
+      minLng: longitude - lngDelta,
+      maxLng: longitude + lngDelta,
+    );
+    return _mapRowsToStoreListEntries(rows);
+  }
+
+  @override
+  Future<List<StoreListEntry>> findStoresPageWithCoverImages({
+    required int from,
+    required int to,
+  }) async {
+    final rows = await _storeDataSource.findStoresPageWithCoverImages(
+      from: from,
+      to: to,
+    );
+    return _mapRowsToStoreListEntries(rows);
+  }
+
+  List<StoreListEntry> _mapRowsToStoreListEntries(
+    List<Map<String, dynamic>> rows,
+  ) {
+    return rows.map((json) {
+      final storeDto = StoreDto.fromJson(json);
+      return StoreListEntry(
+        store: storeDto.toModel(),
+        coverImageUrl: storeCoverImageUrlFromJsonRows(json['store_images']),
+      );
+    }).toList();
   }
 
   @override
@@ -64,6 +115,13 @@ class StoreRepositoryImpl implements StoreRepository {
   @override
   Future<List<StoreImage>> getStoreImagesByStoreId(String storeId) {
     return _storeDataSource.findImagesByStoreId(storeId);
+  }
+
+  @override
+  Future<Map<String, String?>> getCoverImageUrlsByStoreIds(
+    List<String> storeIds,
+  ) {
+    return _storeDataSource.findCoverImageUrlsByStoreIds(storeIds);
   }
 
   @override
@@ -354,5 +412,31 @@ class StoreRepositoryImpl implements StoreRepository {
       isCover: isCover,
     );
     await _storeDataSource.createImage(storeId, storeImage);
+  }
+
+  @override
+  Future<StoreLayoutDetail?> getStoreLayoutByStoreId(String storeId) async {
+    final dto = await _storeDataSource.findLayoutByStoreId(storeId);
+    return dto?.toModel();
+  }
+
+  @override
+  Future<StoreLayoutDetail> saveMyStoreLayout(StoreLayoutDetail layout) async {
+    final store = await getMyStore();
+    if (store == null) {
+      throw StateError('업장 정보 저장 후 내부 구조를 설정할 수 있습니다.');
+    }
+
+    final layoutDto = StoreLayoutDetailDto(
+      id: layout.id.isEmpty ? null : layout.id,
+      storeId: store.id,
+      layoutJson: {
+        'seats': layout.seats.map((seat) => seat.toJson()).toList(),
+        'elements': layout.elements.map((element) => element.toJson()).toList(),
+      },
+    );
+
+    final savedDto = await _storeDataSource.upsertLayout(layoutDto);
+    return savedDto.toModel();
   }
 }

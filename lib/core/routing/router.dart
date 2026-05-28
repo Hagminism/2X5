@@ -5,7 +5,6 @@ import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen_root.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
-import 'package:capstone_2026/feature/information/presentation/screen/information_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/notices/presentation/screen/notices_screen.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/core/presentation/component/scope/map_studycafe_pass_selection_scope.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_seat_selection/core/presentation/component/scope/map_studycafe_seat_selection_scope.dart';
@@ -41,8 +40,10 @@ import 'package:capstone_2026/feature/partner_salon_schedule_management/presenta
 import 'package:capstone_2026/feature/partner_salon_service_management/core/presentation/component/scope/partner_salon_service_management_scope.dart';
 import 'package:capstone_2026/feature/partner_salon_service_management/presentation/screen/partner_salon_service_management_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/layout/core/presentation/component/scope/partner_studycafe_layout_scope.dart';
+import 'package:capstone_2026/feature/partner_store_layout/core/presentation/component/scope/partner_store_layout_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/usage_option/core/presentation/component/scope/partner_studycafe_usage_option_scope.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/layout/presentation/screen/partner_studycafe_layout_view_model.dart';
+import 'package:capstone_2026/feature/partner_store_layout/presentation/screen/partner_store_layout_view_model.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/usage_option/presentation/screen/partner_studycafe_usage_option_view_model.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_screen_root.dart';
 import 'package:capstone_2026/feature/find_password/presentation/screen/find_password_view_model.dart';
@@ -58,7 +59,7 @@ import 'package:capstone_2026/feature/my_page/reservation_history/core/presentat
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/settings/presentation/screen/edit_profile_screen.dart';
-import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_screen_root.dart';
+import 'package:capstone_2026/feature/bookmark/core/presentation/component/scope/bookmark_scope.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/core/presentation/component/scope/partner_onboarding_scope.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
@@ -77,7 +78,8 @@ import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partn
 import 'package:capstone_2026/feature/sign_up_customer/presentation/screen/sign_up_customer_view_model.dart';
 import 'package:capstone_2026/feature/sign_up_type/presentation/screen/sign_up_type_screen_root.dart';
 import 'package:capstone_2026/feature/search/presentation/screen/search_screen.dart';
-import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_screen.dart';
+import 'package:capstone_2026/feature/reservation/core/presentation/component/scope/reservation_scope.dart';
+import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_view_model.dart';
 import 'package:capstone_2026/feature/salon_reservation/core/presentation/component/scope/salon_reservation_scope.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_view_model.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/core/presentation/component/scope/salon_reservation_confirm_scope.dart';
@@ -180,7 +182,10 @@ final router = GoRouter(
                     GoRoute(
                       path: Routes.reservation,
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => const ReservationScreen(),
+                      builder: (context, state) => ReservationScope(
+                        viewModel: getIt<ReservationViewModel>(),
+                        storeId: state.pathParameters['storeId'] ?? '',
+                      ),
                     ),
                     GoRoute(
                       path: Routes.salonReservation,
@@ -270,7 +275,10 @@ final router = GoRouter(
                     GoRoute(
                       path: Routes.reservation,
                       parentNavigatorKey: _rootNavigatorKey,
-                      builder: (context, state) => const ReservationScreen(),
+                      builder: (context, state) => ReservationScope(
+                        viewModel: getIt<ReservationViewModel>(),
+                        storeId: state.pathParameters['storeId'] ?? '',
+                      ),
                     ),
                     GoRoute(
                       path: Routes.salonReservation,
@@ -358,8 +366,10 @@ final router = GoRouter(
                         GoRoute(
                           path: Routes.reservation,
                           parentNavigatorKey: _rootNavigatorKey,
-                          builder: (context, state) =>
-                              const ReservationScreen(),
+                          builder: (context, state) => ReservationScope(
+                            viewModel: getIt<ReservationViewModel>(),
+                            storeId: state.pathParameters['storeId'] ?? '',
+                          ),
                         ),
                         GoRoute(
                           path: Routes.salonReservation,
@@ -444,7 +454,7 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.bookmark,
-              builder: (context, state) => BookmarkScreenRoot(
+              builder: (context, state) => BookmarkScope(
                 viewModel: getIt<BookmarkViewModel>(),
               ),
               routes: [
@@ -454,11 +464,82 @@ final router = GoRouter(
                   path: Routes.bookmarkStoreInformation,
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    return InformationScreenRoot(
+                    return InformationScope(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
                     );
                   },
+                  routes: [
+                    GoRoute(
+                      path: Routes.reservation,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => ReservationScope(
+                        viewModel: getIt<ReservationViewModel>(),
+                        storeId: state.pathParameters['storeId'] ?? '',
+                      ),
+                    ),
+                    GoRoute(
+                      path: Routes.salonReservation,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => SalonReservationScope(
+                        viewModel: getIt<SalonReservationViewModel>(),
+                        storeId: state.pathParameters['storeId'] ?? '',
+                        initialDesignerId:
+                            state.uri.queryParameters['designerId'],
+                      ),
+                      routes: [
+                        GoRoute(
+                          path: Routes.salonReservationConfirm,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) {
+                            final storeId =
+                                state.pathParameters['storeId'] ?? '';
+                            final designerId =
+                                state.uri.queryParameters['designerId'] ?? '';
+                            final selectedServices =
+                                state
+                                    .uri
+                                    .queryParametersAll['selectedServices'] ??
+                                [];
+                            final selectedDateTime =
+                                state.uri.queryParameters['selectedDateTime'] ??
+                                '';
+
+                            return SalonReservationConfirmScope(
+                              viewModel:
+                                  getIt<SalonReservationConfirmViewModel>(),
+                              storeId: storeId,
+                              designerId: designerId,
+                              selectedServices: selectedServices,
+                              selectedDateTime: selectedDateTime,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    GoRoute(
+                      path: Routes.seat,
+                      parentNavigatorKey: _rootNavigatorKey,
+                      builder: (context, state) => SeatSelectionScope(
+                        viewModel: getIt<SeatSelectionViewModel>(),
+                        storeId: state.pathParameters['storeId'] ?? '',
+                      ),
+                      routes: [
+                        GoRoute(
+                          path: Routes.duration,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) {
+                            final seatInfo = state.uri.queryParameters;
+
+                            return TimeSelectionScope(
+                              viewModel: getIt<TimeSelectionViewModel>(),
+                              seatInfo: seatInfo,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -506,7 +587,82 @@ final router = GoRouter(
                           initialTabIndex: tab,
                           showReviewWrite: showReviewWrite,
                         );
-                      },                    ),
+                      },
+                      routes: [
+                        GoRoute(
+                          path: Routes.reservation,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) => ReservationScope(
+                            viewModel: getIt<ReservationViewModel>(),
+                            storeId: state.pathParameters['storeId'] ?? '',
+                          ),
+                        ),
+                        GoRoute(
+                          path: Routes.salonReservation,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) => SalonReservationScope(
+                            viewModel: getIt<SalonReservationViewModel>(),
+                            storeId: state.pathParameters['storeId'] ?? '',
+                            initialDesignerId:
+                                state.uri.queryParameters['designerId'],
+                          ),
+                          routes: [
+                            GoRoute(
+                              path: Routes.salonReservationConfirm,
+                              parentNavigatorKey: _rootNavigatorKey,
+                              builder: (context, state) {
+                                final storeId =
+                                    state.pathParameters['storeId'] ?? '';
+                                final designerId =
+                                    state.uri.queryParameters['designerId'] ??
+                                    '';
+                                final selectedServices =
+                                    state
+                                        .uri
+                                        .queryParametersAll['selectedServices'] ??
+                                    [];
+                                final selectedDateTime =
+                                    state
+                                        .uri
+                                        .queryParameters['selectedDateTime'] ??
+                                    '';
+
+                                return SalonReservationConfirmScope(
+                                  viewModel:
+                                      getIt<SalonReservationConfirmViewModel>(),
+                                  storeId: storeId,
+                                  designerId: designerId,
+                                  selectedServices: selectedServices,
+                                  selectedDateTime: selectedDateTime,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        GoRoute(
+                          path: Routes.seat,
+                          parentNavigatorKey: _rootNavigatorKey,
+                          builder: (context, state) => SeatSelectionScope(
+                            viewModel: getIt<SeatSelectionViewModel>(),
+                            storeId: state.pathParameters['storeId'] ?? '',
+                          ),
+                          routes: [
+                            GoRoute(
+                              path: Routes.duration,
+                              parentNavigatorKey: _rootNavigatorKey,
+                              builder: (context, state) {
+                                final seatInfo = state.uri.queryParameters;
+
+                                return TimeSelectionScope(
+                                  viewModel: getIt<TimeSelectionViewModel>(),
+                                  seatInfo: seatInfo,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
                 GoRoute(
@@ -613,6 +769,13 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => PartnerStudyCafeLayoutScope(
                     viewModel: getIt<PartnerStudyCafeLayoutViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.partnerStoreLayout,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => PartnerStoreLayoutScope(
+                    viewModel: getIt<PartnerStoreLayoutViewModel>(),
                   ),
                 ),
                 GoRoute(

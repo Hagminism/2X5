@@ -11,6 +11,8 @@ const Map<String, String> _naverDayLabelToDbKey = {
   '일': 'sunday',
 };
 
+const int _maxWeeklyHoursEntries = 7;
+
 /// 프록시 `/api/place/{id}/hours` 응답을 `stores.operating_hours` 형식으로 변환합니다.
 Map<String, dynamic>? mapNaverWeeklyHoursToStoreOperatingHours(
   Map<String, dynamic>? payload,
@@ -24,20 +26,27 @@ Map<String, dynamic>? mapNaverWeeklyHoursToStoreOperatingHours(
     return null;
   }
 
+  final limitedWeeklyRaw = weeklyRaw.take(_maxWeeklyHoursEntries);
   final result = <String, dynamic>{};
 
-  for (final entry in weeklyRaw) {
+  for (final entry in limitedWeeklyRaw) {
     if (entry is! Map) {
       continue;
     }
 
-    final dayLabel = entry['day']?.toString().trim() ?? '';
+    final dayLabel = _parseDayLabel(entry['day']?.toString() ?? '');
     if (dayLabel.isEmpty) {
       continue;
     }
 
     final start = _normalizeTime(entry['start']?.toString());
     final end = _normalizeTime(entry['end']?.toString());
+    final breakStart = _normalizeTime(
+      entry['breakStart']?.toString() ?? entry['breakStartTime']?.toString(),
+    );
+    final breakEnd = _normalizeTime(
+      entry['breakEnd']?.toString() ?? entry['breakEndTime']?.toString(),
+    );
 
     final targetDbKeys = dayLabel == '매일'
         ? WeekDay.values.map((d) => d.dbKey).toList()
@@ -50,7 +59,12 @@ Map<String, dynamic>? mapNaverWeeklyHoursToStoreOperatingHours(
       continue;
     }
 
-    final dayConfig = _buildDayConfig(start: start, end: end);
+    final dayConfig = _buildDayConfig(
+      start: start,
+      end: end,
+      breakStart: breakStart,
+      breakEnd: breakEnd,
+    );
     for (final dbKey in targetDbKeys) {
       result[dbKey] = dayConfig;
     }
@@ -73,19 +87,37 @@ Map<String, dynamic>? mapNaverWeeklyHoursToStoreOperatingHours(
   return result;
 }
 
+String _parseDayLabel(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) {
+    return '';
+  }
+
+  return trimmed.replaceFirst(RegExp(r'\([^)]*\)'), '').trim();
+}
+
 Map<String, dynamic> _buildDayConfig({
   required String? start,
   required String? end,
+  required String? breakStart,
+  required String? breakEnd,
 }) {
-  if (start != null &&
-      end != null &&
-      start.isNotEmpty &&
-      end.isNotEmpty) {
-    return {
+  if (start != null && end != null && start.isNotEmpty && end.isNotEmpty) {
+    final config = <String, dynamic>{
       'isOpened': true,
       'openTime': start,
       'closeTime': end,
     };
+
+    if (breakStart != null &&
+        breakEnd != null &&
+        breakStart.isNotEmpty &&
+        breakEnd.isNotEmpty) {
+      config['breakStartTime'] = breakStart;
+      config['breakEndTime'] = breakEnd;
+    }
+
+    return config;
   }
 
   return {'isOpened': false};
@@ -96,5 +128,27 @@ String? _normalizeTime(String? raw) {
   if (trimmed == null || trimmed.isEmpty) {
     return null;
   }
-  return trimmed;
+  if (trimmed.toLowerCase() == 'null') {
+    return null;
+  }
+
+  final match = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(trimmed);
+  if (match == null) {
+    return trimmed;
+  }
+
+  final hour = int.tryParse(match.group(1)!);
+  final minute = match.group(2)!;
+  if (hour == null || minute.length != 2) {
+    return trimmed;
+  }
+
+  if (hour == 24) {
+    return minute == '00' ? '24:00' : null;
+  }
+  if (hour < 0 || hour > 23) {
+    return null;
+  }
+
+  return '${hour.toString().padLeft(2, '0')}:$minute';
 }

@@ -3,12 +3,14 @@ import 'dart:math' as math;
 
 import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/util/map_naver_place_operating_hours.dart';
+import 'package:capstone_2026/core/domain/util/map_search_area.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/kakao_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -37,9 +39,23 @@ class _MapScreenState extends State<MapScreen> {
   StreamSubscription<MapEvent>? _mapEventSubscription;
 
   static const _fixedCenter = NLatLng(37.5826, 127.0106);
+  static const _searchCooldownDuration = Duration(seconds: 3);
+  static const _overlapDbOnlyThreshold = 0.9;
+  static const _storePreviewSheetHeight = 148.0;
+  static const _searchButtonGapAboveSheet = 12.0;
+  static const _searchAreaButtonHeight = 40.0;
+  // 검색 배치 속도 조절(높으면 로드 빠르나, 403 확률 올라감)
+  static const _storeRegisterBatchSize = 12;
+
   NLatLng _currentCenter = _fixedCenter;
   NLatLng? _myLocationLatLng;
   bool _isSearching = false;
+  MapAreaBounds? _lastCrawledBounds;
+
+  /// 직전 API 검색에서 신규 0건이었던 bbox. 겹침 ≥90%이면 카카오 생략.
+  MapAreaBounds? _lastZeroNewSearchBounds;
+  Timer? _searchCooldownTimer;
+  bool _isSearchCooldownActive = false;
   int _currentZoom = 15;
   bool _mapReady = false;
   List<Map<String, dynamic>> _stores = [];
@@ -77,6 +93,8 @@ class _MapScreenState extends State<MapScreen> {
             _currentZoom = (_currentZoom + 3).clamp(1, 21);
             _naverMapManager.setZoom(zoom: _currentZoom);
             _naverMapManager.setCenter(center: pos);
+            // 프로그래밍 줌은 MapZoomEnd 이벤트를 발생시키지 않으므로 직접 호출
+            unawaited(_addStoreMarkers());
           }
           return;
         }
@@ -141,29 +159,476 @@ class _MapScreenState extends State<MapScreen> {
     } catch (_) {}
   }
 
-  Future<void> _fetchStores(NLatLng center) async {
+  Future<List<Map<String, dynamic>>> _queryStoresInArea(NLatLng center) async {
+    final bounds = mapAreaBoundsFromCenter(
+      lat: center.lat,
+      lng: center.lng,
+    );
+    final response = await Supabase.instance.client
+        .from('stores')
+        .select(
+          'id, name, category, latitude, longitude, address, naver_place_id',
+        )
+        .gte('latitude', bounds.minLat)
+        .lte('latitude', bounds.maxLat)
+        .gte('longitude', bounds.minLng)
+        .lte('longitude', bounds.maxLng);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  bool _storeListsEquivalent(
+    List<Map<String, dynamic>> previous,
+    List<Map<String, dynamic>> next,
+  ) {
+    if (previous.length != next.length) {
+      return false;
+    }
+    final previousIds = previous
+        .map((store) => store['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    final nextIds = next
+        .map((store) => store['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    return previousIds.length == nextIds.length &&
+        previousIds.containsAll(nextIds);
+  }
+
+  Future<void> _fetchStores(
+    NLatLng center, {
+    bool skipMarkerRefreshIfUnchanged = false,
+  }) async {
     try {
-      final double latOffset = 0.0135;
-      final double lngOffset = 0.017;
-      final minLat = center.lat - latOffset;
-      final maxLat = center.lat + latOffset;
-      final minLng = center.lng - lngOffset;
-      final maxLng = center.lng + lngOffset;
-
-      final response = await Supabase.instance.client
-          .from('stores')
-          .select('id, name, category, latitude, longitude, address')
-          .gte('latitude', minLat)
-          .lte('latitude', maxLat)
-          .gte('longitude', minLng)
-          .lte('longitude', maxLng);
-
+      final stores = await _queryStoresInArea(center);
       if (!mounted) return;
-      setState(() => _stores = List<Map<String, dynamic>>.from(response));
-      if (_mapReady) _addStoreMarkers();
+      final storesUnchanged = _storeListsEquivalent(_stores, stores);
+      setState(() => _stores = stores);
+      if (!_mapReady) return;
+      if (skipMarkerRefreshIfUnchanged && storesUnchanged) {
+        debugPrint('[MapSearch] Marker refresh skip — stores unchanged');
+        return;
+      }
+      await _addStoreMarkers();
     } catch (e) {
       debugPrint('stores fetch error: $e');
     }
+  }
+
+  bool _shouldSkipKakaoForZeroNewRegion(MapAreaBounds newBounds) {
+    final lastZeroNew = _lastZeroNewSearchBounds;
+    if (lastZeroNew == null) {
+      return false;
+    }
+    final ratio = mapAreaOverlapRatioAgainstNew(
+      newBounds: newBounds,
+      previousBounds: lastZeroNew,
+    );
+    return ratio >= _overlapDbOnlyThreshold;
+  }
+
+  void _rememberZeroNewSearchBounds(MapAreaBounds newBounds) {
+    _lastZeroNewSearchBounds = _lastZeroNewSearchBounds == null
+        ? newBounds
+        : mapAreaBoundsUnion(_lastZeroNewSearchBounds!, newBounds);
+  }
+
+  Set<String> _existingStoreLookupKeys(List<Map<String, dynamic>> areaStores) {
+    final keys = <String>{};
+    for (final store in areaStores) {
+      final name = store['name']?.toString() ?? '';
+      final address = store['address']?.toString() ?? '';
+      if (name.isNotEmpty && address.isNotEmpty) {
+        keys.add('$name|$address');
+      }
+      final placeId = store['naver_place_id']?.toString() ?? '';
+      if (placeId.isNotEmpty) {
+        keys.add('place:$placeId');
+      }
+    }
+    return keys;
+  }
+
+  bool _isStoreAlreadyRegistered(
+    Map<String, dynamic> candidate,
+    Set<String> lookupKeys,
+  ) {
+    final name = candidate['name'] as String? ?? '';
+    final address = candidate['address'] as String? ?? '';
+    if (name.isNotEmpty &&
+        address.isNotEmpty &&
+        lookupKeys.contains('$name|$address')) {
+      return true;
+    }
+    final fallbackPlaceId = candidate['fallbackPlaceId'] as String? ?? '';
+    if (fallbackPlaceId.isNotEmpty &&
+        lookupKeys.contains('place:$fallbackPlaceId')) {
+      return true;
+    }
+    return false;
+  }
+
+  String _storeDedupeKey(String name, String address) => '$name|$address';
+
+  String _mapCategoryToNaverBusinessType(String category) {
+    switch (category) {
+      case 'cafe':
+      case 'study_cafe':
+        return 'cafe';
+      case 'salon':
+        return 'hairshop';
+      default:
+        return 'restaurant';
+    }
+  }
+
+  void _beginSearchCooldownUi() {
+    _searchCooldownTimer?.cancel();
+    if (!mounted) return;
+    setState(() => _isSearchCooldownActive = true);
+
+    _searchCooldownTimer = Timer(_searchCooldownDuration, () {
+      if (!mounted) return;
+      setState(() {
+        _isSearchCooldownActive = false;
+        _searchCooldownTimer = null;
+      });
+    });
+  }
+
+  void _requestSearchAroundCenter() {
+    if (_isSearching) {
+      return;
+    }
+    if (_isSearchCooldownActive) {
+      debugPrint('[MapSearch] cooldown active');
+      return;
+    }
+    _beginSearchCooldownUi();
+    unawaited(_searchAroundCenter());
+  }
+
+  Future<List<Map<String, dynamic>>> _searchKakaoByCategories({
+    required NLatLng center,
+    required List<String> categories,
+    required KakaoStoreSearchDataSource kakaoSource,
+  }) async {
+    final futures = categories.map((cat) async {
+      final queryKeyword = _categorySearchKeyword(cat);
+      if (queryKeyword.isEmpty) {
+        return <Map<String, dynamic>>[];
+      }
+      try {
+        final kakaoItems = await kakaoSource.searchStoresByCoordinates(
+          keyword: queryKeyword,
+          lat: center.lat,
+          lng: center.lng,
+          radius: 1000,
+        );
+        return kakaoItems
+            .map(
+              (item) => {
+                'item': item,
+                'category': cat,
+              },
+            )
+            .toList();
+      } catch (e) {
+        debugPrint('Error searching category $cat: $e');
+        return <Map<String, dynamic>>[];
+      }
+    });
+    final batches = await Future.wait(futures);
+    return batches.expand((batch) => batch).toList();
+  }
+
+  Map<String, Map<String, dynamic>> _uniqueCandidatesFromKakao(
+    List<Map<String, dynamic>> rawCandidates,
+  ) {
+    final uniqueCandidates = <String, Map<String, dynamic>>{};
+    for (final entry in rawCandidates) {
+      final item = entry['item'] as Map<String, dynamic>;
+      final category = entry['category'] as String;
+
+      final String name = (item['place_name'] as String? ?? '').replaceAll(
+        RegExp(r'<[^>]*>|&[^;]+;'),
+        '',
+      );
+      final String address = item['address_name'] as String? ?? '';
+      final String roadAddress = item['road_address_name'] as String? ?? '';
+      final String targetCheckAddress = roadAddress.isNotEmpty
+          ? roadAddress
+          : address;
+
+      final xStr = item['x']?.toString() ?? '';
+      final yStr = item['y']?.toString() ?? '';
+
+      double? lat;
+      double? lng;
+
+      if (xStr.isNotEmpty && yStr.isNotEmpty) {
+        lng = double.tryParse(xStr);
+        lat = double.tryParse(yStr);
+      }
+
+      if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
+        continue;
+      }
+
+      final key = _storeDedupeKey(name, targetCheckAddress);
+      if (!uniqueCandidates.containsKey(key)) {
+        uniqueCandidates[key] = {
+          'name': name,
+          'address': targetCheckAddress,
+          'category': category,
+          'latitude': lat,
+          'longitude': lng,
+          'fallbackPlaceId': '',
+          'telephone': item['phone'] as String? ?? '',
+        };
+      }
+    }
+    return uniqueCandidates;
+  }
+
+  Future<void> _registerSingleStore({
+    required Map<String, dynamic> cand,
+    required StoreRepository storeRepo,
+    required NaverStoreSearchDataSource naverSource,
+  }) async {
+    final String name = cand['name'] as String;
+    final String address = cand['address'] as String;
+    final String category = cand['category'] as String;
+    final double lat = cand['latitude'] as double;
+    final double lng = cand['longitude'] as double;
+    final String telephone = cand['telephone'] as String;
+    final String fallbackPlaceId = cand['fallbackPlaceId'] as String;
+
+    String finalPlaceId = fallbackPlaceId;
+    String? finalThumUrl;
+    final List<String> finalImageUrls = [];
+    String finalContact = telephone;
+    Map<String, dynamic> operatingHours = {};
+    double finalRating = 0.0;
+
+    debugPrint('[MapCrawl] === 매장 처리 시작: $name ($address) ===');
+
+    try {
+      String? placeId = fallbackPlaceId.isNotEmpty ? fallbackPlaceId : null;
+      if (placeId == null) {
+        final mobileInfo = await naverSource.fetchPlaceInfoFromMobileSearch(
+          storeName: name,
+        );
+        placeId = mobileInfo?['placeId'];
+        final mobilePhone = mobileInfo?['phone'];
+        if (mobilePhone != null && mobilePhone.isNotEmpty) {
+          finalContact = mobilePhone;
+        }
+        debugPrint(
+          '[MapCrawl] 모바일 검색 - placeId: $placeId, phone: $mobilePhone',
+        );
+      }
+
+      if (placeId == null || placeId.isEmpty) {
+        debugPrint('[MapCrawl] placeId 없음 — 저장 skip: $name');
+        return;
+      }
+
+      finalPlaceId = placeId;
+      final preliminaryBusinessType = _mapCategoryToNaverBusinessType(category);
+
+      final summaryFuture = naverSource.fetchPlaceSummary(placeId: placeId);
+      final hoursFuture = naverSource.fetchPlaceOperatingHours(
+        placeId: placeId,
+        businessType: preliminaryBusinessType,
+      );
+
+      final summary = await summaryFuture;
+      var hoursPayload = await hoursFuture;
+
+      final businessTypeRaw = summary?['businessType'];
+      final businessType =
+          businessTypeRaw is String && businessTypeRaw.trim().isNotEmpty
+          ? businessTypeRaw.trim()
+          : preliminaryBusinessType;
+
+      if (businessType != preliminaryBusinessType) {
+        hoursPayload = await naverSource.fetchPlaceOperatingHours(
+          placeId: placeId,
+          businessType: businessType,
+        );
+      }
+
+      final structuredHours = mapNaverWeeklyHoursToStoreOperatingHours(
+        hoursPayload,
+      );
+      if (structuredHours != null && structuredHours.isNotEmpty) {
+        operatingHours = structuredHours;
+      }
+
+      if (operatingHours.isEmpty) {
+        debugPrint('[MapCrawl] 영업시간 없음 — 저장 skip: $name');
+        return;
+      }
+
+      if (summary != null) {
+        final summaryPhone = summary['phone'] as String?;
+        if (summaryPhone != null && summaryPhone.isNotEmpty) {
+          finalContact = summaryPhone;
+        } else {
+          final buttons = summary['buttons'] as Map<String, dynamic>?;
+          final btnPhone = buttons?['phone'] as String?;
+          if (btnPhone != null && btnPhone.isNotEmpty) {
+            finalContact = btnPhone;
+          }
+        }
+
+        final imagesObj = summary['images'] as Map<String, dynamic>?;
+        final imagesList = imagesObj?['images'] as List?;
+        if (imagesList != null && imagesList.isNotEmpty) {
+          for (final img in imagesList) {
+            final imgMap = img as Map<String, dynamic>?;
+            final imgUrl =
+                imgMap?['origin'] as String? ?? imgMap?['url'] as String?;
+            if (imgUrl != null && imgUrl.isNotEmpty) {
+              finalImageUrls.add(imgUrl);
+            }
+          }
+          if (finalImageUrls.isNotEmpty) {
+            finalThumUrl = finalImageUrls.first;
+          }
+        }
+
+        final visitorReviews =
+            summary['visitorReviews'] as Map<String, dynamic>?;
+        if (visitorReviews != null) {
+          final scoreRaw = visitorReviews['score'];
+          if (scoreRaw is num) {
+            finalRating = scoreRaw.toDouble();
+          } else if (scoreRaw is String) {
+            finalRating = double.tryParse(scoreRaw) ?? 0.0;
+          }
+        }
+      }
+    } catch (crawlErr) {
+      debugPrint('[MapCrawl] 크롤링 실패 for $name: $crawlErr');
+      return;
+    }
+
+    final store = Store(
+      id: '',
+      ownerId: '',
+      name: name,
+      category: category,
+      businessNumber: '',
+      latitude: lat,
+      longitude: lng,
+      address: address,
+      contact: finalContact,
+      naverPlaceId: finalPlaceId,
+      operatingHours: operatingHours,
+      rating: finalRating,
+    );
+
+    try {
+      final createdStore = await storeRepo.createStoreDynamically(store);
+      debugPrint('[MapCrawl] DB 저장 성공 - storeId=${createdStore.id}');
+      if (finalImageUrls.isNotEmpty) {
+        for (int i = 0; i < finalImageUrls.length; i++) {
+          await storeRepo.addStoreImage(
+            createdStore.id,
+            finalImageUrls[i],
+            isCover: i == 0,
+          );
+        }
+      } else if (finalThumUrl != null && finalThumUrl.isNotEmpty) {
+        await storeRepo.addStoreImage(
+          createdStore.id,
+          finalThumUrl,
+          isCover: true,
+        );
+      }
+    } catch (dbErr) {
+      debugPrint('[MapCrawl] DB 저장 실패 for $name: $dbErr');
+    }
+  }
+
+  Future<void> _registerNewStoresInBatches({
+    required List<Map<String, dynamic>> newStores,
+    required StoreRepository storeRepo,
+    required NaverStoreSearchDataSource naverSource,
+  }) async {
+    for (var i = 0; i < newStores.length; i += _storeRegisterBatchSize) {
+      final end = math.min(i + _storeRegisterBatchSize, newStores.length);
+      final batch = newStores.sublist(i, end);
+      await Future.wait(
+        batch.map(
+          (cand) => _registerSingleStore(
+            cand: cand,
+            storeRepo: storeRepo,
+            naverSource: naverSource,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _runExternalSearchPipeline({
+    required NLatLng center,
+    required MapAreaBounds newBounds,
+  }) async {
+    final categoriesToSearch = _selectedCategory != null
+        ? [_selectedCategory!]
+        : ['restaurant', 'cafe', 'study_cafe', 'salon'];
+
+    final storeRepo = getIt<StoreRepository>();
+    final kakaoSource = getIt<KakaoStoreSearchDataSource>();
+    final naverSource = getIt<NaverStoreSearchDataSource>();
+
+    final areaStores = await _queryStoresInArea(center);
+    final lookupKeys = _existingStoreLookupKeys(areaStores);
+
+    final skipKakao = _shouldSkipKakaoForZeroNewRegion(newBounds);
+    var candidateCount = 0;
+    final List<Map<String, dynamic>> newStoresToRegister;
+
+    if (skipKakao) {
+      newStoresToRegister = [];
+      debugPrint(
+        '[MapSearch] Kakao skip — prior search had 0 new in overlapping area',
+      );
+    } else {
+      final rawCandidates = await _searchKakaoByCategories(
+        center: center,
+        categories: categoriesToSearch,
+        kakaoSource: kakaoSource,
+      );
+      final uniqueCandidates = _uniqueCandidatesFromKakao(rawCandidates);
+      candidateCount = uniqueCandidates.length;
+      newStoresToRegister = uniqueCandidates.values
+          .where((cand) => !_isStoreAlreadyRegistered(cand, lookupKeys))
+          .toList();
+    }
+
+    debugPrint(
+      '[MapSearch] API path — candidates=$candidateCount, '
+      'new=${newStoresToRegister.length}',
+    );
+
+    if (newStoresToRegister.isNotEmpty) {
+      _lastZeroNewSearchBounds = null;
+      await _registerNewStoresInBatches(
+        newStores: newStoresToRegister,
+        storeRepo: storeRepo,
+        naverSource: naverSource,
+      );
+    } else {
+      _rememberZeroNewSearchBounds(newBounds);
+    }
+
+    _lastCrawledBounds = _lastCrawledBounds == null
+        ? newBounds
+        : mapAreaBoundsUnion(_lastCrawledBounds!, newBounds);
   }
 
   List<Map<String, dynamic>> get _filteredStores {
@@ -260,14 +725,22 @@ class _MapScreenState extends State<MapScreen> {
   String _buildClusterHtml(int count, String category) {
     final color = _categoryColor(category);
     final emoji = _categoryEmoji(category);
-    final size = count > 99 ? 56 : count > 9 ? 50 : 44;
-    final countFontSize = count > 99 ? 11 : count > 9 ? 12 : 13;
+    final size = count > 99
+        ? 56
+        : count > 9
+        ? 50
+        : 44;
+    final countFontSize = count > 99
+        ? 11
+        : count > 9
+        ? 12
+        : 13;
     return '<div style="background:$color;color:white;border-radius:50%;'
         'width:${size}px;height:${size}px;display:flex;flex-direction:column;'
         'align-items:center;justify-content:center;gap:1px;'
         'border:2.5px solid white;'
         'box-shadow:0 2px 8px rgba(0,0,0,0.35);">'
-        '<span style="font-size:16px;line-height:1;">$emoji</span>'
+        '<span style="font-size:16px;line-height:1;font-variant-emoji:text;">$emoji</span>'
         '<span style="font-size:${countFontSize}px;font-weight:700;line-height:1.2;">$count</span>'
         '</div>';
   }
@@ -285,7 +758,7 @@ class _MapScreenState extends State<MapScreen> {
         'width:${size}px;height:${size}px;display:flex;align-items:center;'
         'justify-content:center;font-size:${fontSize}px;$border$shadow'
         'transition:all 0.15s;">'
-        '$emoji</div>';
+        '<span style="font-variant-emoji:text;">$emoji</span></div>';
   }
 
   Future<void> _updateMarkerAppearance(
@@ -348,11 +821,11 @@ class _MapScreenState extends State<MapScreen> {
         _registeredMarkerIds.add('store_$id');
       } else {
         // 클러스터 마커 — 중심점 계산
-        final lat = stores
-                .map((s) => s['latitude'] as double)
-                .reduce((a, b) => a + b) /
+        final lat =
+            stores.map((s) => s['latitude'] as double).reduce((a, b) => a + b) /
             stores.length;
-        final lng = stores
+        final lng =
+            stores
                 .map((s) => s['longitude'] as double)
                 .reduce((a, b) => a + b) /
             stores.length;
@@ -437,295 +910,40 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _searchAroundCenter() async {
     if (_isSearching) return;
     _isSearching = true;
-    setState(() {});
+    if (mounted) setState(() {});
 
     try {
       final center = _currentCenter;
+      final newBounds = mapAreaBoundsFromCenter(
+        lat: center.lat,
+        lng: center.lng,
+      );
 
-      final categoriesToSearch = _selectedCategory != null
-          ? [_selectedCategory!]
-          : ['restaurant', 'cafe', 'study_cafe', 'salon'];
+      final useDbOnly = shouldSkipExternalSearchForOverlap(
+        newBounds: newBounds,
+        lastCrawledBounds: _lastCrawledBounds,
+        threshold: _overlapDbOnlyThreshold,
+      );
 
-      final storeRepo = getIt<StoreRepository>();
-      final kakaoSource = getIt<KakaoStoreSearchDataSource>();
-      final naverSource = getIt<NaverStoreSearchDataSource>();
-      final List<Map<String, dynamic>> rawCandidates = [];
-
-      for (final cat in categoriesToSearch) {
-        final queryKeyword = _categorySearchKeyword(cat);
-        if (queryKeyword.isEmpty) continue;
-
-        try {
-          final kakaoItems = await kakaoSource.searchStoresByCoordinates(
-            keyword: queryKeyword,
-            lat: center.lat,
-            lng: center.lng,
-            radius: 1000,
-          );
-          for (final item in kakaoItems) {
-            rawCandidates.add({
-              'item': item,
-              'category': cat,
-            });
-          }
-        } catch (e) {
-          debugPrint('Error searching category $cat: $e');
-        }
+      if (useDbOnly) {
+        final ratio = mapAreaOverlapRatioAgainstNew(
+          newBounds: newBounds,
+          previousBounds: _lastCrawledBounds!,
+        );
+        debugPrint(
+          '[MapSearch] DB-only (overlap ${(ratio * 100).toStringAsFixed(0)}%)',
+        );
+      } else {
+        await _runExternalSearchPipeline(
+          center: center,
+          newBounds: newBounds,
+        );
       }
 
-      final Map<String, Map<String, dynamic>> uniqueCandidates = {};
-
-      for (final entry in rawCandidates) {
-        final item = entry['item'] as Map<String, dynamic>;
-        final category = entry['category'] as String;
-
-        final String name = (item['place_name'] as String? ?? '')
-            .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '');
-        final String address = item['address_name'] as String? ?? '';
-        final String roadAddress = item['road_address_name'] as String? ?? '';
-        final String targetCheckAddress =
-            roadAddress.isNotEmpty ? roadAddress : address;
-
-        final xStr = item['x']?.toString() ?? '';
-        final yStr = item['y']?.toString() ?? '';
-
-        double? lat;
-        double? lng;
-
-        if (xStr.isNotEmpty && yStr.isNotEmpty) {
-          lng = double.tryParse(xStr);
-          lat = double.tryParse(yStr);
-        }
-
-        if (lat == null || lng == null || lat == 0.0 || lng == 0.0) {
-          continue;
-        }
-
-        final key = '$name|$targetCheckAddress';
-        if (!uniqueCandidates.containsKey(key)) {
-          uniqueCandidates[key] = {
-            'name': name,
-            'address': targetCheckAddress,
-            'category': category,
-            'latitude': lat,
-            'longitude': lng,
-            'fallbackPlaceId': '',
-            'telephone': item['phone'] as String? ?? '',
-          };
-        }
-      }
-
-      final candidatesList = uniqueCandidates.values.toList();
-      final List<Map<String, dynamic>> newStoresToRegister = [];
-
-      final checkFutures = candidatesList.map((cand) async {
-        try {
-          Map<String, dynamic>? existing;
-
-          final fallbackPlaceId = cand['fallbackPlaceId'] as String;
-          if (fallbackPlaceId.isNotEmpty) {
-            existing = await Supabase.instance.client
-                .from('stores')
-                .select('id')
-                .eq('naver_place_id', fallbackPlaceId)
-                .maybeSingle();
-          }
-
-          existing ??= await Supabase.instance.client
-              .from('stores')
-              .select('id')
-              .eq('name', cand['name'] as String)
-              .eq('address', cand['address'] as String)
-              .maybeSingle();
-
-          if (existing == null) {
-            newStoresToRegister.add(cand);
-          }
-        } catch (e) {
-          debugPrint('Error checking DB existence for ${cand['name']}: $e');
-        }
-      });
-
-      await Future.wait(checkFutures);
-
-      if (newStoresToRegister.isNotEmpty) {
-        final registerFutures = newStoresToRegister.map((cand) async {
-          final String name = cand['name'] as String;
-          final String address = cand['address'] as String;
-          final String category = cand['category'] as String;
-          final double lat = cand['latitude'] as double;
-          final double lng = cand['longitude'] as double;
-          final String telephone = cand['telephone'] as String;
-          final String fallbackPlaceId = cand['fallbackPlaceId'] as String;
-
-          String finalPlaceId = fallbackPlaceId;
-          String? finalThumUrl;
-          final List<String> finalImageUrls = [];
-          String finalContact = telephone;
-          Map<String, dynamic> operatingHours = {};
-          double finalRating = 0.0;
-
-          debugPrint('[MapCrawl] === 매장 처리 시작: $name ($address) ===');
-          debugPrint('[MapCrawl] 좌표: lat=$lat, lng=$lng, fallbackPlaceId=$fallbackPlaceId, telephone=$telephone');
-
-          try {
-            // 1단계: 모바일 웹 검색으로 place ID + 전화번호 확보
-            String? placeId = fallbackPlaceId.isNotEmpty ? fallbackPlaceId : null;
-            if (placeId == null) {
-              final mobileInfo = await naverSource.fetchPlaceInfoFromMobileSearch(
-                storeName: name,
-              );
-              placeId = mobileInfo?['placeId'];
-              final mobilePhone = mobileInfo?['phone'];
-              if (mobilePhone != null && mobilePhone.isNotEmpty) {
-                finalContact = mobilePhone;
-              }
-              debugPrint('[MapCrawl] 모바일 검색 결과 - placeId: $placeId, phone: $mobilePhone');
-            }
-
-            if (placeId != null && placeId.isNotEmpty) {
-              finalPlaceId = placeId;
-
-              // 2단계: Summary → businessType 반영 후 영업시간(GraphQL) 수집
-              final summary = await naverSource.fetchPlaceSummary(
-                placeId: placeId,
-              );
-              final businessTypeRaw = summary?['businessType'];
-              final businessType = businessTypeRaw is String &&
-                      businessTypeRaw.trim().isNotEmpty
-                  ? businessTypeRaw.trim()
-                  : 'restaurant';
-              final hoursPayload =
-                  await naverSource.fetchPlaceOperatingHours(
-                placeId: placeId,
-                businessType: businessType,
-              );
-
-              debugPrint(
-                '[MapCrawl] fetchPlaceSummary 결과: ${summary != null ? "성공 (keys: ${summary.keys.toList()})" : "null"}',
-              );
-
-              final structuredHours = mapNaverWeeklyHoursToStoreOperatingHours(
-                hoursPayload,
-              );
-              if (structuredHours != null && structuredHours.isNotEmpty) {
-                operatingHours = structuredHours;
-                debugPrint(
-                  '[MapCrawl] 구조화 영업시간 저장 keys: ${structuredHours.keys.toList()}',
-                );
-              }
-
-              if (summary != null) {
-                // 전화번호
-                final summaryPhone = summary['phone'] as String?;
-                if (summaryPhone != null && summaryPhone.isNotEmpty) {
-                  finalContact = summaryPhone;
-                } else {
-                  final buttons = summary['buttons'] as Map<String, dynamic>?;
-                  final btnPhone = buttons?['phone'] as String?;
-                  if (btnPhone != null && btnPhone.isNotEmpty) {
-                    finalContact = btnPhone;
-                  }
-                }
-
-                // 영업시간: GraphQL 실패 시 Summary 한 줄 텍스트 fallback
-                if (operatingHours.isEmpty) {
-                  final bizHoursObj =
-                      summary['businessHours'] as Map<String, dynamic>?;
-                  final bizHours = bizHoursObj?['description'] as String?;
-                  if (bizHours != null && bizHours.isNotEmpty) {
-                    operatingHours = {'text': bizHours};
-                  }
-                }
-
-                // 대표 이미지 및 다중 이미지
-                final imagesObj = summary['images'] as Map<String, dynamic>?;
-                final imagesList = imagesObj?['images'] as List?;
-                if (imagesList != null && imagesList.isNotEmpty) {
-                  for (final img in imagesList) {
-                    final imgMap = img as Map<String, dynamic>?;
-                    final imgUrl = imgMap?['origin'] as String? ?? imgMap?['url'] as String?;
-                    if (imgUrl != null && imgUrl.isNotEmpty) {
-                      finalImageUrls.add(imgUrl);
-                    }
-                  }
-                  if (finalImageUrls.isNotEmpty) {
-                    finalThumUrl = finalImageUrls.first;
-                  }
-                }
-
-                // 리뷰 평점
-                final visitorReviews = summary['visitorReviews'] as Map<String, dynamic>?;
-                if (visitorReviews != null) {
-                  final scoreRaw = visitorReviews['score'];
-                  if (scoreRaw != null) {
-                    if (scoreRaw is num) {
-                      finalRating = scoreRaw.toDouble();
-                    } else if (scoreRaw is String) {
-                      finalRating = double.tryParse(scoreRaw) ?? 0.0;
-                    }
-                  }
-                }
-
-                debugPrint('[MapCrawl] 최종 - contact=$finalContact, bizHours=$operatingHours, thumUrl=$finalThumUrl, rating=$finalRating');
-              }
-            } else {
-              debugPrint('[MapCrawl] placeId 확보 실패 for $name');
-            }
-          } catch (crawlErr) {
-            debugPrint(
-              '[MapCrawl] 크롤링 실패 for $name: $crawlErr',
-            );
-          }
-
-          debugPrint('[MapCrawl] DB 저장 시도 - name=$name, placeId=$finalPlaceId, contact=$finalContact, operatingHours=$operatingHours, thumUrl=$finalThumUrl, rating=$finalRating');
-
-          final store = Store(
-            id: '',
-            ownerId: '',
-            name: name,
-            category: category,
-            businessNumber: '',
-            latitude: lat,
-            longitude: lng,
-            address: address,
-            contact: finalContact,
-            naverPlaceId: finalPlaceId,
-            operatingHours: operatingHours,
-            rating: finalRating,
-          );
-
-          try {
-            final createdStore = await storeRepo.createStoreDynamically(store);
-            debugPrint('[MapCrawl] DB 저장 성공 - storeId=${createdStore.id}');
-            if (finalImageUrls.isNotEmpty) {
-              for (int i = 0; i < finalImageUrls.length; i++) {
-                final imgUrl = finalImageUrls[i];
-                await storeRepo.addStoreImage(
-                  createdStore.id,
-                  imgUrl,
-                  isCover: i == 0,
-                );
-                debugPrint('[MapCrawl] 이미지 저장 성공 ($i) - $imgUrl, isCover: ${i == 0}');
-              }
-            } else if (finalThumUrl != null && finalThumUrl.isNotEmpty) {
-              await storeRepo.addStoreImage(
-                createdStore.id,
-                finalThumUrl,
-                isCover: true,
-              );
-              debugPrint('[MapCrawl] 이미지 저장 성공 (단일) - $finalThumUrl');
-            }
-          } catch (dbErr) {
-            debugPrint('[MapCrawl] DB 저장 실패 for $name: $dbErr');
-          }
-        });
-
-        await Future.wait(registerFutures);
-      }
-
-      await _fetchStores(center);
-
+      await _fetchStores(
+        center,
+        skipMarkerRefreshIfUnchanged: useDbOnly,
+      );
     } catch (e) {
       debugPrint('Error searching around center: $e');
     } finally {
@@ -761,7 +979,9 @@ class _MapScreenState extends State<MapScreen> {
       await _naverMapManager.setCenter(center: pos);
       await _addMyLocationMarker();
     } else {
-      await _naverMapManager.setCenter(center: _myLocationLatLng ?? _fixedCenter);
+      await _naverMapManager.setCenter(
+        center: _myLocationLatLng ?? _fixedCenter,
+      );
       _currentCenter = _myLocationLatLng ?? _fixedCenter;
     }
   }
@@ -800,6 +1020,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
+    _searchCooldownTimer?.cancel();
     _mapStatusSubscription.cancel();
     _markerEventSubscription?.cancel();
     _mapEventSubscription?.cancel();
@@ -844,7 +1065,12 @@ class _MapScreenState extends State<MapScreen> {
           ),
           Positioned(
             right: 16,
-            bottom: _selectedStore != null ? 148 : 24,
+            bottom: _selectedStore != null
+                ? _storePreviewSheetHeight +
+                      _searchButtonGapAboveSheet +
+                      _searchAreaButtonHeight +
+                      8
+                : 24,
             child: Column(
               children: [
                 _MapButton(icon: Icons.my_location, onTap: _moveToMyLocation),
@@ -856,14 +1082,17 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            bottom: _selectedStore != null ? 144 : 20,
+            bottom: _selectedStore != null
+                ? _storePreviewSheetHeight + _searchButtonGapAboveSheet
+                : 20,
             left: 0,
             right: 0,
             child: Center(
               child: _SearchAreaButton(
+                enabled: !_isSearchCooldownActive && !_isSearching,
                 onTap: () {
                   setState(() => _selectedStore = null);
-                  _searchAroundCenter();
+                  _requestSearchAroundCenter();
                 },
               ),
             ),
@@ -931,7 +1160,7 @@ class _SearchBar extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: AppColors.border),
               boxShadow: const [
@@ -944,14 +1173,19 @@ class _SearchBar extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Icon(Icons.search_rounded, color: Color(0xFF6B7280)),
+                Icon(
+                  Icons.search_rounded,
+                  color: AppColors.textSecondary,
+                ),
                 SizedBox(width: 10),
                 Text(
                   '업장 검색',
                   style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF9CA3AF),
+                    letterSpacing: -0.2,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -998,7 +1232,7 @@ class _CategoryChips extends StatelessWidget {
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.white,
+                    color: isSelected ? AppColors.primary : AppColors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected ? AppColors.primary : AppColors.border,
@@ -1007,15 +1241,26 @@ class _CategoryChips extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(item.emoji, style: const TextStyle(fontSize: 13)),
+                      if (item.value == 'salon')
+                        Icon(
+                          Icons.content_cut,
+                          size: 13,
+                          color: isSelected
+                              ? Colors.white
+                              : AppColors.textPrimary,
+                        )
+                      else
+                        Text(item.emoji, style: const TextStyle(fontSize: 13)),
                       const SizedBox(width: 5),
                       Text(
                         item.label,
                         style: TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
+                          letterSpacing: -0.1,
                           color: isSelected
-                              ? Colors.white
+                              ? AppColors.white
                               : AppColors.textPrimary,
                         ),
                       ),
@@ -1032,17 +1277,27 @@ class _CategoryChips extends StatelessWidget {
 }
 
 class _SearchAreaButton extends StatelessWidget {
+  final bool enabled;
   final VoidCallback onTap;
-  const _SearchAreaButton({required this.onTap});
+
+  const _SearchAreaButton({
+    required this.enabled,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = enabled
+        ? const Color(0xFF1A1A2E)
+        : AppColors.textSecondary;
+    const foregroundColor = AppColors.white;
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: const [
             BoxShadow(
@@ -1052,17 +1307,19 @@ class _SearchAreaButton extends StatelessWidget {
             ),
           ],
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.refresh_rounded, color: Colors.white, size: 16),
-            SizedBox(width: 6),
-            Text(
+            Icon(Icons.refresh_rounded, color: foregroundColor, size: 16),
+            const SizedBox(width: 6),
+            const Text(
               '현 지도에서 검색',
               style: TextStyle(
-                color: Colors.white,
+                fontFamily: AppTextStyles.fontFamily,
+                color: foregroundColor,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
+                letterSpacing: -0.1,
               ),
             ),
           ],
@@ -1105,7 +1362,7 @@ class _StoreBottomSheet extends StatelessWidget {
       },
       child: Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           boxShadow: [
             BoxShadow(
@@ -1124,7 +1381,7 @@ class _StoreBottomSheet extends StatelessWidget {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD1D5DB),
+                  color: AppColors.signOutArrow,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1141,11 +1398,11 @@ class _StoreBottomSheet extends StatelessWidget {
                     child: coverImageUrl != null
                         ? Image.network(coverImageUrl!, fit: BoxFit.cover)
                         : Container(
-                            color: const Color(0xFFF3F4F6),
+                            color: AppColors.signUpWithEmailButton,
                             child: const Icon(
                               Icons.storefront_rounded,
                               size: 28,
-                              color: Color(0xFF9CA3AF),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                   ),
@@ -1161,8 +1418,10 @@ class _StoreBottomSheet extends StatelessWidget {
                             child: Text(
                               name,
                               style: const TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3,
                                 color: AppColors.textPrimary,
                               ),
                               maxLines: 1,
@@ -1174,7 +1433,7 @@ class _StoreBottomSheet extends StatelessWidget {
                             child: const Icon(
                               Icons.close,
                               size: 20,
-                              color: Color(0xFF9CA3AF),
+                              color: AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -1182,21 +1441,32 @@ class _StoreBottomSheet extends StatelessWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          Text(categoryEmoji,
-                              style: const TextStyle(fontSize: 13)),
+                          if (categoryLabel == '미용실')
+                            const Icon(
+                              Icons.content_cut,
+                              size: 13,
+                              color: AppColors.textSecondary,
+                            )
+                          else
+                            Text(
+                              categoryEmoji,
+                              style: const TextStyle(fontSize: 13),
+                            ),
                           const SizedBox(width: 4),
                           Text(
                             categoryLabel,
                             style: const TextStyle(
+                              fontFamily: AppTextStyles.fontFamily,
                               fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: -0.1,
                               color: AppColors.textSecondary,
                             ),
                           ),
                           if (distanceM != null) ...[
                             const Text(
                               ' · ',
-                              style:
-                                  TextStyle(color: AppColors.textSecondary),
+                              style: TextStyle(color: AppColors.textSecondary),
                             ),
                             const Icon(
                               Icons.place_outlined,
@@ -1207,19 +1477,27 @@ class _StoreBottomSheet extends StatelessWidget {
                             Text(
                               formatDistance(distanceM!),
                               style: const TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: -0.1,
                                 color: AppColors.textSecondary,
                               ),
                             ),
                             const Text(
                               ' · ',
                               style: TextStyle(
-                                  color: AppColors.textSecondary),
+                                fontFamily: AppTextStyles.fontFamily,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                             Text(
                               walkingTime(distanceM!),
                               style: const TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: -0.1,
                                 color: AppColors.textSecondary,
                               ),
                             ),
@@ -1240,13 +1518,18 @@ class _StoreBottomSheet extends StatelessWidget {
                   Icon(
                     Icons.chevron_right_rounded,
                     size: 16,
-                    color: Color(0xFF9CA3AF),
+                    color: AppColors.textSecondary,
                   ),
                   SizedBox(width: 2),
                   Text(
                     '자세히 보기',
-                    style:
-                        TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                    style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: -0.1,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -1276,10 +1559,14 @@ class _MapButton extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Icon(icon, size: 20, color: Colors.black87),
+          child: Icon(
+            icon,
+            size: 20,
+            color: AppColors.textPrimary,
+          ),
         ),
       ),
     );

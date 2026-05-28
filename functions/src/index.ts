@@ -250,6 +250,24 @@ type CreateSalonReservationRequest = {
   startAt?: string;
 };
 
+type CreateRestaurantReservationRequest = {
+  storeId?: string;
+  bookingDate?: string;
+  bookingTime?: string;
+  guestCount?: number;
+};
+
+type RestaurantReservationResponse = {
+  id: string;
+  store_id: string;
+  user_id: string;
+  booking_date: string;
+  booking_time: string;
+  guest_count: number;
+  status: string;
+  total_price: number;
+};
+
 type SalonDesignerPayload = {
   id?: string;
   name?: string;
@@ -884,6 +902,78 @@ export const createSalonReservation = onCall(
         throw new HttpsError(
           "failed-precondition",
           "선택한 시술 시간이 디자이너 근무 시간을 넘어갑니다.",
+        );
+      }
+      throw e;
+    }
+  },
+);
+
+export const createRestaurantReservation = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as CreateRestaurantReservationRequest;
+    const storeId = (data.storeId ?? "").trim();
+    const bookingDate = (data.bookingDate ?? "").trim();
+    const bookingTime = (data.bookingTime ?? "").trim();
+    const guestCount = Number(data.guestCount ?? 0);
+
+    if (!storeId || !bookingDate || !bookingTime || guestCount <= 0) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+
+    try {
+      const reservation = await supabaseRequest<
+        RestaurantReservationResponse | RestaurantReservationResponse[]
+      >(
+        "rpc/create_restaurant_reservation",
+        "POST",
+        {
+          p_store_id: storeId,
+          p_user_id: uid,
+          p_booking_date: bookingDate,
+          p_booking_time: bookingTime,
+          p_guest_count: guestCount,
+        },
+      );
+      return normalizeRpcRow(reservation, "식당/카페 예약 생성에 실패했습니다.");
+    } catch (e) {
+      const message = e instanceof HttpsError ? e.message : "";
+      if (message.includes("store_not_onboarded")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "입점하지 않은 매장입니다.",
+        );
+      }
+      if (message.includes("store_closed")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 날짜는 휴무일입니다.",
+        );
+      }
+      if (message.includes("slot_closed")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시간대는 예약을 받지 않습니다.",
+        );
+      }
+      if (message.includes("slot_full")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시간대는 마감되었습니다.",
+        );
+      }
+      if (message.includes("invalid_booking_time")) {
+        throw new HttpsError(
+          "failed-precondition",
+          "선택한 시간이 영업 시간 또는 예약 간격과 맞지 않습니다.",
         );
       }
       throw e;

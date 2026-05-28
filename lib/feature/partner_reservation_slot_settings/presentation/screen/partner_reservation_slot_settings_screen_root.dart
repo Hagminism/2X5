@@ -36,6 +36,11 @@ class _PartnerReservationSlotSettingsScreenRootState
         case OpenDatePicker():
           _openDatePicker(event.selectedDate);
           break;
+        case ShowSnackBar():
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(event.message)),
+          );
+          break;
       }
     });
   }
@@ -48,7 +53,21 @@ class _PartnerReservationSlotSettingsScreenRootState
         return PartnerReservationSlotSettingsScreen(
           state: widget.viewModel.state,
           onAction: (action) {
-            widget.viewModel.onAction(action);
+            switch (action) {
+              case TapDatePicker():
+                widget.viewModel.onAction(action);
+                break;
+              case SelectDate():
+              case ToggleSlotOpen():
+              case TapIncreaseMaxGuestCount():
+              case TapDecreaseMaxGuestCount():
+              case ToggleExceptionClosed():
+              case ChangeExceptionOpenTime():
+              case ChangeExceptionCloseTime():
+              case TapSave():
+                widget.viewModel.onAction(action);
+                break;
+            }
           },
         );
       },

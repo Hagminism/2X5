@@ -98,6 +98,7 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
       listenable: widget.viewModel,
       builder: (context, child) {
         return StoreDetailScreen(
+          storeId: widget.storeId,
           state: widget.viewModel.state,
           onSubmitReview: widget.viewModel.submitReview,
           onAction: (action) {
@@ -108,11 +109,15 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
               case TapHome():
                 context.go(Routes.home);
                 break;
+              case TapReserve():
+                context.push(
+                  '/home/information/${widget.storeId}/${Routes.reservation}',
+                );
+                break;
               case TapSearch():
               case TapBookmark():
               case TapShare():
               case TapCall():
-              case TapReserve():
               case TapNaverReviewButton():
               case TapGoogleReviewButton():
               case MoveTab():

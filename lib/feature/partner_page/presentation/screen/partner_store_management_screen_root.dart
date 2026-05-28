@@ -51,6 +51,9 @@ class _PartnerStoreManagementScreenRootState
         case OpenMenuManager():
           context.push('${Routes.partnerStore}/${Routes.partnerStoreMenus}');
           break;
+        case OpenLayoutManager():
+          context.push('${Routes.partnerStore}/${Routes.partnerStoreLayout}');
+          break;
         case OpenSeatLayoutManager():
           context.push(
             '${Routes.partnerStore}/${Routes.partnerStudyCafeLayout}',
