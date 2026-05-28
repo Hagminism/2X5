@@ -5,6 +5,7 @@ class StampRewardPolicy {
     required this.goalCount,
     required this.rewardTitle,
     required this.rewardDescription,
+    required this.isActive,
   });
 
   final String storeId;
@@ -12,4 +13,5 @@ class StampRewardPolicy {
   final int goalCount;
   final String rewardTitle;
   final String rewardDescription;
+  final bool isActive;
 }
