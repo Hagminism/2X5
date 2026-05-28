@@ -5,6 +5,7 @@ import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_screen_root.dart';
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
+import 'package:capstone_2026/feature/my_page/coupon_box/presentation/screen/coupon_box_view_model.dart';
 import 'package:capstone_2026/feature/my_page/notices/presentation/screen/notices_screen.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/core/presentation/component/scope/map_studycafe_pass_selection_scope.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_seat_selection/core/presentation/component/scope/map_studycafe_seat_selection_scope.dart';
@@ -55,6 +56,7 @@ import 'package:capstone_2026/feature/my_page/account_settings/presentation/scre
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_screen_root.dart';
+import 'package:capstone_2026/feature/my_page/coupon_box/presentation/screen/coupon_box_screen_root.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/core/presentation/component/scope/reservation_history_scope.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_view_model.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
@@ -672,6 +674,13 @@ final router = GoRouter(
                   parentNavigatorKey: _rootNavigatorKey,
                   builder: (context, state) => StampHistoryScreenRoot(
                     viewModel: getIt<StampHistoryViewModel>(),
+                  ),
+                ),
+                GoRoute(
+                  path: Routes.couponBox,
+                  parentNavigatorKey: _rootNavigatorKey,
+                  builder: (context, state) => CouponBoxScreenRoot(
+                    viewModel: getIt<CouponBoxViewModel>(),
                   ),
                 ),
                 GoRoute(
