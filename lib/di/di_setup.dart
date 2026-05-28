@@ -432,6 +432,8 @@ void diSetup() {
       authRepository: getIt<AuthRepository>(),
       userReservationHistoryRepository:
           getIt<UserReservationHistoryRepository>(),
+      storeReviewService: getIt<StoreReviewService>(),
+      stampService: getIt<StampService>(),
     ),
   );
   getIt.registerFactory<StampHistoryViewModel>(
