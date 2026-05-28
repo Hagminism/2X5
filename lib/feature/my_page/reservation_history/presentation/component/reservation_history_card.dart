@@ -3,6 +3,7 @@ import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/domain/model/user_reservation_history_item.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/component/reservation_history_status_badge.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -24,8 +25,9 @@ class ReservationHistoryCard extends StatelessWidget {
     final categoryText = item.categoryLabel.trim().isNotEmpty
         ? item.categoryLabel.trim()
         : item.type.label;
-    final isReviewable = item.status == ReservationStatus.completed || 
-                        item.status == ReservationStatus.confirmed;
+    final isReviewable =
+        item.status == ReservationStatus.completed ||
+        item.status == ReservationStatus.confirmed;
 
     return Container(
       decoration: BoxDecoration(
@@ -45,6 +47,7 @@ class ReservationHistoryCard extends StatelessWidget {
                   child: Text(
                     item.storeName,
                     style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
                       color: AppColors.textPrimary,
@@ -58,6 +61,7 @@ class ReservationHistoryCard extends StatelessWidget {
             Text(
               categoryText,
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 13,
                 color: AppColors.textSecondary,
               ),
@@ -66,6 +70,7 @@ class ReservationHistoryCard extends StatelessWidget {
             Text(
               scheduleText,
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -75,6 +80,7 @@ class ReservationHistoryCard extends StatelessWidget {
             Text(
               item.summary,
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 14,
                 height: 1.4,
                 color: AppColors.textSecondary,
@@ -85,7 +91,10 @@ class ReservationHistoryCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: (isReviewable && !item.hasWrittenReview && onTapReview != null)
+                    onPressed:
+                        (isReviewable &&
+                            !item.hasWrittenReview &&
+                            onTapReview != null)
                         ? onTapReview
                         : null,
                     style: OutlinedButton.styleFrom(
@@ -105,6 +114,7 @@ class ReservationHistoryCard extends StatelessWidget {
                     child: Text(
                       item.hasWrittenReview ? '리뷰 작성 완료' : '리뷰 작성',
                       style: const TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -126,6 +136,7 @@ class ReservationHistoryCard extends StatelessWidget {
                     child: const Text(
                       '매장 보기',
                       style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),

@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/domain/model/enum/reservation_status.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class ReservationHistoryStatusBadge extends StatelessWidget {
@@ -44,6 +45,7 @@ class ReservationHistoryStatusBadge extends StatelessWidget {
       child: Text(
         status.label,
         style: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: foregroundColor,

@@ -5,6 +5,7 @@ import 'package:capstone_2026/feature/my_page/review_history/presentation/screen
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class ReviewHistoryScreen extends StatelessWidget {
@@ -25,7 +26,15 @@ class ReviewHistoryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('리뷰 내역'),
+        title: const Text(
+          '리뷰 내역',
+          style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         surfaceTintColor: Colors.white,
@@ -103,6 +112,7 @@ class _ReviewHistoryCard extends StatelessWidget {
                   child: Text(
                     _avatarText(review.userName),
                     style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -117,6 +127,7 @@ class _ReviewHistoryCard extends StatelessWidget {
                       Text(
                         review.userName,
                         style: const TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color: AppColors.textPrimary,
@@ -128,6 +139,7 @@ class _ReviewHistoryCard extends StatelessWidget {
                             ? '$storeTitle · $dateText'
                             : storeTitle,
                         style: const TextStyle(
+                          fontFamily: AppTextStyles.fontFamily,
                           fontSize: 13,
                           color: AppColors.textSecondary,
                         ),
@@ -147,14 +159,20 @@ class _ReviewHistoryCard extends StatelessWidget {
                       await _confirmDelete(context);
                     }
                   },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
                       value: _ReviewMenuAction.edit,
-                      child: Text('리뷰 수정'),
+                      child: Text(
+                        '리뷰 수정',
+                        style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+                      ),
                     ),
-                    PopupMenuItem(
+                    const PopupMenuItem(
                       value: _ReviewMenuAction.delete,
-                      child: Text('리뷰 삭제'),
+                      child: Text(
+                        '리뷰 삭제',
+                        style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+                      ),
                     ),
                   ],
                 ),
@@ -189,6 +207,7 @@ class _ReviewHistoryCard extends StatelessWidget {
                         ? review.visitPurpose!.trim()
                         : '방문 목적 없음',
                     style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textSecondary,
@@ -205,6 +224,7 @@ class _ReviewHistoryCard extends StatelessWidget {
                 Text(
                   review.rating.toStringAsFixed(1),
                   style: const TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -216,6 +236,7 @@ class _ReviewHistoryCard extends StatelessWidget {
             Text(
               reviewText,
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 15,
                 height: 1.55,
                 color: AppColors.textPrimary,
@@ -255,8 +276,17 @@ class _ReviewHistoryCard extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('리뷰 삭제'),
-          content: const Text('작성한 리뷰를 삭제할까요? 이 작업은 되돌릴 수 없습니다.'),
+          title: const Text(
+            '리뷰 삭제',
+            style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: const Text(
+            '작성한 리뷰를 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
+            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -390,6 +420,7 @@ class _PhotoPlaceholderTile extends StatelessWidget {
         '등록된 사진이 없습니다',
         textAlign: TextAlign.center,
         style: TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
           fontSize: 13,
           height: 1.45,
           fontWeight: FontWeight.w600,
@@ -462,6 +493,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
               const Text(
                 '리뷰 수정',
                 style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
@@ -473,6 +505,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
                     ? widget.review.storeId
                     : widget.review.storeName,
                 style: const TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
@@ -502,6 +535,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
                   Text(
                     _rating.toStringAsFixed(1),
                     style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -563,6 +597,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
                   child: const Text(
                     '수정 완료',
                     style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -582,7 +617,12 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(content: Text('리뷰 내용을 입력해 주세요.')),
+          const SnackBar(
+            content: Text(
+              '리뷰 내용을 입력해 주세요.',
+              style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+            ),
+          ),
         );
       return;
     }
@@ -609,6 +649,7 @@ class _EditSectionTitle extends StatelessWidget {
     return Text(
       title,
       style: const TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
         fontSize: 15,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
@@ -637,6 +678,7 @@ class _EmptyReviewHistory extends StatelessWidget {
             Text(
               '아직 작성한 리뷰가 없습니다.',
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
@@ -647,6 +689,7 @@ class _EmptyReviewHistory extends StatelessWidget {
               '방문 후 리뷰를 남기면 이곳에서 작성 내역을 모아볼 수 있습니다.',
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 13,
                 height: 1.5,
                 color: AppColors.textSecondary,

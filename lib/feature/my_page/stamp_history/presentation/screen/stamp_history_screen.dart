@@ -1,6 +1,7 @@
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_state.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class StampHistoryScreen extends StatelessWidget {
@@ -20,7 +21,15 @@ class StampHistoryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('스탬프 현황'),
+        title: const Text(
+          '스탬프 현황',
+          style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         surfaceTintColor: Colors.white,
@@ -41,6 +50,7 @@ class StampHistoryScreen extends StatelessWidget {
                     child: const Text(
                       '예약 완료 후 리뷰를 작성하면 매장별 스탬프가 적립됩니다. 매장마다 목표 개수와 보상 내용이 다를 수 있습니다.',
                       style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
                         fontSize: 13,
                         height: 1.6,
                         color: AppColors.textSecondary,
@@ -104,6 +114,7 @@ class _StampHistoryCard extends StatelessWidget {
                 child: Text(
                   status.storeName,
                   style: const TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
@@ -124,6 +135,7 @@ class _StampHistoryCard extends StatelessWidget {
                 child: Text(
                   status.progressLabel,
                   style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: status.isRewardUnlocked
@@ -148,6 +160,7 @@ class _StampHistoryCard extends StatelessWidget {
           Text(
             '보상: ${status.rewardTitle}',
             style: const TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -157,6 +170,7 @@ class _StampHistoryCard extends StatelessWidget {
           Text(
             status.rewardDescription,
             style: const TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 13,
               height: 1.55,
               color: AppColors.textSecondary,
@@ -169,6 +183,7 @@ class _StampHistoryCard extends StatelessWidget {
                 child: Text(
                   status.historyStatusMessage,
                   style: TextStyle(
+                    fontFamily: AppTextStyles.fontFamily,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: status.hasWrittenReview
@@ -184,6 +199,7 @@ class _StampHistoryCard extends StatelessWidget {
                   child: const Text(
                     '보상 수령하기',
                     style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -196,6 +212,7 @@ class _StampHistoryCard extends StatelessWidget {
                   child: const Text(
                     '리뷰 작성하기',
                     style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -211,6 +228,7 @@ class _StampHistoryCard extends StatelessWidget {
                 ? '리뷰 작성이 완료되어 스탬프가 적립된 상태입니다.'
                 : '스탬프 적립을 위해 리뷰를 작성해 주세요!',
             style: const TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 12,
               height: 1.5,
               color: AppColors.textSecondary,
@@ -264,6 +282,7 @@ class _EmptyStampHistory extends StatelessWidget {
           Text(
             '아직 적립된 스탬프가 없습니다.',
             style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -274,6 +293,7 @@ class _EmptyStampHistory extends StatelessWidget {
             '예약 완료 후 리뷰를 작성하면 매장별 스탬프가 적립됩니다.',
             textAlign: TextAlign.center,
             style: TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 13,
               height: 1.5,
               color: AppColors.textSecondary,

@@ -1,4 +1,5 @@
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,6 +7,7 @@ class _Notice {
   final String title;
   final String date;
   final String content;
+
   const _Notice({
     required this.title,
     required this.date,
@@ -52,6 +54,8 @@ class NoticesScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
@@ -59,7 +63,11 @@ class NoticesScreen extends StatelessWidget {
         ),
         title: const Text(
           '공지사항',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         centerTitle: true,
       ),
@@ -77,6 +85,7 @@ class NoticesScreen extends StatelessWidget {
             title: Text(
               notice.title,
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -87,6 +96,7 @@ class NoticesScreen extends StatelessWidget {
               child: Text(
                 notice.date,
                 style: const TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
@@ -111,6 +121,7 @@ class NoticesScreen extends StatelessWidget {
 
 class _NoticeDetailScreen extends StatelessWidget {
   final _Notice notice;
+
   const _NoticeDetailScreen({required this.notice});
 
   @override
@@ -126,7 +137,11 @@ class _NoticeDetailScreen extends StatelessWidget {
         ),
         title: const Text(
           '공지사항',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         centerTitle: true,
       ),
@@ -138,6 +153,7 @@ class _NoticeDetailScreen extends StatelessWidget {
             Text(
               notice.title,
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
@@ -147,6 +163,7 @@ class _NoticeDetailScreen extends StatelessWidget {
             Text(
               notice.date,
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 13,
                 color: AppColors.textSecondary,
               ),
@@ -157,6 +174,7 @@ class _NoticeDetailScreen extends StatelessWidget {
             Text(
               notice.content,
               style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 15,
                 height: 1.7,
                 color: AppColors.textPrimary,

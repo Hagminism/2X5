@@ -69,8 +69,10 @@ class _CouponBoxScreenState extends State<CouponBoxScreen>
         title: const Text(
           '쿠폰함',
           style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 17,
             color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
@@ -140,8 +142,9 @@ class _CouponBoxScreenState extends State<CouponBoxScreen>
               label: Text(
                 category['displayName']!,
                 style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
                   color: isSelected ? AppColors.white : AppColors.textSecondary,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                 ),
               ),
               onSelected: (bool selected) {
@@ -302,11 +305,12 @@ class _CouponBoxScreenState extends State<CouponBoxScreen>
                             child: Text(
                               categoryLabel,
                               style: TextStyle(
+                                fontFamily: AppTextStyles.fontFamily,
                                 fontSize: 11,
                                 color: isInactive
                                     ? AppColors.textSecondary
                                     : AppColors.primary,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -386,9 +390,10 @@ class _CouponBoxScreenState extends State<CouponBoxScreen>
           Text(
             '사용완료: $usedDateStr',
             style: const TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 12,
               color: AppColors.textSecondary,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -406,9 +411,10 @@ class _CouponBoxScreenState extends State<CouponBoxScreen>
           Text(
             '기간만료 (만료일: $expiredDateStr)',
             style: const TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 12,
               color: AppColors.danger,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -426,6 +432,7 @@ class _CouponBoxScreenState extends State<CouponBoxScreen>
           Text(
             '$expireDateStr 까지 사용 가능',
             style: const TextStyle(
+              fontFamily: AppTextStyles.fontFamily,
               fontSize: 12,
               color: AppColors.primary,
               fontWeight: FontWeight.w600,

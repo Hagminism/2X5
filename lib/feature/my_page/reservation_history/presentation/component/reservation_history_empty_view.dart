@@ -1,4 +1,5 @@
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class ReservationHistoryEmptyView extends StatelessWidget {
@@ -21,6 +22,7 @@ class ReservationHistoryEmptyView extends StatelessWidget {
             Text(
               '아직 이용 내역이 없습니다.',
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
@@ -31,6 +33,7 @@ class ReservationHistoryEmptyView extends StatelessWidget {
               '예약을 완료하면 이곳에서 이용 내역을 확인할 수 있습니다.',
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 13,
                 height: 1.5,
                 color: AppColors.textSecondary,
