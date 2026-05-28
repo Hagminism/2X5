@@ -5,11 +5,15 @@ import 'package:flutter/material.dart';
 class InformationScope extends StatefulWidget {
   final InformationViewModel viewModel;
   final String storeId;
+  final int initialTabIndex;
+  final bool showReviewWrite;
 
   const InformationScope({
     super.key,
     required this.viewModel,
     required this.storeId,
+    this.initialTabIndex = 0,
+    this.showReviewWrite = false,
   });
 
   @override
@@ -24,6 +28,8 @@ class _InformationScopeState extends State<InformationScope> {
     return InformationScreenRoot(
       viewModel: _viewModel,
       storeId: widget.storeId,
+      initialTabIndex: widget.initialTabIndex,
+      showReviewWrite: widget.showReviewWrite,
     );
   }
 

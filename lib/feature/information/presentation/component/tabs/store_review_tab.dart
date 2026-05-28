@@ -27,6 +27,7 @@ class StoreReviewTab extends StatefulWidget {
     required this.storeName,
     required this.location,
     this.naverPlaceId,
+    this.initialShowWriteReview = false,
     super.key,
   });
 
@@ -34,6 +35,7 @@ class StoreReviewTab extends StatefulWidget {
   final String storeName;
   final String location;
   final String? naverPlaceId;
+  final bool initialShowWriteReview;
 
   @override
   State<StoreReviewTab> createState() => _StoreReviewTabState();
@@ -82,7 +84,35 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   @override
   void initState() {
     super.initState();
-    _loadReviewData();
+    _loadReviewData().then((_) {
+      if (widget.initialShowWriteReview && mounted) {
+        _showWriteReviewBottomSheetExternally();
+      }
+    });
+  }
+
+  void _showWriteReviewBottomSheetExternally() {
+    if (!mounted) return;
+    
+    setState(() {
+      _selectedPlatform = ReviewPlatform.internal;
+    });
+
+    final data = _reviewTarget;
+    
+    showModalBottomSheet<ReviewWriteResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => ReviewWriteBottomSheet(storeName: data.name),
+    ).then((result) {
+      if (result != null && mounted) {
+        _submitReview(result);
+      }
+    });
   }
 
   @override
@@ -122,6 +152,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
             aiSummary: ReviewAiSummaryGenerator.generate(
               storeName: data.name,
               reviews: _reviews,
+              googleReviews: _googlePlaceReviewInfo?.reviews ?? const [],
             ),
             reviews: _reviews,
             isReviewLoading: _isLoading,

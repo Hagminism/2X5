@@ -418,12 +418,17 @@ class StampRepositoryImpl implements StampRepository {
       return null;
     }
 
+    final statusList = ['completed'];
+    if (_allowReviewStampTestingBypass) {
+      statusList.add('confirmed');
+    }
+
     final List<dynamic> reservationRows = await _supabase
         .from('reservations')
         .select('id')
         .eq('user_id', userId)
         .eq('store_id', resolvedStore.dbStoreId!)
-        .eq('status', 'completed')
+        .inFilter('status', statusList)
         .limit(1);
 
     final hasVisited = reservationRows.isNotEmpty;
@@ -483,11 +488,16 @@ class StampRepositoryImpl implements StampRepository {
   }
 
   Future<Set<String>> _fetchCompletedReservationStoreIds(String userId) async {
+    final statusList = ['completed'];
+    if (_allowReviewStampTestingBypass) {
+      statusList.add('confirmed');
+    }
+
     final List<dynamic> rows = await _supabase
         .from('reservations')
         .select('store_id')
         .eq('user_id', userId)
-        .eq('status', 'completed');
+        .inFilter('status', statusList);
 
     return rows
         .cast<Map<String, dynamic>>()

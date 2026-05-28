@@ -77,4 +77,17 @@ class UserReservationHistoryDataSourceImpl
 
     return jsonList.cast<Map<String, dynamic>>();
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchReviewsByUserId(
+    String userId,
+  ) async {
+    final jsonList = await _supabaseClient
+        .from('reviews')
+        .select('id, store_id')
+        .eq('user_id', userId)
+        .eq('is_visible', true);
+
+    return jsonList.cast<Map<String, dynamic>>();
+  }
 }

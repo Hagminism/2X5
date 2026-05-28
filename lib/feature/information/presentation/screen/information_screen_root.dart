@@ -10,11 +10,15 @@ import 'package:go_router/go_router.dart';
 class InformationScreenRoot extends StatefulWidget {
   final InformationViewModel viewModel;
   final String storeId;
+  final int initialTabIndex;
+  final bool showReviewWrite;
 
   const InformationScreenRoot({
     super.key,
     required this.viewModel,
     required this.storeId,
+    this.initialTabIndex = 0,
+    this.showReviewWrite = false,
   });
 
   @override
@@ -27,7 +31,11 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
   @override
   void initState() {
     super.initState();
-    widget.viewModel.initialize(widget.storeId);
+    widget.viewModel.initialize(
+      widget.storeId,
+      initialTabIndex: widget.initialTabIndex,
+      showReviewWrite: widget.showReviewWrite,
+    );
 
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (!mounted) {

@@ -42,6 +42,7 @@ class InformationScreen extends StatelessWidget {
       children: [
         DefaultTabController(
           length: state.tabs.length,
+          initialIndex: state.initialTabIndex,
           child: Scaffold(
             backgroundColor: AppColors.white,
             appBar: AppBar(
@@ -253,6 +254,7 @@ class InformationScreen extends StatelessWidget {
                     storeName: state.name,
                     location: state.address,
                     naverPlaceId: state.naverPlaceId,
+                    initialShowWriteReview: state.showReviewWrite,
                   ),
                 ],
               ),

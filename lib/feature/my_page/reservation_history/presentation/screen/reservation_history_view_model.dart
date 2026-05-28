@@ -80,6 +80,19 @@ class ReservationHistoryViewModel extends ChangeNotifier {
           ),
         );
         break;
+      case TapReservationHistoryReview(:final storeId):
+        if (storeId.trim().isEmpty) {
+          return;
+        }
+
+        // Review tab index is 4 (for Cafe/Restaurant) or 3 (for others).
+        // Since we pass showReviewWrite=true, InformationViewModel will try to show it.
+        _eventController.add(
+          ReservationHistoryEvent.push(
+            '${Routes.myPage}/${Routes.reservationHistory}/information/${storeId.trim()}?tab=4&showReviewWrite=true',
+          ),
+        );
+        break;
     }
   }
 
