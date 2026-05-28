@@ -80,6 +80,9 @@ import 'package:capstone_2026/feature/store_detail/presentation/screen/store_det
 import 'package:capstone_2026/feature/stamp/data/repository/stamp_repository_impl.dart';
 import 'package:capstone_2026/feature/stamp/domain/repository/stamp_repository.dart';
 import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
+import 'package:capstone_2026/feature/my_page/coupon_box/domain/repository/coupon_repository.dart';
+import 'package:capstone_2026/feature/my_page/coupon_box/data/repository/coupon_repository_impl.dart';
+import 'package:capstone_2026/feature/my_page/coupon_box/presentation/screen/coupon_box_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -248,6 +251,9 @@ void diSetup() {
       authRepository: getIt<AuthRepository>(),
     ),
   );
+  getIt.registerLazySingleton<CouponRepository>(
+    () => CouponRepositoryImpl(supabase: getIt<SupabaseClient>()),
+  );
   getIt.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(userDataSource: getIt<UserDataSource>()),
   );
@@ -313,6 +319,7 @@ void diSetup() {
     () => PartnerStoreManagementViewModel(
       ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
       storeRepository: getIt<StoreRepository>(),
+      stampRepository: getIt<StampRepository>(),
     ),
   );
   getIt.registerFactory<PartnerStoreMenuViewModel>(
@@ -403,6 +410,12 @@ void diSetup() {
   );
   getIt.registerFactory<MyPageViewModel>(
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
+  );
+  getIt.registerFactory<CouponBoxViewModel>(
+    () => CouponBoxViewModel(
+      couponRepository: getIt<CouponRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
   );
   getIt.registerFactory<PartnerMyPageViewModel>(
     () => PartnerMyPageViewModel(authRepository: getIt<AuthRepository>()),
