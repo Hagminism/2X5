@@ -63,50 +63,44 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
   Widget build(BuildContext context) {
     final isCustomSelected =
         _customVisitTag != null && _selectedTag == _customVisitTag;
+    final maxHeight = MediaQuery.of(context).size.height * 0.75;
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(99),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                '${widget.storeName} 리뷰 작성',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                const SizedBox(height: 20),
+                Text(
+                  '${widget.storeName} 리뷰 작성',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                '시연용 mock 리뷰입니다. 작성하면 바로 화면에 반영되어 실제 등록된 것처럼 보입니다.',
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.5,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const _SectionTitle('별점'),
+                const SizedBox(height: 24),
+                const _SectionTitle('별점'),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -269,40 +263,6 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                 onTapAdd: _pickImages,
                 onTapRemove: _removeImageAt,
               ),
-              const SizedBox(height: 10),
-              const Text(
-                '지금은 mock 방식으로 사진 경로만 함께 저장합니다. 추후에는 Storage 업로드로 연결할 예정입니다.',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E8),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.card_giftcard_outlined,
-                      color: Color(0xFFD99A00),
-                      size: 18,
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '실제 서비스 단계에서는 리뷰 작성 후 스탬프 적립, 마이페이지 수정/삭제 흐름까지 확장할 예정입니다.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.5,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -326,7 +286,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
           ),
         ),
       ),
-    );
+    ),);
   }
 
   void _applyCustomVisitTag() {
