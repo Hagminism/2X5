@@ -113,7 +113,9 @@ class ReviewAiSummaryGenerator {
     }
 
     // 가중치 결정: 자체 리뷰가 10개 이상이면 자체 리뷰 중심(80%), 아니면 구글 리뷰 비중 확대(60%)
-    final double internalWeight = reviews.length >= 10 ? 0.8 : (reviews.length <= 2 ? 0.4 : 0.6);
+    final double internalWeight = reviews.length >= 10
+        ? 0.8
+        : (reviews.length <= 2 ? 0.4 : 0.6);
     final double googleWeight = 1.0 - internalWeight;
 
     final keywordScores = <String, double>{
@@ -144,13 +146,15 @@ class ReviewAiSummaryGenerator {
       final visitPurpose = review.visitPurpose?.trim();
       if (visitPurpose != null && visitPurpose.isNotEmpty) {
         final mappedPurpose = _mapVisitPurpose(visitPurpose);
-        keywordScores[mappedPurpose] = (keywordScores[mappedPurpose] ?? 0) + (2 * internalWeight);
+        keywordScores[mappedPurpose] =
+            (keywordScores[mappedPurpose] ?? 0) + (2 * internalWeight);
       }
 
       for (final entry in _keywordRules.entries) {
         for (final keyword in entry.value) {
           if (normalized.contains(keyword)) {
-            keywordScores[entry.key] = (keywordScores[entry.key] ?? 0) + (1 * internalWeight);
+            keywordScores[entry.key] =
+                (keywordScores[entry.key] ?? 0) + (1 * internalWeight);
           }
         }
       }
@@ -178,7 +182,8 @@ class ReviewAiSummaryGenerator {
       for (final entry in _keywordRules.entries) {
         for (final keyword in entry.value) {
           if (normalized.contains(keyword)) {
-            keywordScores[entry.key] = (keywordScores[entry.key] ?? 0) + (1 * googleWeight);
+            keywordScores[entry.key] =
+                (keywordScores[entry.key] ?? 0) + (1 * googleWeight);
           }
         }
       }
@@ -198,15 +203,18 @@ class ReviewAiSummaryGenerator {
     }
 
     // 평균 별점 및 긍정 비율 계산 (가중치 이미 적용됨)
-    final int googleRatingCount = googleReviews.where((r) => r.rating != null).length;
-    final double divisor = (reviews.length * internalWeight + googleRatingCount * googleWeight);
+    final int googleRatingCount = googleReviews
+        .where((r) => r.rating != null)
+        .length;
+    final double divisor =
+        (reviews.length * internalWeight + googleRatingCount * googleWeight);
     final averageRating = divisor > 0 ? (ratingTotal / divisor) : 0.0;
     final ratingScore = averageRating / 5;
     final sentimentTotal = positiveSignals + negativeSignals;
     final sentimentScore = sentimentTotal == 0
         ? 0.9
         : positiveSignals / sentimentTotal;
-    
+
     final positiveRatio = (ratingScore * 0.7 + sentimentScore * 0.3).clamp(
       0.05,
       0.99,

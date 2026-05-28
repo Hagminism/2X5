@@ -60,8 +60,7 @@ class MyPageScreen extends StatelessWidget {
                   MyMenuTile(
                     title: '쿠폰함',
                     icon: Icons.confirmation_number_outlined,
-                    onTap: () =>
-                        onAction(const MyPageAction.viewCouponBox()),
+                    onTap: () => onAction(const MyPageAction.viewCouponBox()),
                   ),
                 ],
               ),

@@ -18,8 +18,6 @@ abstract class BookmarkState with _$BookmarkState {
     if (selectedCategory == null) {
       return items;
     }
-    return items
-        .where((item) => item.category == selectedCategory)
-        .toList();
+    return items.where((item) => item.category == selectedCategory).toList();
   }
 }

@@ -35,7 +35,9 @@ class CouponBoxViewModel extends ChangeNotifier {
         notifyListeners();
         break;
       case TapUseCoupon():
-        final coupon = _state.coupons.firstWhere((c) => c.id == action.couponId);
+        final coupon = _state.coupons.firstWhere(
+          (c) => c.id == action.couponId,
+        );
         _eventController.add(
           CouponBoxEvent.showUseConfirmationDialog(
             couponId: coupon.id,

@@ -93,13 +93,13 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
   void _showWriteReviewBottomSheetExternally() {
     if (!mounted) return;
-    
+
     setState(() {
       _selectedPlatform = ReviewPlatform.internal;
     });
 
     final data = _reviewTarget;
-    
+
     showModalBottomSheet<ReviewWriteResult>(
       context: context,
       isScrollControlled: true,

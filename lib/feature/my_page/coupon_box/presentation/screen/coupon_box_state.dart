@@ -20,7 +20,7 @@ abstract class CouponBoxState with _$CouponBoxState {
       // 1. 탭 필터링 (0: 사용 가능, 1: 사용 완료/만료)
       final isUsed = coupon.usedAt != null;
       final isExpired = coupon.expiredAt.isBefore(now);
-      
+
       if (tabIndex == 0) {
         if (isUsed || isExpired) return false;
       } else {
@@ -28,7 +28,8 @@ abstract class CouponBoxState with _$CouponBoxState {
       }
 
       // 2. 카테고리 필터링
-      if (selectedCategory != 'all' && coupon.storeCategory != selectedCategory) {
+      if (selectedCategory != 'all' &&
+          coupon.storeCategory != selectedCategory) {
         return false;
       }
 

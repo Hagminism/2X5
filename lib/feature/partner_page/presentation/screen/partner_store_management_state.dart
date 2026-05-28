@@ -84,7 +84,8 @@ abstract class PartnerStoreManagementState with _$PartnerStoreManagementState {
       }
     }
 
-    final isStampValid = !isStampEnabled ||
+    final isStampValid =
+        !isStampEnabled ||
         (stampGoalCount > 0 &&
             stampRewardTitle.trim().isNotEmpty &&
             stampRewardDescription.trim().isNotEmpty);

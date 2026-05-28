@@ -13,8 +13,7 @@ sealed class BookmarkAction with _$BookmarkAction {
 
   const factory BookmarkAction.tapStore(String storeId) = TapBookmarkStore;
 
-  const factory BookmarkAction.removeBookmark(String storeId) =
-      RemoveBookmark;
+  const factory BookmarkAction.removeBookmark(String storeId) = RemoveBookmark;
 
   const factory BookmarkAction.tapExplore() = TapExploreStores;
 }

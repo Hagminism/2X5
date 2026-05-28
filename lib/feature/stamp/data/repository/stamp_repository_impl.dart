@@ -611,7 +611,8 @@ class StampRepositoryImpl implements StampRepository {
       storeName: resolvedStore.storeName,
       goalCount: ((policyRow?['goal_count'] as num?)?.toInt()) ?? 10,
       rewardTitle: policyRow?['reward_title']?.toString() ?? '사장님 지정 보상',
-      rewardDescription: policyRow?['reward_description']?.toString() ??
+      rewardDescription:
+          policyRow?['reward_description']?.toString() ??
           '스탬프 목표 달성 시 매장별 보상을 받을 수 있습니다.',
       isActive: policyRow?['is_active'] == true,
     );

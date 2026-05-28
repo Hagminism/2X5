@@ -172,15 +172,19 @@ final router = GoRouter(
                   path: Routes.homeStoreInformation,
                   builder: (context, state) {
                     final storeId = state.pathParameters['storeId'] ?? '';
-                    final tab = int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0;
-                    final showReviewWrite = state.uri.queryParameters['showReviewWrite'] == 'true';
+                    final tab =
+                        int.tryParse(state.uri.queryParameters['tab'] ?? '') ??
+                        0;
+                    final showReviewWrite =
+                        state.uri.queryParameters['showReviewWrite'] == 'true';
                     return InformationScope(
                       viewModel: getIt<InformationViewModel>(),
                       storeId: storeId,
                       initialTabIndex: tab,
                       showReviewWrite: showReviewWrite,
                     );
-                  },                  routes: [
+                  },
+                  routes: [
                     GoRoute(
                       path: Routes.reservation,
                       parentNavigatorKey: _rootNavigatorKey,
@@ -581,8 +585,14 @@ final router = GoRouter(
                       parentNavigatorKey: _rootNavigatorKey,
                       builder: (context, state) {
                         final storeId = state.pathParameters['storeId'] ?? '';
-                        final tab = int.tryParse(state.uri.queryParameters['tab'] ?? '') ?? 0;
-                        final showReviewWrite = state.uri.queryParameters['showReviewWrite'] == 'true';
+                        final tab =
+                            int.tryParse(
+                              state.uri.queryParameters['tab'] ?? '',
+                            ) ??
+                            0;
+                        final showReviewWrite =
+                            state.uri.queryParameters['showReviewWrite'] ==
+                            'true';
                         return InformationScope(
                           viewModel: getIt<InformationViewModel>(),
                           storeId: storeId,

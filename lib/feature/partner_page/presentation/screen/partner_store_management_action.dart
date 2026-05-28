@@ -127,8 +127,9 @@ sealed class PartnerStoreManagementAction with _$PartnerStoreManagementAction {
   const factory PartnerStoreManagementAction.changeStampGoalCount(int value) =
       ChangeStampGoalCount;
 
-  const factory PartnerStoreManagementAction.changeStampRewardTitle(String value) =
-      ChangeStampRewardTitle;
+  const factory PartnerStoreManagementAction.changeStampRewardTitle(
+    String value,
+  ) = ChangeStampRewardTitle;
 
   const factory PartnerStoreManagementAction.changeStampRewardDescription(
     String value,

@@ -425,7 +425,8 @@ class PartnerStoreManagementScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           PartnerFormTextField(
-                            hintText: '쿠폰 보상 상세 설명 (예: 제조 음료 중 원하는 음료 1잔을 선택할 수 있는 쿠폰입니다.)',
+                            hintText:
+                                '쿠폰 보상 상세 설명 (예: 제조 음료 중 원하는 음료 1잔을 선택할 수 있는 쿠폰입니다.)',
                             initialValue: state.stampRewardDescription,
                             maxLines: 3,
                             onChanged: (value) => onAction(

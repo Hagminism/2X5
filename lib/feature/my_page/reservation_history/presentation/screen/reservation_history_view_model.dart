@@ -89,7 +89,11 @@ class ReservationHistoryViewModel extends ChangeNotifier {
           ),
         );
         break;
-      case TapReservationHistoryReview(:final storeId, :final storeName, :final reservationId):
+      case TapReservationHistoryReview(
+        :final storeId,
+        :final storeName,
+        :final reservationId,
+      ):
         if (storeId.trim().isEmpty || reservationId.trim().isEmpty) {
           return;
         }
@@ -102,7 +106,12 @@ class ReservationHistoryViewModel extends ChangeNotifier {
           ),
         );
         break;
-      case SubmitReservationHistoryReview(:final storeId, :final storeName, :final reservationId, :final reviewResult):
+      case SubmitReservationHistoryReview(
+        :final storeId,
+        :final storeName,
+        :final reservationId,
+        :final reviewResult,
+      ):
         _submitReview(
           storeId: storeId,
           storeName: storeName,

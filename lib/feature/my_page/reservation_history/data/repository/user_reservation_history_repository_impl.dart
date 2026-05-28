@@ -31,8 +31,12 @@ class UserReservationHistoryRepositoryImpl
         .toSet();
 
     final items = <UserReservationHistoryItem>[
-      ...restaurantRows.map((row) => _mapRestaurantRow(row, reviewedReservationIds)),
-      ...studyCafeRows.map((row) => _mapStudyCafeRow(row, reviewedReservationIds)),
+      ...restaurantRows.map(
+        (row) => _mapRestaurantRow(row, reviewedReservationIds),
+      ),
+      ...studyCafeRows.map(
+        (row) => _mapStudyCafeRow(row, reviewedReservationIds),
+      ),
       ...salonRows.map((row) => _mapSalonRow(row, reviewedReservationIds)),
     ]..sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
 
@@ -75,7 +79,9 @@ class UserReservationHistoryRepositoryImpl
     final store = _readStore(row);
     final seatId = row['seat_id']?.toString() ?? '';
     final durationMinutes = (row['duration_minutes'] as num?)?.toInt() ?? 0;
-    final seatLabel = seatId.length <= 8 ? seatId : '${seatId.substring(0, 8)}…';
+    final seatLabel = seatId.length <= 8
+        ? seatId
+        : '${seatId.substring(0, 8)}…';
     final storeId = row['store_id']?.toString() ?? '';
     final id = row['id']?.toString() ?? '';
 

@@ -101,192 +101,199 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                 ),
                 const SizedBox(height: 24),
                 const _SectionTitle('별점'),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  ...List.generate(5, (index) {
-                    final value = index + 1;
-                    return IconButton(
-                      onPressed: () =>
-                          setState(() => _rating = value.toDouble()),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: Icon(
-                        value <= _rating
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        color: Colors.amber,
-                        size: 32,
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    ...List.generate(5, (index) {
+                      final value = index + 1;
+                      return IconButton(
+                        onPressed: () =>
+                            setState(() => _rating = value.toDouble()),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          value <= _rating
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: Colors.amber,
+                          size: 32,
+                        ),
+                      );
+                    }),
+                    const SizedBox(width: 8),
+                    Text(
+                      _rating.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
                       ),
-                    );
-                  }),
-                  const SizedBox(width: 8),
-                  Text(
-                    _rating.toStringAsFixed(1),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const _SectionTitle('방문 목적'),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ..._visitTags.map((tag) {
-                    final isSelected = _selectedTag == tag;
-                    return ChoiceChip(
-                      label: Text(tag),
-                      selected: isSelected,
-                      onSelected: (_) {
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const _SectionTitle('방문 목적'),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ..._visitTags.map((tag) {
+                      final isSelected = _selectedTag == tag;
+                      return ChoiceChip(
+                        label: Text(tag),
+                        selected: isSelected,
+                        onSelected: (_) {
+                          setState(() {
+                            _selectedTag = tag;
+                            _isCustomVisitTagEditing = false;
+                          });
+                        },
+                        backgroundColor: Colors.white,
+                        selectedColor: AppColors.primary.withValues(
+                          alpha: 0.14,
+                        ),
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                        side: BorderSide(
+                          color: isSelected
+                              ? AppColors.primary.withValues(alpha: 0.4)
+                              : AppColors.border,
+                        ),
+                      );
+                    }),
+                    ActionChip(
+                      label: Text(_customVisitTag ?? '직접 입력'),
+                      onPressed: () {
                         setState(() {
-                          _selectedTag = tag;
-                          _isCustomVisitTagEditing = false;
+                          _isCustomVisitTagEditing = true;
+                          _customVisitTagController.text =
+                              _customVisitTag ?? '';
                         });
                       },
-                      backgroundColor: Colors.white,
-                      selectedColor: AppColors.primary.withValues(alpha: 0.14),
+                      backgroundColor: isCustomSelected
+                          ? AppColors.primary.withValues(alpha: 0.14)
+                          : Colors.white,
                       labelStyle: TextStyle(
-                        color: isSelected
+                        color: isCustomSelected
                             ? AppColors.primary
                             : AppColors.textSecondary,
-                        fontWeight: isSelected
+                        fontWeight: isCustomSelected
                             ? FontWeight.w700
                             : FontWeight.w500,
                       ),
                       side: BorderSide(
-                        color: isSelected
+                        color: isCustomSelected
                             ? AppColors.primary.withValues(alpha: 0.4)
                             : AppColors.border,
                       ),
-                    );
-                  }),
-                  ActionChip(
-                    label: Text(_customVisitTag ?? '직접 입력'),
-                    onPressed: () {
-                      setState(() {
-                        _isCustomVisitTagEditing = true;
-                        _customVisitTagController.text = _customVisitTag ?? '';
-                      });
-                    },
-                    backgroundColor: isCustomSelected
-                        ? AppColors.primary.withValues(alpha: 0.14)
-                        : Colors.white,
-                    labelStyle: TextStyle(
-                      color: isCustomSelected
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
-                      fontWeight: isCustomSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
                     ),
-                    side: BorderSide(
-                      color: isCustomSelected
-                          ? AppColors.primary.withValues(alpha: 0.4)
-                          : AppColors.border,
+                  ],
+                ),
+                if (_isCustomVisitTagEditing) ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _customVisitTagController,
+                    autofocus: true,
+                    maxLength: 20,
+                    decoration: InputDecoration(
+                      hintText: '예: 가족 생일, 회식, 부모님과 방문',
+                      filled: true,
+                      fillColor: const Color(0xFFF7F8FA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          FocusScope.of(context).unfocus();
+                          setState(() {
+                            _isCustomVisitTagEditing = false;
+                            _customVisitTagController.clear();
+                          });
+                        },
+                        child: const Text('취소'),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: _applyCustomVisitTag,
+                        child: const Text('적용'),
+                      ),
+                    ],
+                  ),
                 ],
-              ),
-              if (_isCustomVisitTagEditing) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
+                const _SectionTitle('리뷰 내용'),
+                const SizedBox(height: 10),
                 TextField(
-                  controller: _customVisitTagController,
-                  autofocus: true,
-                  maxLength: 20,
+                  controller: _reviewController,
+                  minLines: 5,
+                  maxLines: 7,
                   decoration: InputDecoration(
-                    hintText: '예: 가족 생일, 회식, 부모님과 방문',
+                    hintText: '음식 맛, 서비스, 분위기, 이용 경험을 자연스럽게 적어주세요.',
+                    hintStyle: const TextStyle(color: AppColors.textSecondary),
                     filled: true,
                     fillColor: const Color(0xFFF7F8FA),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
+                    contentPadding: const EdgeInsets.all(16),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        setState(() {
-                          _isCustomVisitTagEditing = false;
-                          _customVisitTagController.clear();
-                        });
-                      },
-                      child: const Text('취소'),
+                const SizedBox(height: 20),
+                const _SectionTitle('사진 첨부'),
+                const SizedBox(height: 10),
+                _ReviewImagePickerSection(
+                  imagePaths: _selectedImagePaths,
+                  isPickingImages: _isPickingImages,
+                  onTapAdd: _pickImages,
+                  onTapRemove: _removeImageAt,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _submit,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    FilledButton(
-                      onPressed: _applyCustomVisitTag,
-                      child: const Text('적용'),
+                    child: const Text(
+                      '리뷰 등록',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ],
-              const SizedBox(height: 20),
-              const _SectionTitle('리뷰 내용'),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _reviewController,
-                minLines: 5,
-                maxLines: 7,
-                decoration: InputDecoration(
-                  hintText: '음식 맛, 서비스, 분위기, 이용 경험을 자연스럽게 적어주세요.',
-                  hintStyle: const TextStyle(color: AppColors.textSecondary),
-                  filled: true,
-                  fillColor: const Color(0xFFF7F8FA),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.all(16),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const _SectionTitle('사진 첨부'),
-              const SizedBox(height: 10),
-              _ReviewImagePickerSection(
-                imagePaths: _selectedImagePaths,
-                isPickingImages: _isPickingImages,
-                onTapAdd: _pickImages,
-                onTapRemove: _removeImageAt,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    '리뷰 등록',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
-    ),);
+    );
   }
 
   void _applyCustomVisitTag() {

@@ -109,7 +109,11 @@ class _CouponBoxScreenRootState extends State<CouponBoxScreenRoot> {
               ),
             ],
           ),
-          actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16),
+          actionsPadding: const EdgeInsets.only(
+            bottom: 16,
+            right: 16,
+            left: 16,
+          ),
           actions: <Widget>[
             Row(
               children: [

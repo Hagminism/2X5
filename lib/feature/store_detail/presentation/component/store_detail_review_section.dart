@@ -997,7 +997,12 @@ class _NaverReviewItem extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () {
                       final allImages = mediaList
-                          .map((m) => (m as Map<String, dynamic>?)?['thumbnail'] as String? ?? '')
+                          .map(
+                            (m) =>
+                                (m as Map<String, dynamic>?)?['thumbnail']
+                                    as String? ??
+                                '',
+                          )
                           .where((url) => url.isNotEmpty)
                           .toList();
                       final targetIndex = allImages.indexOf(thumbnailUrl);

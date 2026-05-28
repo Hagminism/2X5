@@ -23,10 +23,11 @@ class HomeViewModel extends ChangeNotifier {
     required BookmarkRepository bookmarkRepository,
   }) : _storeRepository = storeRepository,
        _bookmarkRepository = bookmarkRepository {
-    _bookmarkedIdsSubscription =
-        _bookmarkRepository.watchBookmarkedStoreIds().listen(
-      _onBookmarkedStoreIdsChanged,
-    );
+    _bookmarkedIdsSubscription = _bookmarkRepository
+        .watchBookmarkedStoreIds()
+        .listen(
+          _onBookmarkedStoreIdsChanged,
+        );
   }
 
   HomeState _state = const HomeState();
