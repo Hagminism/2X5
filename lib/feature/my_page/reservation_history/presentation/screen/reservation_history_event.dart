@@ -11,4 +11,10 @@ sealed class ReservationHistoryEvent with _$ReservationHistoryEvent {
 
   const factory ReservationHistoryEvent.showSnackBar(String message) =
       ShowReservationHistorySnackBar;
+
+  const factory ReservationHistoryEvent.showReviewBottomSheet({
+    required String storeId,
+    required String storeName,
+    required String reservationId,
+  }) = ShowReservationHistoryReviewBottomSheet;
 }

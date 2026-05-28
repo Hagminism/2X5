@@ -59,6 +59,7 @@ class ReservationHistoryScreen extends StatelessWidget {
                             ReservationHistoryAction.tapReview(
                               storeId: item.storeId,
                               storeName: item.storeName,
+                              reservationId: item.id,
                             ),
                           );
                         },
