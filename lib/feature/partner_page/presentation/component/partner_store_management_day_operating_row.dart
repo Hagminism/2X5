@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/util/app_time_picker.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -136,36 +137,9 @@ class _TimeSelectButton extends StatelessWidget {
           onTap: !enabled
               ? null
               : () async {
-                  final selected = await showTimePicker(
-                    context: this.context,
+                  final selected = await AppTimePicker.show(
+                    this.context,
                     initialTime: _toInitialTime(value),
-                    builder: (context, child) {
-                      final baseTheme = Theme.of(context);
-                      return Theme(
-                        data: baseTheme.copyWith(
-                          colorScheme: baseTheme.colorScheme.copyWith(
-                            primary: AppColors.primary,
-                            onPrimary: AppColors.white,
-                            surface: AppColors.white,
-                            onSurface: AppColors.textPrimary,
-                          ),
-                          dialogTheme: const DialogThemeData(
-                            backgroundColor: AppColors.white,
-                          ),
-                          timePickerTheme: const TimePickerThemeData(
-                            backgroundColor: AppColors.white,
-                            hourMinuteColor: AppColors.signInTextField,
-                            hourMinuteTextColor: AppColors.textPrimary,
-                            dayPeriodColor: AppColors.signInTextField,
-                            dayPeriodTextColor: AppColors.textPrimary,
-                            dialHandColor: AppColors.primary,
-                            dialBackgroundColor: AppColors.signInTextField,
-                            entryModeIconColor: AppColors.primary,
-                          ),
-                        ),
-                        child: child!,
-                      );
-                    },
                   );
                   if (selected == null) return;
                   onSelected(_formatTime(selected));
