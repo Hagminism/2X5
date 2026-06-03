@@ -23,7 +23,8 @@ import 'package:capstone_2026/core/routing/core/component/user_registration_stat
 import 'package:capstone_2026/core/routing/core/component/auth_refresh_notifier.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
-import 'package:capstone_2026/feature/partner_dashboard/presentation/screen/partner_dashboard_screen.dart';
+import 'package:capstone_2026/feature/partner_dashboard/presentation/screen/partner_dashboard_screen_root.dart';
+import 'package:capstone_2026/feature/partner_dashboard/presentation/screen/partner_dashboard_view_model.dart';
 import 'package:capstone_2026/feature/partner_page/core/presentation/component/scope/partner_store_management_scope.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_screen_root.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
@@ -750,7 +751,9 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.partnerHome,
-              builder: (context, state) => const PartnerDashboardScreen(),
+              builder: (context, state) => PartnerDashboardScreenRoot(
+                viewModel: getIt<PartnerDashboardViewModel>(),
+              ),
             ),
           ],
         ),
