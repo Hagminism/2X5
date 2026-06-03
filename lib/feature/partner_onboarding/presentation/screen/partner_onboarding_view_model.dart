@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/par
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_event.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_state.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 
 class PartnerOnboardingViewModel extends ChangeNotifier {
@@ -144,6 +145,7 @@ class PartnerOnboardingViewModel extends ChangeNotifier {
     _eventController.add(
       const PartnerOnboardingEvent.showMessage(
         '사업자등록번호 검증이 완료되었습니다. (Mock)',
+        variant: AppSnackBarVariant.success,
       ),
     );
   }
@@ -159,6 +161,7 @@ class PartnerOnboardingViewModel extends ChangeNotifier {
     _eventController.add(
       const PartnerOnboardingEvent.showMessage(
         '등록증 이미지 업로드가 완료되었습니다. (Mock)',
+        variant: AppSnackBarVariant.success,
       ),
     );
   }
@@ -201,6 +204,7 @@ class PartnerOnboardingViewModel extends ChangeNotifier {
       _eventController.add(
         const PartnerOnboardingEvent.showMessage(
           '사업자 인증 정보가 제출되었습니다. 심사를 기다려 주세요.',
+          variant: AppSnackBarVariant.success,
         ),
       );
     } on FirebaseFunctionsException catch (e) {

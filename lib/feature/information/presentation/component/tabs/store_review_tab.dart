@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/dialog/app_info_dialog.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
@@ -14,6 +15,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:capstone_2026/core/presentation/util/review_submit_error_message.dart';
+import 'package:capstone_2026/core/presentation/util/review_submit_loading.dart';
 
 enum ReviewPlatform {
   internal,
@@ -56,7 +60,9 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   bool _isMoreNaverLoading = false;
 
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
+
   StampService get _stampService => getIt<StampService>();
+
   NaverStoreSearchDataSource get _naverStoreSearchDataSource =>
       getIt<NaverStoreSearchDataSource>();
 
@@ -93,13 +99,13 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
   void _showWriteReviewBottomSheetExternally() {
     if (!mounted) return;
-    
+
     setState(() {
       _selectedPlatform = ReviewPlatform.internal;
     });
 
     final data = _reviewTarget;
-    
+
     showModalBottomSheet<ReviewWriteResult>(
       context: context,
       isScrollControlled: true,
@@ -108,9 +114,12 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => ReviewWriteBottomSheet(storeName: data.name),
-    ).then((result) {
+    ).then((result) async {
       if (result != null && mounted) {
-        _submitReview(result);
+        await runWithReviewSubmitLoading(
+          context,
+          () => _submitReview(result),
+        );
       }
     });
   }
@@ -304,7 +313,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         storeName: data.name,
         review: result,
       );
-      final updatedStampStatus = await _stampService.accrueStampForReview(
+      final accrual = await _stampService.accrueStampForReview(
         storeId: widget.storeId,
       );
 
@@ -314,21 +323,30 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
       setState(() {
         _reviews = [createdReview, ..._reviews];
-        _stampStatus = updatedStampStatus;
+        _stampStatus = accrual.status;
       });
 
-      if (!wasRewardUnlocked && updatedStampStatus.isRewardUnlocked) {
-        await _showRewardUnlockedDialog(updatedStampStatus);
+      if (accrual.didAccrue &&
+          !wasRewardUnlocked &&
+          accrual.status.isRewardUnlocked) {
+        await _showRewardUnlockedDialog(accrual.status);
         return;
       }
 
-      _showMessage('리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.');
-    } catch (_) {
+      final message = accrual.didAccrue
+          ? '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.'
+          : '리뷰가 등록되었습니다.';
+
+      _showMessage(
+        message,
+        variant: AppSnackBarVariant.success,
+      );
+    } catch (error) {
       if (!mounted) {
         return;
       }
 
-      _showMessage('리뷰 등록 중 오류가 발생했습니다.');
+      _showMessage(reviewSubmitErrorMessage(error));
     }
   }
 
@@ -370,39 +388,27 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
     }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  void _showMessage(
+    String message, {
+    AppSnackBarVariant variant = AppSnackBarVariant.error,
+  }) {
+    AppSnackBar.show(context, message, variant: variant);
   }
 
   Future<void> _showRewardUnlockedDialog(StoreStampStatus status) async {
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('스탬프 보상 달성!'),
-          content: Text(
-            '${status.storeName}에서 ${status.goalCount}개의 스탬프를 모두 모았습니다.\n'
-            '${status.rewardTitle} 보상을 확인해 보세요.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('닫기'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                if (!mounted) {
-                  return;
-                }
-                context.push('${Routes.myPage}/${Routes.stampHistory}');
-              },
-              child: const Text('확인하러 가기'),
-            ),
-          ],
-        );
+    await showAppInfoDialog(
+      context,
+      title: '스탬프 보상 달성!',
+      message:
+          '${status.storeName}에서 ${status.goalCount}개의 스탬프를 모두 모았습니다.\n'
+          '${status.rewardTitle} 보상을 확인해 보세요.',
+      closeLabel: '닫기',
+      ctaLabel: '확인하러 가기',
+      onCtaPressed: () {
+        if (!mounted) {
+          return;
+        }
+        context.push('${Routes.myPage}/${Routes.stampHistory}');
       },
     );
   }

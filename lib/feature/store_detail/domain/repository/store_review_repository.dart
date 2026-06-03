@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/review/review_reservation_ref.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/store_review_link_target.dart';
@@ -33,6 +34,7 @@ abstract interface class StoreReviewRepository {
     required String userId,
     required String userName,
     required ReviewWriteResult review,
+    ReviewReservationRef? reservationRef,
   });
 
   Future<InternalReview> updateReview({

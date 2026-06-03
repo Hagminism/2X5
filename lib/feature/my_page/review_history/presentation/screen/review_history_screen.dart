@@ -1,12 +1,15 @@
 import 'dart:io';
 
+import 'package:capstone_2026/core/presentation/component/dialog/app_confirm_dialog.dart';
+import 'package:capstone_2026/core/presentation/component/full_screen_image_viewer.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_state.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class ReviewHistoryScreen extends StatelessWidget {
   const ReviewHistoryScreen({
@@ -26,7 +29,15 @@ class ReviewHistoryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('리뷰 내역'),
+        title: const Text(
+          '리뷰 내역',
+          style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,
         surfaceTintColor: Colors.white,
@@ -77,172 +88,187 @@ class _ReviewHistoryCard extends StatelessWidget {
         ? '작성한 리뷰 내용이 없습니다.'
         : review.content;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(22),
-        onTap: () => context.pushNamed(
-          'information',
-          pathParameters: {'storeId': review.storeId},
-        ),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: AppColors.border),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0F111827),
-                blurRadius: 16,
-                offset: Offset(0, 6),
-              ),
-            ],
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F111827),
+            blurRadius: 16,
+            offset: Offset(0, 6),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: const Color(0xFFF2F4F7),
-                      child: Text(
-                        _avatarText(review.userName),
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: const Color(0xFFF2F4F7),
+                  child: Text(
+                    _avatarText(review.userName),
+                    style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        review.userName,
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            review.userName,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '$storeTitle · 사진 ${review.imageUrls.length}장',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    PopupMenuButton<_ReviewMenuAction>(
-                      icon: const Icon(
-                        Icons.more_horiz_rounded,
-                        color: AppColors.textSecondary,
-                      ),
-                      onSelected: (action) async {
-                        if (action == _ReviewMenuAction.edit) {
-                          await _showEditSheet(context);
-                        } else {
-                          await _confirmDelete(context);
-                        }
-                      },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: _ReviewMenuAction.edit,
-                          child: Text('리뷰 수정'),
-                        ),
-                        PopupMenuItem(
-                          value: _ReviewMenuAction.delete,
-                          child: Text('리뷰 삭제'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final tileSize = (constraints.maxWidth - 8) / 2;
-                    return _ReviewPhotoGrid(
-                      imageUrls: review.imageUrls,
-                      tileSize: tileSize,
-                    );
-                  },
-                ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF4F6F8),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        review.visitPurpose?.trim().isNotEmpty == true
-                            ? review.visitPurpose!.trim()
-                            : '방문 목적 없음',
+                      const SizedBox(height: 4),
+                      Text(
+                        dateText.isNotEmpty
+                            ? '$storeTitle · $dateText'
+                            : storeTitle,
                         style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontFamily: AppTextStyles.fontFamily,
+                          fontSize: 13,
                           color: AppColors.textSecondary,
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                PopupMenuButton<_ReviewMenuAction>(
+                  icon: const Icon(
+                    Icons.more_horiz_rounded,
+                    color: AppColors.textSecondary,
+                  ),
+                  onSelected: (action) async {
+                    if (action == _ReviewMenuAction.edit) {
+                      await _showEditSheet(context);
+                    } else {
+                      await _confirmDelete(context);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: _ReviewMenuAction.edit,
+                      child: Text(
+                        '리뷰 수정',
+                        style: TextStyle(fontFamily: AppTextStyles.fontFamily),
+                      ),
                     ),
-                    Text(
-                      dateText.isEmpty ? '날짜 정보 없음' : dateText,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
+                    const PopupMenuItem(
+                      value: _ReviewMenuAction.delete,
+                      child: Text(
+                        '리뷰 삭제',
+                        style: TextStyle(fontFamily: AppTextStyles.fontFamily),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      size: 18,
-                      color: Colors.amber,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      review.rating.toStringAsFixed(1),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+              ],
+            ),
+            if (review.imageUrls.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 96,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: review.imageUrls.length,
+                  separatorBuilder: (context, index) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => FullScreenImageViewer(
+                              imageUrls: review.imageUrls,
+                              initialIndex: index,
+                            ),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          width: 96,
+                          height: 96,
+                          child: _ReviewHistoryImageThumbnail(
+                            imageUrl: review.imageUrls[index],
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-                const SizedBox(height: 10),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF4F6F8),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    review.visitPurpose?.trim().isNotEmpty == true
+                        ? review.visitPurpose!.trim()
+                        : '방문 목적 없음',
+                    style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.star_rounded,
+                  size: 18,
+                  color: Colors.amber,
+                ),
+                const SizedBox(width: 4),
                 Text(
-                  reviewText,
+                  review.rating.toStringAsFixed(1),
                   style: const TextStyle(
-                    fontSize: 15,
-                    height: 1.55,
+                    fontFamily: AppTextStyles.fontFamily,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 10),
+            Text(
+              reviewText,
+              style: const TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 15,
+                height: 1.55,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -272,31 +298,15 @@ class _ReviewHistoryCard extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('리뷰 삭제'),
-          content: const Text('작성한 리뷰를 삭제할까요? 이 작업은 되돌릴 수 없습니다.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('취소'),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('삭제'),
-            ),
-          ],
-        );
-      },
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: '리뷰 삭제',
+      message: '작성한 리뷰를 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
+      confirmLabel: '삭제',
+      variant: AppConfirmDialogVariant.destructive,
     );
 
-    if (confirmed != true || !context.mounted) {
+    if (!confirmed || !context.mounted) {
       return;
     }
 
@@ -304,65 +314,21 @@ class _ReviewHistoryCard extends StatelessWidget {
   }
 }
 
-class _ReviewPhotoGrid extends StatelessWidget {
-  const _ReviewPhotoGrid({
-    required this.imageUrls,
-    required this.tileSize,
-  });
-
-  final List<String> imageUrls;
-  final double tileSize;
-
-  @override
-  Widget build(BuildContext context) {
-    if (imageUrls.isEmpty) {
-      return _PhotoPlaceholderTile(size: tileSize);
-    }
-
-    final visibleImages = imageUrls.take(2).toList();
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: visibleImages
-          .map(
-            (imageUrl) => _ReviewPhotoTile(
-              imageUrl: imageUrl,
-              size: tileSize,
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class _ReviewPhotoTile extends StatelessWidget {
-  const _ReviewPhotoTile({
-    required this.imageUrl,
-    required this.size,
-  });
+class _ReviewHistoryImageThumbnail extends StatelessWidget {
+  const _ReviewHistoryImageThumbnail({required this.imageUrl});
 
   final String imageUrl;
-  final double size;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: _buildImage(),
-      ),
-    );
-  }
-
-  Widget _buildImage() {
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return Image.network(
         imageUrl,
         fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
         errorBuilder: (context, error, stackTrace) =>
-            _PhotoPlaceholderTile(size: size),
+            const _PhotoPlaceholderTile(),
       );
     }
 
@@ -370,16 +336,20 @@ class _ReviewPhotoTile extends StatelessWidget {
       return Image.file(
         File(imageUrl),
         fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
         errorBuilder: (context, error, stackTrace) =>
-            _PhotoPlaceholderTile(size: size),
+            const _PhotoPlaceholderTile(),
       );
     }
 
     return Image.asset(
       imageUrl,
       fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
       errorBuilder: (context, error, stackTrace) =>
-          _PhotoPlaceholderTile(size: size),
+          const _PhotoPlaceholderTile(),
     );
   }
 
@@ -389,33 +359,18 @@ class _ReviewPhotoTile extends StatelessWidget {
 }
 
 class _PhotoPlaceholderTile extends StatelessWidget {
-  const _PhotoPlaceholderTile({
-    required this.size,
-  });
-
-  final double size;
+  const _PhotoPlaceholderTile();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
+      width: double.infinity,
+      height: double.infinity,
       alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4F6F8),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: const Text(
-        '등록된 사진이 없습니다',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 13,
-          height: 1.45,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
-        ),
+      color: const Color(0xFFF4F6F8),
+      child: const Icon(
+        Icons.broken_image_outlined,
+        color: AppColors.textSecondary,
       ),
     );
   }
@@ -483,6 +438,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
               const Text(
                 '리뷰 수정',
                 style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
@@ -494,6 +450,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
                     ? widget.review.storeId
                     : widget.review.storeName,
                 style: const TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
                   fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
@@ -523,6 +480,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
                   Text(
                     _rating.toStringAsFixed(1),
                     style: const TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -584,6 +542,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
                   child: const Text(
                     '수정 완료',
                     style: TextStyle(
+                      fontFamily: AppTextStyles.fontFamily,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -600,11 +559,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
   void _submit() {
     final content = _contentController.text.trim();
     if (content.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('리뷰 내용을 입력해 주세요.')),
-        );
+      AppSnackBar.showError(context, '리뷰 내용을 입력해 주세요.');
       return;
     }
 
@@ -630,6 +585,7 @@ class _EditSectionTitle extends StatelessWidget {
     return Text(
       title,
       style: const TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
         fontSize: 15,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
@@ -658,6 +614,7 @@ class _EmptyReviewHistory extends StatelessWidget {
             Text(
               '아직 작성한 리뷰가 없습니다.',
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
@@ -668,6 +625,7 @@ class _EmptyReviewHistory extends StatelessWidget {
               '방문 후 리뷰를 남기면 이곳에서 작성 내역을 모아볼 수 있습니다.',
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
                 fontSize: 13,
                 height: 1.5,
                 color: AppColors.textSecondary,

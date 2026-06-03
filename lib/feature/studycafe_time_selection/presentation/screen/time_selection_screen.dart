@@ -4,6 +4,7 @@ import 'package:capstone_2026/feature/studycafe_time_selection/presentation/comp
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_action.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class TimeSelectionScreen extends StatelessWidget {
@@ -28,18 +29,23 @@ class TimeSelectionScreen extends StatelessWidget {
             surfaceTintColor: AppColors.white,
             backgroundColor: AppColors.white,
             elevation: 0,
+            centerTitle: true,
+            foregroundColor: AppColors.textPrimary,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.black),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: AppColors.textPrimary,
+                size: 20,
+              ),
               onPressed: () {
                 onAction(const TimeSelectionAction.tapBack());
               },
             ),
-            title: const Text(
+            title: Text(
               '이용권 선택',
-              style: TextStyle(
-                color: AppColors.black,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+              style: AppTextStyles.titleMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -61,11 +67,10 @@ class TimeSelectionScreen extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
+                    child: Text(
                       '이 좌석은 다른 사용자가 먼저 이용 중입니다. 뒤로 가서 다른 좌석을 선택해 주세요.',
-                      style: TextStyle(
+                      style: AppTextStyles.body.copyWith(
                         color: AppColors.textPrimary,
-                        fontSize: 14,
                         height: 1.35,
                       ),
                     ),
@@ -74,9 +79,8 @@ class TimeSelectionScreen extends StatelessWidget {
                 const SizedBox(height: 32),
                 Text(
                   _headlineText(),
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                  style: AppTextStyles.titleLarge.copyWith(
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                     height: 1.3,
                   ),
@@ -124,7 +128,9 @@ class TimeSelectionScreen extends StatelessWidget {
 
   Widget _buildContent(BuildContext context) {
     if (state.isLoadingDetail) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
     }
     if (state.loadError != null) {
       return Center(
@@ -134,24 +140,30 @@ class TimeSelectionScreen extends StatelessWidget {
             Text(
               state.loadError!,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: AppTextStyles.bodySecondary,
             ),
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {
                 onAction(const TimeSelectionAction.tapRetry());
               },
-              child: const Text('다시 시도'),
+              child: Text(
+                '다시 시도',
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
       );
     }
     if (state.usageOptions.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           '매장에 등록된 이용권이 없습니다.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: AppTextStyles.bodySecondary,
         ),
       );
     }

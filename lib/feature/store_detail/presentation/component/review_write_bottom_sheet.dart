@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -51,9 +53,17 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
   bool _isCustomVisitTagEditing = false;
   bool _isPickingImages = false;
   List<String> _selectedImagePaths = const [];
+  String? _validationMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _reviewController.addListener(_clearValidationMessage);
+  }
 
   @override
   void dispose() {
+    _reviewController.removeListener(_clearValidationMessage);
     _reviewController.dispose();
     _customVisitTagController.dispose();
     super.dispose();
@@ -63,266 +73,259 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
   Widget build(BuildContext context) {
     final isCustomSelected =
         _customVisitTag != null && _selectedTag == _customVisitTag;
+    final maxHeight = MediaQuery.of(context).size.height * 0.75;
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                '${widget.storeName} 리뷰 작성',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                '시연용 mock 리뷰입니다. 작성하면 바로 화면에 반영되어 실제 등록된 것처럼 보입니다.',
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.5,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const _SectionTitle('별점'),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  ...List.generate(5, (index) {
-                    final value = index + 1;
-                    return IconButton(
-                      onPressed: () =>
-                          setState(() => _rating = value.toDouble()),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: Icon(
-                        value <= _rating
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        color: Colors.amber,
-                        size: 32,
-                      ),
-                    );
-                  }),
-                  const SizedBox(width: 8),
-                  Text(
-                    _rating.toStringAsFixed(1),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.border,
+                      borderRadius: BorderRadius.circular(99),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const _SectionTitle('방문 목적'),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ..._visitTags.map((tag) {
-                    final isSelected = _selectedTag == tag;
-                    return ChoiceChip(
-                      label: Text(tag),
-                      selected: isSelected,
-                      onSelected: (_) {
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '${widget.storeName} 리뷰 작성',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const _SectionTitle('별점', required: true),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    ...List.generate(5, (index) {
+                      final value = index + 1;
+                      return IconButton(
+                        onPressed: () =>
+                            setState(() => _rating = value.toDouble()),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          value <= _rating
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: Colors.amber,
+                          size: 32,
+                        ),
+                      );
+                    }),
+                    const SizedBox(width: 8),
+                    Text(
+                      _rating.toStringAsFixed(1),
+                      style: AppTextStyles.body.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const _SectionTitle('방문 목적'),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ..._visitTags.map((tag) {
+                      final isSelected = _selectedTag == tag;
+                      return ChoiceChip(
+                        label: Text(tag),
+                        selected: isSelected,
+                        onSelected: (_) {
+                          setState(() {
+                            _selectedTag = tag;
+                            _isCustomVisitTagEditing = false;
+                          });
+                        },
+                        backgroundColor: Colors.white,
+                        selectedColor: AppColors.primary.withValues(
+                          alpha: 0.14,
+                        ),
+                        labelStyle: AppTextStyles.body.copyWith(
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                        side: BorderSide(
+                          color: isSelected
+                              ? AppColors.primary.withValues(alpha: 0.4)
+                              : AppColors.border,
+                        ),
+                      );
+                    }),
+                    ActionChip(
+                      label: Text(_customVisitTag ?? '직접 입력'),
+                      onPressed: () {
                         setState(() {
-                          _selectedTag = tag;
-                          _isCustomVisitTagEditing = false;
+                          _isCustomVisitTagEditing = true;
+                          _customVisitTagController.text =
+                              _customVisitTag ?? '';
                         });
                       },
-                      backgroundColor: Colors.white,
-                      selectedColor: AppColors.primary.withValues(alpha: 0.14),
-                      labelStyle: TextStyle(
-                        color: isSelected
+                      backgroundColor: isCustomSelected
+                          ? AppColors.primary.withValues(alpha: 0.14)
+                          : Colors.white,
+                      labelStyle: AppTextStyles.body.copyWith(
+                        color: isCustomSelected
                             ? AppColors.primary
                             : AppColors.textSecondary,
-                        fontWeight: isSelected
+                        fontWeight: isCustomSelected
                             ? FontWeight.w700
                             : FontWeight.w500,
                       ),
                       side: BorderSide(
-                        color: isSelected
+                        color: isCustomSelected
                             ? AppColors.primary.withValues(alpha: 0.4)
                             : AppColors.border,
                       ),
-                    );
-                  }),
-                  ActionChip(
-                    label: Text(_customVisitTag ?? '직접 입력'),
-                    onPressed: () {
-                      setState(() {
-                        _isCustomVisitTagEditing = true;
-                        _customVisitTagController.text = _customVisitTag ?? '';
-                      });
-                    },
-                    backgroundColor: isCustomSelected
-                        ? AppColors.primary.withValues(alpha: 0.14)
-                        : Colors.white,
-                    labelStyle: TextStyle(
-                      color: isCustomSelected
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
-                      fontWeight: isCustomSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
                     ),
-                    side: BorderSide(
-                      color: isCustomSelected
-                          ? AppColors.primary.withValues(alpha: 0.4)
-                          : AppColors.border,
+                  ],
+                ),
+                if (_isCustomVisitTagEditing) ...[
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _customVisitTagController,
+                    autofocus: true,
+                    maxLength: 20,
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '예: 가족 생일, 회식, 부모님과 방문',
+                      hintStyle: AppTextStyles.bodySecondary,
+                      filled: true,
+                      fillColor: const Color(0xFFF7F8FA),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          FocusScope.of(context).unfocus();
+                          setState(() {
+                            _isCustomVisitTagEditing = false;
+                            _customVisitTagController.clear();
+                          });
+                        },
+                        child: Text(
+                          '취소',
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: _applyCustomVisitTag,
+                        child: Text(
+                          '적용',
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
-              ),
-              if (_isCustomVisitTagEditing) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
+                const _SectionTitle('리뷰 내용', required: true),
+                const SizedBox(height: 10),
                 TextField(
-                  controller: _customVisitTagController,
-                  autofocus: true,
-                  maxLength: 20,
+                  controller: _reviewController,
+                  minLines: 5,
+                  maxLines: 7,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: InputDecoration(
-                    hintText: '예: 가족 생일, 회식, 부모님과 방문',
+                    hintText: '음식 맛, 서비스, 분위기, 이용 경험을 자연스럽게 적어주세요.',
+                    hintStyle: AppTextStyles.bodySecondary,
                     filled: true,
                     fillColor: const Color(0xFFF7F8FA),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
+                    contentPadding: const EdgeInsets.all(16),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        FocusScope.of(context).unfocus();
-                        setState(() {
-                          _isCustomVisitTagEditing = false;
-                          _customVisitTagController.clear();
-                        });
-                      },
-                      child: const Text('취소'),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton(
-                      onPressed: _applyCustomVisitTag,
-                      child: const Text('적용'),
-                    ),
-                  ],
+                const SizedBox(height: 20),
+                const _SectionTitle('사진 첨부'),
+                const SizedBox(height: 10),
+                _ReviewImagePickerSection(
+                  imagePaths: _selectedImagePaths,
+                  isPickingImages: _isPickingImages,
+                  onTapAdd: _pickImages,
+                  onTapRemove: _removeImageAt,
                 ),
-              ],
-              const SizedBox(height: 20),
-              const _SectionTitle('리뷰 내용'),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _reviewController,
-                minLines: 5,
-                maxLines: 7,
-                decoration: InputDecoration(
-                  hintText: '음식 맛, 서비스, 분위기, 이용 경험을 자연스럽게 적어주세요.',
-                  hintStyle: const TextStyle(color: AppColors.textSecondary),
-                  filled: true,
-                  fillColor: const Color(0xFFF7F8FA),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                const SizedBox(height: 24),
+                if (_validationMessage != null) ...[
+                  Text(
+                    _validationMessage!,
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.danger,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.all(16),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const _SectionTitle('사진 첨부'),
-              const SizedBox(height: 10),
-              _ReviewImagePickerSection(
-                imagePaths: _selectedImagePaths,
-                isPickingImages: _isPickingImages,
-                onTapAdd: _pickImages,
-                onTapRemove: _removeImageAt,
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                '지금은 mock 방식으로 사진 경로만 함께 저장합니다. 추후에는 Storage 업로드로 연결할 예정입니다.',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E8),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.card_giftcard_outlined,
-                      color: Color(0xFFD99A00),
-                      size: 18,
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '실제 서비스 단계에서는 리뷰 작성 후 스탬프 적립, 마이페이지 수정/삭제 흐름까지 확장할 예정입니다.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.5,
-                          color: AppColors.textPrimary,
-                        ),
+                  const SizedBox(height: 12),
+                ],
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _submit,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _submit,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                    child: Text(
+                      '리뷰 등록',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    '리뷰 등록',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -381,11 +384,10 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
         return;
       }
 
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('사진을 불러오는 중 오류가 발생했습니다.')),
-        );
+      AppSnackBar.showError(
+        Navigator.of(context, rootNavigator: true).context,
+        '사진을 불러오는 중 오류가 발생했습니다.',
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -402,14 +404,22 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
     });
   }
 
+  void _clearValidationMessage() {
+    if (_validationMessage == null) {
+      return;
+    }
+
+    setState(() {
+      _validationMessage = null;
+    });
+  }
+
   void _submit() {
     final content = _reviewController.text.trim();
     if (content.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('리뷰 내용을 입력해 주세요.')),
-        );
+      setState(() {
+        _validationMessage = '리뷰 내용을 입력해 주세요.';
+      });
       return;
     }
 
@@ -563,19 +573,35 @@ class _SelectedImageTile extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title);
+  const _SectionTitle(
+    this.title, {
+    this.required = false,
+  });
 
   final String title;
+  final bool required;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          style: AppTextStyles.label.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        if (required) ...[
+          const SizedBox(width: 4),
+          Text(
+            '*',
+            style: AppTextStyles.label.copyWith(
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

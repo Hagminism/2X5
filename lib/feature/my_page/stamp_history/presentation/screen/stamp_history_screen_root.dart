@@ -1,3 +1,5 @@
+import 'package:capstone_2026/core/presentation/component/dialog/app_info_dialog.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_screen.dart';
 import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/stamp_history_view_model.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
@@ -56,11 +58,7 @@ class _StampHistoryScreenRootState extends State<StampHistoryScreenRoot> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('보상 수령 처리 중 오류가 발생했습니다.')),
-        );
+      AppSnackBar.showError(context, '보상 수령 처리 중 오류가 발생했습니다.');
     }
   }
 
@@ -68,25 +66,14 @@ class _StampHistoryScreenRootState extends State<StampHistoryScreenRoot> {
     required StoreStampStatus beforeClaim,
     required StoreStampStatus afterClaim,
   }) async {
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('보상 수령 완료'),
-          content: Text(
-            '${beforeClaim.storeName} 보상을 수령했습니다.\n\n'
-            '${beforeClaim.rewardTitle}\n'
-            '${beforeClaim.rewardDescription}\n\n'
-            '남은 스탬프는 ${afterClaim.progressLabel}입니다.',
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('확인'),
-            ),
-          ],
-        );
-      },
+    await showAppInfoDialog(
+      context,
+      title: '보상 수령 완료',
+      message:
+          '${beforeClaim.storeName} 보상을 수령했습니다.\n\n'
+          '${beforeClaim.rewardTitle}\n'
+          '${beforeClaim.rewardDescription}\n\n'
+          '남은 스탬프는 ${afterClaim.progressLabel}입니다.',
     );
   }
 }

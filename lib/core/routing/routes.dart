@@ -44,6 +44,7 @@ class Routes {
       'information/:storeId';
   static const String reviewHistory = 'history-reviews';
   static const String stampHistory = 'history-stamps';
+  static const String couponBox = 'history-coupons';
   static const String accountSettings = 'account-settings';
   static const String notificationSettings = 'settings-notifications';
   static const String notices = 'notices';

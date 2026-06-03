@@ -3,6 +3,7 @@ import 'package:capstone_2026/feature/my_page/review_history/presentation/screen
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class ReviewHistoryScreenRoot extends StatefulWidget {
   const ReviewHistoryScreenRoot({
@@ -52,7 +53,10 @@ class _ReviewHistoryScreenRootState extends State<ReviewHistoryScreenRoot> {
         return;
       }
 
-      _showMessage('리뷰를 수정했습니다.');
+      _showMessage(
+        '리뷰를 수정했습니다.',
+        variant: AppSnackBarVariant.success,
+      );
     } catch (_) {
       if (!mounted) {
         return;
@@ -70,7 +74,10 @@ class _ReviewHistoryScreenRootState extends State<ReviewHistoryScreenRoot> {
         return;
       }
 
-      _showMessage('리뷰를 삭제했습니다.');
+      _showMessage(
+        '리뷰를 삭제했습니다.',
+        variant: AppSnackBarVariant.success,
+      );
     } catch (_) {
       if (!mounted) {
         return;
@@ -80,11 +87,10 @@ class _ReviewHistoryScreenRootState extends State<ReviewHistoryScreenRoot> {
     }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+  void _showMessage(
+    String message, {
+    AppSnackBarVariant variant = AppSnackBarVariant.error,
+  }) {
+    AppSnackBar.show(context, message, variant: variant);
   }
 }

@@ -1,3 +1,5 @@
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:capstone_2026/core/presentation/util/review_submit_error_message.dart';
 import 'dart:async';
 
 import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
@@ -121,22 +123,27 @@ class StoreDetailViewModel extends ChangeNotifier {
         storeName: state.data.name,
         review: review,
       );
-      final updatedStampStatus = await _stampService.accrueStampForReview(
+      final accrual = await _stampService.accrueStampForReview(
         storeId: _currentStoreId,
       );
 
       _state = state.copyWith(
         reviews: [createdReview, ...state.reviews],
-        stampStatus: updatedStampStatus,
+        stampStatus: accrual.status,
       );
       notifyListeners();
 
-      final message = updatedStampStatus.isRewardUnlocked
-          ? '리뷰가 등록되었습니다. 스탬프 적립이 완료되어 보상을 받을 수 있습니다.'
-          : '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.';
-      _showSoonMessage(message);
-    } catch (_) {
-      _showSoonMessage('리뷰 등록 중 오류가 발생했습니다.');
+      final String message;
+      if (!accrual.didAccrue) {
+        message = '리뷰가 등록되었습니다.';
+      } else if (accrual.status.isRewardUnlocked) {
+        message = '리뷰가 등록되었습니다. 스탬프 적립이 완료되어 보상을 받을 수 있습니다.';
+      } else {
+        message = '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.';
+      }
+      _showSoonMessage(message, variant: AppSnackBarVariant.success);
+    } catch (error) {
+      _showSoonMessage(reviewSubmitErrorMessage(error));
     }
   }
 
@@ -179,8 +186,13 @@ class StoreDetailViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _showSoonMessage(String message) {
-    _eventController.add(StoreDetailEvent.showMessage(message));
+  void _showSoonMessage(
+    String message, {
+    AppSnackBarVariant variant = AppSnackBarVariant.error,
+  }) {
+    _eventController.add(
+      StoreDetailEvent.showMessage(message, variant: variant),
+    );
   }
 
   Future<void> _openNaverReview() async {

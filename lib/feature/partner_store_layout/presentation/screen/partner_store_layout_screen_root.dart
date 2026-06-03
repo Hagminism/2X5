@@ -5,6 +5,7 @@ import 'package:capstone_2026/feature/partner_store_layout/presentation/screen/p
 import 'package:capstone_2026/feature/partner_store_layout/presentation/screen/partner_store_layout_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerStoreLayoutScreenRoot extends StatefulWidget {
   final PartnerStoreLayoutViewModel viewModel;
@@ -32,14 +33,8 @@ class _PartnerStoreLayoutScreenRootState
       if (!mounted) return;
 
       switch (event) {
-        case ShowMessage():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(event.message),
-              duration: const Duration(milliseconds: 1400),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+        case ShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case Pop():
           context.pop();

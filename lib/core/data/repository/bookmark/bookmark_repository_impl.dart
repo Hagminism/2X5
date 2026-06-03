@@ -89,14 +89,16 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
     stopWatching();
     _watchingUserId = userId;
 
-    _watchSubscription = _bookmarkDataSource.watchByUserId(userId).listen(
-      (rows) {
-        _applyRows(rows);
-      },
-      onError: (Object error, StackTrace stack) {
-        debugPrint('북마크 Realtime 구독 오류: $error\n$stack');
-      },
-    );
+    _watchSubscription = _bookmarkDataSource
+        .watchByUserId(userId)
+        .listen(
+          (rows) {
+            _applyRows(rows);
+          },
+          onError: (Object error, StackTrace stack) {
+            debugPrint('북마크 Realtime 구독 오류: $error\n$stack');
+          },
+        );
   }
 
   @override
@@ -142,10 +144,14 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
 
   void _emit() {
     if (!_bookmarksController.isClosed) {
-      _bookmarksController.add(List<BookmarkListItem>.unmodifiable(_cachedBookmarks));
+      _bookmarksController.add(
+        List<BookmarkListItem>.unmodifiable(_cachedBookmarks),
+      );
     }
     if (!_bookmarkedIdsController.isClosed) {
-      _bookmarkedIdsController.add(Set<String>.unmodifiable(_cachedBookmarkedIds));
+      _bookmarkedIdsController.add(
+        Set<String>.unmodifiable(_cachedBookmarkedIds),
+      );
     }
   }
 

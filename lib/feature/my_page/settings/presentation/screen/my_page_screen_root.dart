@@ -49,6 +49,9 @@ class _MyPageScreenRootState extends State<MyPageScreenRoot> {
               case ViewStampHistory():
                 context.push('${Routes.myPage}/${Routes.stampHistory}');
                 break;
+              case ViewCouponBox():
+                context.push('${Routes.myPage}/${Routes.couponBox}');
+                break;
               case TapAccountSettings():
                 context.push('${Routes.myPage}/${Routes.accountSettings}');
                 break;

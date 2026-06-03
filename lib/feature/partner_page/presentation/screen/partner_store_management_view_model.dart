@@ -3,23 +3,28 @@ import 'dart:async';
 import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/repository/owner_verification/owner_verification_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
+import 'package:capstone_2026/feature/stamp/domain/repository/stamp_repository.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_action.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_event.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_state.dart';
 import 'package:flutter/foundation.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 
 class PartnerStoreManagementViewModel extends ChangeNotifier {
   final OwnerVerificationRepository _ownerVerificationRepository;
   final StoreRepository _storeRepository;
+  final StampRepository _stampRepository;
   Store? _myStore;
   bool _initialized = false;
 
   PartnerStoreManagementViewModel({
     required OwnerVerificationRepository ownerVerificationRepository,
     required StoreRepository storeRepository,
+    required StampRepository stampRepository,
   }) : _ownerVerificationRepository = ownerVerificationRepository,
-       _storeRepository = storeRepository;
+       _storeRepository = storeRepository,
+       _stampRepository = stampRepository;
 
   PartnerStoreManagementState _state = const PartnerStoreManagementState();
 
@@ -131,6 +136,22 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         _state = state.copyWith(description: action.value);
         notifyListeners();
         break;
+      case ChangeStampEnabled():
+        _state = state.copyWith(isStampEnabled: action.value);
+        notifyListeners();
+        break;
+      case ChangeStampGoalCount():
+        _state = state.copyWith(stampGoalCount: action.value);
+        notifyListeners();
+        break;
+      case ChangeStampRewardTitle():
+        _state = state.copyWith(stampRewardTitle: action.value);
+        notifyListeners();
+        break;
+      case ChangeStampRewardDescription():
+        _state = state.copyWith(stampRewardDescription: action.value);
+        notifyListeners();
+        break;
       case AddMenu():
       case RemoveMenu():
       case ChangeMenuName():
@@ -202,6 +223,9 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
         final operatingHours = _normalizeOperatingHours(
           _myStore!.operatingHours,
         );
+        final stampPolicy = await _stampRepository.fetchStampRewardPolicy(
+          storeId: _myStore!.id,
+        );
         _state = state.copyWith(
           isLoadingInitialData: false,
           isFormVisible: true,
@@ -218,6 +242,10 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
           reservationSlotMinutes: _myStore!.reservationSlotMinutes,
           operatingHours: operatingHours,
           description: _myStore!.description ?? '',
+          isStampEnabled: stampPolicy?.isActive ?? false,
+          stampGoalCount: stampPolicy?.goalCount ?? 10,
+          stampRewardTitle: stampPolicy?.rewardTitle ?? '',
+          stampRewardDescription: stampPolicy?.rewardDescription ?? '',
         );
         notifyListeners();
         return;
@@ -294,6 +322,14 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
           : await _storeRepository.updateMyStore(payload);
       _myStore = savedStore;
 
+      await _stampRepository.saveStampRewardPolicy(
+        storeId: _myStore!.id,
+        goalCount: state.stampGoalCount,
+        rewardTitle: state.stampRewardTitle,
+        rewardDescription: state.stampRewardDescription,
+        isActive: state.isStampEnabled,
+      );
+
       _state = state.copyWith(
         isSubmitting: false,
         isEditMode: true,
@@ -304,6 +340,7 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
       _eventController.add(
         PartnerStoreManagementEvent.showMessage(
           isCreate ? '업장 등록이 완료되었습니다.' : '업장 정보가 수정되었습니다.',
+          variant: AppSnackBarVariant.success,
         ),
       );
     } catch (e) {

@@ -1,3 +1,5 @@
+import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class TermsScreen extends StatelessWidget {
@@ -9,13 +11,20 @@ class TermsScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimary,
+        surfaceTintColor: Colors.white,
         elevation: 0,
         title: const Text(
           '이용약관',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontFamily: AppTextStyles.fontFamily,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
         ),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -72,7 +81,11 @@ class TermsScreen extends StatelessWidget {
             Center(
               child: Text(
                 '본 약관은 2026년 4월 29일부터 적용됩니다.',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(
+                  fontFamily: AppTextStyles.fontFamily,
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
             SizedBox(height: 20),
@@ -85,6 +98,7 @@ class TermsScreen extends StatelessWidget {
 
 class _SectionTitle extends StatelessWidget {
   final String text;
+
   const _SectionTitle(this.text);
 
   @override
@@ -93,7 +107,12 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontFamily: AppTextStyles.fontFamily,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary,
+        ),
       ),
     );
   }
@@ -101,6 +120,7 @@ class _SectionTitle extends StatelessWidget {
 
 class _SectionBody extends StatelessWidget {
   final String text;
+
   const _SectionBody(this.text);
 
   @override
@@ -108,8 +128,9 @@ class _SectionBody extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
+        fontFamily: AppTextStyles.fontFamily,
         fontSize: 14,
-        color: Color(0xFF4B5563),
+        color: AppColors.textSecondary,
         height: 1.7,
       ),
     );

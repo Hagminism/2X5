@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/reservation/presentation/screen/reservatio
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class ReservationScreenRoot extends StatefulWidget {
   final ReservationViewModel viewModel;
@@ -35,10 +36,8 @@ class _ReservationScreenRootState extends State<ReservationScreenRoot> {
         return;
       }
       switch (event) {
-        case ReservationShowSnackBar():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(event.message)),
-          );
+        case ReservationShowSnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case ReservationShowConfirmDialog():
           _showConfirmDialog(event);

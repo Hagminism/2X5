@@ -1,6 +1,7 @@
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_element.dart';
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_layout_element_type.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class SeatSelectionLayoutElementView extends StatelessWidget {
@@ -71,7 +72,7 @@ class SeatSelectionLayoutElementView extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: AppTextStyles.label.copyWith(
               color: labelColor,
               fontSize: labelFontSize,
               fontWeight: FontWeight.w700,

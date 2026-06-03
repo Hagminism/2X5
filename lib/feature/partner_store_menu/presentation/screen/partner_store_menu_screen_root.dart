@@ -7,6 +7,7 @@ import 'package:capstone_2026/feature/partner_store_menu/presentation/screen/par
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerStoreMenuScreenRoot extends StatefulWidget {
   final PartnerStoreMenuViewModel viewModel;
@@ -33,10 +34,8 @@ class _PartnerStoreMenuScreenRootState
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (!mounted) return;
       switch (event) {
-        case ShowMessage():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(event.message)),
-          );
+        case ShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case Pop():
           context.pop();

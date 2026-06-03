@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/review/review_reservation_ref.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
@@ -29,6 +30,7 @@ class StoreReviewService {
     required String storeId,
     required String storeName,
     required ReviewWriteResult review,
+    ReviewReservationRef? reservationRef,
   }) {
     return _storeReviewRepository.submitReview(
       storeId: storeId,
@@ -36,6 +38,7 @@ class StoreReviewService {
       userId: _authRepository.getCurrentUserId(),
       userName: _authRepository.getCurrentUserDisplayName(),
       review: review,
+      reservationRef: reservationRef,
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/component/seat_selection_seat_display.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class SeatSelectionBottomActionBar extends StatelessWidget {
@@ -38,17 +39,15 @@ class SeatSelectionBottomActionBar extends StatelessWidget {
               children: [
                 Text(
                   '${seatLabelForDisplay(selectedSeat)}번 좌석',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const Text(
+                Text(
                   '개방형 좌석',
-                  style: TextStyle(
+                  style: AppTextStyles.bodySecondary.copyWith(
                     fontSize: 14,
-                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -65,12 +64,11 @@ class SeatSelectionBottomActionBar extends StatelessWidget {
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
+                child: Text(
                   '선택',
-                  style: TextStyle(
+                  style: AppTextStyles.body.copyWith(
                     color: AppColors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),

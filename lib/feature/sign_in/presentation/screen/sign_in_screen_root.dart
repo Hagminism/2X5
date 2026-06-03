@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_action
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_event.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_view_model.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_screen.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class SignInScreenRoot extends StatefulWidget {
   final SignInViewModel viewModel;
@@ -39,15 +40,7 @@ class _SignInScreenRootState extends State<SignInScreenRoot> {
           switch (event) {
             case ShowGoogleSignInError():
             case ShowNaverSignInError():
-              // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(event.error),
-                  duration: Duration(milliseconds: 1500),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              AppSnackBar.showError(context, event.error);
           }
         }
       },

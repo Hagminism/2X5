@@ -17,6 +17,7 @@ import 'package:capstone_2026/feature/search_store_information/store_information
 import 'package:capstone_2026/feature/search_store_information/store_information/presentation/screen/search_store_information_event.dart';
 import 'package:capstone_2026/feature/search_store_information/store_information/presentation/screen/search_store_information_state.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 
 class SearchStoreInformationViewModel extends ChangeNotifier {
@@ -285,13 +286,19 @@ class SearchStoreInformationViewModel extends ChangeNotifier {
         await _bookmarkRepository.removeBookmark(storeId);
         _state = _state.copyWith(isBookmarked: false);
         _eventController.add(
-          const SearchStoreInformationEvent.showSnackBar('즐겨찾기를 해제했습니다.'),
+          const SearchStoreInformationEvent.showSnackBar(
+            '즐겨찾기를 해제했습니다.',
+            variant: AppSnackBarVariant.success,
+          ),
         );
       } else {
         await _bookmarkRepository.addBookmark(storeId);
         _state = _state.copyWith(isBookmarked: true);
         _eventController.add(
-          const SearchStoreInformationEvent.showSnackBar('즐겨찾기에 추가했습니다.'),
+          const SearchStoreInformationEvent.showSnackBar(
+            '즐겨찾기에 추가했습니다.',
+            variant: AppSnackBarVariant.success,
+          ),
         );
       }
       notifyListeners();

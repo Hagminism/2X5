@@ -1,3 +1,7 @@
+import 'package:capstone_2026/core/domain/model/enum/reservation_status.dart';
+import 'package:capstone_2026/core/domain/model/review/review_reservation_ref.dart';
+import 'package:capstone_2026/core/data/data_source/review/review_image_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/review/review_image_data_source_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/google_places_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/google_place_review_info.dart';
@@ -7,118 +11,26 @@ import 'package:capstone_2026/feature/store_detail/domain/repository/store_revie
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 class StoreReviewRepositoryImpl implements StoreReviewRepository {
   StoreReviewRepositoryImpl({
     required GooglePlacesDataSource googlePlacesDataSource,
     required NaverStoreSearchDataSource naverStoreSearchDataSource,
+    required ReviewImageDataSource reviewImageDataSource,
     required SupabaseClient supabase,
   }) : _googlePlacesDataSource = googlePlacesDataSource,
        _naverStoreSearchDataSource = naverStoreSearchDataSource,
+       _reviewImageDataSource = reviewImageDataSource,
        _supabase = supabase;
 
   final GooglePlacesDataSource _googlePlacesDataSource;
   final NaverStoreSearchDataSource _naverStoreSearchDataSource;
+  final ReviewImageDataSource _reviewImageDataSource;
   final SupabaseClient _supabase;
 
   static const String _packageName = 'com.example.capstone_2026';
   static const String _reviewSelectColumns =
       'id, store_id, user_id, rating, content, image_urls, created_at, visit_purpose, users(name), stores(name)';
-  static const Uuid _uuid = Uuid();
-
-  final Map<String, List<InternalReview>> _mockReviewsByStoreId = {
-    's1': [
-      InternalReview(
-        id: 'mock-s1-1',
-        storeId: 's1',
-        userId: 'demo-user-1',
-        userName: '이학민',
-        storeName: '돈블랑 여의도점',
-        rating: 5,
-        content: '고기 맛집이에요. 반찬도 잘 나오고 고기 육즙도 좋아서 만족스러운 식사였습니다.',
-        imageUrls: const [],
-        createdAt: DateTime(2026, 4, 21, 19, 20),
-        visitPurpose: '모임',
-      ),
-      InternalReview(
-        id: 'mock-s1-2',
-        storeId: 's1',
-        userId: 'demo-user-2',
-        userName: '김민상',
-        storeName: '돈블랑 여의도점',
-        rating: 5,
-        content: '고기와 반찬이 다 맛있고 된장고추, 양배추, 무말랭이, 백김치까지 구성도 좋아요.',
-        imageUrls: const [],
-        createdAt: DateTime(2026, 4, 20, 18, 10),
-        visitPurpose: '가족 외식',
-      ),
-      InternalReview(
-        id: 'mock-s1-3',
-        storeId: 's1',
-        userId: 'demo-user-3',
-        userName: '백상준',
-        storeName: '돈블랑 여의도점',
-        rating: 5,
-        content: '신선한 고기를 맛있게 구워주셔서 가족 생일 때마다 방문하고 있어요. 와인 콜키지도 좋았습니다.',
-        imageUrls: const [],
-        createdAt: DateTime(2026, 4, 19, 19, 40),
-        visitPurpose: '가족 외식',
-      ),
-      InternalReview(
-        id: 'mock-s1-4',
-        storeId: 's1',
-        userId: 'demo-user-4',
-        userName: '오성민',
-        storeName: '돈블랑 여의도점',
-        rating: 5,
-        content: '창가 자리 분위기가 좋고 직원분들이 맛있게 구워주셔서 친구들과 만족스러운 한 끼였어요.',
-        imageUrls: const [],
-        createdAt: DateTime(2026, 4, 18, 20, 5),
-        visitPurpose: '친구 모임',
-      ),
-      InternalReview(
-        id: 'mock-s1-5',
-        storeId: 's1',
-        userId: 'demo-user-5',
-        userName: '김동현',
-        storeName: '돈블랑 여의도점',
-        rating: 5,
-        content: '회식이나 모임으로 가기 좋고 쌈 종류도 다양해서 여러 명이 방문해도 만족도가 높습니다.',
-        imageUrls: const [],
-        createdAt: DateTime(2026, 4, 17, 18, 30),
-        visitPurpose: '회식',
-      ),
-    ],
-    's2': [
-      InternalReview(
-        id: 'mock-s2-1',
-        storeId: 's2',
-        userId: 'demo-user-6',
-        userName: '박상준',
-        storeName: '블루보틀 여의도 카페',
-        rating: 5,
-        content: '좌석 간격이 여유롭고 커피 맛이 깔끔해서 작업하기 좋았습니다.',
-        imageUrls: const [],
-        createdAt: DateTime(2026, 4, 20, 14, 35),
-        visitPurpose: '빠른 방문',
-      ),
-    ],
-    's3': [
-      InternalReview(
-        id: 'mock-s3-1',
-        storeId: 's3',
-        userId: 'demo-user-7',
-        userName: '오세상',
-        storeName: '아이디헤어 브라이튼여의도점',
-        rating: 5,
-        content: '상담이 꼼꼼하고 원하는 스타일을 잘 잡아줘서 재방문 의사가 있습니다.',
-        imageUrls: const [],
-        createdAt: DateTime(2026, 4, 18, 16, 50),
-        visitPurpose: '빠른 방문',
-      ),
-    ],
-  };
 
   @override
   Future<StoreReviewLinkTarget> getNaverReviewLinkTarget({
@@ -193,18 +105,10 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required String storeId,
     int limit = 20,
   }) async {
-    final supabaseReviews = await _fetchSupabaseStoreReviews(
+    return _fetchSupabaseStoreReviews(
       storeId: storeId,
       limit: limit,
     );
-    final mockReviews = List<InternalReview>.from(
-      _mockReviewsByStoreId[storeId] ?? const [],
-    );
-
-    final merged = [...mockReviews, ...supabaseReviews]
-      ..sort(_compareByCreatedAtDesc);
-
-    return merged.take(limit).toList();
   }
 
   @override
@@ -212,19 +116,10 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required String userId,
     int limit = 20,
   }) async {
-    final supabaseReviews = await _fetchSupabaseUserReviews(
+    return _fetchSupabaseUserReviews(
       userId: userId,
       limit: limit,
     );
-    final mockReviews = _mockReviewsByStoreId.values
-        .expand((reviews) => reviews)
-        .where((review) => review.userId == userId)
-        .toList();
-
-    final merged = [...mockReviews, ...supabaseReviews]
-      ..sort(_compareByCreatedAtDesc);
-
-    return merged.take(limit).toList();
   }
 
   @override
@@ -234,52 +129,60 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required String userId,
     required String userName,
     required ReviewWriteResult review,
+    ReviewReservationRef? reservationRef,
   }) async {
-    if (_isUuid(storeId)) {
-      try {
-        final rows = await _supabase
-            .from('reviews')
-            .insert({
-              'store_id': storeId,
-              'user_id': userId,
-              'rating': review.rating,
-              'content': review.content,
-              'visit_purpose': review.visitTag,
-              'image_urls': List<String>.from(review.imagePaths),
-              'is_visible': true,
-            })
-            .select(_reviewSelectColumns)
-            .limit(1);
+    _assertValidStoreId(storeId);
 
-        final reviews = _mapReviewRows(rows);
-        if (reviews.isNotEmpty) {
-          final inserted = reviews.first;
-          return InternalReview(
-            id: inserted.id,
-            storeId: inserted.storeId,
-            userId: inserted.userId,
-            userName: userName,
-            storeName: storeName,
-            rating: inserted.rating,
-            content: inserted.content,
-            imageUrls: inserted.imageUrls,
-            createdAt: inserted.createdAt,
-            visitPurpose: inserted.visitPurpose,
-          );
-        }
-      } catch (e) {
-        debugPrint('[StoreReviewRepository] Supabase submit failed: $e');
-        rethrow;
-      }
-    }
-
-    return _submitMockReview(
-      storeId: storeId,
-      storeName: storeName,
+    final imageUrls = await _reviewImageDataSource.uploadReviewImages(
       userId: userId,
-      userName: userName,
-      review: review,
+      filePaths: review.imagePaths,
     );
+
+    final reservationPayload = await _buildReservationInsertPayload(
+      reservationRef: reservationRef,
+    );
+
+    try {
+      final rows = await _supabase
+          .from('reviews')
+          .insert({
+            'store_id': storeId,
+            'user_id': userId,
+            'rating': review.rating,
+            'content': review.content,
+            'visit_purpose': review.visitTag,
+            'image_urls': imageUrls,
+            'is_visible': true,
+            ...reservationPayload,
+          })
+          .select(_reviewSelectColumns)
+          .limit(1);
+
+      final reviews = _mapReviewRows(rows);
+      if (reviews.isEmpty) {
+        throw StateError('리뷰 저장 결과를 확인하지 못했습니다.');
+      }
+
+      final inserted = reviews.first;
+      return InternalReview(
+        id: inserted.id,
+        storeId: inserted.storeId,
+        userId: inserted.userId,
+        userName: userName,
+        storeName: storeName,
+        rating: inserted.rating,
+        content: inserted.content,
+        imageUrls: inserted.imageUrls,
+        createdAt: inserted.createdAt,
+        visitPurpose: inserted.visitPurpose,
+      );
+    } on ReviewImageUploadException {
+      rethrow;
+    } catch (error) {
+      debugPrint('[StoreReviewRepository] Supabase submit failed: $error');
+      await _rollbackUploadedReviewImages(imageUrls: imageUrls);
+      throw StateError('리뷰 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+    }
   }
 
   @override
@@ -287,32 +190,6 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
     required String reviewId,
     required ReviewWriteResult review,
   }) async {
-    for (final entry in _mockReviewsByStoreId.entries) {
-      final reviews = List<InternalReview>.from(entry.value);
-      final index = reviews.indexWhere((item) => item.id == reviewId);
-      if (index == -1) {
-        continue;
-      }
-
-      final current = reviews[index];
-      final updated = InternalReview(
-        id: current.id,
-        storeId: current.storeId,
-        userId: current.userId,
-        userName: current.userName,
-        storeName: current.storeName,
-        rating: review.rating,
-        content: review.content,
-        imageUrls: current.imageUrls,
-        createdAt: current.createdAt,
-        visitPurpose: review.visitTag,
-      );
-
-      reviews[index] = updated;
-      _mockReviewsByStoreId[entry.key] = reviews;
-      return updated;
-    }
-
     final rows = await _supabase
         .from('reviews')
         .update({
@@ -336,17 +213,19 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
   Future<void> deleteReview({
     required String reviewId,
   }) async {
-    for (final entry in _mockReviewsByStoreId.entries) {
-      final reviews = List<InternalReview>.from(entry.value);
-      final originalLength = reviews.length;
-      reviews.removeWhere((item) => item.id == reviewId);
-      if (reviews.length != originalLength) {
-        _mockReviewsByStoreId[entry.key] = reviews;
-        return;
-      }
+    await _supabase.from('reviews').delete().eq('id', reviewId);
+  }
+
+  Future<void> _rollbackUploadedReviewImages({
+    required List<String> imageUrls,
+  }) async {
+    if (imageUrls.isEmpty) {
+      return;
     }
 
-    await _supabase.from('reviews').delete().eq('id', reviewId);
+    await _reviewImageDataSource.deleteReviewImagesByPublicUrls(
+      publicUrls: imageUrls,
+    );
   }
 
   Future<List<InternalReview>> _fetchSupabaseStoreReviews({
@@ -364,10 +243,8 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
 
       return _mapReviewRows(rows);
     } catch (e) {
-      debugPrint(
-        '[StoreReviewRepository] Mock mode store reviews fallback: $e',
-      );
-      return const [];
+      debugPrint('[StoreReviewRepository] fetch store reviews failed: $e');
+      rethrow;
     }
   }
 
@@ -385,8 +262,8 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
 
       return _mapReviewRows(rows);
     } catch (e) {
-      debugPrint('[StoreReviewRepository] Mock mode user reviews fallback: $e');
-      return const [];
+      debugPrint('[StoreReviewRepository] fetch user reviews failed: $e');
+      rethrow;
     }
   }
 
@@ -403,44 +280,44 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
         .toList();
   }
 
-  InternalReview _submitMockReview({
-    required String storeId,
-    required String storeName,
-    required String userId,
-    required String userName,
-    required ReviewWriteResult review,
-  }) {
-    final mockReview = InternalReview(
-      id: 'mock-${_uuid.v4()}',
-      storeId: storeId,
-      userId: userId,
-      userName: userName,
-      storeName: storeName,
-      rating: review.rating,
-      content: review.content,
-      imageUrls: List<String>.from(review.imagePaths),
-      createdAt: DateTime.now(),
-      visitPurpose: review.visitTag,
-    );
+  Future<Map<String, String>> _buildReservationInsertPayload({
+    required ReviewReservationRef? reservationRef,
+  }) async {
+    if (reservationRef == null) {
+      return const {};
+    }
 
-    final storeReviews = List<InternalReview>.from(
-      _mockReviewsByStoreId[storeId] ?? const [],
-    );
-    storeReviews.insert(0, mockReview);
-    _mockReviewsByStoreId[storeId] = storeReviews;
+    final reservationId = reservationRef.reservationId.trim();
+    if (reservationId.isEmpty) {
+      throw StateError('유효하지 않은 예약 정보입니다.');
+    }
 
-    return mockReview;
+    final row = await _supabase
+        .from(reservationRef.source.reservationTable)
+        .select('id, status')
+        .eq('id', reservationId)
+        .maybeSingle();
+
+    if (row == null) {
+      throw StateError('연결할 예약 정보를 찾을 수 없습니다.');
+    }
+
+    final status = row['status']?.toString();
+    if (status != ReservationStatus.completed.dbValue) {
+      throw StateError('완료된 예약에만 리뷰를 작성할 수 있습니다.');
+    }
+
+    return {
+      reservationRef.source.reservationColumn: reservationId,
+    };
   }
 
-  int _compareByCreatedAtDesc(InternalReview a, InternalReview b) {
-    final aTime = a.createdAt?.millisecondsSinceEpoch ?? 0;
-    final bTime = b.createdAt?.millisecondsSinceEpoch ?? 0;
-    return bTime.compareTo(aTime);
-  }
-
-  bool _isUuid(String value) {
-    return RegExp(
+  void _assertValidStoreId(String storeId) {
+    final isUuid = RegExp(
       r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
-    ).hasMatch(value);
+    ).hasMatch(storeId);
+    if (!isUuid) {
+      throw StateError('유효하지 않은 업장 정보입니다.');
+    }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/component/seat_selection_seat_display.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class SeatSelectionSeatMarker extends StatelessWidget {
@@ -59,10 +60,10 @@ class SeatSelectionSeatMarker extends StatelessWidget {
               seatLabelText,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: AppTextStyles.label.copyWith(
                 color: isSelected ? AppColors.white : AppColors.textPrimary,
                 fontSize: (canvasWidth * 0.03).clamp(10.0, 12.0).toDouble(),
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class TimeSelectionSeatSummaryCard extends StatelessWidget {
@@ -26,17 +27,13 @@ class TimeSelectionSeatSummaryCard extends StatelessWidget {
           const SizedBox(width: 12),
           Text(
             '선택한 좌석: ',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 16,
-            ),
+            style: AppTextStyles.bodySecondary,
           ),
           Text(
             '$seatLabel번 좌석',
-            style: const TextStyle(
+            style: AppTextStyles.subtitle.copyWith(
+              fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],

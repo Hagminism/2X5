@@ -207,6 +207,16 @@ type DeleteStoreImageRequest = {
   objectPath?: string;
 };
 
+type UploadReviewImageRequest = {
+  fileBase64?: string;
+  fileExtension?: string;
+  contentType?: string;
+};
+
+type DeleteReviewImageRequest = {
+  objectPath?: string;
+};
+
 type StoreOwnershipResponse = {
   id: string;
 };
@@ -394,6 +404,7 @@ type StudyCafeDetailResponse = {
 const STORE_IMAGE_BUCKET = "store_images";
 const STORE_MENU_IMAGE_BUCKET = "store_menu_images";
 const SALON_DESIGNER_IMAGE_BUCKET = "salon_designer_images";
+const REVIEW_IMAGE_BUCKET = "review_images";
 const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_MIME_TYPES = new Set([
   "image/jpeg",
@@ -1545,6 +1556,96 @@ export const deleteStoreImageFromSupabase = onCall(
 
     await assertStoreOwnership(storeId, uid);
     await deleteFromSupabaseStorage({bucketId, objectPath});
+    return {success: true};
+  },
+);
+
+/**
+ * 사용자 리뷰 사진을 Firebase Functions 경유로 Supabase Storage에 업로드한다.
+ */
+export const uploadReviewImageToSupabase = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as UploadReviewImageRequest;
+    const fileBase64 = (data.fileBase64 ?? "").trim();
+    const requestedFileExtension = (data.fileExtension ?? "jpg")
+      .trim()
+      .toLowerCase();
+    const requestedContentType = (data.contentType ?? "image/jpeg").trim();
+
+    if (!fileBase64) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+
+    let fileBytes: Buffer;
+    try {
+      fileBytes = Buffer.from(fileBase64, "base64");
+    } catch (_) {
+      throw new HttpsError("invalid-argument", "이미지 데이터 형식이 올바르지 않습니다.");
+    }
+    if (fileBytes.length === 0) {
+      throw new HttpsError("invalid-argument", "이미지 데이터가 비어 있습니다.");
+    }
+    if (fileBytes.length > MAX_IMAGE_UPLOAD_BYTES) {
+      throw new HttpsError(
+        "invalid-argument",
+        "이미지 파일 크기는 5MB를 초과할 수 없습니다.",
+      );
+    }
+
+    const normalizedMetadata = validateAndNormalizeImageMetadata({
+      requestedContentType,
+      requestedExtension: requestedFileExtension,
+      fileBytes,
+    });
+
+    const objectPath = `${uid}/reviews/${Date.now()}_` +
+      `${Math.random().toString(36).slice(2, 10)}.` +
+      normalizedMetadata.fileExtension;
+    const publicUrl = await uploadToSupabaseStorage({
+      bucketId: REVIEW_IMAGE_BUCKET,
+      objectPath,
+      fileBytes,
+      contentType: normalizedMetadata.contentType,
+    });
+
+    return {publicUrl};
+  },
+);
+
+/**
+ * 사용자 리뷰 사진을 Firebase Functions 경유로 Supabase Storage에서 삭제한다.
+ */
+export const deleteReviewImageFromSupabase = onCall(
+  {
+    secrets: ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
+  },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
+    }
+
+    const data = (request.data ?? {}) as DeleteReviewImageRequest;
+    const objectPath = (data.objectPath ?? "").trim();
+    if (!objectPath) {
+      throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
+    }
+    if (!objectPath.startsWith(`${uid}/`)) {
+      throw new HttpsError("permission-denied", "삭제 권한이 없습니다.");
+    }
+
+    await deleteFromSupabaseStorage({
+      bucketId: REVIEW_IMAGE_BUCKET,
+      objectPath,
+    });
     return {success: true};
   },
 );

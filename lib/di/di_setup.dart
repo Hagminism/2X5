@@ -3,6 +3,8 @@ import 'package:capstone_2026/core/data/data_source/owner_verification/owner_ver
 import 'package:app_links/app_links.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source_impl.dart';
+import 'package:capstone_2026/core/data/data_source/review/review_image_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/review/review_image_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/salon/salon_data_source.dart';
@@ -36,6 +38,7 @@ import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.d
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/presentation/screen/map_studycafe_pass_selection_view_model.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_seat_selection/presentation/screen/map_studycafe_seat_selection_view_model.dart';
 import 'package:capstone_2026/feature/map_store_information/store_information/presentation/screen/map_store_information_view_model.dart';
+import 'package:capstone_2026/feature/partner_dashboard/presentation/screen/partner_dashboard_view_model.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
@@ -80,6 +83,9 @@ import 'package:capstone_2026/feature/store_detail/presentation/screen/store_det
 import 'package:capstone_2026/feature/stamp/data/repository/stamp_repository_impl.dart';
 import 'package:capstone_2026/feature/stamp/domain/repository/stamp_repository.dart';
 import 'package:capstone_2026/feature/stamp/domain/service/stamp_service.dart';
+import 'package:capstone_2026/feature/my_page/coupon_box/domain/repository/coupon_repository.dart';
+import 'package:capstone_2026/feature/my_page/coupon_box/data/repository/coupon_repository_impl.dart';
+import 'package:capstone_2026/feature/my_page/coupon_box/presentation/screen/coupon_box_view_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -221,10 +227,16 @@ void diSetup() {
   getIt.registerLazySingleton<StoreDetailRepository>(
     () => MockStoreDetailRepositoryImpl(),
   );
+  getIt.registerLazySingleton<ReviewImageDataSource>(
+    () => ReviewImageDataSourceImpl(
+      firebaseFunctions: getIt<FirebaseFunctions>(),
+    ),
+  );
   getIt.registerLazySingleton<StoreReviewRepository>(
     () => StoreReviewRepositoryImpl(
       googlePlacesDataSource: getIt<GooglePlacesDataSource>(),
       naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
+      reviewImageDataSource: getIt<ReviewImageDataSource>(),
       supabase: getIt<SupabaseClient>(),
     ),
   );
@@ -247,6 +259,9 @@ void diSetup() {
       stampRepository: getIt<StampRepository>(),
       authRepository: getIt<AuthRepository>(),
     ),
+  );
+  getIt.registerLazySingleton<CouponRepository>(
+    () => CouponRepositoryImpl(supabase: getIt<SupabaseClient>()),
   );
   getIt.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(userDataSource: getIt<UserDataSource>()),
@@ -309,10 +324,17 @@ void diSetup() {
       userRegistrationStatusNotifier: getIt<UserRegistrationStatusNotifier>(),
     ),
   );
+  getIt.registerFactory<PartnerDashboardViewModel>(
+    () => PartnerDashboardViewModel(
+      storeRepository: getIt<StoreRepository>(),
+      reservationRepository: getIt<ReservationRepository>(),
+    ),
+  );
   getIt.registerFactory<PartnerStoreManagementViewModel>(
     () => PartnerStoreManagementViewModel(
       ownerVerificationRepository: getIt<OwnerVerificationRepository>(),
       storeRepository: getIt<StoreRepository>(),
+      stampRepository: getIt<StampRepository>(),
     ),
   );
   getIt.registerFactory<PartnerStoreMenuViewModel>(
@@ -404,6 +426,12 @@ void diSetup() {
   getIt.registerFactory<MyPageViewModel>(
     () => MyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
+  getIt.registerFactory<CouponBoxViewModel>(
+    () => CouponBoxViewModel(
+      couponRepository: getIt<CouponRepository>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
+  );
   getIt.registerFactory<PartnerMyPageViewModel>(
     () => PartnerMyPageViewModel(authRepository: getIt<AuthRepository>()),
   );
@@ -419,6 +447,8 @@ void diSetup() {
       authRepository: getIt<AuthRepository>(),
       userReservationHistoryRepository:
           getIt<UserReservationHistoryRepository>(),
+      storeReviewService: getIt<StoreReviewService>(),
+      stampService: getIt<StampService>(),
     ),
   );
   getIt.registerFactory<StampHistoryViewModel>(

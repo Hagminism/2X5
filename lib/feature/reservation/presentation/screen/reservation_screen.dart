@@ -342,24 +342,24 @@ class ReservationScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: isEnabled
-              ? () {
-                  onAction(ReservationAction.selectTime(slot.time));
-                }
-              : null,
-          borderRadius: BorderRadius.circular(12),
-          splashColor: Colors.transparent,
+            ? () {
+                onAction(ReservationAction.selectTime(slot.time));
+              }
+            : null,
+        borderRadius: BorderRadius.circular(12),
+        splashColor: Colors.transparent,
         child: Ink(
           decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary
-              : isEnabled
-              ? AppColors.white
-              : AppColors.signUpWithEmailButton,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected
+                ? AppColors.primary
+                : isEnabled
+                ? AppColors.white
+                : AppColors.signUpWithEmailButton,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : AppColors.border,
+            ),
           ),
-        ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             child: Center(

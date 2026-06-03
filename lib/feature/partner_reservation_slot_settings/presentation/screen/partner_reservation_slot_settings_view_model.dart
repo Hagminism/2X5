@@ -5,6 +5,7 @@ import 'package:capstone_2026/core/domain/model/reservation/store_schedule_excep
 import 'package:capstone_2026/core/domain/model/store/store.dart';
 import 'package:capstone_2026/core/domain/repository/reservation/reservation_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/core/util/restaurant_booking_slot.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/domain/model/partner_reservation_slot.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_action.dart';
@@ -242,7 +243,12 @@ class PartnerReservationSlotSettingsViewModel extends ChangeNotifier {
         saveMessage: '저장되었습니다.',
       );
       notifyListeners();
-      _eventController.add(const ShowSnackBar('저장되었습니다.'));
+      _eventController.add(
+        const ShowSnackBar(
+          '저장되었습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
+      );
       await _reloadForSelectedDate();
     } catch (error) {
       _state = state.copyWith(

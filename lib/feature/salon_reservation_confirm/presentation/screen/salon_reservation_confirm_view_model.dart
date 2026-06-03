@@ -6,6 +6,7 @@ import 'package:capstone_2026/core/domain/repository/store/store_repository.dart
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_action.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_event.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_state.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 
 class SalonReservationConfirmViewModel extends ChangeNotifier {
@@ -100,7 +101,10 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
           );
 
           _eventController.add(
-            const SalonReservationConfirmEvent.showSnackBar('예약이 확정되었습니다.'),
+            const SalonReservationConfirmEvent.showSnackBar(
+              '예약이 확정되었습니다.',
+              variant: AppSnackBarVariant.success,
+            ),
           );
           _eventController.add(
             const SalonReservationConfirmEvent.navigateHome(),

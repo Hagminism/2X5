@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
@@ -138,7 +139,10 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
         localImagePaths: List<String?>.filled(nextImages.length, null),
       );
       _eventController.add(
-        const PartnerStoreImageEvent.showMessage('사진이 저장되었습니다.'),
+        const PartnerStoreImageEvent.showMessage(
+          '사진이 저장되었습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
       );
       _eventController.add(const PartnerStoreImageEvent.pop());
     } catch (e) {

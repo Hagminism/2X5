@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/search_store_information/store_information
 import 'package:capstone_2026/feature/search_store_information/store_information/presentation/screen/search_store_information_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class SearchStoreInformationScreenRoot extends StatefulWidget {
   final SearchStoreInformationViewModel viewModel;
@@ -40,10 +41,8 @@ class _SearchStoreInformationScreenRootState
         case PushSearchStoreInformationRoute(:final location):
           context.push(location);
           break;
-        case ShowSearchStoreInformationSnackBar(:final message):
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(message)));
+        case ShowSearchStoreInformationSnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case ShareSearchStoreInformationContent(:final text, :final subject):
           shareStoreText(context, text: text, subject: subject);

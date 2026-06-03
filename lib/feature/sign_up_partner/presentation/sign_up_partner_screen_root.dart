@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partn
 import 'package:capstone_2026/feature/sign_up_partner/presentation/sign_up_partner_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 import 'sign_up_partner_screen.dart';
 
@@ -34,15 +35,7 @@ class _SignUpPartnerScreenRootState extends State<SignUpPartnerScreenRoot> {
       if (mounted) {
         switch (event) {
           case ShowSignUpError():
-            // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(event.message),
-                duration: Duration(milliseconds: 1500),
-                backgroundColor: Colors.red,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            AppSnackBar.showError(context, event.message);
             break;
         }
       }

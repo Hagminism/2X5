@@ -7,6 +7,7 @@ import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_scre
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class BookmarkScreenRoot extends StatefulWidget {
   final BookmarkViewModel viewModel;
@@ -32,14 +33,8 @@ class _BookmarkScreenRootState extends State<BookmarkScreenRoot> {
       }
 
       switch (event) {
-        case ShowSnackBar():
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(event.message),
-              ),
-            );
+        case ShowSnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
       }
     });

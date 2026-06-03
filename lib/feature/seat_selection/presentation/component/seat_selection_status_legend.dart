@@ -1,4 +1,5 @@
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class SeatSelectionStatusLegend extends StatelessWidget {
@@ -23,7 +24,10 @@ class SeatSelectionStatusLegend extends StatelessWidget {
             const SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primary,
+              ),
             ),
         ],
       ),
@@ -44,7 +48,7 @@ class SeatSelectionStatusLegend extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           text,
-          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          style: AppTextStyles.caption,
         ),
       ],
     );

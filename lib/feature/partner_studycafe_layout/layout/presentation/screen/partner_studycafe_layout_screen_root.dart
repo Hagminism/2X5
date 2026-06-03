@@ -5,6 +5,7 @@ import 'package:capstone_2026/feature/partner_studycafe_layout/layout/presentati
 import 'package:capstone_2026/feature/partner_studycafe_layout/layout/presentation/screen/partner_studycafe_layout_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerStudyCafeLayoutScreenRoot extends StatefulWidget {
   final PartnerStudyCafeLayoutViewModel viewModel;
@@ -32,10 +33,8 @@ class _PartnerStudyCafeLayoutScreenRootState
         return;
       }
       switch (event) {
-        case ShowMessage():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(event.message)),
-          );
+        case ShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case Pop():
           context.pop();

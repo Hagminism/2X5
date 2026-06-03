@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boardin
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class OnBoardingScreenRoot extends StatefulWidget {
   final OnBoardingViewModel viewModel;
@@ -34,14 +35,7 @@ class _OnBoardingScreenRootState extends State<OnBoardingScreenRoot> {
         if (mounted) {
           switch (event) {
             case ShowError():
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(event.error),
-                  duration: Duration(milliseconds: 1500),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              AppSnackBar.showError(context, event.error);
           }
         }
       },

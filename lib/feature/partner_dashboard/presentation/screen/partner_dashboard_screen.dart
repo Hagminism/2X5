@@ -1,11 +1,20 @@
 import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
+import 'package:capstone_2026/feature/partner_dashboard/presentation/screen/partner_dashboard_action.dart';
+import 'package:capstone_2026/feature/partner_dashboard/presentation/screen/partner_dashboard_state.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/component/partner_store_section_card.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class PartnerDashboardScreen extends StatelessWidget {
-  const PartnerDashboardScreen({super.key});
+  final PartnerDashboardState state;
+  final void Function(PartnerDashboardAction action) onAction;
+
+  const PartnerDashboardScreen({
+    super.key,
+    required this.state,
+    required this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,27 +49,27 @@ class PartnerDashboardScreen extends StatelessWidget {
               PartnerStoreSectionCard(
                 title: '오늘 예약 현황',
                 child: Row(
-                  children: const [
+                  children: [
                     Expanded(
                       child: _DashboardMetricItem(
                         label: '대기',
-                        value: '3',
+                        value: _formatCount(state.todayPendingCount),
                         color: AppColors.secondary,
                       ),
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _DashboardMetricItem(
                         label: '확정',
-                        value: '12',
+                        value: _formatCount(state.todayConfirmedCount),
                         color: AppColors.primary,
                       ),
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _DashboardMetricItem(
                         label: '취소',
-                        value: '1',
+                        value: _formatCount(state.todayCancelledCount),
                         color: AppColors.danger,
                       ),
                     ),
@@ -74,7 +83,9 @@ class PartnerDashboardScreen extends StatelessWidget {
                   children: [
                     PrimaryButton(
                       text: '업장 정보 수정하기',
-                      onTap: () {},
+                      onTap: () => onAction(
+                        const PartnerDashboardAction.tapEditStore(),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     OutlinedButton(
@@ -85,7 +96,9 @@ class PartnerDashboardScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () => onAction(
+                        const PartnerDashboardAction.tapManageReservations(),
+                      ),
                       child: Text(
                         '예약 관리 바로가기',
                         style: AppTextStyles.body.copyWith(
@@ -100,26 +113,21 @@ class PartnerDashboardScreen extends StatelessWidget {
               const SizedBox(height: 20),
               PartnerStoreSectionCard(
                 title: '운영 알림',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildNoticeRow(
-                      title: '오늘 첫 예약이 10:30에 예정되어 있어요.',
-                      timeText: '방금 전',
-                    ),
-                    const Divider(color: AppColors.border, height: 24),
-                    _buildNoticeRow(
-                      title: '예약 확정 응답률이 지난주 대비 8% 상승했어요.',
-                      timeText: '1시간 전',
-                    ),
-                  ],
-                ),
+                child: _buildNoticeEmptyState(),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  String _formatCount(int count) {
+    if (state.isLoading) {
+      return '-';
+    }
+
+    return count.toString();
   }
 
   Widget _buildSummaryCard() {
@@ -141,18 +149,28 @@ class PartnerDashboardScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            '오후 피크 시간(18:00~20:00) 예약이 빠르게 증가 중입니다.',
-            style: AppTextStyles.body.copyWith(
-              color: AppColors.white,
+          if (state.isLoading)
+            const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.white,
+              ),
+            )
+          else
+            Text(
+              state.summaryMessage,
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.white,
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildNoticeRow({required String title, required String timeText}) {
+  Widget _buildNoticeEmptyState() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -163,21 +181,11 @@ class PartnerDashboardScreen extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: AppTextStyles.body.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                timeText,
-                style: AppTextStyles.caption,
-              ),
-            ],
+          child: Text(
+            '현재 알림이 없습니다.',
+            style: AppTextStyles.body.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
       ],

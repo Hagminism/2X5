@@ -3,6 +3,7 @@ import 'package:capstone_2026/feature/my_page/reservation_history/presentation/c
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_action.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class ReservationHistoryScreen extends StatelessWidget {
@@ -22,7 +23,15 @@ class ReservationHistoryScreen extends StatelessWidget {
         Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
-            title: const Text('이용 내역'),
+            title: const Text(
+              '이용 내역',
+              style: TextStyle(
+                fontFamily: AppTextStyles.fontFamily,
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            centerTitle: true,
             backgroundColor: Colors.white,
             foregroundColor: AppColors.textPrimary,
             surfaceTintColor: Colors.white,
@@ -59,6 +68,8 @@ class ReservationHistoryScreen extends StatelessWidget {
                             ReservationHistoryAction.tapReview(
                               storeId: item.storeId,
                               storeName: item.storeName,
+                              reservationId: item.id,
+                              reservationType: item.type,
                             ),
                           );
                         },
