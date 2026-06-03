@@ -1,14 +1,14 @@
 import 'dart:async';
 
+import 'package:capstone_2026/core/presentation/component/dialog/app_confirm_dialog.dart';
 import 'package:capstone_2026/core/presentation/component/dialog/text_field_dialog.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_action.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_event.dart';
+import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_screen.dart';
+import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:capstone_2026/core/presentation/component/dialog/double_button_dialog.dart';
-import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_action.dart';
-import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
-import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_screen.dart';
-import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class AccountSettingScreenRoot extends StatefulWidget {
   final AccountSettingViewModel viewModel;
@@ -32,7 +32,7 @@ class _AccountSettingScreenRootState extends State<AccountSettingScreenRoot> {
     if (_eventSubscription != null) _eventSubscription?.cancel();
 
     _eventSubscription = widget.viewModel.eventStream.listen(
-      (event) {
+      (event) async {
         if (mounted) {
           switch (event) {
             case ShowChangePasswordDialog():
@@ -44,34 +44,30 @@ class _AccountSettingScreenRootState extends State<AccountSettingScreenRoot> {
               );
               break;
             case ShowSignOutDialog():
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return DoubleButtonDialog(
-                    title: '로그아웃 하시겠습니까?',
-                    onPressed: () {
-                      widget.viewModel.onAction(
-                        AccountSettingAction.tapSignOutConfirmButton(),
-                      );
-                    },
-                  );
-                },
+              final confirmed = await showAppConfirmDialog(
+                context,
+                title: '로그아웃',
+                message: '정말 로그아웃 하시겠습니까?',
               );
+              if (confirmed && mounted) {
+                widget.viewModel.onAction(
+                  AccountSettingAction.tapSignOutConfirmButton(),
+                );
+              }
               break;
             case ShowDeleteAccountDialog():
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return DoubleButtonDialog(
-                    title: '정말로 탈퇴하시겠습니까?',
-                    onPressed: () {
-                      widget.viewModel.onAction(
-                        AccountSettingAction.tapDeleteAccountConfirmButton(),
-                      );
-                    },
-                  );
-                },
+              final confirmed = await showAppConfirmDialog(
+                context,
+                title: '회원 탈퇴',
+                message: '정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+                confirmLabel: '탈퇴',
+                variant: AppConfirmDialogVariant.destructive,
               );
+              if (confirmed && mounted) {
+                widget.viewModel.onAction(
+                  AccountSettingAction.tapDeleteAccountConfirmButton(),
+                );
+              }
               break;
             case ShowEnterPasswordDialog():
               showDialog(

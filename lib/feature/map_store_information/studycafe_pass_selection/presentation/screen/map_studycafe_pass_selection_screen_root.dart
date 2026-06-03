@@ -5,10 +5,11 @@ import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selec
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/presentation/screen/map_studycafe_pass_selection_action.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/presentation/screen/map_studycafe_pass_selection_screen.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/presentation/screen/map_studycafe_pass_selection_view_model.dart';
+import 'package:capstone_2026/core/presentation/component/dialog/app_confirm_dialog.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class MapStudycafePassSelectionScreenRoot extends StatefulWidget {
   final MapStudycafePassSelectionViewModel viewModel;
@@ -77,35 +78,16 @@ class _MapStudycafePassSelectionScreenRootState
       return;
     }
 
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('예약 확인'),
-          content: Text(
-            '${widget.viewModel.state.seatLabel}번 좌석, '
-            '${mapStudycafePassUsageOptionTitle(selected)} '
-            '(${mapStudycafePassUsageOptionPriceLabel(selected)})으로\n'
-            '이용을 시작할까요?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(
-                '확인',
-                style: TextStyle(color: AppColors.primary),
-              ),
-            ),
-          ],
-        );
-      },
+    final bool confirmed = await showAppConfirmDialog(
+      context,
+      title: '이용 확인',
+      message: '${widget.viewModel.state.seatLabel}번 좌석, '
+          '${mapStudycafePassUsageOptionTitle(selected)} '
+          '(${mapStudycafePassUsageOptionPriceLabel(selected)})으로\n'
+          '이용을 시작할까요?',
     );
 
-    if (confirmed != true || !mounted) {
+    if (!confirmed || !mounted) {
       return;
     }
 

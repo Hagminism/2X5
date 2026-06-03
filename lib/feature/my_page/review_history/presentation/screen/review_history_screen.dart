@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:capstone_2026/core/presentation/component/dialog/app_confirm_dialog.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_state.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
@@ -7,7 +9,6 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/review
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class ReviewHistoryScreen extends StatelessWidget {
   const ReviewHistoryScreen({
@@ -273,40 +274,15 @@ class _ReviewHistoryCard extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text(
-            '리뷰 삭제',
-            style: TextStyle(
-              fontFamily: AppTextStyles.fontFamily,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          content: const Text(
-            '작성한 리뷰를 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
-            style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('취소'),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('삭제'),
-            ),
-          ],
-        );
-      },
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: '리뷰 삭제',
+      message: '작성한 리뷰를 삭제할까요? 이 작업은 되돌릴 수 없습니다.',
+      confirmLabel: '삭제',
+      variant: AppConfirmDialogVariant.destructive,
     );
 
-    if (confirmed != true || !context.mounted) {
+    if (!confirmed || !context.mounted) {
       return;
     }
 
