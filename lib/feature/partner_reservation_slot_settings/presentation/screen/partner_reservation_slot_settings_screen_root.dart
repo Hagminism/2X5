@@ -4,9 +4,9 @@ import 'package:capstone_2026/feature/partner_reservation_slot_settings/presenta
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_event.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_screen.dart';
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
-import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_date_picker.dart';
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:flutter/material.dart';
 
 class PartnerReservationSlotSettingsScreenRoot extends StatefulWidget {
   final PartnerReservationSlotSettingsViewModel viewModel;
@@ -74,26 +74,11 @@ class _PartnerReservationSlotSettingsScreenRootState
   }
 
   Future<void> _openDatePicker(DateTime selectedDate) async {
-    final pickedDate = await showDatePicker(
-      context: context,
+    final pickedDate = await AppDatePicker.show(
+      context,
       initialDate: selectedDate,
       firstDate: DateTime.now().subtract(const Duration(days: 1)),
       lastDate: DateTime.now().add(const Duration(days: 90)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppColors.primary,
-              onPrimary: AppColors.white,
-              surface: AppColors.white,
-            ),
-            datePickerTheme: const DatePickerThemeData(
-              backgroundColor: AppColors.white,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
     if (!mounted || pickedDate == null) {
       return;

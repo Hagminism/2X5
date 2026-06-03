@@ -4,10 +4,10 @@ import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/par
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_event.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_screen.dart';
 import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/partner_onboarding_view_model.dart';
-import 'package:capstone_2026/feature/sign_up_partner/component/sign_up_date_picker.dart';
+import 'package:capstone_2026/core/presentation/util/app_date_picker.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerOnboardingScreenRoot extends StatefulWidget {
   final PartnerOnboardingViewModel viewModel;
@@ -40,9 +40,11 @@ class _PartnerOnboardingScreenRootState
           AppSnackBar.show(context, message, variant: variant);
           break;
         case ShowDatePicker():
-          final picked = await showSignUpDatePicker(
+          final picked = await AppDatePicker.show(
             context,
-            initialDate: event.initialDate,
+            initialDate: event.initialDate ?? DateTime.now(),
+            firstDate: DateTime(1900, 1, 1),
+            lastDate: DateTime(2100, 12, 31),
           );
           if (!mounted || picked == null) return;
           unawaited(

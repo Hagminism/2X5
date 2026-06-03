@@ -4,9 +4,9 @@ import 'package:capstone_2026/feature/partner_reservations/presentation/screen/p
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_event.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_screen.dart';
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
-import 'package:capstone_2026/ui/app_colors.dart';
-import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_date_picker.dart';
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:flutter/material.dart';
 
 class PartnerReservationsScreenRoot extends StatefulWidget {
   final PartnerReservationsViewModel viewModel;
@@ -74,26 +74,11 @@ class _PartnerReservationsScreenRootState
     final now = DateTime.now();
 
     // datePicker가 닫힐 때까지 대기 후 선택된 날짜를 반환받는다.
-    final pickedDate = await showDatePicker(
-      context: context,
+    final pickedDate = await AppDatePicker.show(
+      context,
       initialDate: selectedDate ?? now,
       firstDate: DateTime(now.year - 2),
       lastDate: DateTime(now.year + 2),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: AppColors.primary,
-              onPrimary: AppColors.white,
-              surface: AppColors.white,
-            ),
-            datePickerTheme: const DatePickerThemeData(
-              backgroundColor: AppColors.white,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (!mounted || pickedDate == null) {

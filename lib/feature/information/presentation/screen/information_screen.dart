@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/util/app_date_picker.dart';
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/util/store_image_display.dart';
 import 'package:capstone_2026/feature/information/presentation/component/information_sticky_tab_bar_delegate.dart';
@@ -209,8 +210,8 @@ class InformationScreen extends StatelessWidget {
                       );
                     },
                     onPickReservationDate: () async {
-                      final picked = await showDatePicker(
-                        context: context,
+                      final picked = await AppDatePicker.show(
+                        context,
                         initialDate:
                             state.reservationAvailabilityDate ?? DateTime.now(),
                         firstDate: DateTime.now(),
