@@ -25,9 +25,7 @@ class ReservationHistoryCard extends StatelessWidget {
     final categoryText = item.categoryLabel.trim().isNotEmpty
         ? item.categoryLabel.trim()
         : item.type.label;
-    final isReviewable =
-        item.status == ReservationStatus.completed ||
-        item.status == ReservationStatus.confirmed;
+    final isReviewable = item.status == ReservationStatus.completed;
 
     return Container(
       decoration: BoxDecoration(

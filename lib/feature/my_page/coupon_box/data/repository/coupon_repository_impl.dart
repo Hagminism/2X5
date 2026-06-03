@@ -31,7 +31,7 @@ class CouponRepositoryImpl implements CouponRepository {
   Future<void> useCoupon({required String couponId}) async {
     await _supabase
         .from('coupons')
-        .update({'used_at': DateTime.now().toIso8601String()})
+        .update({'used_at': DateTime.now().toUtc().toIso8601String()})
         .eq('id', couponId);
   }
 }

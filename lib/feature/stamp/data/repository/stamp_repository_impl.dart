@@ -247,7 +247,7 @@ class StampRepositoryImpl implements StampRepository {
       stampCount: nextCount,
       reservationId: null,
       rewardUnlockedAt: nextCount >= currentStatus.goalCount
-          ? DateTime.now()
+          ? DateTime.now().toUtc()
           : null,
     );
     if (nextCount < currentStatus.goalCount) {
@@ -255,7 +255,7 @@ class StampRepositoryImpl implements StampRepository {
           .from('user_store_stamps')
           .update({
             'reward_claimed_at': null,
-            'updated_at': DateTime.now().toIso8601String(),
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
           })
           .eq('user_id', userId)
           .eq('store_id', resolvedStore.dbStoreId!);
@@ -295,7 +295,7 @@ class StampRepositoryImpl implements StampRepository {
       return currentStatus;
     }
     final nextCount = currentStatus.currentCount - currentStatus.goalCount;
-    final now = DateTime.now();
+    final now = DateTime.now().toUtc();
 
     await _supabase
         .from('user_store_stamps')
@@ -401,7 +401,7 @@ class StampRepositoryImpl implements StampRepository {
       stampCount: nextCount,
       reservationId: reservationId,
       rewardUnlockedAt: nextCount >= currentStatus.goalCount
-          ? DateTime.now()
+          ? DateTime.now().toUtc()
           : null,
     );
 
@@ -736,7 +736,7 @@ class StampRepositoryImpl implements StampRepository {
       'reward_title': rewardTitle,
       'reward_description': rewardDescription,
       'is_active': isActive,
-      'updated_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
     });
   }
 

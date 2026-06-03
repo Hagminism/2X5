@@ -112,8 +112,8 @@ class _CouponBoxScreenState extends State<CouponBoxScreen>
                   child: TabBarView(
                     controller: _tabController,
                     children: [
-                      _buildCouponList(),
-                      _buildCouponList(),
+                      _buildCouponList(tabIndex: 0),
+                      _buildCouponList(tabIndex: 1),
                     ],
                   ),
                 ),
@@ -173,8 +173,8 @@ class _CouponBoxScreenState extends State<CouponBoxScreen>
     );
   }
 
-  Widget _buildCouponList() {
-    final coupons = widget.state.filteredCoupons;
+  Widget _buildCouponList({required int tabIndex}) {
+    final coupons = widget.state.filteredCouponsForTab(tabIndex);
 
     if (coupons.isEmpty) {
       return Center(

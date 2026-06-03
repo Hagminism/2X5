@@ -75,8 +75,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
         _customVisitTag != null && _selectedTag == _customVisitTag;
     final maxHeight = MediaQuery.of(context).size.height * 0.75;
 
-    return ScaffoldMessenger(
-      child: ConstrainedBox(
+    return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
       child: SafeArea(
         child: Padding(
@@ -330,7 +329,6 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
           ),
         ),
       ),
-      ),
     );
   }
 
@@ -386,7 +384,10 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
         return;
       }
 
-      AppSnackBar.showError(context, '사진을 불러오는 중 오류가 발생했습니다.');
+      AppSnackBar.showError(
+        Navigator.of(context, rootNavigator: true).context,
+        '사진을 불러오는 중 오류가 발생했습니다.',
+      );
     } finally {
       if (mounted) {
         setState(() {

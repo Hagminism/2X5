@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/domain/model/enum/reservation_status.dart';
 import 'package:capstone_2026/core/domain/model/review/review_reservation_ref.dart';
 import 'package:capstone_2026/core/data/data_source/review/review_image_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/review/review_image_data_source_impl.dart';
@@ -293,12 +294,17 @@ class StoreReviewRepositoryImpl implements StoreReviewRepository {
 
     final row = await _supabase
         .from(reservationRef.source.reservationTable)
-        .select('id')
+        .select('id, status')
         .eq('id', reservationId)
         .maybeSingle();
 
     if (row == null) {
       throw StateError('연결할 예약 정보를 찾을 수 없습니다.');
+    }
+
+    final status = row['status']?.toString();
+    if (status != ReservationStatus.completed.dbValue) {
+      throw StateError('완료된 예약에만 리뷰를 작성할 수 있습니다.');
     }
 
     return {
