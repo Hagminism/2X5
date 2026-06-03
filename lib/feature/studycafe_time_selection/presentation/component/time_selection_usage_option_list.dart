@@ -2,6 +2,7 @@ import 'package:capstone_2026/core/domain/model/studycafe/studycafe_usage_option
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/component/time_selection_usage_option_labels.dart';
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_action.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class TimeSelectionUsageOptionList extends StatelessWidget {
@@ -59,10 +60,9 @@ class TimeSelectionUsageOptionList extends StatelessWidget {
                       children: [
                         Text(
                           timeSelectionUsageOptionTitle(option),
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: AppTextStyles.subtitle.copyWith(
                             fontWeight: isSelected
-                                ? FontWeight.bold
+                                ? FontWeight.w700
                                 : FontWeight.w500,
                             color: isSelected
                                 ? AppColors.primary
@@ -72,8 +72,7 @@ class TimeSelectionUsageOptionList extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           timeSelectionUsageOptionPriceLabel(option),
-                          style: TextStyle(
-                            fontSize: 15,
+                          style: AppTextStyles.body.copyWith(
                             color: isSelected
                                 ? AppColors.primary
                                 : AppColors.textSecondary,

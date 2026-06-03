@@ -5,6 +5,7 @@ import 'package:capstone_2026/feature/seat_selection/presentation/component/seat
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_action.dart';
 import 'package:capstone_2026/feature/seat_selection/presentation/screen/seat_selection_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class SeatSelectionScreen extends StatelessWidget {
@@ -22,23 +23,28 @@ class SeatSelectionScreen extends StatelessWidget {
     final selected = selectedSeatForState(state);
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
         surfaceTintColor: AppColors.white,
         backgroundColor: AppColors.white,
         elevation: 0,
+        centerTitle: true,
+        foregroundColor: AppColors.textPrimary,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.black),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
           onPressed: () {
             onAction(const SeatSelectionAction.tapBack());
           },
         ),
-        title: const Text(
+        title: Text(
           '좌석 선택',
-          style: TextStyle(
-            color: AppColors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          style: AppTextStyles.titleMedium.copyWith(
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
           ),
         ),
       ),
@@ -70,7 +76,9 @@ class SeatSelectionScreen extends StatelessWidget {
 
   Widget _buildBody(BuildContext context) {
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
     }
     final String? errorMessage = state.errorMessage;
     if (errorMessage != null) {
@@ -83,14 +91,20 @@ class SeatSelectionScreen extends StatelessWidget {
               Text(
                 errorMessage,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: AppTextStyles.bodySecondary,
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
                   onAction(const SeatSelectionAction.tapRetry());
                 },
-                child: const Text('다시 시도'),
+                child: Text(
+                  '다시 시도',
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ],
           ),
@@ -98,10 +112,10 @@ class SeatSelectionScreen extends StatelessWidget {
       );
     }
     if (state.seats.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           '등록된 좌석이 없습니다.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: AppTextStyles.bodySecondary,
         ),
       );
     }

@@ -1,5 +1,6 @@
 import 'package:capstone_2026/feature/studycafe_time_selection/presentation/screen/time_selection_action.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class TimeSelectionSubmitBar extends StatelessWidget {
@@ -45,12 +46,11 @@ class TimeSelectionSubmitBar extends StatelessWidget {
                       color: AppColors.white,
                     ),
                   )
-                : const Text(
+                : Text(
                     '결제하고 이용 시작',
-                    style: TextStyle(
+                    style: AppTextStyles.subtitle.copyWith(
                       color: AppColors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
           ),
