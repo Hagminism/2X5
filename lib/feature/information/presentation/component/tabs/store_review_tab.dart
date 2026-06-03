@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/dialog/app_info_dialog.dart';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/di/di_setup.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
@@ -57,7 +58,9 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   bool _isMoreNaverLoading = false;
 
   StoreReviewService get _storeReviewService => getIt<StoreReviewService>();
+
   StampService get _stampService => getIt<StampService>();
+
   NaverStoreSearchDataSource get _naverStoreSearchDataSource =>
       getIt<NaverStoreSearchDataSource>();
 
@@ -382,32 +385,19 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
   }
 
   Future<void> _showRewardUnlockedDialog(StoreStampStatus status) async {
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('스탬프 보상 달성!'),
-          content: Text(
-            '${status.storeName}에서 ${status.goalCount}개의 스탬프를 모두 모았습니다.\n'
-            '${status.rewardTitle} 보상을 확인해 보세요.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('닫기'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                if (!mounted) {
-                  return;
-                }
-                context.push('${Routes.myPage}/${Routes.stampHistory}');
-              },
-              child: const Text('확인하러 가기'),
-            ),
-          ],
-        );
+    await showAppInfoDialog(
+      context,
+      title: '스탬프 보상 달성!',
+      message:
+          '${status.storeName}에서 ${status.goalCount}개의 스탬프를 모두 모았습니다.\n'
+          '${status.rewardTitle} 보상을 확인해 보세요.',
+      closeLabel: '닫기',
+      ctaLabel: '확인하러 가기',
+      onCtaPressed: () {
+        if (!mounted) {
+          return;
+        }
+        context.push('${Routes.myPage}/${Routes.stampHistory}');
       },
     );
   }
