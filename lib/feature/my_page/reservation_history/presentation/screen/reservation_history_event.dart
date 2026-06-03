@@ -14,8 +14,7 @@ sealed class ReservationHistoryEvent with _$ReservationHistoryEvent {
   const factory ReservationHistoryEvent.showSnackBar(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowReservationHistorySnackBar;
+  }) = ShowReservationHistorySnackBar;
 
   const factory ReservationHistoryEvent.showReviewBottomSheet({
     required String storeId,

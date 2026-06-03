@@ -186,7 +186,10 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       );
       notifyListeners();
       _eventController.add(
-        const PartnerStudyCafeLayoutEvent.showMessage('좌석 배치가 저장되었습니다.', variant: AppSnackBarVariant.success),
+        const PartnerStudyCafeLayoutEvent.showMessage(
+          '좌석 배치가 저장되었습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
       );
     } catch (e) {
       _state = state.copyWith(isSaving: false);

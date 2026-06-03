@@ -9,8 +9,7 @@ sealed class PartnerStoreLayoutEvent with _$PartnerStoreLayoutEvent {
   const factory PartnerStoreLayoutEvent.showMessage(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowMessage;
+  }) = ShowMessage;
 
   const factory PartnerStoreLayoutEvent.pop() = Pop;
 }

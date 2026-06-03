@@ -9,8 +9,7 @@ sealed class ReservationEvent with _$ReservationEvent {
   const factory ReservationEvent.showSnackBar(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ReservationShowSnackBar;
+  }) = ReservationShowSnackBar;
 
   const factory ReservationEvent.showConfirmDialog({
     required DateTime bookingDate,

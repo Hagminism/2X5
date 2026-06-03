@@ -13,8 +13,7 @@ sealed class InformationEvent with _$InformationEvent {
   const factory InformationEvent.showSnackBar(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowInformationSnackBar;
+  }) = ShowInformationSnackBar;
 
   const factory InformationEvent.share({
     required String text,

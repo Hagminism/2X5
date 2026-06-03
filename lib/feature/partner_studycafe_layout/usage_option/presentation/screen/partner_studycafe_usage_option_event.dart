@@ -10,6 +10,5 @@ sealed class PartnerStudyCafeUsageOptionEvent
   const factory PartnerStudyCafeUsageOptionEvent.showMessage(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      UsageOptionShowMessage;
+  }) = UsageOptionShowMessage;
 }

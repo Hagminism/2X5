@@ -21,9 +21,9 @@ class AppConfirmDialog extends StatelessWidget {
   });
 
   Color get _confirmColor => switch (variant) {
-        AppConfirmDialogVariant.normal => AppColors.primary,
-        AppConfirmDialogVariant.destructive => AppColors.danger,
-      };
+    AppConfirmDialogVariant.normal => AppColors.primary,
+    AppConfirmDialogVariant.destructive => AppColors.danger,
+  };
 
   @override
   Widget build(BuildContext context) {

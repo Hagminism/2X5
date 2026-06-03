@@ -285,13 +285,19 @@ class MapStoreInformationViewModel extends ChangeNotifier {
         await _bookmarkRepository.removeBookmark(storeId);
         _state = _state.copyWith(isBookmarked: false);
         _eventController.add(
-          const MapStoreInformationEvent.showSnackBar('즐겨찾기를 해제했습니다.', variant: AppSnackBarVariant.success),
+          const MapStoreInformationEvent.showSnackBar(
+            '즐겨찾기를 해제했습니다.',
+            variant: AppSnackBarVariant.success,
+          ),
         );
       } else {
         await _bookmarkRepository.addBookmark(storeId);
         _state = _state.copyWith(isBookmarked: true);
         _eventController.add(
-          const MapStoreInformationEvent.showSnackBar('즐겨찾기에 추가했습니다.', variant: AppSnackBarVariant.success),
+          const MapStoreInformationEvent.showSnackBar(
+            '즐겨찾기에 추가했습니다.',
+            variant: AppSnackBarVariant.success,
+          ),
         );
       }
       notifyListeners();

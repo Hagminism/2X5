@@ -188,7 +188,10 @@ class PartnerStoreLayoutViewModel extends ChangeNotifier {
       );
       notifyListeners();
       _eventController.add(
-        const PartnerStoreLayoutEvent.showMessage('내부 구조 배치가 저장되었습니다.', variant: AppSnackBarVariant.success),
+        const PartnerStoreLayoutEvent.showMessage(
+          '내부 구조 배치가 저장되었습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
       );
     } catch (e) {
       _state = state.copyWith(isSaving: false);

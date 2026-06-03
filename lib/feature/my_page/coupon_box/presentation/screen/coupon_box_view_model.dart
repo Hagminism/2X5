@@ -80,7 +80,12 @@ class CouponBoxViewModel extends ChangeNotifier {
 
     try {
       await _couponRepository.useCoupon(couponId: couponId);
-      _eventController.add(const CouponBoxEvent.showMessage('쿠폰 사용이 완료되었습니다.', variant: AppSnackBarVariant.success));
+      _eventController.add(
+        const CouponBoxEvent.showMessage(
+          '쿠폰 사용이 완료되었습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
+      );
       await loadCoupons();
     } catch (e) {
       _state = _state.copyWith(isLoading: false);

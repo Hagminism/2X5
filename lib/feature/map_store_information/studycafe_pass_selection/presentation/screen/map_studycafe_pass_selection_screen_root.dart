@@ -81,7 +81,8 @@ class _MapStudycafePassSelectionScreenRootState
     final bool confirmed = await showAppConfirmDialog(
       context,
       title: '이용 확인',
-      message: '${widget.viewModel.state.seatLabel}번 좌석, '
+      message:
+          '${widget.viewModel.state.seatLabel}번 좌석, '
           '${mapStudycafePassUsageOptionTitle(selected)} '
           '(${mapStudycafePassUsageOptionPriceLabel(selected)})으로\n'
           '이용을 시작할까요?',

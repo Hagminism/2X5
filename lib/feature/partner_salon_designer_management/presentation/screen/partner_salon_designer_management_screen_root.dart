@@ -36,7 +36,10 @@ class _PartnerSalonDesignerManagementScreenRootState
         return;
       }
       switch (event) {
-        case PartnerSalonDesignerManagementShowMessage(:final message, :final variant):
+        case PartnerSalonDesignerManagementShowMessage(
+          :final message,
+          :final variant,
+        ):
           AppSnackBar.show(context, message, variant: variant);
           break;
         case PartnerSalonDesignerManagementOpenGallery(:final index):
@@ -45,7 +48,10 @@ class _PartnerSalonDesignerManagementScreenRootState
         case PartnerSalonDesignerManagementPop():
           context.pop();
           break;
-        case PartnerSalonDesignerManagementPopWithMessage(:final message, :final variant):
+        case PartnerSalonDesignerManagementPopWithMessage(
+          :final message,
+          :final variant,
+        ):
           context.pop();
           AppSnackBar.show(context, message, variant: variant);
           break;

@@ -139,7 +139,10 @@ class PartnerStoreImageViewModel extends ChangeNotifier {
         localImagePaths: List<String?>.filled(nextImages.length, null),
       );
       _eventController.add(
-        const PartnerStoreImageEvent.showMessage('사진이 저장되었습니다.', variant: AppSnackBarVariant.success),
+        const PartnerStoreImageEvent.showMessage(
+          '사진이 저장되었습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
       );
       _eventController.add(const PartnerStoreImageEvent.pop());
     } catch (e) {

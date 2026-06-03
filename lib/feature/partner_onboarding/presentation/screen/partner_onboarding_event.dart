@@ -9,8 +9,7 @@ sealed class PartnerOnboardingEvent with _$PartnerOnboardingEvent {
   const factory PartnerOnboardingEvent.showMessage(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowMessage;
+  }) = ShowMessage;
 
   const factory PartnerOnboardingEvent.showDatePicker(DateTime? initialDate) =
       ShowDatePicker;

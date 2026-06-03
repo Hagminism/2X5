@@ -146,7 +146,7 @@ class ReservationHistoryViewModel extends ChangeNotifier {
 
       _eventController.add(
         const ReservationHistoryEvent.showSnackBar(
-                    '리뷰가 등록되었으며 스탬프 1개가 적립되었습니다.',
+          '리뷰가 등록되었으며 스탬프 1개가 적립되었습니다.',
           variant: AppSnackBarVariant.success,
         ),
       );

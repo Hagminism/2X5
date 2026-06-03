@@ -9,8 +9,7 @@ sealed class PartnerReservationsEvent with _$PartnerReservationsEvent {
   const factory PartnerReservationsEvent.showMessage(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowMessage;
+  }) = ShowMessage;
 
   const factory PartnerReservationsEvent.openDatePicker(
     DateTime? selectedDate,

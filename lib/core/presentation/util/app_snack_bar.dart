@@ -10,11 +10,11 @@ class AppSnackBar {
   static const Duration duration = Duration(milliseconds: 1500);
 
   static TextStyle get contentStyle => AppTextStyles.body.copyWith(
-        fontFamily: AppTextStyles.fontFamily,
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: AppColors.white,
-      );
+    fontFamily: AppTextStyles.fontFamily,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: AppColors.white,
+  );
 
   static Color backgroundColor(AppSnackBarVariant variant) {
     switch (variant) {

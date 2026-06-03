@@ -21,7 +21,8 @@ class PartnerDashboardScreenRoot extends StatefulWidget {
       _PartnerDashboardScreenRootState();
 }
 
-class _PartnerDashboardScreenRootState extends State<PartnerDashboardScreenRoot> {
+class _PartnerDashboardScreenRootState
+    extends State<PartnerDashboardScreenRoot> {
   static const int _partnerStoreTabIndex = 1;
   static const int _partnerReservationsTabIndex = 2;
 

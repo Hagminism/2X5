@@ -15,8 +15,7 @@ sealed class SearchStoreInformationEvent with _$SearchStoreInformationEvent {
   const factory SearchStoreInformationEvent.showSnackBar(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowSearchStoreInformationSnackBar;
+  }) = ShowSearchStoreInformationSnackBar;
 
   const factory SearchStoreInformationEvent.share({
     required String text,

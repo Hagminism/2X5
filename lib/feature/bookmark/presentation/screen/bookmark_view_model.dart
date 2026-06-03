@@ -104,7 +104,10 @@ class BookmarkViewModel extends ChangeNotifier {
     try {
       await _bookmarkRepository.removeBookmark(storeId);
       _eventController.add(
-        const BookmarkEvent.showSnackBar('저장 목록에서 제거했습니다.', variant: AppSnackBarVariant.success),
+        const BookmarkEvent.showSnackBar(
+          '저장 목록에서 제거했습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
       );
     } catch (error) {
       debugPrint('북마크 제거 실패: $error');

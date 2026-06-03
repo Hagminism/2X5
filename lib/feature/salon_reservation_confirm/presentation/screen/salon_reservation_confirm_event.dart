@@ -10,7 +10,6 @@ sealed class SalonReservationConfirmEvent with _$SalonReservationConfirmEvent {
   const factory SalonReservationConfirmEvent.showSnackBar(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowConfirmSnackBar;
+  }) = ShowConfirmSnackBar;
   const factory SalonReservationConfirmEvent.navigateHome() = NavigateToHome;
 }

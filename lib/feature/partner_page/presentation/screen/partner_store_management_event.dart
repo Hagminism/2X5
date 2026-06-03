@@ -9,8 +9,7 @@ sealed class PartnerStoreManagementEvent with _$PartnerStoreManagementEvent {
   const factory PartnerStoreManagementEvent.showMessage(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowMessage;
+  }) = ShowMessage;
   const factory PartnerStoreManagementEvent.openAddressSearch() =
       OpenAddressSearch;
   const factory PartnerStoreManagementEvent.openMenuManager() = OpenMenuManager;

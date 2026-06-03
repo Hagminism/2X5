@@ -191,7 +191,10 @@ class PartnerStoreMenuViewModel extends ChangeNotifier {
       );
       _pendingDeleteImageUrls.clear();
       _eventController.add(
-        const PartnerStoreMenuEvent.showMessage('메뉴가 저장되었습니다.', variant: AppSnackBarVariant.success),
+        const PartnerStoreMenuEvent.showMessage(
+          '메뉴가 저장되었습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
       );
       _eventController.add(const PartnerStoreMenuEvent.pop());
     } catch (e) {

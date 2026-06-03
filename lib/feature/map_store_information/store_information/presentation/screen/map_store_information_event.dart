@@ -14,8 +14,7 @@ sealed class MapStoreInformationEvent with _$MapStoreInformationEvent {
   const factory MapStoreInformationEvent.showSnackBar(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowMapStoreInformationSnackBar;
+  }) = ShowMapStoreInformationSnackBar;
 
   const factory MapStoreInformationEvent.share({
     required String text,

@@ -9,8 +9,7 @@ sealed class PartnerStoreImageEvent with _$PartnerStoreImageEvent {
   const factory PartnerStoreImageEvent.showMessage(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowMessage;
+  }) = ShowMessage;
   const factory PartnerStoreImageEvent.openGallery() = OpenGallery;
   const factory PartnerStoreImageEvent.pop() = Pop;
 }

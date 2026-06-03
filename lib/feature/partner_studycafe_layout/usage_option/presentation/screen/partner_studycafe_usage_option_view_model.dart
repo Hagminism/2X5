@@ -130,7 +130,10 @@ class PartnerStudyCafeUsageOptionViewModel extends ChangeNotifier {
       );
       notifyListeners();
       _eventController.add(
-        const PartnerStudyCafeUsageOptionEvent.showMessage('이용권 설정이 저장되었습니다.', variant: AppSnackBarVariant.success),
+        const PartnerStudyCafeUsageOptionEvent.showMessage(
+          '이용권 설정이 저장되었습니다.',
+          variant: AppSnackBarVariant.success,
+        ),
       );
     } catch (e) {
       _state = state.copyWith(isSaving: false);

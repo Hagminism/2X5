@@ -69,7 +69,8 @@ class _StampHistoryScreenRootState extends State<StampHistoryScreenRoot> {
     await showAppInfoDialog(
       context,
       title: '보상 수령 완료',
-      message: '${beforeClaim.storeName} 보상을 수령했습니다.\n\n'
+      message:
+          '${beforeClaim.storeName} 보상을 수령했습니다.\n\n'
           '${beforeClaim.rewardTitle}\n'
           '${beforeClaim.rewardDescription}\n\n'
           '남은 스탬프는 ${afterClaim.progressLabel}입니다.',

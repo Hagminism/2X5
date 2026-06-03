@@ -9,8 +9,7 @@ sealed class PartnerStudyCafeLayoutEvent with _$PartnerStudyCafeLayoutEvent {
   const factory PartnerStudyCafeLayoutEvent.showMessage(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
-  }) =
-      ShowMessage;
+  }) = ShowMessage;
 
   const factory PartnerStudyCafeLayoutEvent.pop() = Pop;
 }

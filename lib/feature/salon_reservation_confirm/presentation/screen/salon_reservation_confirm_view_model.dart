@@ -101,7 +101,10 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
           );
 
           _eventController.add(
-            const SalonReservationConfirmEvent.showSnackBar('예약이 확정되었습니다.', variant: AppSnackBarVariant.success),
+            const SalonReservationConfirmEvent.showSnackBar(
+              '예약이 확정되었습니다.',
+              variant: AppSnackBarVariant.success,
+            ),
           );
           _eventController.add(
             const SalonReservationConfirmEvent.navigateHome(),
