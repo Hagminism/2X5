@@ -1,4 +1,5 @@
 import 'package:capstone_2026/feature/stamp/domain/model/stamp_reward_policy.dart';
+import 'package:capstone_2026/feature/stamp/domain/model/stamp_review_accrual_result.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/feature/stamp/domain/repository/stamp_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -130,23 +131,27 @@ class StampRepositoryImpl implements StampRepository {
       final stampCountMap = _mapStampCountRows(stampRows);
       final claimedAtMap = _mapRewardClaimedAtRows(stampRows);
 
-      final statuses = storeMap.values.map((store) {
-        final policy = _buildPolicyForStore(
-          resolvedStore: store,
-          policyRow: policyMap[store.dbStoreId],
-        );
-        final currentCount = stampCountMap[store.dbStoreId] ?? 0;
-        final hasWrittenReview = reviewedStoreIds.contains(store.dbStoreId);
-        return _buildStatus(
-          appStoreId: store.appStoreId,
-          policy: policy,
-          currentCount: currentCount,
-          hasVisited: visitedStoreIds.contains(store.dbStoreId),
-          hasWrittenReview: hasWrittenReview,
-          forceShowInHistory: true,
-          rewardClaimedAt: claimedAtMap[store.dbStoreId],
-        );
-      }).toList()..sort((a, b) => b.currentCount.compareTo(a.currentCount));
+      final statuses = storeMap.values
+          .where((store) => _isPolicyRowActive(policyMap[store.dbStoreId]))
+          .map((store) {
+            final policy = _buildPolicyForStore(
+              resolvedStore: store,
+              policyRow: policyMap[store.dbStoreId],
+            );
+            final currentCount = stampCountMap[store.dbStoreId] ?? 0;
+            final hasWrittenReview = reviewedStoreIds.contains(store.dbStoreId);
+            return _buildStatus(
+              appStoreId: store.appStoreId,
+              policy: policy,
+              currentCount: currentCount,
+              hasVisited: visitedStoreIds.contains(store.dbStoreId),
+              hasWrittenReview: hasWrittenReview,
+              forceShowInHistory: true,
+              rewardClaimedAt: claimedAtMap[store.dbStoreId],
+            );
+          })
+          .toList()
+        ..sort((a, b) => b.currentCount.compareTo(a.currentCount));
 
       return statuses;
     } catch (e) {
@@ -156,7 +161,7 @@ class StampRepositoryImpl implements StampRepository {
   }
 
   @override
-  Future<StoreStampStatus> accrueStampForReview({
+  Future<StampReviewAccrualResult> accrueStampForReview({
     required String userId,
     required String storeId,
   }) async {
@@ -165,6 +170,7 @@ class StampRepositoryImpl implements StampRepository {
       throw ArgumentError('해당 가게 정보를 찾을 수 없습니다.');
     }
 
+    final dbStoreId = resolvedStore.dbStoreId!;
     final currentStatus = await _buildDbStatusForStore(
       userId: userId,
       resolvedStore: resolvedStore,
@@ -173,18 +179,29 @@ class StampRepositoryImpl implements StampRepository {
       throw StateError('스탬프 적립을 진행할 수 없습니다. 스탬프 정책이 존재하지 않습니다.');
     }
 
-    if (!_allowReviewStampTestingBypass && !currentStatus.showInHistory) {
-      return currentStatus;
+    if (!await _isStampPolicyActive(dbStoreId)) {
+      return StampReviewAccrualResult(
+        status: currentStatus,
+        didAccrue: false,
+      );
     }
 
+    if (!_allowReviewStampTestingBypass && !currentStatus.showInHistory) {
+      return StampReviewAccrualResult(
+        status: currentStatus,
+        didAccrue: false,
+      );
+    }
+
+    final countBefore = currentStatus.currentCount;
     final reservationId = await _fetchLatestCompletedReservationId(
       userId: userId,
-      dbStoreId: resolvedStore.dbStoreId!,
+      dbStoreId: dbStoreId,
     );
 
     await _accrueStampAtomically(
       userId: userId,
-      dbStoreId: resolvedStore.dbStoreId!,
+      dbStoreId: dbStoreId,
       reservationId: reservationId,
       currentStatus: currentStatus.copyWith(
         canWriteReview: true,
@@ -192,7 +209,14 @@ class StampRepositoryImpl implements StampRepository {
       ),
     );
 
-    return await fetchStoreStampStatus(userId: userId, storeId: storeId);
+    final updatedStatus = await fetchStoreStampStatus(
+      userId: userId,
+      storeId: storeId,
+    );
+    return StampReviewAccrualResult(
+      status: updatedStatus,
+      didAccrue: updatedStatus.currentCount > countBefore,
+    );
   }
 
   @override
@@ -263,6 +287,9 @@ class StampRepositoryImpl implements StampRepository {
     );
     if (currentStatus == null) {
       throw StateError('스탬프 정보가 존재하지 않습니다.');
+    }
+    if (!await _isStampPolicyActive(resolvedStore.dbStoreId!)) {
+      throw StateError('스탬프 기능이 비활성화된 매장입니다.');
     }
     if (!currentStatus.isRewardUnlocked) {
       return currentStatus;
@@ -711,6 +738,20 @@ class StampRepositoryImpl implements StampRepository {
       'is_active': isActive,
       'updated_at': DateTime.now().toIso8601String(),
     });
+  }
+
+  bool _isPolicyRowActive(Map<String, dynamic>? policyRow) {
+    return policyRow != null && policyRow['is_active'] == true;
+  }
+
+  Future<bool> _isStampPolicyActive(String dbStoreId) async {
+    final row = await _supabase
+        .from('stamp_policies')
+        .select('is_active')
+        .eq('store_id', dbStoreId)
+        .maybeSingle();
+
+    return row != null && row['is_active'] == true;
   }
 
   bool _isUuid(String value) {

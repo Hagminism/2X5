@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/feature/stamp/domain/model/stamp_review_accrual_result.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/feature/stamp/domain/repository/stamp_repository.dart';
 
@@ -27,7 +28,7 @@ class StampService {
     );
   }
 
-  Future<StoreStampStatus> accrueStampForReview({
+  Future<StampReviewAccrualResult> accrueStampForReview({
     required String storeId,
   }) {
     return _stampRepository.accrueStampForReview(

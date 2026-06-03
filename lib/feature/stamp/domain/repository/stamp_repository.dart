@@ -1,4 +1,5 @@
 import 'package:capstone_2026/feature/stamp/domain/model/stamp_reward_policy.dart';
+import 'package:capstone_2026/feature/stamp/domain/model/stamp_review_accrual_result.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 
 abstract interface class StampRepository {
@@ -11,7 +12,7 @@ abstract interface class StampRepository {
     required String userId,
   });
 
-  Future<StoreStampStatus> accrueStampForReview({
+  Future<StampReviewAccrualResult> accrueStampForReview({
     required String userId,
     required String storeId,
   });

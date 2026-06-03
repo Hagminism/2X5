@@ -123,19 +123,24 @@ class StoreDetailViewModel extends ChangeNotifier {
         storeName: state.data.name,
         review: review,
       );
-      final updatedStampStatus = await _stampService.accrueStampForReview(
+      final accrual = await _stampService.accrueStampForReview(
         storeId: _currentStoreId,
       );
 
       _state = state.copyWith(
         reviews: [createdReview, ...state.reviews],
-        stampStatus: updatedStampStatus,
+        stampStatus: accrual.status,
       );
       notifyListeners();
 
-      final message = updatedStampStatus.isRewardUnlocked
-          ? '리뷰가 등록되었습니다. 스탬프 적립이 완료되어 보상을 받을 수 있습니다.'
-          : '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.';
+      final String message;
+      if (!accrual.didAccrue) {
+        message = '리뷰가 등록되었습니다.';
+      } else if (accrual.status.isRewardUnlocked) {
+        message = '리뷰가 등록되었습니다. 스탬프 적립이 완료되어 보상을 받을 수 있습니다.';
+      } else {
+        message = '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.';
+      }
       _showSoonMessage(message, variant: AppSnackBarVariant.success);
     } catch (error) {
       _showSoonMessage(reviewSubmitErrorMessage(error));

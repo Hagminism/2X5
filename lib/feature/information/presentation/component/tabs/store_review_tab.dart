@@ -313,7 +313,7 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         storeName: data.name,
         review: result,
       );
-      final updatedStampStatus = await _stampService.accrueStampForReview(
+      final accrual = await _stampService.accrueStampForReview(
         storeId: widget.storeId,
       );
 
@@ -323,16 +323,22 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
 
       setState(() {
         _reviews = [createdReview, ..._reviews];
-        _stampStatus = updatedStampStatus;
+        _stampStatus = accrual.status;
       });
 
-      if (!wasRewardUnlocked && updatedStampStatus.isRewardUnlocked) {
-        await _showRewardUnlockedDialog(updatedStampStatus);
+      if (accrual.didAccrue &&
+          !wasRewardUnlocked &&
+          accrual.status.isRewardUnlocked) {
+        await _showRewardUnlockedDialog(accrual.status);
         return;
       }
 
+      final message = accrual.didAccrue
+          ? '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.'
+          : '리뷰가 등록되었습니다.';
+
       _showMessage(
-        '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.',
+        message,
         variant: AppSnackBarVariant.success,
       );
     } catch (error) {

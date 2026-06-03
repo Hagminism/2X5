@@ -131,12 +131,16 @@ class ReservationHistoryViewModel extends ChangeNotifier {
         review: result,
         reservationRef: reservationRef,
       );
-      await _stampService.accrueStampForReview(storeId: storeId);
+      final accrual = await _stampService.accrueStampForReview(storeId: storeId);
       await fetchHistory();
 
+      final message = accrual.didAccrue
+          ? '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.'
+          : '리뷰가 등록되었습니다.';
+
       _eventController.add(
-        const ReservationHistoryEvent.showSnackBar(
-          '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.',
+        ReservationHistoryEvent.showSnackBar(
+          message,
           variant: AppSnackBarVariant.success,
         ),
       );
