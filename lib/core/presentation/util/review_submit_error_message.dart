@@ -7,7 +7,7 @@ String reviewSubmitErrorMessage(Object error) {
 
   if (error is StateError) {
     final message = error.message;
-    if (message != null && message.isNotEmpty) {
+    if (message.isNotEmpty) {
       return message;
     }
   }
