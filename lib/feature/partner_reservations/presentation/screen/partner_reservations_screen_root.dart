@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/partner_reservations/presentation/screen/p
 import 'package:capstone_2026/feature/partner_reservations/presentation/screen/partner_reservations_view_model.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerReservationsScreenRoot extends StatefulWidget {
   final PartnerReservationsViewModel viewModel;
@@ -34,14 +35,8 @@ class _PartnerReservationsScreenRootState
       (event) {
         if (mounted) {
           switch (event) {
-            case ShowMessage():
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(event.message),
-                  duration: const Duration(milliseconds: 1400),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+            case ShowMessage(:final message, :final variant):
+              AppSnackBar.show(context, message, variant: variant);
               break;
             case OpenDatePicker():
               _openDatePicker(event.selectedDate);

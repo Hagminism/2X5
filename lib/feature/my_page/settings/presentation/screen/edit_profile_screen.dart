@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -84,9 +85,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _submit() async {
     final nickname = _nicknameController.text.trim();
     if (nickname.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('닉네임을 입력해 주세요.')));
+      AppSnackBar.showError(context, '닉네임을 입력해 주세요.');
       return;
     }
 
@@ -110,18 +109,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           .eq('id', _user?.uid ?? '');
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('프로필 수정이 완료되었습니다.')));
+      AppSnackBar.showSuccess(context, '프로필 수정이 완료되었습니다.');
 
       await Future<void>.delayed(const Duration(milliseconds: 250));
       if (!mounted) return;
       context.go(Routes.myPage);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+      AppSnackBar.showError(context, '저장 실패: $e');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

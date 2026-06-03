@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_s
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_event.dart';
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_state.dart';
 import 'package:flutter/foundation.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 
 class PartnerStoreManagementViewModel extends ChangeNotifier {
@@ -339,6 +340,7 @@ class PartnerStoreManagementViewModel extends ChangeNotifier {
       _eventController.add(
         PartnerStoreManagementEvent.showMessage(
           isCreate ? '업장 등록이 완료되었습니다.' : '업장 정보가 수정되었습니다.',
+          variant: AppSnackBarVariant.success,
         ),
       );
     } catch (e) {

@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/scr
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class SalonReservationConfirmScreenRoot extends StatefulWidget {
   final SalonReservationConfirmViewModel viewModel;
@@ -41,10 +42,8 @@ class _SalonReservationConfirmScreenRootState
         case PopConfirmScreen():
           context.pop();
           break;
-        case ShowConfirmSnackBar():
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(event.message)));
+        case ShowConfirmSnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case NavigateToHome():
           context.go(Routes.home);

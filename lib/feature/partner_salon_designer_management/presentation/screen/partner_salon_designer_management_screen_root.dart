@@ -7,6 +7,7 @@ import 'package:capstone_2026/feature/partner_salon_designer_management/presenta
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerSalonDesignerManagementScreenRoot extends StatefulWidget {
   final PartnerSalonDesignerManagementViewModel viewModel;
@@ -35,10 +36,8 @@ class _PartnerSalonDesignerManagementScreenRootState
         return;
       }
       switch (event) {
-        case PartnerSalonDesignerManagementShowMessage(:final message):
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
+        case PartnerSalonDesignerManagementShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case PartnerSalonDesignerManagementOpenGallery(:final index):
           await _pickDesignerImage(index);
@@ -46,10 +45,9 @@ class _PartnerSalonDesignerManagementScreenRootState
         case PartnerSalonDesignerManagementPop():
           context.pop();
           break;
-        case PartnerSalonDesignerManagementPopWithMessage(:final message):
-          final messenger = ScaffoldMessenger.of(context);
+        case PartnerSalonDesignerManagementPopWithMessage(:final message, :final variant):
           context.pop();
-          messenger.showSnackBar(SnackBar(content: Text(message)));
+          AppSnackBar.show(context, message, variant: variant);
           break;
       }
     });

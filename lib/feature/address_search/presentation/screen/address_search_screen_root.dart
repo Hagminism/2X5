@@ -5,6 +5,7 @@ import 'package:capstone_2026/feature/address_search/presentation/screen/address
 import 'package:capstone_2026/feature/address_search/presentation/screen/address_search_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class AddressSearchScreenRoot extends StatefulWidget {
   final AddressSearchViewModel viewModel;
@@ -29,14 +30,8 @@ class _AddressSearchScreenRootState extends State<AddressSearchScreenRoot> {
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
       if (!mounted) return;
       switch (event) {
-        case ShowMessage():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(event.message),
-              duration: const Duration(milliseconds: 1400),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+        case ShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case PopWithResult():
           debugPrint(

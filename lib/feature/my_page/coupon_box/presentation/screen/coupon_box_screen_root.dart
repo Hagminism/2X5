@@ -7,6 +7,7 @@ import 'package:capstone_2026/feature/my_page/coupon_box/presentation/screen/cou
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class CouponBoxScreenRoot extends StatefulWidget {
   const CouponBoxScreenRoot({
@@ -32,14 +33,8 @@ class _CouponBoxScreenRootState extends State<CouponBoxScreenRoot> {
       if (!mounted) return;
 
       switch (event) {
-        case ShowMessage():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(event.message),
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(milliseconds: 1400),
-            ),
-          );
+        case ShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case ShowUseConfirmationDialog():
           _showUseConfirmationDialog(

@@ -5,6 +5,7 @@ import 'package:capstone_2026/core/domain/repository/bookmark/bookmark_repositor
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_action.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_event.dart';
 import 'package:capstone_2026/feature/bookmark/presentation/screen/bookmark_state.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 
 class BookmarkViewModel extends ChangeNotifier {
@@ -103,7 +104,7 @@ class BookmarkViewModel extends ChangeNotifier {
     try {
       await _bookmarkRepository.removeBookmark(storeId);
       _eventController.add(
-        const BookmarkEvent.showSnackBar('저장 목록에서 제거했습니다.'),
+        const BookmarkEvent.showSnackBar('저장 목록에서 제거했습니다.', variant: AppSnackBarVariant.success),
       );
     } catch (error) {
       debugPrint('북마크 제거 실패: $error');

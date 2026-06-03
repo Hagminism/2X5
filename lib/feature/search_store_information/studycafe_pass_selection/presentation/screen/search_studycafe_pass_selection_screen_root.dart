@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/search_store_information/studycafe_pass_se
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class SearchStudycafePassSelectionScreenRoot extends StatefulWidget {
   final SearchStudycafePassSelectionViewModel viewModel;
@@ -115,9 +116,7 @@ class _SearchStudycafePassSelectionScreenRootState
 
     if (!ok) {
       final String? message = widget.viewModel.state.submitError;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message ?? '예약에 실패했습니다.')),
-      );
+      AppSnackBar.showError(context, message ?? '예약에 실패했습니다.');
       return;
     }
 

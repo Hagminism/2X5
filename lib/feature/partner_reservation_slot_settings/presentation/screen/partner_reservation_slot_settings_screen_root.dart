@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/partner_reservation_slot_settings/presenta
 import 'package:capstone_2026/feature/partner_reservation_slot_settings/presentation/screen/partner_reservation_slot_settings_view_model.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerReservationSlotSettingsScreenRoot extends StatefulWidget {
   final PartnerReservationSlotSettingsViewModel viewModel;
@@ -36,10 +37,8 @@ class _PartnerReservationSlotSettingsScreenRootState
         case OpenDatePicker():
           _openDatePicker(event.selectedDate);
           break;
-        case ShowSnackBar():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(event.message)),
-          );
+        case ShowSnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
       }
     });

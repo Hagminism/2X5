@@ -4,6 +4,7 @@ import 'package:capstone_2026/feature/partner_studycafe_layout/usage_option/pres
 import 'package:capstone_2026/feature/partner_studycafe_layout/usage_option/presentation/screen/partner_studycafe_usage_option_screen.dart';
 import 'package:capstone_2026/feature/partner_studycafe_layout/usage_option/presentation/screen/partner_studycafe_usage_option_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerStudyCafeUsageOptionScreenRoot extends StatefulWidget {
   final PartnerStudyCafeUsageOptionViewModel viewModel;
@@ -31,10 +32,8 @@ class _PartnerStudyCafeUsageOptionScreenRootState
         return;
       }
       switch (event) {
-        case UsageOptionShowMessage(:final message):
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
+        case UsageOptionShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
       }
     });

@@ -9,6 +9,7 @@ import 'package:capstone_2026/feature/my_page/reservation_history/domain/reposit
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_action.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_event.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_state.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 
 class ReservationHistoryViewModel extends ChangeNotifier {
@@ -145,7 +146,8 @@ class ReservationHistoryViewModel extends ChangeNotifier {
 
       _eventController.add(
         const ReservationHistoryEvent.showSnackBar(
-          '리뷰가 등록되었으며 스탬프 1개가 적립되었습니다.',
+                    '리뷰가 등록되었으며 스탬프 1개가 적립되었습니다.',
+          variant: AppSnackBarVariant.success,
         ),
       );
 

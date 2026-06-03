@@ -5,6 +5,7 @@ import 'package:capstone_2026/feature/home/presentation/screen/home_event.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_screen.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class HomeScreenRoot extends StatefulWidget {
   final HomeViewModel viewModel;
@@ -30,12 +31,8 @@ class _HomeScreenRootState extends State<HomeScreenRoot> {
       }
 
       switch (event) {
-        case ShowSnackBar():
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(content: Text(event.message)),
-            );
+        case ShowSnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
       }
     });

@@ -9,6 +9,7 @@ import 'package:capstone_2026/feature/home/core/model/home_store_item.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_action.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_event.dart';
 import 'package:capstone_2026/feature/home/presentation/screen/home_state.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -363,6 +364,7 @@ class HomeViewModel extends ChangeNotifier {
       _eventController.add(
         HomeEvent.showSnackBar(
           wasBookmarked ? '즐겨찾기를 해제했습니다.' : '즐겨찾기에 추가했습니다.',
+          variant: AppSnackBarVariant.success,
         ),
       );
     } catch (_) {

@@ -7,6 +7,7 @@ import 'package:capstone_2026/feature/store_detail/presentation/component/review
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class ReviewHistoryScreen extends StatelessWidget {
   const ReviewHistoryScreen({
@@ -614,16 +615,7 @@ class _ReviewEditBottomSheetState extends State<_ReviewEditBottomSheet> {
   void _submit() {
     final content = _contentController.text.trim();
     if (content.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text(
-              '리뷰 내용을 입력해 주세요.',
-              style: TextStyle(fontFamily: AppTextStyles.fontFamily),
-            ),
-          ),
-        );
+      AppSnackBar.showError(context, '리뷰 내용을 입력해 주세요.');
       return;
     }
 

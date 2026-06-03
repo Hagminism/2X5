@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/map_store_information/store_information/pr
 import 'package:capstone_2026/feature/map_store_information/store_information/presentation/screen/map_store_information_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class MapStoreInformationScreenRoot extends StatefulWidget {
   final MapStoreInformationViewModel viewModel;
@@ -40,10 +41,8 @@ class _MapStoreInformationScreenRootState
         case PushMapStoreInformationRoute(:final location):
           context.push(location);
           break;
-        case ShowMapStoreInformationSnackBar(:final message):
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(message)));
+        case ShowMapStoreInformationSnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case ShareMapStoreInformationContent(:final text, :final subject):
           shareStoreText(context, text: text, subject: subject);

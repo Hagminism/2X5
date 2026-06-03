@@ -7,6 +7,7 @@ import 'package:capstone_2026/feature/my_page/reservation_history/presentation/s
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class ReservationHistoryScreenRoot extends StatefulWidget {
   const ReservationHistoryScreenRoot({
@@ -42,10 +43,8 @@ class _ReservationHistoryScreenRootState
         case PushReservationHistoryRoute():
           context.push(event.location);
           break;
-        case ShowReservationHistorySnackBar():
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(event.message)));
+        case ShowReservationHistorySnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case ShowReservationHistoryReviewBottomSheet(
           :final storeId,

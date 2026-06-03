@@ -7,6 +7,7 @@ import 'package:capstone_2026/feature/partner_onboarding/presentation/screen/par
 import 'package:capstone_2026/feature/sign_up_partner/component/sign_up_date_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerOnboardingScreenRoot extends StatefulWidget {
   final PartnerOnboardingViewModel viewModel;
@@ -35,14 +36,8 @@ class _PartnerOnboardingScreenRootState
       if (!mounted) return;
 
       switch (event) {
-        case ShowMessage():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(event.message),
-              duration: const Duration(milliseconds: 1400),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+        case ShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case ShowDatePicker():
           final picked = await showSignUpDatePicker(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class ReviewWriteResult {
   const ReviewWriteResult({
@@ -348,11 +349,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
         return;
       }
 
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('사진을 불러오는 중 오류가 발생했습니다.')),
-        );
+      AppSnackBar.showError(context, '사진을 불러오는 중 오류가 발생했습니다.');
     } finally {
       if (mounted) {
         setState(() {
@@ -372,11 +369,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
   void _submit() {
     final content = _reviewController.text.trim();
     if (content.isEmpty) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('리뷰 내용을 입력해 주세요.')),
-        );
+      AppSnackBar.showError(context, '리뷰 내용을 입력해 주세요.');
       return;
     }
 

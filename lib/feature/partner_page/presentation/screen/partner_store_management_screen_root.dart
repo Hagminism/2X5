@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_s
 import 'package:capstone_2026/feature/partner_page/presentation/screen/partner_store_management_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class PartnerStoreManagementScreenRoot extends StatefulWidget {
   final PartnerStoreManagementViewModel viewModel;
@@ -36,14 +37,8 @@ class _PartnerStoreManagementScreenRootState
       if (!mounted) return;
 
       switch (event) {
-        case ShowMessage():
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(event.message),
-              duration: const Duration(milliseconds: 1400),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+        case ShowMessage(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case OpenAddressSearch():
           _openAddressSearch();

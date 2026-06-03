@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/store_detail/presentation/screen/store_det
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class StoreDetailScreenRoot extends StatefulWidget {
   final String storeId;
@@ -36,10 +37,8 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
     _eventSubscription = widget.viewModel.eventStream.listen((event) async {
       if (mounted) {
         switch (event) {
-          case ShowMessage():
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(event.message)));
+          case ShowMessage(:final message, :final variant):
+            AppSnackBar.show(context, message, variant: variant);
             break;
           case OpenNaverReview():
             try {
@@ -57,11 +56,7 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
               }
             } catch (_) {
               if (!mounted) return;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(content: Text('외부 링크를 열 수 없습니다.')),
-                );
+              AppSnackBar.showError(context, '외부 링크를 열 수 없습니다.');
             }
             break;
           case OpenGoogleMap():
@@ -72,11 +67,7 @@ class _StoreDetailScreenRootState extends State<StoreDetailScreenRoot> {
               );
             } catch (_) {
               if (!mounted) return;
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(content: Text('외부 링크를 열 수 없습니다.')),
-                );
+              AppSnackBar.showError(context, '외부 링크를 열 수 없습니다.');
             }
             break;
         }

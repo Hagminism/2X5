@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -185,7 +186,7 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
       );
       notifyListeners();
       _eventController.add(
-        const PartnerStudyCafeLayoutEvent.showMessage('좌석 배치가 저장되었습니다.'),
+        const PartnerStudyCafeLayoutEvent.showMessage('좌석 배치가 저장되었습니다.', variant: AppSnackBarVariant.success),
       );
     } catch (e) {
       _state = state.copyWith(isSaving: false);
@@ -292,6 +293,7 @@ class PartnerStudyCafeLayoutViewModel extends ChangeNotifier {
     _eventController.add(
       PartnerStudyCafeLayoutEvent.showMessage(
         '${newSeats.length}개 좌석을 복사했습니다.',
+        variant: AppSnackBarVariant.success,
       ),
     );
   }

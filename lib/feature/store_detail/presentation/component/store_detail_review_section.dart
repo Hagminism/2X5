@@ -11,6 +11,7 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:capstone_2026/feature/information/presentation/component/tabs/store_review_tab.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 const bool _allowReviewStampTestingBypass = bool.fromEnvironment(
   'ALLOW_REVIEW_STAMP_TEST_BYPASS',
@@ -297,11 +298,7 @@ class StoreDetailReviewSection extends StatelessWidget {
     if (!_allowReviewStampTestingBypass &&
         stampStatus != null &&
         !stampStatus!.canWriteReview) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(stampStatus!.reviewEligibilityMessage)),
-        );
+      AppSnackBar.showError(context, stampStatus!.reviewEligibilityMessage);
       return;
     }
 

@@ -6,6 +6,7 @@ import 'package:capstone_2026/feature/information/presentation/screen/informatio
 import 'package:capstone_2026/feature/information/presentation/screen/information_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class InformationScreenRoot extends StatefulWidget {
   final InformationViewModel viewModel;
@@ -48,10 +49,8 @@ class _InformationScreenRootState extends State<InformationScreenRoot> {
         case PushInformationRoute():
           context.push(event.location);
           break;
-        case ShowInformationSnackBar():
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(content: Text(event.message)));
+        case ShowInformationSnackBar(:final message, :final variant):
+          AppSnackBar.show(context, message, variant: variant);
           break;
         case ShareInformationContent(:final text, :final subject):
           shareStoreText(context, text: text, subject: subject);

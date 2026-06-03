@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/model/enum/reservation_status.dart';
@@ -113,6 +114,7 @@ class PartnerReservationsViewModel extends ChangeNotifier {
       _eventController.add(
         PartnerReservationsEvent.showMessage(
           '예약 상태를 ${status.label}으로 변경했습니다.',
+          variant: AppSnackBarVariant.success,
         ),
       );
     } catch (_) {

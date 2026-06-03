@@ -4,6 +4,7 @@ import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class StoreHomeTab extends StatefulWidget {
   const StoreHomeTab({
@@ -95,8 +96,9 @@ class _StoreHomeTabState extends State<StoreHomeTab> {
                               ClipboardData(text: displayPhone.trim()),
                             );
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('전화번호를 복사했습니다.')),
+                              AppSnackBar.showSuccess(
+                                context,
+                                '전화번호를 복사했습니다.',
                               );
                             }
                           },

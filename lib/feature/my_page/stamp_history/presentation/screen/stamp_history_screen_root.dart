@@ -3,6 +3,7 @@ import 'package:capstone_2026/feature/my_page/stamp_history/presentation/screen/
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class StampHistoryScreenRoot extends StatefulWidget {
   const StampHistoryScreenRoot({
@@ -56,11 +57,7 @@ class _StampHistoryScreenRootState extends State<StampHistoryScreenRoot> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('보상 수령 처리 중 오류가 발생했습니다.')),
-        );
+      AppSnackBar.showError(context, '보상 수령 처리 중 오류가 발생했습니다.');
     }
   }
 

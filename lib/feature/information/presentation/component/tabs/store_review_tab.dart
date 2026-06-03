@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 enum ReviewPlatform {
   internal,
@@ -322,7 +323,10 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         return;
       }
 
-      _showMessage('리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.');
+      _showMessage(
+        '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.',
+        variant: AppSnackBarVariant.success,
+      );
     } catch (_) {
       if (!mounted) {
         return;
@@ -370,10 +374,11 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
     }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  void _showMessage(
+    String message, {
+    AppSnackBarVariant variant = AppSnackBarVariant.error,
+  }) {
+    AppSnackBar.show(context, message, variant: variant);
   }
 
   Future<void> _showRewardUnlockedDialog(StoreStampStatus status) async {

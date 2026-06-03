@@ -8,6 +8,7 @@ import 'package:capstone_2026/core/presentation/component/dialog/double_button_d
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_action.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_view_model.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_screen.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class AccountSettingScreenRoot extends StatefulWidget {
   final AccountSettingViewModel viewModel;
@@ -92,16 +93,8 @@ class _AccountSettingScreenRootState extends State<AccountSettingScreenRoot> {
                 },
               );
               break;
-            case ShowshowErrorMessage():
-              // TODO: 스낵바 디자인은 기본 디자인으로 임시 사용
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(event.error),
-                  duration: Duration(milliseconds: 1500),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+            case ShowshowErrorMessage(:final error):
+              AppSnackBar.showError(context, error);
               break;
           }
         }

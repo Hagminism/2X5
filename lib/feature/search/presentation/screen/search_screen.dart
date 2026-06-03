@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -179,18 +180,7 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '검색 오류: $e',
-            style: AppTextStyles.body.copyWith(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.white,
-            ),
-          ),
-        ),
-      );
+      AppSnackBar.showError(context, '검색 오류: $e');
     }
   }
 
@@ -234,18 +224,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void _openStoreDetail(Map<String, dynamic> store) {
     final storeId = store['id']?.toString() ?? '';
     if (storeId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '업장 정보를 찾을 수 없습니다.',
-            style: AppTextStyles.body.copyWith(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.white,
-            ),
-          ),
-        ),
-      );
+      AppSnackBar.showError(context, '업장 정보를 찾을 수 없습니다.');
       return;
     }
 

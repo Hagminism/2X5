@@ -8,6 +8,7 @@ import 'package:capstone_2026/feature/studycafe_time_selection/presentation/scre
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class TimeSelectionScreenRoot extends StatefulWidget {
   final TimeSelectionViewModel viewModel;
@@ -114,9 +115,7 @@ class _TimeSelectionScreenRootState extends State<TimeSelectionScreenRoot> {
 
     if (!ok) {
       final String? message = widget.viewModel.state.submitError;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message ?? '예약에 실패했습니다.')),
-      );
+      AppSnackBar.showError(context, message ?? '예약에 실패했습니다.');
       return;
     }
 
