@@ -3,6 +3,8 @@ import 'package:capstone_2026/core/data/data_source/owner_verification/owner_ver
 import 'package:app_links/app_links.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source_impl.dart';
+import 'package:capstone_2026/core/data/data_source/review/review_image_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/review/review_image_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/salon/salon_data_source.dart';
@@ -225,10 +227,16 @@ void diSetup() {
   getIt.registerLazySingleton<StoreDetailRepository>(
     () => MockStoreDetailRepositoryImpl(),
   );
+  getIt.registerLazySingleton<ReviewImageDataSource>(
+    () => ReviewImageDataSourceImpl(
+      firebaseFunctions: getIt<FirebaseFunctions>(),
+    ),
+  );
   getIt.registerLazySingleton<StoreReviewRepository>(
     () => StoreReviewRepositoryImpl(
       googlePlacesDataSource: getIt<GooglePlacesDataSource>(),
       naverStoreSearchDataSource: getIt<NaverStoreSearchDataSource>(),
+      reviewImageDataSource: getIt<ReviewImageDataSource>(),
       supabase: getIt<SupabaseClient>(),
     ),
   );

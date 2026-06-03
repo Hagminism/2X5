@@ -16,6 +16,8 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source.dart';
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:capstone_2026/core/presentation/util/review_submit_error_message.dart';
+import 'package:capstone_2026/core/presentation/util/review_submit_loading.dart';
 
 enum ReviewPlatform {
   internal,
@@ -112,9 +114,12 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => ReviewWriteBottomSheet(storeName: data.name),
-    ).then((result) {
+    ).then((result) async {
       if (result != null && mounted) {
-        _submitReview(result);
+        await runWithReviewSubmitLoading(
+          context,
+          () => _submitReview(result),
+        );
       }
     });
   }
@@ -330,12 +335,12 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
         '리뷰가 등록되었습니다. 스탬프 1개가 적립되었습니다.',
         variant: AppSnackBarVariant.success,
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted) {
         return;
       }
 
-      _showMessage('리뷰 등록 중 오류가 발생했습니다.');
+      _showMessage(reviewSubmitErrorMessage(error));
     }
   }
 

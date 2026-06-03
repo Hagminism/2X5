@@ -1,9 +1,10 @@
 import 'dart:io';
 
+import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
+import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 
 class ReviewWriteResult {
   const ReviewWriteResult({
@@ -52,9 +53,17 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
   bool _isCustomVisitTagEditing = false;
   bool _isPickingImages = false;
   List<String> _selectedImagePaths = const [];
+  String? _validationMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _reviewController.addListener(_clearValidationMessage);
+  }
 
   @override
   void dispose() {
+    _reviewController.removeListener(_clearValidationMessage);
     _reviewController.dispose();
     _customVisitTagController.dispose();
     super.dispose();
@@ -66,7 +75,8 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
         _customVisitTag != null && _selectedTag == _customVisitTag;
     final maxHeight = MediaQuery.of(context).size.height * 0.75;
 
-    return ConstrainedBox(
+    return ScaffoldMessenger(
+      child: ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
       child: SafeArea(
         child: Padding(
@@ -94,14 +104,13 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                 const SizedBox(height: 20),
                 Text(
                   '${widget.storeName} 리뷰 작성',
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: AppTextStyles.titleMedium.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 24),
-                const _SectionTitle('별점'),
+                const _SectionTitle('별점', required: true),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -124,8 +133,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                     const SizedBox(width: 8),
                     Text(
                       _rating.toStringAsFixed(1),
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: AppTextStyles.body.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
@@ -154,7 +162,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                         selectedColor: AppColors.primary.withValues(
                           alpha: 0.14,
                         ),
-                        labelStyle: TextStyle(
+                        labelStyle: AppTextStyles.body.copyWith(
                           color: isSelected
                               ? AppColors.primary
                               : AppColors.textSecondary,
@@ -181,7 +189,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                       backgroundColor: isCustomSelected
                           ? AppColors.primary.withValues(alpha: 0.14)
                           : Colors.white,
-                      labelStyle: TextStyle(
+                      labelStyle: AppTextStyles.body.copyWith(
                         color: isCustomSelected
                             ? AppColors.primary
                             : AppColors.textSecondary,
@@ -203,8 +211,12 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                     controller: _customVisitTagController,
                     autofocus: true,
                     maxLength: 20,
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
                     decoration: InputDecoration(
                       hintText: '예: 가족 생일, 회식, 부모님과 방문',
+                      hintStyle: AppTextStyles.bodySecondary,
                       filled: true,
                       fillColor: const Color(0xFFF7F8FA),
                       border: OutlineInputBorder(
@@ -229,26 +241,40 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                             _customVisitTagController.clear();
                           });
                         },
-                        child: const Text('취소'),
+                        child: Text(
+                          '취소',
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       FilledButton(
                         onPressed: _applyCustomVisitTag,
-                        child: const Text('적용'),
+                        child: Text(
+                          '적용',
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ],
                 const SizedBox(height: 20),
-                const _SectionTitle('리뷰 내용'),
+                const _SectionTitle('리뷰 내용', required: true),
                 const SizedBox(height: 10),
                 TextField(
                   controller: _reviewController,
                   minLines: 5,
                   maxLines: 7,
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                   decoration: InputDecoration(
                     hintText: '음식 맛, 서비스, 분위기, 이용 경험을 자연스럽게 적어주세요.',
-                    hintStyle: const TextStyle(color: AppColors.textSecondary),
+                    hintStyle: AppTextStyles.bodySecondary,
                     filled: true,
                     fillColor: const Color(0xFFF7F8FA),
                     border: OutlineInputBorder(
@@ -268,6 +294,16 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                   onTapRemove: _removeImageAt,
                 ),
                 const SizedBox(height: 24),
+                if (_validationMessage != null) ...[
+                  Text(
+                    _validationMessage!,
+                    style: AppTextStyles.body.copyWith(
+                      color: AppColors.danger,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
@@ -280,10 +316,10 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       '리뷰 등록',
-                      style: TextStyle(
-                        fontSize: 15,
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -293,6 +329,7 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -366,10 +403,22 @@ class _ReviewWriteBottomSheetState extends State<ReviewWriteBottomSheet> {
     });
   }
 
+  void _clearValidationMessage() {
+    if (_validationMessage == null) {
+      return;
+    }
+
+    setState(() {
+      _validationMessage = null;
+    });
+  }
+
   void _submit() {
     final content = _reviewController.text.trim();
     if (content.isEmpty) {
-      AppSnackBar.showError(context, '리뷰 내용을 입력해 주세요.');
+      setState(() {
+        _validationMessage = '리뷰 내용을 입력해 주세요.';
+      });
       return;
     }
 
@@ -523,19 +572,35 @@ class _SelectedImageTile extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title);
+  const _SectionTitle(
+    this.title, {
+    this.required = false,
+  });
 
   final String title;
+  final bool required;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          title,
+          style: AppTextStyles.label.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        if (required) ...[
+          const SizedBox(width: 4),
+          Text(
+            '*',
+            style: AppTextStyles.label.copyWith(
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

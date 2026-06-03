@@ -1,4 +1,4 @@
-import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
+import 'package:capstone_2026/feature/my_page/reservation_history/domain/model/user_reservation_history_type.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'reservation_history_action.freezed.dart';
@@ -15,12 +15,6 @@ sealed class ReservationHistoryAction with _$ReservationHistoryAction {
     required String storeId,
     required String storeName,
     required String reservationId,
+    required UserReservationHistoryType reservationType,
   }) = TapReservationHistoryReview;
-
-  const factory ReservationHistoryAction.submitReview({
-    required String storeId,
-    required String storeName,
-    required String reservationId,
-    required ReviewWriteResult reviewResult,
-  }) = SubmitReservationHistoryReview;
 }

@@ -25,19 +25,38 @@ class UserReservationHistoryRepositoryImpl
       _dataSource.fetchReviewsByUserId(userId),
     ).wait;
 
-    final reviewedReservationIds = reviewRows
-        .map((row) => row['reservation_id']?.toString())
+    final reviewedRestaurantReservationIds = reviewRows
+        .map((row) => row['restaurant_reservation_id']?.toString())
+        .whereType<String>()
+        .toSet();
+    final reviewedStudyCafeReservationIds = reviewRows
+        .map((row) => row['studycafe_reservation_id']?.toString())
+        .whereType<String>()
+        .toSet();
+    final reviewedSalonReservationIds = reviewRows
+        .map((row) => row['salon_reservation_id']?.toString())
         .whereType<String>()
         .toSet();
 
     final items = <UserReservationHistoryItem>[
       ...restaurantRows.map(
-        (row) => _mapRestaurantRow(row, reviewedReservationIds),
+        (row) => _mapRestaurantRow(
+          row,
+          reviewedRestaurantReservationIds,
+        ),
       ),
       ...studyCafeRows.map(
-        (row) => _mapStudyCafeRow(row, reviewedReservationIds),
+        (row) => _mapStudyCafeRow(
+          row,
+          reviewedStudyCafeReservationIds,
+        ),
       ),
-      ...salonRows.map((row) => _mapSalonRow(row, reviewedReservationIds)),
+      ...salonRows.map(
+        (row) => _mapSalonRow(
+          row,
+          reviewedSalonReservationIds,
+        ),
+      ),
     ]..sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
 
     return items;

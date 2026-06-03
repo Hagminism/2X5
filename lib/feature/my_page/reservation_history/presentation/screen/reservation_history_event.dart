@@ -1,3 +1,4 @@
+import 'package:capstone_2026/feature/my_page/reservation_history/domain/model/user_reservation_history_type.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
@@ -20,5 +21,6 @@ sealed class ReservationHistoryEvent with _$ReservationHistoryEvent {
     required String storeId,
     required String storeName,
     required String reservationId,
+    required UserReservationHistoryType reservationType,
   }) = ShowReservationHistoryReviewBottomSheet;
 }

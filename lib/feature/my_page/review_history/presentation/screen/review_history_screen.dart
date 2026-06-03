@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:capstone_2026/core/presentation/component/dialog/app_confirm_dialog.dart';
+import 'package:capstone_2026/core/presentation/component/full_screen_image_viewer.dart';
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/core/utils/date_format_util.dart';
 import 'package:capstone_2026/feature/my_page/review_history/presentation/screen/review_history_state.dart';
@@ -182,14 +183,37 @@ class _ReviewHistoryCard extends StatelessWidget {
             ),
             if (review.imageUrls.isNotEmpty) ...[
               const SizedBox(height: 16),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final tileSize = (constraints.maxWidth - 8) / 2;
-                  return _ReviewPhotoGrid(
-                    imageUrls: review.imageUrls,
-                    tileSize: tileSize,
-                  );
-                },
+              SizedBox(
+                height: 96,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: review.imageUrls.length,
+                  separatorBuilder: (context, index) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => FullScreenImageViewer(
+                              imageUrls: review.imageUrls,
+                              initialIndex: index,
+                            ),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          width: 96,
+                          height: 96,
+                          child: _ReviewHistoryImageThumbnail(
+                            imageUrl: review.imageUrls[index],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
             const SizedBox(height: 12),
@@ -290,65 +314,21 @@ class _ReviewHistoryCard extends StatelessWidget {
   }
 }
 
-class _ReviewPhotoGrid extends StatelessWidget {
-  const _ReviewPhotoGrid({
-    required this.imageUrls,
-    required this.tileSize,
-  });
-
-  final List<String> imageUrls;
-  final double tileSize;
-
-  @override
-  Widget build(BuildContext context) {
-    if (imageUrls.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final visibleImages = imageUrls.take(2).toList();
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: visibleImages
-          .map(
-            (imageUrl) => _ReviewPhotoTile(
-              imageUrl: imageUrl,
-              size: tileSize,
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class _ReviewPhotoTile extends StatelessWidget {
-  const _ReviewPhotoTile({
-    required this.imageUrl,
-    required this.size,
-  });
+class _ReviewHistoryImageThumbnail extends StatelessWidget {
+  const _ReviewHistoryImageThumbnail({required this.imageUrl});
 
   final String imageUrl;
-  final double size;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: _buildImage(),
-      ),
-    );
-  }
-
-  Widget _buildImage() {
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return Image.network(
         imageUrl,
         fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
         errorBuilder: (context, error, stackTrace) =>
-            _PhotoPlaceholderTile(size: size),
+            const _PhotoPlaceholderTile(),
       );
     }
 
@@ -356,16 +336,20 @@ class _ReviewPhotoTile extends StatelessWidget {
       return Image.file(
         File(imageUrl),
         fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
         errorBuilder: (context, error, stackTrace) =>
-            _PhotoPlaceholderTile(size: size),
+            const _PhotoPlaceholderTile(),
       );
     }
 
     return Image.asset(
       imageUrl,
       fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
       errorBuilder: (context, error, stackTrace) =>
-          _PhotoPlaceholderTile(size: size),
+          const _PhotoPlaceholderTile(),
     );
   }
 
@@ -375,34 +359,18 @@ class _ReviewPhotoTile extends StatelessWidget {
 }
 
 class _PhotoPlaceholderTile extends StatelessWidget {
-  const _PhotoPlaceholderTile({
-    required this.size,
-  });
-
-  final double size;
+  const _PhotoPlaceholderTile();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
+      width: double.infinity,
+      height: double.infinity,
       alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4F6F8),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: const Text(
-        '등록된 사진이 없습니다',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontFamily: AppTextStyles.fontFamily,
-          fontSize: 13,
-          height: 1.45,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
-        ),
+      color: const Color(0xFFF4F6F8),
+      child: const Icon(
+        Icons.broken_image_outlined,
+        color: AppColors.textSecondary,
       ),
     );
   }

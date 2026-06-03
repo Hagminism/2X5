@@ -69,6 +69,7 @@ class ReservationHistoryScreen extends StatelessWidget {
                               storeId: item.storeId,
                               storeName: item.storeName,
                               reservationId: item.id,
+                              reservationType: item.type,
                             ),
                           );
                         },

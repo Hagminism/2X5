@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_event.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_screen.dart';
 import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_view_model.dart';
-import 'package:capstone_2026/feature/my_page/reservation_history/presentation/screen/reservation_history_action.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:capstone_2026/core/presentation/util/review_submit_loading.dart';
 
 class ReservationHistoryScreenRoot extends StatefulWidget {
   const ReservationHistoryScreenRoot({
@@ -50,6 +50,7 @@ class _ReservationHistoryScreenRootState
           :final storeId,
           :final storeName,
           :final reservationId,
+          :final reservationType,
         ):
           showModalBottomSheet<ReviewWriteResult>(
             context: context,
@@ -59,17 +60,21 @@ class _ReservationHistoryScreenRootState
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             builder: (context) => ReviewWriteBottomSheet(storeName: storeName),
-          ).then((result) {
-            if (result != null && mounted) {
-              widget.viewModel.onAction(
-                ReservationHistoryAction.submitReview(
-                  storeId: storeId,
-                  storeName: storeName,
-                  reservationId: reservationId,
-                  reviewResult: result,
-                ),
-              );
+          ).then((result) async {
+            if (result == null || !mounted) {
+              return;
             }
+
+            await runWithReviewSubmitLoading(
+              context,
+              () => widget.viewModel.submitReview(
+                storeId: storeId,
+                storeName: storeName,
+                reservationId: reservationId,
+                reservationType: reservationType,
+                result: result,
+              ),
+            );
           });
           break;
       }
