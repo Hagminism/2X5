@@ -57,6 +57,7 @@ dependencies:
   image_picker: ^1.2.2
   cloud_functions: ^6.2.0
   collection: ^1.19.1
+  crypto: ^3.0.6
   cached_network_image: ^3.4.1
   share_plus: ^10.1.4
 

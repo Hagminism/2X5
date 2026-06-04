@@ -13,12 +13,14 @@ class ReservationDialogSummary extends StatelessWidget {
   final DateTime bookingDate;
   final String bookingTime;
   final int guestCount;
+  final String? customerRequest;
 
   const ReservationDialogSummary({
     super.key,
     required this.bookingDate,
     required this.bookingTime,
     required this.guestCount,
+    this.customerRequest,
   });
 
   @override
@@ -50,6 +52,14 @@ class ReservationDialogSummary extends StatelessWidget {
             label: '인원',
             value: '$guestCount명',
           ),
+          if (customerRequest != null && customerRequest!.trim().isNotEmpty) ...[
+            const Divider(height: 1, color: AppColors.border),
+            _SummaryRow(
+              icon: Icons.notes_outlined,
+              label: '요구사항',
+              value: customerRequest!,
+            ),
+          ],
         ],
       ),
     );

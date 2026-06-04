@@ -58,12 +58,14 @@ class ReservationRepositoryImpl implements ReservationRepository {
     required DateTime bookingDate,
     required String bookingTime,
     required int guestCount,
+    String? customerRequest,
   }) async {
     final dto = await _reservationDataSource.createReservationViaCallable(
       storeId: storeId,
       bookingDate: _formatDate(bookingDate),
       bookingTime: bookingTime,
       guestCount: guestCount,
+      customerRequest: customerRequest,
     );
     return dto.toModel();
   }

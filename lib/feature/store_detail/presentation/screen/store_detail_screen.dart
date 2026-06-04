@@ -67,6 +67,7 @@ class StoreDetailScreen extends StatelessWidget {
                 ),
                 SliverToBoxAdapter(
                   child: StoreDetailTabSection(
+                    storeId: storeId,
                     selectedTab: state.selectedTab,
                     storeName: state.data.name,
                     location: state.data.location,

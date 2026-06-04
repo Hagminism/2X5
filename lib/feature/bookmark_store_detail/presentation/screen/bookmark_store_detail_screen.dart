@@ -121,6 +121,7 @@ class _BookmarkStoreDetailScreenState extends State<BookmarkStoreDetailScreen> {
           ),
           SliverToBoxAdapter(
             child: StoreDetailTabSection(
+              storeId: widget.storeId,
               selectedTab: _selectedTab,
               storeName: data.name,
               location: data.location,

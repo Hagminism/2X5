@@ -32,5 +32,6 @@ abstract interface class SalonDataSource {
     required String designerId,
     required List<String> serviceIds,
     required DateTime startAt,
+    String? customerRequest,
   });
 }

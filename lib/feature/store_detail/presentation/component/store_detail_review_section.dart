@@ -36,6 +36,9 @@ class StoreDetailReviewSection extends StatelessWidget {
     required this.onPlatformChanged,
     this.googleReviews = const [],
     this.aiSummary,
+    this.isSummaryLoading = false,
+    this.summaryError,
+    this.onRetrySummary,
     this.reviews,
     super.key,
   });
@@ -55,22 +58,23 @@ class StoreDetailReviewSection extends StatelessWidget {
   final void Function(ReviewPlatform) onPlatformChanged;
   final List<GooglePlaceReview> googleReviews;
   final ReviewAiSummary? aiSummary;
+  final bool isSummaryLoading;
+  final String? summaryError;
+  final VoidCallback? onRetrySummary;
   final List<InternalReview>? reviews;
 
   @override
   Widget build(BuildContext context) {
-    final summary =
-        aiSummary ??
-        const ReviewAiSummary(
-          oneLine: '자체 리뷰가 쌓이면 매장의 강점과 방문 후기를 AI가 간단하게 요약해 보여줄 예정입니다.',
-          keywords: ['자체 리뷰', '방문 후기', '스탬프 보상'],
-          positiveRatio: 0.92,
-        );
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _AiSummaryBox(summary: summary),
+        _ReviewSummaryBox(
+          storeName: storeName,
+          summary: aiSummary,
+          isLoading: isSummaryLoading,
+          errorMessage: summaryError,
+          onRetry: onRetrySummary,
+        ),
         const SizedBox(height: 40),
         const Text(
           '외부 리뷰 페이지로 이동',
@@ -316,63 +320,143 @@ class StoreDetailReviewSection extends StatelessWidget {
   }
 }
 
-class _AiSummaryBox extends StatelessWidget {
-  const _AiSummaryBox({required this.summary});
+class _ReviewSummaryBox extends StatelessWidget {
+  const _ReviewSummaryBox({
+    required this.storeName,
+    required this.summary,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+
+  final String storeName;
+  final ReviewAiSummary? summary;
+  final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'AI 리뷰 요약',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              )
+            else if (errorMessage != null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    errorMessage!,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (onRetry != null) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: onRetry,
+                        child: const Text('다시 시도'),
+                      ),
+                    ),
+                  ],
+                ],
+              )
+            else
+              _SummaryContent(
+                summary: summary ?? ReviewAiSummary.empty(storeName: storeName),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryContent extends StatelessWidget {
+  const _SummaryContent({required this.summary});
 
   final ReviewAiSummary summary;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'AI 리뷰 요약',
-                style: TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.2,
-                  color: AppColors.primary,
-                ),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '"${summary.oneLine}"',
+          style: const TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            height: 1.5,
+            letterSpacing: -0.1,
+            color: AppColors.textPrimary,
           ),
-          const SizedBox(height: 12),
+        ),
+        if (summary.reviewCounts != null && summary.reviewCounts!.total > 0) ...[
+          const SizedBox(height: 8),
           Text(
-            '"${summary.oneLine}"',
+            summary.reviewCounts!.toCaption(),
             style: const TextStyle(
               fontFamily: 'Pretendard',
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              height: 1.5,
-              letterSpacing: -0.1,
-              color: AppColors.textPrimary,
+              fontSize: 12,
+              color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: summary.keywords
-                .map((keyword) => _AiKeywordTag(label: keyword))
-                .toList(),
-          ),
+        ],
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: summary.keywords
+              .map((keyword) => _AiKeywordTag(label: keyword))
+              .toList(),
+        ),
+        if (summary.hasPositiveRatio) ...[
           const SizedBox(height: 16),
           _AiSentimentBar(positiveRatio: summary.positiveRatio),
         ],
-      ),
+      ],
     );
   }
 }

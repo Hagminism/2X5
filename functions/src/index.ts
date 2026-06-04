@@ -1,6 +1,10 @@
 import {setGlobalOptions} from "firebase-functions";
 import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
 import {initializeApp} from "firebase-admin/app";
+export {
+  summarizeStoreReviews,
+  invalidateStoreReviewSummary,
+} from "./summarize_store_reviews";
 setGlobalOptions({maxInstances: 10});
 initializeApp();
 
@@ -258,6 +262,7 @@ type CreateSalonReservationRequest = {
   designerId?: string;
   serviceIds?: unknown;
   startAt?: string;
+  customerRequest?: string;
 };
 
 type CreateRestaurantReservationRequest = {
@@ -265,6 +270,7 @@ type CreateRestaurantReservationRequest = {
   bookingDate?: string;
   bookingTime?: string;
   guestCount?: number;
+  customerRequest?: string;
 };
 
 type RestaurantReservationResponse = {
@@ -426,6 +432,25 @@ function normalizeRpcRow<T>(response: T | T[], errorMessage: string): T {
     return response[0];
   }
   return response;
+}
+
+/**
+ * 예약 요구사항(선택, 최대 200자)을 RPC용 문자열로 정규화한다.
+ * @param {unknown} raw 클라이언트 전달 값
+ * @return {string | null} trim 후 빈 값은 null
+ */
+function normalizeCustomerRequest(raw: unknown): string | null {
+  if (raw == null) {
+    return null;
+  }
+  const trimmed = String(raw).trim();
+  if (trimmed.length === 0) {
+    return null;
+  }
+  if (trimmed.length > 200) {
+    return trimmed.slice(0, 200);
+  }
+  return trimmed;
 }
 
 const MIME_TO_EXTENSIONS: Record<string, string[]> = {
@@ -863,6 +888,7 @@ export const createSalonReservation = onCall(
       .map((id) => String(id ?? "").trim())
       .filter((id) => id.length > 0);
     const startAt = (data.startAt ?? "").trim();
+    const customerRequest = normalizeCustomerRequest(data.customerRequest);
 
     if (!storeId || !designerId || serviceIds.length === 0 || !startAt) {
       throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
@@ -880,6 +906,7 @@ export const createSalonReservation = onCall(
           p_designer_id: designerId,
           p_service_ids: serviceIds,
           p_start_at: startAt,
+          p_customer_request: customerRequest,
         },
       );
       return normalizeRpcRow(reservation, "미용실 예약 생성에 실패했습니다.");
@@ -935,6 +962,7 @@ export const createRestaurantReservation = onCall(
     const bookingDate = (data.bookingDate ?? "").trim();
     const bookingTime = (data.bookingTime ?? "").trim();
     const guestCount = Number(data.guestCount ?? 0);
+    const customerRequest = normalizeCustomerRequest(data.customerRequest);
 
     if (!storeId || !bookingDate || !bookingTime || guestCount <= 0) {
       throw new HttpsError("invalid-argument", "필수 파라미터가 누락되었습니다.");
@@ -952,6 +980,7 @@ export const createRestaurantReservation = onCall(
           p_booking_date: bookingDate,
           p_booking_time: bookingTime,
           p_guest_count: guestCount,
+          p_customer_request: customerRequest,
         },
       );
       return normalizeRpcRow(reservation, "식당/카페 예약 생성에 실패했습니다.");

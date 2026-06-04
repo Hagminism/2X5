@@ -95,6 +95,7 @@ class MapStoreInformationScreen extends StatelessWidget {
                         );
                       },
                       images: storeSliderImages(state.imageUrls),
+                      viewerImageUrls: state.imageUrls,
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -237,6 +238,7 @@ class MapStoreInformationScreen extends StatelessWidget {
                     storeId: state.storeId,
                     storeName: state.name,
                     location: state.address,
+                    reviewTabIndex: state.tabs.length - 1,
                     naverPlaceId: state.naverPlaceId,
                   ),
                 ],

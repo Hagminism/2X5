@@ -144,7 +144,7 @@ class PartnerOnboardingViewModel extends ChangeNotifier {
 
     _eventController.add(
       const PartnerOnboardingEvent.showMessage(
-        '사업자등록번호 검증이 완료되었습니다. (Mock)',
+        '사업자등록번호 검증이 완료되었습니다.',
         variant: AppSnackBarVariant.success,
       ),
     );
@@ -160,7 +160,7 @@ class PartnerOnboardingViewModel extends ChangeNotifier {
     _changeLicenseImageUrl(uploadedUrl);
     _eventController.add(
       const PartnerOnboardingEvent.showMessage(
-        '등록증 이미지 업로드가 완료되었습니다. (Mock)',
+        '등록증 이미지 업로드가 완료되었습니다.',
         variant: AppSnackBarVariant.success,
       ),
     );

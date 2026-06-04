@@ -116,7 +116,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       context.go(Routes.myPage);
     } catch (e) {
       if (!mounted) return;
-      AppSnackBar.showError(context, '저장 실패: $e');
+      AppSnackBar.showError(
+        context,
+        '프로필 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+      );
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

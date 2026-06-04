@@ -107,6 +107,7 @@ class SalonRepositoryImpl implements SalonRepository {
     required String designerId,
     required List<String> serviceIds,
     required DateTime startAt,
+    String? customerRequest,
   }) {
     return _salonDataSource.createReservation(
       storeId: storeId,
@@ -114,6 +115,7 @@ class SalonRepositoryImpl implements SalonRepository {
       designerId: designerId,
       serviceIds: serviceIds,
       startAt: startAt,
+      customerRequest: customerRequest,
     );
   }
 

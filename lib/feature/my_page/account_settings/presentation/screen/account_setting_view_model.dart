@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_action.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_event.dart';
 import 'package:capstone_2026/feature/my_page/account_settings/presentation/screen/account_setting_state.dart';
@@ -91,7 +92,14 @@ class AccountSettingViewModel extends ChangeNotifier {
         await _authRepository.deleteAccount();
       }
     } catch (e) {
-      _eventController.add(AccountSettingEvent.showErrorMessage(e.toString()));
+      _eventController.add(
+        AccountSettingEvent.showErrorMessage(
+          userFacingErrorMessage(
+            e,
+            fallback: '계정 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
+        ),
+      );
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();

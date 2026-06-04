@@ -1,7 +1,5 @@
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
-import 'package:capstone_2026/feature/store_detail/domain/service/review_ai_summary_generator.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
-import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -11,6 +9,7 @@ import 'package:capstone_2026/feature/store_detail/domain/model/google_place_rev
 
 class StoreDetailTabSection extends StatefulWidget {
   const StoreDetailTabSection({
+    required this.storeId,
     required this.selectedTab,
     required this.onTabSelected,
     required this.storeName,
@@ -30,6 +29,7 @@ class StoreDetailTabSection extends StatefulWidget {
     super.key,
   });
 
+  final String storeId;
   final int selectedTab;
   final ValueChanged<int> onTabSelected;
   final String storeName;
@@ -52,7 +52,6 @@ class StoreDetailTabSection extends StatefulWidget {
 }
 
 class _StoreDetailTabSectionState extends State<StoreDetailTabSection> {
-  ReviewPlatform _selectedPlatform = ReviewPlatform.internal;
   static const List<String> _tabs = ['홈', '메뉴', '사진', '리뷰', '매장정보'];
 
   @override
@@ -115,31 +114,14 @@ class _StoreDetailTabSectionState extends State<StoreDetailTabSection> {
   Widget _tabView(int tabIndex) {
     switch (tabIndex) {
       case 3:
-        return StoreDetailReviewSection(
+        return StoreReviewTab(
+          storeId: widget.storeId,
           storeName: widget.storeName,
           location: widget.location,
           naverPlaceId: widget.naverPlaceId,
-          googleSearchQuery: widget.googleSearchQuery,
-          stampStatus: widget.stampStatus,
-          aiSummary: ReviewAiSummaryGenerator.generate(
-            storeName: widget.storeName,
-            reviews: widget.reviews,
-            googleReviews: widget.googlePlaceReviewInfo?.reviews ?? const [],
-          ),
-          reviews: widget.reviews,
-          isReviewLoading: widget.isReviewLoading,
-          naverReviews: widget.naverReviews,
-          isNaverDataLoading: widget.isNaverDataLoading,
-          selectedPlatform: _selectedPlatform,
-          onPlatformChanged: (ReviewPlatform platform) {
-            setState(() {
-              _selectedPlatform = platform;
-            });
-          },
-          googleReviews: widget.googlePlaceReviewInfo?.reviews ?? const [],
-          onSubmitReview: widget.onSubmitReview,
-          onTapNaverReview: widget.onTapNaverReview,
-          onTapGoogleReview: widget.onTapGoogleReview,
+          reviewTabIndex: 3,
+          isTabActive: widget.selectedTab == 3,
+          shrinkWrapList: true,
         );
       case 1:
         if (widget.isNaverDataLoading) {

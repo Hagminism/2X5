@@ -6,6 +6,8 @@ import 'package:capstone_2026/core/domain/repository/reservation/reservation_rep
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/core/domain/model/reservation/restaurant_time_slot.dart';
 import 'package:capstone_2026/core/util/restaurant_booking_slot.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
+import 'package:capstone_2026/core/domain/util/reservation_customer_request.dart';
 import 'package:capstone_2026/core/util/salon_booking_time.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_action.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_event.dart';
@@ -93,6 +95,13 @@ class ReservationViewModel extends ChangeNotifier {
         _state = _state.copyWith(guestCount: next);
         notifyListeners();
         break;
+      case ReservationChangeCustomerRequest():
+        _state = _state.copyWith(
+          customerRequest: action.value,
+          submitError: null,
+        );
+        notifyListeners();
+        break;
       case ReservationTapSubmit():
         _requestSubmit();
         break;
@@ -136,7 +145,10 @@ class ReservationViewModel extends ChangeNotifier {
     } catch (error) {
       _state = _state.copyWith(
         isLoading: false,
-        loadError: error.toString(),
+        loadError: userFacingErrorMessage(
+          error,
+          fallback: '예약 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
       );
       notifyListeners();
     }
@@ -175,7 +187,10 @@ class ReservationViewModel extends ChangeNotifier {
     } catch (error) {
       _state = _state.copyWith(
         isLoading: false,
-        loadError: error.toString(),
+        loadError: userFacingErrorMessage(
+          error,
+          fallback: '예약 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
       );
       notifyListeners();
     }
@@ -201,6 +216,9 @@ class ReservationViewModel extends ChangeNotifier {
         bookingDate: selectedDay,
         bookingTime: selectedTime,
         guestCount: _state.guestCount,
+        customerRequest: normalizeReservationCustomerRequest(
+          _state.customerRequest,
+        ),
       ),
     );
   }
@@ -224,11 +242,15 @@ class ReservationViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final customerRequest = normalizeReservationCustomerRequest(
+        _state.customerRequest,
+      );
       await _reservationRepository.createReservation(
         storeId: _state.storeId,
         bookingDate: selectedDay,
         bookingTime: selectedTime,
         guestCount: _state.guestCount,
+        customerRequest: customerRequest,
       );
 
       _state = _state.copyWith(isSubmitting: false);
@@ -238,16 +260,25 @@ class ReservationViewModel extends ChangeNotifier {
           bookingDate: selectedDay,
           bookingTime: selectedTime,
           guestCount: _state.guestCount,
+          customerRequest: customerRequest,
         ),
       );
     } catch (error) {
       _state = _state.copyWith(
         isSubmitting: false,
-        submitError: error.toString(),
+        submitError: userFacingErrorMessage(
+          error,
+          fallback: '예약에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
       );
       notifyListeners();
       _eventController.add(
-        ReservationEvent.showSnackBar(error.toString()),
+        ReservationEvent.showSnackBar(
+          userFacingErrorMessage(
+            error,
+            fallback: '예약에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
+        ),
       );
     }
   }

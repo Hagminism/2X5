@@ -11,8 +11,6 @@ sealed class HomeAction with _$HomeAction {
 
   const factory HomeAction.loadMoreStores() = LoadMoreStores;
 
-  const factory HomeAction.showSoonMessage(String message) = ShowSoonMessage;
-
   const factory HomeAction.tapBookmark(String storeId) = TapHomeBookmark;
 
   const factory HomeAction.selectCategory(StoreCategory? category) =

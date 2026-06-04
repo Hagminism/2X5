@@ -5,9 +5,10 @@ import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selec
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/presentation/screen/map_studycafe_pass_selection_action.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/presentation/screen/map_studycafe_pass_selection_screen.dart';
 import 'package:capstone_2026/feature/map_store_information/studycafe_pass_selection/presentation/screen/map_studycafe_pass_selection_view_model.dart';
+import 'package:capstone_2026/core/domain/util/studycafe_usage_success_message.dart';
 import 'package:capstone_2026/core/presentation/component/dialog/app_confirm_dialog.dart';
+import 'package:capstone_2026/core/presentation/component/dialog/app_success_dialog.dart';
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
-import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -103,41 +104,20 @@ class _MapStudycafePassSelectionScreenRootState
       return;
     }
 
-    final int? hours = selected.durationMinutes % 60 == 0
-        ? selected.durationMinutes ~/ 60
-        : null;
-
-    await showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('이용 시작'),
-          content: Text(
-            hours != null
-                ? '${widget.viewModel.state.seatLabel}번 좌석을 '
-                      '$hours시간 이용합니다.'
-                : '${widget.viewModel.state.seatLabel}번 좌석을 '
-                      '${selected.durationMinutes}분 이용합니다.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                final String? storeId = widget.seatInfo['storeId'];
-                if (storeId == null || storeId.isEmpty) {
-                  return;
-                }
-                context.go(
-                  '${Routes.map}/map-store-information/$storeId',
-                );
-              },
-              child: const Text(
-                '확인',
-                style: TextStyle(color: AppColors.primary),
-              ),
-            ),
-          ],
-        );
+    await showAppSuccessDialog(
+      context,
+      title: '이용이 시작되었습니다',
+      subtitle: '아래 내용으로 이용이 시작되었어요.',
+      message: studycafeUsageSuccessMessage(
+        seatLabel: widget.viewModel.state.seatLabel,
+        selected: selected,
+      ),
+      onConfirm: () {
+        final String? storeId = widget.seatInfo['storeId'];
+        if (storeId == null || storeId.isEmpty) {
+          return;
+        }
+        context.go('${Routes.map}/map-store-information/$storeId');
       },
     );
   }

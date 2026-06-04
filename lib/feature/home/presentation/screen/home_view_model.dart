@@ -55,9 +55,6 @@ class HomeViewModel extends ChangeNotifier {
       case LoadMoreStores():
         unawaited(_loadMoreStores());
         break;
-      case ShowSoonMessage():
-        _eventController.add(HomeEvent.showSnackBar(action.message));
-        break;
       case TapHomeBookmark(:final storeId):
         unawaited(_toggleBookmark(storeId));
         break;

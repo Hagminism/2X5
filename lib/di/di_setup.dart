@@ -5,6 +5,8 @@ import 'package:capstone_2026/core/data/data_source/user/user_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/user/user_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/review/review_image_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/review/review_image_data_source_impl.dart';
+import 'package:capstone_2026/core/data/data_source/review/review_summary_data_source.dart';
+import 'package:capstone_2026/core/data/data_source/review/review_summary_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source.dart';
 import 'package:capstone_2026/core/data/data_source/reservation/reservation_data_source_impl.dart';
 import 'package:capstone_2026/core/data/data_source/salon/salon_data_source.dart';
@@ -76,8 +78,11 @@ import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_
 import 'package:capstone_2026/feature/store_detail/data/data_source/naver_store_search_data_source_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/repository/store_detail_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/data/repository/store_review_repository_impl.dart';
+import 'package:capstone_2026/feature/store_detail/data/repository/store_review_summary_repository_impl.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_detail_repository.dart';
 import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/repository/store_review_summary_repository.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/store_review_summary_service.dart';
 import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/screen/store_detail_view_model.dart';
 import 'package:capstone_2026/feature/stamp/data/repository/stamp_repository_impl.dart';
@@ -117,7 +122,7 @@ void diSetup() {
     () => FirebaseAuth.instance,
   );
   getIt.registerLazySingleton<FirebaseFunctions>(
-    () => FirebaseFunctions.instance,
+    () => FirebaseFunctions.instanceFor(region: 'us-central1'),
   );
 
   // Util
@@ -244,6 +249,22 @@ void diSetup() {
     () => StoreReviewService(
       storeReviewRepository: getIt<StoreReviewRepository>(),
       authRepository: getIt<AuthRepository>(),
+    ),
+  );
+  getIt.registerLazySingleton<ReviewSummaryDataSource>(
+    () => ReviewSummaryDataSourceImpl(
+      firebaseFunctions: getIt<FirebaseFunctions>(),
+    ),
+  );
+  getIt.registerLazySingleton<StoreReviewSummaryRepository>(
+    () => StoreReviewSummaryRepositoryImpl(
+      reviewSummaryDataSource: getIt<ReviewSummaryDataSource>(),
+    ),
+  );
+  getIt.registerLazySingleton<StoreReviewSummaryService>(
+    () => StoreReviewSummaryService(
+      storeReviewService: getIt<StoreReviewService>(),
+      storeReviewSummaryRepository: getIt<StoreReviewSummaryRepository>(),
     ),
   );
   getIt.registerLazySingleton<StampRepository>(

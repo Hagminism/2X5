@@ -7,6 +7,7 @@ import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_block_r
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_hold.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/studycafe/studycafe_repository.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:capstone_2026/feature/search_store_information/studycafe_seat_selection/presentation/screen/search_studycafe_seat_selection_action.dart';
 import 'package:capstone_2026/feature/search_store_information/studycafe_seat_selection/presentation/screen/search_studycafe_seat_selection_state.dart';
 import 'package:flutter/foundation.dart';
@@ -109,7 +110,10 @@ class SearchStudycafeSeatSelectionViewModel extends ChangeNotifier {
     } catch (e) {
       _state = _state.copyWith(
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: userFacingErrorMessage(
+          e,
+          fallback: '좌석 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
       );
       notifyListeners();
     }

@@ -6,6 +6,14 @@ part 'salon_reservation_confirm_action.freezed.dart';
 sealed class SalonReservationConfirmAction
     with _$SalonReservationConfirmAction {
   const factory SalonReservationConfirmAction.tapBack() = TapConfirmBack;
+
+  const factory SalonReservationConfirmAction.changeCustomerRequest(
+    String value,
+  ) = ChangeConfirmCustomerRequest;
+
   const factory SalonReservationConfirmAction.tapConfirm() =
       TapConfirmReservation;
+
+  const factory SalonReservationConfirmAction.confirmSubmit() =
+      ConfirmSubmitReservation;
 }

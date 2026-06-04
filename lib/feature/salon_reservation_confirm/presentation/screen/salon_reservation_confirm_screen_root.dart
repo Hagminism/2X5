@@ -1,6 +1,9 @@
 import 'dart:async';
 
-import 'package:capstone_2026/core/routing/routes.dart';
+import 'package:capstone_2026/core/routing/reservation_completion_navigation.dart';
+import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/component/salon_reservation_confirm_dialog.dart';
+import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/component/salon_reservation_success_dialog.dart';
+import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_action.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_event.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_screen.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_view_model.dart';
@@ -37,7 +40,9 @@ class _SalonReservationConfirmScreenRootState
   void initState() {
     super.initState();
     _eventSubscription = widget.viewModel.eventStream.listen((event) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       switch (event) {
         case PopConfirmScreen():
           context.pop();
@@ -45,8 +50,14 @@ class _SalonReservationConfirmScreenRootState
         case ShowConfirmSnackBar(:final message, :final variant):
           AppSnackBar.show(context, message, variant: variant);
           break;
-        case NavigateToHome():
-          context.go(Routes.home);
+        case ShowSalonConfirmDialog():
+          _showConfirmDialog(event);
+          break;
+        case ShowSalonSuccessDialog():
+          _showSuccessDialog(event);
+          break;
+        case NavigateToStoreDetail():
+          navigateToStoreDetailAfterReservation(context);
           break;
       }
     });
@@ -61,6 +72,44 @@ class _SalonReservationConfirmScreenRootState
     });
   }
 
+  void _showConfirmDialog(ShowSalonConfirmDialog event) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => SalonReservationConfirmDialog(
+        designerName: event.designerName,
+        selectedDateTime: event.selectedDateTime,
+        serviceNames: event.serviceNames,
+        customerRequest: event.customerRequest,
+        onCancel: () {
+          Navigator.pop(dialogContext);
+        },
+        onConfirm: () {
+          Navigator.pop(dialogContext);
+          widget.viewModel.onAction(
+            const SalonReservationConfirmAction.confirmSubmit(),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showSuccessDialog(ShowSalonSuccessDialog event) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => SalonReservationSuccessDialog(
+        designerName: event.designerName,
+        selectedDateTime: event.selectedDateTime,
+        serviceNames: event.serviceNames,
+        customerRequest: event.customerRequest,
+        onConfirm: () {
+          Navigator.pop(dialogContext);
+          navigateToStoreDetailAfterReservation(context);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -68,7 +117,19 @@ class _SalonReservationConfirmScreenRootState
       builder: (context, _) {
         return SalonReservationConfirmScreen(
           state: widget.viewModel.state,
-          onAction: widget.viewModel.onAction,
+          canConfirm: widget.viewModel.canConfirm,
+          onAction: (action) {
+            switch (action) {
+              case TapConfirmBack():
+                widget.viewModel.onAction(action);
+                break;
+              case ChangeConfirmCustomerRequest():
+              case TapConfirmReservation():
+              case ConfirmSubmitReservation():
+                widget.viewModel.onAction(action);
+                break;
+            }
+          },
         );
       },
     );

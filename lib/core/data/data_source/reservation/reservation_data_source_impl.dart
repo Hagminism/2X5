@@ -49,16 +49,21 @@ class ReservationDataSourceImpl implements ReservationDataSource {
     required String bookingDate,
     required String bookingTime,
     required int guestCount,
+    String? customerRequest,
   }) async {
     final callable = _firebaseFunctions.httpsCallable(
       'createRestaurantReservation',
     );
-    final result = await callable.call<Map<String, dynamic>>({
+    final payload = <String, dynamic>{
       'storeId': storeId,
       'bookingDate': bookingDate,
       'bookingTime': bookingTime,
       'guestCount': guestCount,
-    });
+    };
+    if (customerRequest != null) {
+      payload['customerRequest'] = customerRequest;
+    }
+    final result = await callable.call<Map<String, dynamic>>(payload);
     return ReservationDto.fromJson(Map<String, Object?>.from(result.data));
   }
 

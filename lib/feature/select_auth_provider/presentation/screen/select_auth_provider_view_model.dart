@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_action.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_event.dart';
 import 'package:capstone_2026/feature/select_auth_provider/presentation/screen/select_auth_provider_state.dart';
@@ -55,7 +56,12 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _eventController.add(
-        SelectAuthProviderEvent.showGoogleSignInError(e.toString()),
+        SelectAuthProviderEvent.showGoogleSignInError(
+          userFacingErrorMessage(
+            e,
+            fallback: '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
+        ),
       );
     } finally {
       _state = state.copyWith(isLoading: false);
@@ -89,7 +95,12 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
       await _authRepository.requestNaverAuthorization(state.naverState);
     } catch (e) {
       _eventController.add(
-        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+        SelectAuthProviderEvent.showNaverSignInError(
+          userFacingErrorMessage(
+            e,
+            fallback: '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
+        ),
       );
       _state = state.copyWith(isLoading: false);
       notifyListeners();
@@ -109,7 +120,12 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
       );
     } catch (e) {
       _eventController.add(
-        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+        SelectAuthProviderEvent.showNaverSignInError(
+          userFacingErrorMessage(
+            e,
+            fallback: '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
+        ),
       );
       _state = state.copyWith(isLoading: false);
       notifyListeners();
@@ -123,7 +139,12 @@ class SelectAuthProviderViewModel extends ChangeNotifier {
       await _authRepository.signInWithNaver(idToken, accessToken);
     } catch (e) {
       _eventController.add(
-        SelectAuthProviderEvent.showNaverSignInError(e.toString()),
+        SelectAuthProviderEvent.showNaverSignInError(
+          userFacingErrorMessage(
+            e,
+            fallback: '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
+        ),
       );
     } finally {
       _state = state.copyWith(isLoading: false);

@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
+import 'package:capstone_2026/core/presentation/screen/store_image_viewer_screen.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,11 @@ class _StoreMenuTabState extends State<StoreMenuTab> {
         ),
       );
     }
+
+    final menuImageUrls = menus
+        .map((menu) => menu.imageUrl.trim())
+        .where((url) => url.isNotEmpty)
+        .toList();
 
     return ListView.separated(
       cacheExtent: 1000.0,
@@ -111,41 +117,79 @@ class _StoreMenuTabState extends State<StoreMenuTab> {
                 ),
               ),
               const SizedBox(width: 14),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: 96,
-                  height: 96,
-                  child: url.isEmpty
-                      ? ColoredBox(
-                          color: AppColors.surfaceMuted,
-                          child: Icon(
-                            Icons.restaurant_rounded,
-                            size: 36,
-                            color: AppColors.textSecondary.withValues(
-                              alpha: muted ? 0.4 : 1,
-                            ),
-                          ),
-                        )
-                      : Image.network(
-                          url,
-                          fit: BoxFit.cover,
-                          color: muted ? Colors.white : null,
-                          colorBlendMode: muted ? BlendMode.saturation : null,
-                          errorBuilder: (_, _, _) => const ColoredBox(
-                            color: AppColors.surfaceMuted,
-                            child: Icon(
-                              Icons.broken_image_outlined,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                ),
+              _MenuImageTile(
+                imageUrl: url,
+                menuImageUrls: menuImageUrls,
+                muted: muted,
               ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _MenuImageTile extends StatelessWidget {
+  const _MenuImageTile({
+    required this.imageUrl,
+    required this.menuImageUrls,
+    required this.muted,
+  });
+
+  final String imageUrl;
+  final List<String> menuImageUrls;
+  final bool muted;
+
+  @override
+  Widget build(BuildContext context) {
+    final tile = ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: 96,
+        height: 96,
+        child: imageUrl.isEmpty
+            ? ColoredBox(
+                color: AppColors.surfaceMuted,
+                child: Icon(
+                  Icons.restaurant_rounded,
+                  size: 36,
+                  color: AppColors.textSecondary.withValues(
+                    alpha: muted ? 0.4 : 1,
+                  ),
+                ),
+              )
+            : Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                color: muted ? Colors.white : null,
+                colorBlendMode: muted ? BlendMode.saturation : null,
+                errorBuilder: (_, _, _) => const ColoredBox(
+                  color: AppColors.surfaceMuted,
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+      ),
+    );
+
+    if (imageUrl.isEmpty) {
+      return tile;
+    }
+
+    final initialIndex = menuImageUrls.indexOf(imageUrl);
+
+    return GestureDetector(
+      onTap: () {
+        StoreImageViewerScreen.open(
+          context,
+          imageUrls: menuImageUrls,
+          initialIndex: initialIndex >= 0 ? initialIndex : 0,
+        );
+      },
+      child: tile,
     );
   }
 }

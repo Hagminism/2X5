@@ -15,11 +15,13 @@ sealed class ReservationEvent with _$ReservationEvent {
     required DateTime bookingDate,
     required String bookingTime,
     required int guestCount,
+    String? customerRequest,
   }) = ReservationShowConfirmDialog;
 
   const factory ReservationEvent.showSuccessDialog({
     required DateTime bookingDate,
     required String bookingTime,
     required int guestCount,
+    String? customerRequest,
   }) = ReservationShowSuccessDialog;
 }

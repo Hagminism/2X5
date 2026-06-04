@@ -13,6 +13,7 @@ abstract class ReservationState with _$ReservationState {
     DateTime? selectedDay,
     String? selectedTime,
     @Default(1) int guestCount,
+    @Default('') String customerRequest,
     @Default([]) List<RestaurantTimeSlot> slots,
     @Default(false) bool isSubmitting,
     String? submitError,

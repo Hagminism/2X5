@@ -6,6 +6,7 @@ import 'package:capstone_2026/core/domain/model/studycafe/studycafe_seat_hold.da
 import 'package:capstone_2026/core/domain/model/studycafe/studycafe_usage_option.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/studycafe/studycafe_repository.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:capstone_2026/feature/search_store_information/studycafe_pass_selection/presentation/screen/search_studycafe_pass_selection_action.dart';
 import 'package:capstone_2026/feature/search_store_information/studycafe_pass_selection/presentation/screen/search_studycafe_pass_selection_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -148,7 +149,10 @@ class SearchStudycafePassSelectionViewModel extends ChangeNotifier {
     } catch (e) {
       _state = _state.copyWith(
         isLoadingDetail: false,
-        loadError: e.toString(),
+        loadError: userFacingErrorMessage(
+          e,
+          fallback: '예약 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
       );
       notifyListeners();
     }
@@ -216,7 +220,10 @@ class SearchStudycafePassSelectionViewModel extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _state = _state.copyWith(
-        loadError: e.toString(),
+        loadError: userFacingErrorMessage(
+          e,
+          fallback: '예약 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
         seatTakenByOther: true,
       );
       notifyListeners();
@@ -255,7 +262,12 @@ class SearchStudycafePassSelectionViewModel extends ChangeNotifier {
       _submitSucceeded = true;
       return true;
     } catch (e) {
-      _state = _state.copyWith(submitError: e.toString());
+      _state = _state.copyWith(
+        submitError: userFacingErrorMessage(
+          e,
+          fallback: '예약에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
+      );
       return false;
     } finally {
       _state = _state.copyWith(isSubmitting: false);

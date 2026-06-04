@@ -18,6 +18,9 @@ sealed class ReservationAction with _$ReservationAction {
   const factory ReservationAction.tapDecreaseGuestCount() =
       ReservationTapDecreaseGuestCount;
 
+  const factory ReservationAction.changeCustomerRequest(String value) =
+      ReservationChangeCustomerRequest;
+
   const factory ReservationAction.tapSubmit() = ReservationTapSubmit;
 
   const factory ReservationAction.confirmSubmit() = ReservationConfirmSubmit;

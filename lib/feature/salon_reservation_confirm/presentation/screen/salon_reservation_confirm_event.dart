@@ -7,9 +7,26 @@ part 'salon_reservation_confirm_event.freezed.dart';
 @freezed
 sealed class SalonReservationConfirmEvent with _$SalonReservationConfirmEvent {
   const factory SalonReservationConfirmEvent.pop() = PopConfirmScreen;
+
   const factory SalonReservationConfirmEvent.showSnackBar(
     String message, {
     @Default(AppSnackBarVariant.error) AppSnackBarVariant variant,
   }) = ShowConfirmSnackBar;
-  const factory SalonReservationConfirmEvent.navigateHome() = NavigateToHome;
+
+  const factory SalonReservationConfirmEvent.showConfirmDialog({
+    required String designerName,
+    required String selectedDateTime,
+    required String serviceNames,
+    String? customerRequest,
+  }) = ShowSalonConfirmDialog;
+
+  const factory SalonReservationConfirmEvent.showSuccessDialog({
+    required String designerName,
+    required String selectedDateTime,
+    required String serviceNames,
+    String? customerRequest,
+  }) = ShowSalonSuccessDialog;
+
+  const factory SalonReservationConfirmEvent.navigateToStoreDetail() =
+      NavigateToStoreDetail;
 }

@@ -8,6 +8,7 @@ class ReservationSuccessDialog extends StatelessWidget {
   final DateTime bookingDate;
   final String bookingTime;
   final int guestCount;
+  final String? customerRequest;
   final VoidCallback onConfirm;
 
   const ReservationSuccessDialog({
@@ -15,6 +16,7 @@ class ReservationSuccessDialog extends StatelessWidget {
     required this.bookingDate,
     required this.bookingTime,
     required this.guestCount,
+    this.customerRequest,
     required this.onConfirm,
   });
 
@@ -70,6 +72,7 @@ class ReservationSuccessDialog extends StatelessWidget {
               bookingDate: bookingDate,
               bookingTime: bookingTime,
               guestCount: guestCount,
+              customerRequest: customerRequest,
             ),
             const SizedBox(height: 24),
             PrimaryButton(

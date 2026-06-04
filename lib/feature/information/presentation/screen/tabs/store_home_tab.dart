@@ -1,5 +1,6 @@
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/util/store_operating_hours_display.dart';
+import 'package:capstone_2026/core/presentation/screen/store_image_viewer_screen.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -133,91 +134,131 @@ class _StoreHomeTabState extends State<StoreHomeTab> {
           ),
         ),
         if (showMenuSection) ...[
-          Container(height: 8, color: const Color(0xFFF3F4F6)),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Text(
-                  '메뉴',
-                  style: TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '${menus.length}',
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: -0.2,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const Spacer(),
-              ],
-            ),
+          Builder(
+            builder: (context) {
+              final menuImageUrls = menus
+                  .map((menu) => menu.imageUrl.trim())
+                  .where((url) => url.isNotEmpty)
+                  .toList();
+              return _StoreHomeMenuSection(
+                menus: menus,
+                menuImageUrls: menuImageUrls,
+                onViewMoreMenus: onViewMoreMenus,
+                descriptionBlock: descriptionBlock,
+              );
+            },
           ),
-          SizedBox(
-            height: 200,
-            child: menus.isEmpty
-                ? const Center(
-                    child: Text(
-                      '등록된 메뉴가 없습니다.',
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        color: AppColors.textSecondary,
-                      ),
+        ],
+      ],
+    );
+  }
+}
+
+class _StoreHomeMenuSection extends StatelessWidget {
+  const _StoreHomeMenuSection({
+    required this.menus,
+    required this.menuImageUrls,
+    required this.onViewMoreMenus,
+    required this.descriptionBlock,
+  });
+
+  final List<StoreMenu> menus;
+  final List<String> menuImageUrls;
+  final VoidCallback onViewMoreMenus;
+  final Widget? descriptionBlock;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(height: 8, color: const Color(0xFFF3F4F6)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Text(
+                '메뉴',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${menus.length}',
+                style: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.2,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 200,
+          child: menus.isEmpty
+              ? const Center(
+                  child: Text(
+                    '등록된 메뉴가 없습니다.',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      color: AppColors.textSecondary,
                     ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: menus.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      return _HomeMenuCard(menu: menus[index]);
-                    },
                   ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-            child: SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: onViewMoreMenus,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                  side: const BorderSide(color: Color(0xFFE5E7EB)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: menus.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    return _HomeMenuCard(
+                      menu: menus[index],
+                      menuImageUrls: menuImageUrls,
+                    );
+                  },
                 ),
-                child: const Text(
-                  '메뉴 더보기  >',
-                  style: TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15,
-                    letterSpacing: -0.2,
-                  ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: onViewMoreMenus,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.textPrimary,
+                side: const BorderSide(color: Color(0xFFE5E7EB)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text(
+                '메뉴 더보기  >',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15,
+                  letterSpacing: -0.2,
                 ),
               ),
             ),
           ),
-        ],
-        if (showMenuSection && descriptionBlock != null) ...[
+        ),
+        if (descriptionBlock != null) ...[
           Container(height: 8, color: const Color(0xFFF3F4F6)),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-            child: descriptionBlock,
+            child: descriptionBlock!,
           ),
         ],
       ],
@@ -439,9 +480,13 @@ class _InfoTile extends StatelessWidget {
 }
 
 class _HomeMenuCard extends StatelessWidget {
-  const _HomeMenuCard({required this.menu});
+  const _HomeMenuCard({
+    required this.menu,
+    required this.menuImageUrls,
+  });
 
   final StoreMenu menu;
+  final List<String> menuImageUrls;
 
   @override
   Widget build(BuildContext context) {
@@ -453,31 +498,9 @@ class _HomeMenuCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: url.isEmpty
-                  ? const ColoredBox(
-                      color: AppColors.surfaceMuted,
-                      child: Icon(
-                        Icons.restaurant_rounded,
-                        color: AppColors.textSecondary,
-                        size: 40,
-                      ),
-                    )
-                  : Image.network(
-                      url,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const ColoredBox(
-                        color: AppColors.surfaceMuted,
-                        child: Icon(
-                          Icons.broken_image_outlined,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-            ),
+          _HomeMenuImage(
+            imageUrl: url,
+            menuImageUrls: menuImageUrls,
           ),
           const SizedBox(height: 8),
           Text(
@@ -506,6 +529,63 @@ class _HomeMenuCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HomeMenuImage extends StatelessWidget {
+  const _HomeMenuImage({
+    required this.imageUrl,
+    required this.menuImageUrls,
+  });
+
+  final String imageUrl;
+  final List<String> menuImageUrls;
+
+  @override
+  Widget build(BuildContext context) {
+    final image = ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: imageUrl.isEmpty
+            ? const ColoredBox(
+                color: AppColors.surfaceMuted,
+                child: Icon(
+                  Icons.restaurant_rounded,
+                  color: AppColors.textSecondary,
+                  size: 40,
+                ),
+              )
+            : Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const ColoredBox(
+                  color: AppColors.surfaceMuted,
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+      ),
+    );
+
+    if (imageUrl.isEmpty) {
+      return image;
+    }
+
+    final initialIndex = menuImageUrls.indexOf(imageUrl);
+
+    return GestureDetector(
+      onTap: () {
+        StoreImageViewerScreen.open(
+          context,
+          imageUrls: menuImageUrls,
+          initialIndex: initialIndex >= 0 ? initialIndex : 0,
+        );
+      },
+      child: image,
     );
   }
 }

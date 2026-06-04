@@ -20,87 +20,127 @@ class SalonReservationSlotGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (slots.isEmpty) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 40),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceMuted,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Column(
-          children: [
-            Icon(Icons.event_busy, color: AppColors.textSecondary, size: 32),
-            SizedBox(height: 12),
-            Text(
-              '선택한 날짜에는 예약 가능한 시간이 없습니다.',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ],
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Text(
+          '선택한 날짜에 예약 가능한 시간이 없습니다.',
+          style: AppTextStyles.bodySecondary,
         ),
       );
     }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: slots.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 2.2,
-      ),
-      itemBuilder: (context, index) {
-        final slot = slots[index];
-        final selected = _sameUtcMinute(slot.startAt, selectedStartAt);
-        return InkWell(
-          onTap: slot.isEnabled
-              ? () {
-                  onAction(SalonReservationAction.selectSlot(slot.startAt));
-                }
-              : null,
-          borderRadius: BorderRadius.circular(12),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: selected
-                  ? AppColors.primary
-                  : slot.isEnabled
-                  ? AppColors.white
-                  : AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: selected
-                    ? AppColors.primary
-                    : slot.isEnabled
-                    ? AppColors.border
-                    : AppColors.border.withValues(alpha: 0.5),
-              ),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : null,
+    final morning = slots.where((slot) {
+      final hour = int.parse(
+        SalonBookingTime.seoulClockHHmm(slot.startAt).split(':').first,
+      );
+      return hour < 12;
+    }).toList();
+    final afternoon = slots.where((slot) {
+      final hour = int.parse(
+        SalonBookingTime.seoulClockHHmm(slot.startAt).split(':').first,
+      );
+      return hour >= 12;
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (morning.isNotEmpty)
+          _buildSlotGroup(
+            title: '오전',
+            slots: morning,
+            topPadding: 12,
+            bottomPadding: morning.isNotEmpty && afternoon.isNotEmpty ? 4 : 8,
+          ),
+        if (afternoon.isNotEmpty)
+          _buildSlotGroup(
+            title: '오후',
+            slots: afternoon,
+            topPadding: morning.isNotEmpty ? 4 : 12,
+            bottomPadding: 8,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSlotGroup({
+    required String title,
+    required List<SalonReservationSlot> slots,
+    required double topPadding,
+    required double bottomPadding,
+  }) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, topPadding, 16, bottomPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: AppTextStyles.subtitle),
+          const SizedBox(height: 10),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: slots.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1.9,
             ),
-            child: Text(
-              SalonBookingTime.seoulClockHHmm(slot.startAt),
-              style: AppTextStyles.label.copyWith(
-                color: selected
-                    ? AppColors.white
-                    : slot.isEnabled
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary.withValues(alpha: 0.5),
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            itemBuilder: (context, index) {
+              return _buildTimeChip(slots[index]);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeChip(SalonReservationSlot slot) {
+    final isSelected = _sameUtcMinute(slot.startAt, selectedStartAt);
+    final isEnabled = slot.isEnabled;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isEnabled
+            ? () {
+                onAction(SalonReservationAction.selectSlot(slot.startAt));
+              }
+            : null,
+        borderRadius: BorderRadius.circular(12),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary
+                : isEnabled
+                ? AppColors.white
+                : AppColors.signUpWithEmailButton,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : AppColors.border,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Center(
+              child: Text(
+                SalonBookingTime.seoulClockHHmm(slot.startAt),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body.copyWith(
+                  color: isSelected
+                      ? AppColors.white
+                      : isEnabled
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
