@@ -59,6 +59,11 @@ class _ReservationCustomerRequestFieldState
           TextField(
             controller: _controller,
             onChanged: widget.onChanged,
+            onEditingComplete: () {
+              FocusScope.of(context).unfocus();
+            },
+            textInputAction: TextInputAction.done,
+            scrollPadding: const EdgeInsets.only(bottom: 120),
             maxLength: reservationCustomerRequestMaxLength,
             maxLines: 4,
             minLines: 3,
