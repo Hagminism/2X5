@@ -1,25 +1,19 @@
+import 'package:capstone_2026/core/util/salon_booking_time.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-String formatReservationDateLabel(DateTime date) {
-  const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-  final weekday = weekdays[date.weekday - 1];
-  return '${DateFormat('M월 d일').format(date)} ($weekday)';
-}
-
-class ReservationDialogSummary extends StatelessWidget {
-  final DateTime bookingDate;
-  final String bookingTime;
-  final int guestCount;
+class SalonReservationDialogSummary extends StatelessWidget {
+  final String designerName;
+  final String selectedDateTime;
+  final String serviceNames;
   final String? customerRequest;
 
-  const ReservationDialogSummary({
+  const SalonReservationDialogSummary({
     super.key,
-    required this.bookingDate,
-    required this.bookingTime,
-    required this.guestCount,
+    required this.designerName,
+    required this.selectedDateTime,
+    required this.serviceNames,
     this.customerRequest,
   });
 
@@ -36,21 +30,21 @@ class ReservationDialogSummary extends StatelessWidget {
       child: Column(
         children: [
           _SummaryRow(
-            icon: Icons.calendar_today_outlined,
-            label: '날짜',
-            value: formatReservationDateLabel(bookingDate),
+            icon: Icons.person_outline,
+            label: '디자이너',
+            value: designerName,
           ),
           const Divider(height: 1, color: AppColors.border),
           _SummaryRow(
             icon: Icons.schedule_outlined,
-            label: '시간',
-            value: bookingTime,
+            label: '일정',
+            value: SalonBookingTime.seoulKoreanDateTimeLabel(selectedDateTime),
           ),
           const Divider(height: 1, color: AppColors.border),
           _SummaryRow(
-            icon: Icons.people_outline,
-            label: '인원',
-            value: '$guestCount명',
+            icon: Icons.content_cut_outlined,
+            label: '시술',
+            value: serviceNames,
           ),
           if (customerRequest != null && customerRequest!.trim().isNotEmpty) ...[
             const Divider(height: 1, color: AppColors.border),
@@ -82,6 +76,7 @@ class _SummaryRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             icon,
@@ -95,12 +90,15 @@ class _SummaryRow extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           ),
-          const Spacer(),
-          Text(
-            value,
-            style: AppTextStyles.body.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: AppTextStyles.body.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
         ],

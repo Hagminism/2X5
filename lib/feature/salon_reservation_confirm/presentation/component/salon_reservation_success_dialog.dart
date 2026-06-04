@@ -1,21 +1,21 @@
-import 'package:capstone_2026/feature/reservation/presentation/component/reservation_dialog_summary.dart';
 import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
+import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/component/salon_reservation_dialog_summary.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
-class ReservationSuccessDialog extends StatelessWidget {
-  final DateTime bookingDate;
-  final String bookingTime;
-  final int guestCount;
+class SalonReservationSuccessDialog extends StatelessWidget {
+  final String designerName;
+  final String selectedDateTime;
+  final String serviceNames;
   final String? customerRequest;
   final VoidCallback onConfirm;
 
-  const ReservationSuccessDialog({
+  const SalonReservationSuccessDialog({
     super.key,
-    required this.bookingDate,
-    required this.bookingTime,
-    required this.guestCount,
+    required this.designerName,
+    required this.selectedDateTime,
+    required this.serviceNames,
     this.customerRequest,
     required this.onConfirm,
   });
@@ -68,10 +68,10 @@ class ReservationSuccessDialog extends StatelessWidget {
               style: AppTextStyles.bodySecondary,
             ),
             const SizedBox(height: 20),
-            ReservationDialogSummary(
-              bookingDate: bookingDate,
-              bookingTime: bookingTime,
-              guestCount: guestCount,
+            SalonReservationDialogSummary(
+              designerName: designerName,
+              selectedDateTime: selectedDateTime,
+              serviceNames: serviceNames,
               customerRequest: customerRequest,
             ),
             const SizedBox(height: 24),

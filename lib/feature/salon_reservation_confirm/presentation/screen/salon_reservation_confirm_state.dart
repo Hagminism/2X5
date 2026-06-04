@@ -17,6 +17,7 @@ abstract class SalonReservationConfirmState
     Store? store,
     SalonDesigner? designer,
     @Default([]) List<SalonService> services,
+    @Default('') String customerRequest,
     String? submitError,
     @Default(false) bool isSubmitting,
   }) = _SalonReservationConfirmState;

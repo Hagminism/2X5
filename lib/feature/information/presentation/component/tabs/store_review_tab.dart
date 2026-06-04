@@ -15,7 +15,6 @@ import 'package:capstone_2026/feature/store_detail/domain/service/store_review_s
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';

@@ -9,6 +9,7 @@ import 'package:capstone_2026/feature/reservation/presentation/screen/reservatio
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:capstone_2026/core/routing/reservation_completion_navigation.dart';
 
 class ReservationScreenRoot extends StatefulWidget {
   final ReservationViewModel viewModel;
@@ -56,6 +57,7 @@ class _ReservationScreenRootState extends State<ReservationScreenRoot> {
         bookingDate: event.bookingDate,
         bookingTime: event.bookingTime,
         guestCount: event.guestCount,
+        customerRequest: event.customerRequest,
         onCancel: () {
           Navigator.pop(dialogContext);
         },
@@ -75,9 +77,10 @@ class _ReservationScreenRootState extends State<ReservationScreenRoot> {
         bookingDate: event.bookingDate,
         bookingTime: event.bookingTime,
         guestCount: event.guestCount,
+        customerRequest: event.customerRequest,
         onConfirm: () {
           Navigator.pop(dialogContext);
-          context.pop();
+          navigateToStoreDetailAfterReservation(context);
         },
       ),
     );
@@ -103,6 +106,7 @@ class _ReservationScreenRootState extends State<ReservationScreenRoot> {
               case ReservationSelectTime():
               case ReservationTapIncreaseGuestCount():
               case ReservationTapDecreaseGuestCount():
+              case ReservationChangeCustomerRequest():
               case ReservationTapSubmit():
               case ReservationConfirmSubmit():
                 widget.viewModel.onAction(action);

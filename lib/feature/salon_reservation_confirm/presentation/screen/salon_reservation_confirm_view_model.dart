@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
+import 'package:capstone_2026/core/domain/util/reservation_customer_request.dart';
 import 'package:collection/collection.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_action.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_event.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_state.dart';
-import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
 import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:flutter/material.dart';
 
@@ -28,6 +28,13 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
 
   Stream<SalonReservationConfirmEvent> get eventStream =>
       _eventController.stream;
+
+  bool get canConfirm {
+    return !state.isLoading &&
+        !state.isSubmitting &&
+        state.designer != null &&
+        state.services.isNotEmpty;
+  }
 
   Future<void> initialize({
     required String storeId,
@@ -85,48 +92,97 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> onAction(SalonReservationConfirmAction action) async {
+  void onAction(SalonReservationConfirmAction action) {
     switch (action) {
       case TapConfirmBack():
         _eventController.add(const SalonReservationConfirmEvent.pop());
         break;
-      case TapConfirmReservation():
-        if (_state.isSubmitting) return;
-
-        _state = _state.copyWith(isSubmitting: true, submitError: null);
+      case ChangeConfirmCustomerRequest():
+        _state = _state.copyWith(
+          customerRequest: action.value,
+          submitError: null,
+        );
         notifyListeners();
-
-        try {
-          await _salonRepository.createReservation(
-            storeId: _state.storeId,
-            designerId: _state.designerId,
-            serviceIds: _state.selectedServiceIds,
-            startAt: DateTime.parse(_state.selectedDateTime).toUtc(),
-          );
-
-          _eventController.add(
-            const SalonReservationConfirmEvent.showSnackBar(
-              '예약이 확정되었습니다.',
-              variant: AppSnackBarVariant.success,
-            ),
-          );
-          _eventController.add(
-            const SalonReservationConfirmEvent.navigateHome(),
-          );
-        } catch (e) {
-          final message = userFacingErrorMessage(
-            e,
-            fallback: '예약에 실패했습니다. 잠시 후 다시 시도해 주세요.',
-          );
-          _state = _state.copyWith(submitError: message);
-          _eventController.add(
-            SalonReservationConfirmEvent.showSnackBar(message),
-          );
-        } finally {
-          _state = _state.copyWith(isSubmitting: false);
-          notifyListeners();
-        }
         break;
+      case TapConfirmReservation():
+        _requestSubmit();
+        break;
+      case ConfirmSubmitReservation():
+        unawaited(_submit());
+        break;
+    }
+  }
+
+  void _requestSubmit() {
+    if (!canConfirm) {
+      return;
+    }
+
+    final designer = _state.designer;
+    if (designer == null) {
+      return;
+    }
+
+    _eventController.add(
+      SalonReservationConfirmEvent.showConfirmDialog(
+        designerName: designer.name,
+        selectedDateTime: _state.selectedDateTime,
+        serviceNames: _state.services.map((s) => s.name).join(', '),
+        customerRequest: normalizeReservationCustomerRequest(
+          _state.customerRequest,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!canConfirm || _state.isSubmitting) {
+      return;
+    }
+
+    final designer = _state.designer;
+    if (designer == null) {
+      return;
+    }
+
+    _state = _state.copyWith(isSubmitting: true, submitError: null);
+    notifyListeners();
+
+    try {
+      final customerRequest = normalizeReservationCustomerRequest(
+        _state.customerRequest,
+      );
+      await _salonRepository.createReservation(
+        storeId: _state.storeId,
+        designerId: _state.designerId,
+        serviceIds: _state.selectedServiceIds,
+        startAt: DateTime.parse(_state.selectedDateTime).toUtc(),
+        customerRequest: customerRequest,
+      );
+
+      _state = _state.copyWith(isSubmitting: false);
+      notifyListeners();
+      _eventController.add(
+        SalonReservationConfirmEvent.showSuccessDialog(
+          designerName: designer.name,
+          selectedDateTime: _state.selectedDateTime,
+          serviceNames: _state.services.map((s) => s.name).join(', '),
+          customerRequest: customerRequest,
+        ),
+      );
+    } catch (e) {
+      final message = userFacingErrorMessage(
+        e,
+        fallback: '예약에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+      );
+      _state = _state.copyWith(
+        isSubmitting: false,
+        submitError: message,
+      );
+      notifyListeners();
+      _eventController.add(
+        SalonReservationConfirmEvent.showSnackBar(message),
+      );
     }
   }
 

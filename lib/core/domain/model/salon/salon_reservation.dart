@@ -16,6 +16,7 @@ abstract class SalonReservation with _$SalonReservation {
     @JsonKey(name: 'start_at') required DateTime startAt,
     @JsonKey(name: 'end_at') required DateTime endAt,
     @JsonKey(name: 'slot_minutes') @Default(30) int slotMinutes,
+    @JsonKey(name: 'customer_request') String? customerRequest,
     @Default('confirmed') String status,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,

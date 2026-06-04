@@ -15,6 +15,7 @@ abstract interface class ReservationDataSource {
     required String bookingDate,
     required String bookingTime,
     required int guestCount,
+    String? customerRequest,
   });
 
   Future<List<StoreReservationSlotDefaultDto>> findSlotDefaultsByStoreId(

@@ -18,6 +18,7 @@ abstract interface class ReservationRepository {
     required DateTime bookingDate,
     required String bookingTime,
     required int guestCount,
+    String? customerRequest,
   });
 
   Future<List<StoreReservationSlotDefault>> getSlotDefaultsByStoreId(

@@ -1,6 +1,7 @@
 import 'package:capstone_2026/core/domain/model/reservation/restaurant_time_slot.dart';
 import 'package:capstone_2026/core/presentation/component/app_bar/custom_app_bar.dart';
 import 'package:capstone_2026/core/presentation/component/button/primary_button.dart';
+import 'package:capstone_2026/core/presentation/component/input/reservation_customer_request_field.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_action.dart';
 import 'package:capstone_2026/feature/reservation/presentation/screen/reservation_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -145,6 +146,15 @@ class ReservationScreen extends StatelessWidget {
                         _buildTimeSection(state.slots),
                         const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
                         _buildGuestCounter(state),
+                        const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
+                        ReservationCustomerRequestField(
+                          value: state.customerRequest,
+                          onChanged: (value) {
+                            onAction(
+                              ReservationAction.changeCustomerRequest(value),
+                            );
+                          },
+                        ),
                       ] else
                         const Padding(
                           padding: EdgeInsets.all(20),
@@ -233,7 +243,6 @@ class ReservationScreen extends StatelessWidget {
               }),
             ],
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
@@ -342,24 +351,25 @@ class ReservationScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: isEnabled
-            ? () {
-                onAction(ReservationAction.selectTime(slot.time));
-              }
-            : null,
-        borderRadius: BorderRadius.circular(12),
-        splashColor: Colors.transparent,
+              ? () {
+                  onAction(ReservationAction.selectTime(slot.time));
+                }
+              : null,
+          borderRadius: BorderRadius.circular(12),
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
         child: Ink(
           decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primary
-                : isEnabled
-                ? AppColors.white
-                : AppColors.signUpWithEmailButton,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.border,
-            ),
+          color: isSelected
+              ? AppColors.primary
+              : isEnabled
+              ? AppColors.white
+              : AppColors.signUpWithEmailButton,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
           ),
+        ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             child: Center(

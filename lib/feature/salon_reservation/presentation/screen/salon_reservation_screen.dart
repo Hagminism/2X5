@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/app_bar/custom_app_bar.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_date_selector.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_service_list.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_slot_grid.dart';
@@ -23,25 +24,13 @@ class SalonReservationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        surfaceTintColor: AppColors.white,
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.black),
-          onPressed: () {
-            onAction(const SalonReservationAction.tapBack());
-          },
-        ),
-        title: const Text(
-          '미용실 예약',
-          style: TextStyle(
-            color: AppColors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      backgroundColor: AppColors.white,
+      appBar: CustomAppBar(
+        title: '날짜와 시간을 선택해 주세요',
+        showBackButton: true,
+        onTap: () {
+          onAction(const SalonReservationAction.tapBack());
+        },
       ),
       body: Column(
         children: [
@@ -198,20 +187,15 @@ class SalonReservationScreen extends StatelessWidget {
               onAction: onAction,
             ),
           ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SalonReservationSlotGrid(
-              slots: state.slots,
-              selectedStartAt: state.selectedStartAt,
-              onAction: onAction,
-            ),
-          ),
           const SizedBox(height: 32),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(height: 1, color: AppColors.border),
+          const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
+          const SizedBox(height: 12),
+          SalonReservationSlotGrid(
+            slots: state.slots,
+            selectedStartAt: state.selectedStartAt,
+            onAction: onAction,
           ),
+          const Divider(thickness: 8, color: Color(0xFFF5F5F5)),
           const SizedBox(height: 32),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
