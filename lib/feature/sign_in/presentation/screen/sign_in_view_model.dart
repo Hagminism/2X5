@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_action.dart';
 import 'package:capstone_2026/feature/sign_in/presentation/screen/sign_in_event.dart';
 import 'package:flutter/material.dart';
@@ -81,7 +82,9 @@ class SignInViewModel extends ChangeNotifier {
     try {
       await _authRepository.signInWithEmail(state.email, state.password);
     } catch (e) {
-      _eventController.add(SignInEvent.showGoogleSignInError(e.toString()));
+      _eventController.add(
+        SignInEvent.showGoogleSignInError(_signInErrorMessage(e)),
+      );
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
@@ -99,7 +102,9 @@ class SignInViewModel extends ChangeNotifier {
     try {
       await _authRepository.signInWithGoogle();
     } catch (e) {
-      _eventController.add(SignInEvent.showGoogleSignInError(e.toString()));
+      _eventController.add(
+        SignInEvent.showGoogleSignInError(_signInErrorMessage(e)),
+      );
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
@@ -131,7 +136,9 @@ class SignInViewModel extends ChangeNotifier {
     try {
       await _authRepository.requestNaverAuthorization(state.naverState);
     } catch (e) {
-      _eventController.add(SignInEvent.showNaverSignInError(e.toString()));
+      _eventController.add(
+        SignInEvent.showNaverSignInError(_signInErrorMessage(e)),
+      );
       _state = state.copyWith(isLoading: false);
       notifyListeners();
     }
@@ -149,7 +156,9 @@ class SignInViewModel extends ChangeNotifier {
         naverState,
       );
     } catch (e) {
-      _eventController.add(SignInEvent.showNaverSignInError(e.toString()));
+      _eventController.add(
+        SignInEvent.showNaverSignInError(_signInErrorMessage(e)),
+      );
       _state = state.copyWith(isLoading: false);
       notifyListeners();
     }
@@ -161,11 +170,20 @@ class SignInViewModel extends ChangeNotifier {
     try {
       await _authRepository.signInWithNaver(idToken, accessToken);
     } catch (e) {
-      _eventController.add(SignInEvent.showNaverSignInError(e.toString()));
+      _eventController.add(
+        SignInEvent.showNaverSignInError(_signInErrorMessage(e)),
+      );
     } finally {
       _state = state.copyWith(isLoading: false);
       notifyListeners();
     }
+  }
+
+  String _signInErrorMessage(Object error) {
+    return userFacingErrorMessage(
+      error,
+      fallback: '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+    );
   }
 
   String _generateState() {

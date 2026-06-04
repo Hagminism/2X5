@@ -5,6 +5,7 @@ import 'package:capstone_2026/core/domain/model/enum/user_type.dart';
 import 'package:capstone_2026/core/domain/model/user/user.dart';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:capstone_2026/core/domain/repository/user/user_repository.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:capstone_2026/core/routing/core/component/user_registration_status_notifier.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_action.dart';
 import 'package:capstone_2026/feature/on_boarding/presentation/screen/on_boarding_event.dart';
@@ -78,7 +79,14 @@ class OnBoardingViewModel extends ChangeNotifier {
       );
       await _userRegistrationStatusNotifier.refresh(firebaseUser.uid);
     } catch (e) {
-      _eventController.add(OnBoardingEvent.showError(e.toString()));
+      _eventController.add(
+        OnBoardingEvent.showError(
+          userFacingErrorMessage(
+            e,
+            fallback: '프로필 설정 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
+        ),
+      );
       rethrow;
     } finally {
       _state = state.copyWith(isLoading: false);

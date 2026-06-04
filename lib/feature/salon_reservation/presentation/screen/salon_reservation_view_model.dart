@@ -6,6 +6,7 @@ import 'package:capstone_2026/core/domain/model/salon/salon_service.dart';
 import 'package:capstone_2026/core/util/salon_booking_time.dart';
 import 'package:capstone_2026/core/domain/repository/salon/salon_repository.dart';
 import 'package:capstone_2026/core/domain/repository/store/store_repository.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_action.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_state.dart';
 import 'package:flutter/foundation.dart';
@@ -146,7 +147,13 @@ class SalonReservationViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _state = _state.copyWith(isLoading: false, loadError: e.toString());
+      _state = _state.copyWith(
+        isLoading: false,
+        loadError: userFacingErrorMessage(
+          e,
+          fallback: '예약 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
+      );
       notifyListeners();
     }
   }
@@ -197,7 +204,13 @@ class SalonReservationViewModel extends ChangeNotifier {
       _state = _state.copyWith(schedules: schedules);
       await _loadReservationsAndRecomputeSlots();
     } catch (e) {
-      _state = _state.copyWith(loadError: e.toString(), slots: const []);
+      _state = _state.copyWith(
+        loadError: userFacingErrorMessage(
+          e,
+          fallback: '예약 가능 시간을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
+        slots: const [],
+      );
       notifyListeners();
     }
   }

@@ -7,6 +7,7 @@ import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/scr
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_event.dart';
 import 'package:capstone_2026/feature/salon_reservation_confirm/presentation/screen/salon_reservation_confirm_state.dart';
 import 'package:capstone_2026/core/presentation/util/app_snack_bar.dart';
+import 'package:capstone_2026/core/presentation/util/user_facing_error_message.dart';
 import 'package:flutter/material.dart';
 
 class SalonReservationConfirmViewModel extends ChangeNotifier {
@@ -75,7 +76,10 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
     } catch (e) {
       _state = _state.copyWith(
         isLoading: false,
-        submitError: '정보를 불러오는데 실패했습니다: $e',
+        submitError: userFacingErrorMessage(
+          e,
+          fallback: '정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
       );
     }
     notifyListeners();
@@ -110,9 +114,13 @@ class SalonReservationConfirmViewModel extends ChangeNotifier {
             const SalonReservationConfirmEvent.navigateHome(),
           );
         } catch (e) {
-          _state = _state.copyWith(submitError: e.toString());
+          final message = userFacingErrorMessage(
+            e,
+            fallback: '예약에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          );
+          _state = _state.copyWith(submitError: message);
           _eventController.add(
-            SalonReservationConfirmEvent.showSnackBar('예약에 실패했습니다: $e'),
+            SalonReservationConfirmEvent.showSnackBar(message),
           );
         } finally {
           _state = _state.copyWith(isSubmitting: false);
