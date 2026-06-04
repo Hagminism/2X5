@@ -26,7 +26,6 @@ class StoreDetailReviewSection extends StatelessWidget {
     this.naverPlaceId,
     required this.googleSearchQuery,
     this.stampStatus,
-    this.googlePlaceReviewInfo,
     required this.onTapNaverReview,
     required this.onTapGoogleReview,
     required this.onSubmitReview,
@@ -46,7 +45,6 @@ class StoreDetailReviewSection extends StatelessWidget {
   final String? naverPlaceId;
   final String googleSearchQuery;
   final StoreStampStatus? stampStatus;
-  final GooglePlaceReviewInfo? googlePlaceReviewInfo;
   final VoidCallback onTapNaverReview;
   final VoidCallback onTapGoogleReview;
   final Future<void> Function(ReviewWriteResult result) onSubmitReview;

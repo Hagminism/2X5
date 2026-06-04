@@ -113,8 +113,6 @@ class ReviewAiSummaryGenerator {
     }
 
     // 모든 리뷰를 동일한 비중으로 통합 분석
-    const double weight = 1.0;
-
     final keywordScores = <String, double>{
       for (final label in _keywordRules.keys) label: 0,
     };
@@ -126,32 +124,30 @@ class ReviewAiSummaryGenerator {
     // 자체 리뷰 분석
     for (final review in reviews) {
       final normalized = review.content.toLowerCase();
-      ratingTotal += review.rating * weight;
+      ratingTotal += review.rating;
 
       for (final keyword in _positiveKeywords) {
         if (normalized.contains(keyword)) {
-          positiveSignals += weight;
+          positiveSignals += 1.0;
         }
       }
 
       for (final keyword in _negativeKeywords) {
         if (normalized.contains(keyword)) {
-          negativeSignals += weight;
+          negativeSignals += 1.0;
         }
       }
 
       final visitPurpose = review.visitPurpose?.trim();
       if (visitPurpose != null && visitPurpose.isNotEmpty) {
         final mappedPurpose = _mapVisitPurpose(visitPurpose);
-        keywordScores[mappedPurpose] =
-            (keywordScores[mappedPurpose] ?? 0) + (2 * weight);
+        keywordScores[mappedPurpose] = (keywordScores[mappedPurpose] ?? 0) + 2.0;
       }
 
       for (final entry in _keywordRules.entries) {
         for (final keyword in entry.value) {
           if (normalized.contains(keyword)) {
-            keywordScores[entry.key] =
-                (keywordScores[entry.key] ?? 0) + (1 * weight);
+            keywordScores[entry.key] = (keywordScores[entry.key] ?? 0) + 1.0;
           }
         }
       }
@@ -161,26 +157,25 @@ class ReviewAiSummaryGenerator {
     for (final review in googleReviews) {
       final normalized = review.text.toLowerCase();
       if (review.rating != null) {
-        ratingTotal += review.rating! * weight;
+        ratingTotal += review.rating!;
       }
 
       for (final keyword in _positiveKeywords) {
         if (normalized.contains(keyword)) {
-          positiveSignals += weight;
+          positiveSignals += 1.0;
         }
       }
 
       for (final keyword in _negativeKeywords) {
         if (normalized.contains(keyword)) {
-          negativeSignals += weight;
+          negativeSignals += 1.0;
         }
       }
 
       for (final entry in _keywordRules.entries) {
         for (final keyword in entry.value) {
           if (normalized.contains(keyword)) {
-            keywordScores[entry.key] =
-                (keywordScores[entry.key] ?? 0) + (1 * weight);
+            keywordScores[entry.key] = (keywordScores[entry.key] ?? 0) + 1.0;
           }
         }
       }
@@ -202,7 +197,7 @@ class ReviewAiSummaryGenerator {
     // 평균 별점 및 긍정 비율 계산
     final int googleRatingCount =
         googleReviews.where((r) => r.rating != null).length;
-    final double divisor = (reviews.length + googleRatingCount) * weight;
+    final double divisor = (reviews.length + googleRatingCount).toDouble();
     final averageRating = divisor > 0 ? (ratingTotal / divisor) : 0.0;
     final ratingScore = averageRating / 5;
     final sentimentTotal = positiveSignals + negativeSignals;
