@@ -121,7 +121,6 @@ class _StoreDetailTabSectionState extends State<StoreDetailTabSection> {
           naverPlaceId: widget.naverPlaceId,
           googleSearchQuery: widget.googleSearchQuery,
           stampStatus: widget.stampStatus,
-          googlePlaceReviewInfo: widget.googlePlaceReviewInfo,
           aiSummary: ReviewAiSummaryGenerator.generate(
             storeName: widget.storeName,
             reviews: widget.reviews,

@@ -157,7 +157,6 @@ class _StoreReviewTabState extends State<StoreReviewTab> {
             naverPlaceId: data.naverPlaceId,
             googleSearchQuery: data.googleSearchQuery,
             stampStatus: _stampStatus,
-            googlePlaceReviewInfo: _googlePlaceReviewInfo,
             aiSummary: ReviewAiSummaryGenerator.generate(
               storeName: data.name,
               reviews: _reviews,
