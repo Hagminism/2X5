@@ -95,6 +95,7 @@ class SearchStoreInformationScreen extends StatelessWidget {
                         );
                       },
                       images: storeSliderImages(state.imageUrls),
+                      viewerImageUrls: state.imageUrls,
                     ),
                   ),
                   SliverToBoxAdapter(

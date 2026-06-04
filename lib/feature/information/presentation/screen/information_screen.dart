@@ -106,6 +106,7 @@ class InformationScreen extends StatelessWidget {
                         onAction(InformationAction.sliderPageChanged(index));
                       },
                       images: storeSliderImages(state.imageUrls),
+                      viewerImageUrls: state.imageUrls,
                     ),
                   ),
                   SliverToBoxAdapter(

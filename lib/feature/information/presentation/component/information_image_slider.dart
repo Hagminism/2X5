@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/screen/store_image_viewer_screen.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,7 @@ class InformationImageSlider extends StatelessWidget {
   final int currentPage;
   final void Function(int) onPageChanged;
   final List<String?> images;
+  final List<String> viewerImageUrls;
 
   const InformationImageSlider({
     super.key,
@@ -13,6 +15,7 @@ class InformationImageSlider extends StatelessWidget {
     required this.currentPage,
     required this.onPageChanged,
     required this.images,
+    required this.viewerImageUrls,
   });
 
   @override
@@ -27,7 +30,7 @@ class InformationImageSlider extends StatelessWidget {
             itemCount: images.length,
             itemBuilder: (context, index) {
               final String? url = images[index];
-              return Container(
+              final Widget imageChild = Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(color: AppColors.surfaceMuted),
                 child: url != null
@@ -39,6 +42,24 @@ class InformationImageSlider extends StatelessWidget {
                           color: AppColors.textSecondary,
                         ),
                       ),
+              );
+
+              if (url == null || url.trim().isEmpty || viewerImageUrls.isEmpty) {
+                return imageChild;
+              }
+
+              final trimmedUrl = url.trim();
+              final viewerIndex = viewerImageUrls.indexOf(trimmedUrl);
+
+              return GestureDetector(
+                onTap: () {
+                  StoreImageViewerScreen.open(
+                    context,
+                    imageUrls: viewerImageUrls,
+                    initialIndex: viewerIndex >= 0 ? viewerIndex : 0,
+                  );
+                },
+                child: imageChild,
               );
             },
           ),
