@@ -1,6 +1,10 @@
 import {setGlobalOptions} from "firebase-functions";
 import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
 import {initializeApp} from "firebase-admin/app";
+export {
+  summarizeStoreReviews,
+  invalidateStoreReviewSummary,
+} from "./summarize_store_reviews";
 setGlobalOptions({maxInstances: 10});
 initializeApp();
 
