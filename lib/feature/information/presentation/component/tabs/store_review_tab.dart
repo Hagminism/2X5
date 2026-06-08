@@ -11,10 +11,10 @@ import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.
 import 'package:capstone_2026/feature/store_detail/domain/model/review_ai_summary.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/store_detail.dart';
 import 'package:capstone_2026/feature/store_detail/domain/service/store_review_service.dart';
+import 'package:capstone_2026/feature/store_detail/domain/service/review_ai_summary_generator.dart';
 import 'package:capstone_2026/feature/store_detail/domain/service/store_review_summary_service.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/store_detail_review_section.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -75,11 +75,8 @@ class _StoreReviewTabState extends State<StoreReviewTab>
   bool _isMoreNaverLoading = false;
 
   ReviewAiSummary? _aiSummary;
-  bool _isSummaryLoading = false;
-  String? _summaryError;
 
   bool _reviewSessionStarted = false;
-  bool _summaryRequested = false;
   TabController? _tabController;
   bool _tabListenerAttached = false;
 
@@ -191,16 +188,13 @@ class _StoreReviewTabState extends State<StoreReviewTab>
 
   void _resetReviewSession() {
     _reviewSessionStarted = false;
-    _summaryRequested = false;
     _reviews = const [];
     _stampStatus = null;
     _googlePlaceReviewInfo = null;
     _naverReviews = const [];
     _aiSummary = null;
-    _summaryError = null;
     _isLoading = false;
     _isNaverLoading = false;
-    _isSummaryLoading = false;
     _naverPage = 1;
     _hasMoreNaver = true;
     _isMoreNaverLoading = false;
@@ -280,10 +274,6 @@ class _StoreReviewTabState extends State<StoreReviewTab>
             googleSearchQuery: data.googleSearchQuery,
             stampStatus: _stampStatus,
             aiSummary: _aiSummary,
-            isSummaryLoading: _isSummaryLoading,
-            summaryError: _summaryError,
-            onRetrySummary:
-                _summaryError != null ? () => unawaited(_retrySummary()) : null,
             reviews: _reviews,
             isReviewLoading: _isLoading,
             naverReviews: _naverReviews,
@@ -366,9 +356,8 @@ class _StoreReviewTabState extends State<StoreReviewTab>
         _naverReviews = naverReviews;
         _isLoading = false;
         _isNaverLoading = false;
+        _aiSummary = _buildAiSummary(storeName: data.name);
       });
-
-      await _loadAiSummaryOnce();
     } catch (_) {
       if (!mounted) {
         return;
@@ -382,69 +371,13 @@ class _StoreReviewTabState extends State<StoreReviewTab>
     }
   }
 
-  Future<void> _loadAiSummaryOnce() async {
-    if (_summaryRequested) {
-      return;
-    }
-    _summaryRequested = true;
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _isSummaryLoading = true;
-      _summaryError = null;
-    });
-
-    try {
-      final summary = await _storeReviewSummaryService.summarize(
-        storeId: widget.storeId,
-        storeName: _reviewTarget.name,
-        platformReviews: _reviews,
-        naverReviews: _naverReviews,
-        googleReviews: _googlePlaceReviewInfo?.reviews ?? const [],
-      );
-
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _aiSummary = summary;
-        _isSummaryLoading = false;
-      });
-    } on FirebaseFunctionsException catch (e, stackTrace) {
-      debugPrint(
-        '[ReviewSummary] callable failed: code=${e.code}, '
-        'message=${e.message}, details=${e.details}',
-      );
-      debugPrintStack(stackTrace: stackTrace);
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _isSummaryLoading = false;
-        _summaryError = '리뷰 요약을 불러오지 못했습니다.';
-      });
-    } catch (e, stackTrace) {
-      debugPrint('[ReviewSummary] failed: $e');
-      debugPrintStack(stackTrace: stackTrace);
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _isSummaryLoading = false;
-        _summaryError = '리뷰 요약을 불러오지 못했습니다.';
-      });
-    }
-  }
-
-  Future<void> _retrySummary() async {
-    _summaryRequested = false;
-    await _loadAiSummaryOnce();
+  ReviewAiSummary _buildAiSummary({required String storeName}) {
+    return ReviewAiSummaryGenerator.generate(
+      storeName: storeName,
+      reviews: _reviews,
+      naverReviews: _naverReviews,
+      googleReviews: _googlePlaceReviewInfo?.reviews ?? const [],
+    );
   }
 
   Future<void> _loadMoreNaverReviews() async {
@@ -522,13 +455,8 @@ class _StoreReviewTabState extends State<StoreReviewTab>
       setState(() {
         _reviews = [createdReview, ..._reviews];
         _stampStatus = accrual.status;
+        _aiSummary = _buildAiSummary(storeName: data.name);
       });
-
-      try {
-        await _storeReviewSummaryService.invalidateSummary(
-          storeId: widget.storeId,
-        );
-      } catch (_) {}
 
       if (accrual.didAccrue &&
           !wasRewardUnlocked &&

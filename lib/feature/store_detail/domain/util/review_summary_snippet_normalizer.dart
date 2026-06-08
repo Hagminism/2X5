@@ -43,12 +43,11 @@ List<ReviewSnippetInput> normalizeReviewSnippetsForSummary(
 
 /// 서버 `formatRatingForHash`와 동일하게 별점을 해시용 문자열로 만든다.
 String formatRatingForHash(double? rating) {
-  if (rating == null) {
+  if (rating == null || rating.isNaN) {
     return '';
   }
-  final rounded = rating.roundToDouble();
-  if (rating == rounded) {
-    return rounded.toInt().toString();
+  if (rating == rating.truncateToDouble()) {
+    return rating.truncate().toString();
   }
   return rating.toString();
 }

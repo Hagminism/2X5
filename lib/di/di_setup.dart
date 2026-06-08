@@ -264,7 +264,6 @@ void diSetup() {
   getIt.registerLazySingleton<StoreReviewSummaryService>(
     () => StoreReviewSummaryService(
       storeReviewService: getIt<StoreReviewService>(),
-      storeReviewSummaryRepository: getIt<StoreReviewSummaryRepository>(),
     ),
   );
   getIt.registerLazySingleton<StampRepository>(
