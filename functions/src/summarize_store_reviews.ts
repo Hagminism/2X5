@@ -117,6 +117,89 @@ function truncateText(value: string): string {
  * @param {ReviewSnippetInput[]} reviews 원본 리뷰 목록
  * @return {ReviewSnippetInput[]} 정규화된 리뷰 목록
  */
+/**
+ * Callable payload의 reviews 필드를 배열로 정규화한다.
+ * @param {unknown} value 요청 reviews 필드
+ * @return {ReviewSnippetInput[]} 리뷰 배열
+ */
+function coerceReviewsInput(value: unknown): ReviewSnippetInput[] {
+  if (value == null) {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    throw new HttpsError(
+      "invalid-argument",
+      "reviews는 배열이어야 합니다.",
+    );
+  }
+  return value as ReviewSnippetInput[];
+}
+
+/**
+ * Gemini JSON 응답을 요약 객체로 파싱한다.
+ * @param {string} rawText Gemini 원문
+ * @return {Pick<SummaryJson, "oneLine" | "keywords">} 파싱된 요약
+ */
+function parseGeminiSummaryJson(
+  rawText: string,
+): Pick<SummaryJson, "oneLine" | "keywords"> {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawText);
+  } catch {
+    logger.error("Gemini JSON 파싱 실패", {
+      rawPreview: rawText.slice(0, 500),
+    });
+    throw new HttpsError("internal", "Gemini 응답 JSON 파싱에 실패했습니다.");
+  }
+
+  if (parsed == null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    logger.error("Gemini JSON 형식 오류", {
+      parsedType: parsed === null ? "null" : typeof parsed,
+      rawPreview: rawText.slice(0, 500),
+    });
+    throw new HttpsError(
+      "internal",
+      "Gemini 응답 JSON 형식이 올바르지 않습니다.",
+    );
+  }
+
+  const record = parsed as {oneLine?: unknown; keywords?: unknown};
+  let oneLine = "";
+  if (typeof record.oneLine === "string") {
+    oneLine = record.oneLine.trim();
+  }
+  let keywords: string[] = [];
+  if (Array.isArray(record.keywords)) {
+    keywords = record.keywords
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0)
+      .slice(0, 3);
+  }
+
+  if (oneLine.length === 0) {
+    logger.error("Gemini 요약 문장 누락", {
+      rawPreview: rawText.slice(0, 500),
+    });
+    throw new HttpsError("internal", "요약 문장을 생성하지 못했습니다.");
+  }
+
+  if (keywords.length === 0) {
+    return {
+      oneLine,
+      keywords: ["방문 후기", "서비스", "분위기"],
+    };
+  }
+
+  return {oneLine, keywords};
+}
+
+/**
+ * 리뷰 입력을 정규화하고 소스별 상한을 적용한다.
+ * @param {ReviewSnippetInput[]} reviews 원본 리뷰 목록
+ * @return {ReviewSnippetInput[]} 정규화된 리뷰 목록
+ */
 function normalizeReviews(reviews: ReviewSnippetInput[]): ReviewSnippetInput[] {
   const grouped: Record<ReviewSource, ReviewSnippetInput[]> = {
     platform: [],
@@ -290,8 +373,8 @@ async function generateSummaryWithGemini(
   storeName: string,
   reviews: ReviewSnippetInput[],
 ): Promise<Pick<SummaryJson, "oneLine" | "keywords">> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
+  const apiKey = (process.env.GEMINI_API_KEY ?? "").trim();
+  if (apiKey.length === 0) {
     throw new HttpsError(
       "failed-precondition",
       "GEMINI_API_KEY가 설정되지 않았습니다.",
@@ -334,41 +417,20 @@ async function generateSummaryWithGemini(
     if (error instanceof HttpsError) {
       throw error;
     }
-    const message = error instanceof Error ? error.message : String(error);
+    const geminiError =
+      error instanceof Error ? error.message : String(error);
+    logger.error("Gemini API 호출 실패", {
+      storeName,
+      geminiError,
+      reviewCount: reviews.length,
+    });
     throw new HttpsError(
       "internal",
-      `Gemini 요약 생성 실패: ${message}`,
+      `Gemini 요약 생성 실패: ${geminiError}`,
     );
   }
 
-  let parsed: {oneLine?: string; keywords?: string[]};
-  try {
-    parsed = JSON.parse(rawText) as {
-      oneLine?: string;
-      keywords?: string[];
-    };
-  } catch {
-    throw new HttpsError("internal", "Gemini 응답 JSON 파싱에 실패했습니다.");
-  }
-
-  const oneLine = parsed.oneLine?.trim() ?? "";
-  const keywords = (parsed.keywords ?? [])
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0)
-    .slice(0, 3);
-
-  if (oneLine.length === 0) {
-    throw new HttpsError("internal", "요약 문장을 생성하지 못했습니다.");
-  }
-
-  if (keywords.length === 0) {
-    return {
-      oneLine,
-      keywords: ["방문 후기", "서비스", "분위기"],
-    };
-  }
-
-  return {oneLine, keywords};
+  return parseGeminiSummaryJson(rawText);
 }
 
 export const summarizeStoreReviews = onCall(
@@ -378,74 +440,108 @@ export const summarizeStoreReviews = onCall(
       "SUPABASE_SERVICE_ROLE_KEY",
       "GEMINI_API_KEY",
     ],
+    timeoutSeconds: 120,
   },
   async (request) => {
-    if (!request.auth?.uid) {
+    const uid = request.auth?.uid;
+    if (!uid) {
       throw new HttpsError("unauthenticated", "로그인이 필요합니다.");
     }
 
-    const data = (request.data ?? {}) as SummarizeStoreReviewsRequest;
-    const storeId = (data.storeId ?? "").trim();
-    const storeName = (data.storeName ?? "").trim() || "이 매장";
-    const clientHash = (data.contentHash ?? "").trim();
-    const normalizedReviews = normalizeReviews(data.reviews ?? []);
+    try {
+      const data = (request.data ?? {}) as SummarizeStoreReviewsRequest;
+      const storeId = (data.storeId ?? "").trim();
+      const storeName = (data.storeName ?? "").trim() || "이 매장";
+      const clientHash = (data.contentHash ?? "").trim();
+      const normalizedReviews = normalizeReviews(
+        coerceReviewsInput(data.reviews),
+      );
 
-    if (!storeId) {
-      throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
-    }
+      if (!storeId) {
+        throw new HttpsError("invalid-argument", "storeId가 필요합니다.");
+      }
 
-    const reviewCounts = countBySource(normalizedReviews);
-    if (normalizedReviews.length === 0) {
+      const reviewCounts = countBySource(normalizedReviews);
+      if (normalizedReviews.length === 0) {
+        return {
+          cacheHit: false,
+          summary: emptySummary(storeName),
+          reviewCounts,
+        };
+      }
+
+      const contentHash = computeContentHash(normalizedReviews);
+      if (clientHash.length > 0 && clientHash !== contentHash) {
+        logger.warn("contentHash 불일치", {
+          storeId,
+          uid,
+          clientHash,
+          serverHash: contentHash,
+          reviewCount: normalizedReviews.length,
+        });
+        throw new HttpsError(
+          "invalid-argument",
+          "리뷰 데이터가 변경되었습니다.",
+        );
+      }
+
+      const cached = await fetchCachedSummary(storeId, contentHash);
+      if (cached) {
+        logger.info("리뷰 요약 캐시 히트", {storeId, contentHash});
+        return {
+          cacheHit: true,
+          summary: cached.summary_json,
+          reviewCounts: cached.review_counts,
+        };
+      }
+
+      logger.info("리뷰 요약 Gemini 생성 시작", {
+        storeId,
+        reviewCount: normalizedReviews.length,
+        reviewCounts,
+      });
+
+      const generated = await generateSummaryWithGemini(
+        storeName,
+        normalizedReviews,
+      );
+      const summary: SummaryJson = {
+        oneLine: generated.oneLine,
+        keywords: generated.keywords,
+        positiveRatio: computePositiveRatio(normalizedReviews),
+      };
+
+      const expiresAt = new Date(
+        Date.now() + CACHE_TTL_HOURS * 60 * 60 * 1000,
+      ).toISOString();
+
+      await saveCachedSummary({
+        store_id: storeId,
+        content_hash: contentHash,
+        summary_json: summary,
+        model: SUMMARY_MODEL,
+        review_counts: reviewCounts,
+        expires_at: expiresAt,
+      });
+
       return {
         cacheHit: false,
-        summary: emptySummary(storeName),
+        summary,
         reviewCounts,
       };
+    } catch (error) {
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      logger.error("summarizeStoreReviews 처리 중 예외", {
+        uid,
+        errorMessage: message,
+        stack,
+      });
+      throw new HttpsError("internal", "리뷰 요약 처리 중 오류가 발생했습니다.");
     }
-
-    const contentHash = computeContentHash(normalizedReviews);
-    if (clientHash.length > 0 && clientHash !== contentHash) {
-      throw new HttpsError("invalid-argument", "리뷰 데이터가 변경되었습니다.");
-    }
-
-    const cached = await fetchCachedSummary(storeId, contentHash);
-    if (cached) {
-      logger.info("리뷰 요약 캐시 히트", {storeId, contentHash});
-      return {
-        cacheHit: true,
-        summary: cached.summary_json,
-        reviewCounts: cached.review_counts,
-      };
-    }
-
-    const generated = await generateSummaryWithGemini(
-      storeName,
-      normalizedReviews,
-    );
-    const summary: SummaryJson = {
-      oneLine: generated.oneLine,
-      keywords: generated.keywords,
-      positiveRatio: computePositiveRatio(normalizedReviews),
-    };
-
-    const expiresAt = new Date(
-      Date.now() + CACHE_TTL_HOURS * 60 * 60 * 1000,
-    ).toISOString();
-
-    await saveCachedSummary({
-      store_id: storeId,
-      content_hash: contentHash,
-      summary_json: summary,
-      model: SUMMARY_MODEL,
-      review_counts: reviewCounts,
-      expires_at: expiresAt,
-    });
-
-    return {
-      cacheHit: false,
-      summary,
-      reviewCounts,
-    };
   },
 );
 
