@@ -19,8 +19,21 @@ class StampRepositoryImpl implements StampRepository {
       '예약 완료 후 리뷰 작성 시 스탬프가 적립됩니다.';
   static const String _reviewPromptMessage = '스탬프 적립을 위해 리뷰를 작성해 주세요!';
   static const String _reviewCompletedMessage = '리뷰 작성이 완료된 매장입니다.';
+  static const List<String> _reservationTables = [
+    'reservations',
+    'salon_reservations',
+    'studycafe_reservations',
+  ];
 
   final SupabaseClient _supabase;
+
+  List<String> get _eligibleReservationStatuses {
+    final statusList = ['completed'];
+    if (_allowReviewStampTestingBypass) {
+      statusList.add('confirmed');
+    }
+    return statusList;
+  }
 
   @override
   Future<StoreStampStatus> fetchStoreStampStatus({
@@ -199,15 +212,28 @@ class StampRepositoryImpl implements StampRepository {
       dbStoreId: dbStoreId,
     );
 
-    await _accrueStampAtomically(
-      userId: userId,
-      dbStoreId: dbStoreId,
-      reservationId: reservationId,
-      currentStatus: currentStatus.copyWith(
-        canWriteReview: true,
-        hasWrittenReview: false,
-      ),
-    );
+    try {
+      await _accrueStampAtomically(
+        userId: userId,
+        dbStoreId: dbStoreId,
+        reservationId: reservationId,
+        currentStatus: currentStatus.copyWith(
+          canWriteReview: true,
+          hasWrittenReview: false,
+        ),
+      );
+    } catch (error, stackTrace) {
+      debugPrint('[StampRepository] stamp accrue failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      final status = await fetchStoreStampStatus(
+        userId: userId,
+        storeId: storeId,
+      );
+      return StampReviewAccrualResult(
+        status: status,
+        didAccrue: false,
+      );
+    }
 
     final updatedStatus = await fetchStoreStampStatus(
       userId: userId,
@@ -445,20 +471,10 @@ class StampRepositoryImpl implements StampRepository {
       return null;
     }
 
-    final statusList = ['completed'];
-    if (_allowReviewStampTestingBypass) {
-      statusList.add('confirmed');
-    }
-
-    final List<dynamic> reservationRows = await _supabase
-        .from('reservations')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('store_id', resolvedStore.dbStoreId!)
-        .inFilter('status', statusList)
-        .limit(1);
-
-    final hasVisited = reservationRows.isNotEmpty;
+    final hasVisited = await _hasEligibleReservation(
+      userId: userId,
+      dbStoreId: resolvedStore.dbStoreId!,
+    );
 
     final List<dynamic> policyRows = await _supabase
         .from('stamp_policies')
@@ -515,25 +531,45 @@ class StampRepositoryImpl implements StampRepository {
   }
 
   Future<Set<String>> _fetchCompletedReservationStoreIds(String userId) async {
-    final statusList = ['completed'];
-    if (_allowReviewStampTestingBypass) {
-      statusList.add('confirmed');
+    final storeIds = <String>{};
+    for (final table in _reservationTables) {
+      final rows = await _supabase
+          .from(table)
+          .select('store_id')
+          .eq('user_id', userId)
+          .inFilter('status', _eligibleReservationStatuses);
+
+      for (final row in rows.whereType<Map>()) {
+        final storeId = Map<String, dynamic>.from(row)['store_id']?.toString();
+        if (storeId != null && storeId.isNotEmpty) {
+          storeIds.add(storeId);
+        }
+      }
     }
-
-    final List<dynamic> rows = await _supabase
-        .from('reservations')
-        .select('store_id')
-        .eq('user_id', userId)
-        .inFilter('status', statusList);
-
-    return rows
-        .cast<Map<String, dynamic>>()
-        .map((row) => row['store_id']?.toString())
-        .whereType<String>()
-        .where((value) => value.isNotEmpty)
-        .toSet();
+    return storeIds;
   }
 
+  Future<bool> _hasEligibleReservation({
+    required String userId,
+    required String dbStoreId,
+  }) async {
+    for (final table in _reservationTables) {
+      final rows = await _supabase
+          .from(table)
+          .select('id')
+          .eq('user_id', userId)
+          .eq('store_id', dbStoreId)
+          .inFilter('status', _eligibleReservationStatuses)
+          .limit(1);
+
+      if (rows.isNotEmpty) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// 스탬프 원장 FK가 `reservations(id)`만 참조하므로 식당·카페 예약만 연결한다.
   Future<String?> _fetchLatestCompletedReservationId({
     required String userId,
     required String dbStoreId,
@@ -548,10 +584,7 @@ class StampRepositoryImpl implements StampRepository {
         .limit(1)
         .maybeSingle();
 
-    if (row != null) {
-      return row['id']?.toString();
-    }
-    return null;
+    return row?['id']?.toString();
   }
 
   Map<String, Map<String, dynamic>> _mapPolicyRows(dynamic rows) {
