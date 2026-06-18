@@ -21,6 +21,97 @@ COMMON_HEADERS = {
     "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
 }
 
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
+@app.get("/api/mobile-search")
+async def mobile_search(query: str):
+    """
+    네이버 모바일 통합검색 HTML에서 placeId·전화번호를 추출합니다.
+    Flutter 웹은 브라우저 CORS로 m.search.naver.com 직접 호출이 불가합니다.
+    """
+    encoded_query = httpx.QueryParams({"query": query})
+    url = f"https://m.search.naver.com/search.naver?{encoded_query}"
+
+    headers = {
+        **COMMON_HEADERS,
+        "Referer": "https://m.search.naver.com/",
+    }
+
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        try:
+            res = await client.get(url, headers=headers, timeout=8.0)
+            if res.status_code != 200:
+                raise HTTPException(
+                    status_code=res.status_code,
+                    detail="Failed to fetch mobile search page from Naver",
+                )
+
+            html = res.text
+
+            place_id = None
+            id_match = re.search(r"id[=:](\d{8,})", html)
+            if id_match:
+                place_id = id_match.group(1)
+
+            phone = None
+            tel_match = re.search(r'href="tel:([^"]+)"', html)
+            if tel_match:
+                phone = tel_match.group(1)
+            else:
+                phone_match = re.search(r'"phone"\s*:\s*"([^"]+)"', html)
+                if phone_match:
+                    phone = phone_match.group(1)
+
+            return {"placeId": place_id, "phone": phone}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Mobile search proxy error: {str(e)}"
+            )
+
+
+@app.get("/api/place/{place_id}/summary")
+async def get_place_summary(place_id: str):
+    """
+    map.naver.com place summary API를 프록시합니다.
+    """
+    url = f"https://map.naver.com/p/api/place/summary/{place_id}"
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        ),
+        "Referer": "https://map.naver.com/",
+    }
+
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        try:
+            res = await client.get(url, headers=headers, timeout=5.0)
+            if res.status_code != 200:
+                raise HTTPException(
+                    status_code=res.status_code,
+                    detail="Failed to fetch place summary from Naver",
+                )
+
+            decoded = res.json()
+            place_detail = (decoded.get("data") or {}).get("placeDetail")
+            if not isinstance(place_detail, dict):
+                return None
+            return place_detail
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Place summary proxy error: {str(e)}"
+            )
+
+
 @app.get("/api/place/{place_id}/menu")
 async def get_menu(place_id: str):
     """
