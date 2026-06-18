@@ -38,7 +38,7 @@ Future<void> main() async {
 
   NaverMapSDK.initialize(
     clientId: dotenv.env['NAVER_MAP_CLIENT_ID'] ?? '',
-    webServiceUrl: 'http://localhost',
+    webServiceUrl: kIsWeb ? null : 'http://localhost',
   );
 
   diSetup();
