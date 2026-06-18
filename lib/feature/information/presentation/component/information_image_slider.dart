@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/core/presentation/screen/store_image_viewer_screen.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +35,7 @@ class InformationImageSlider extends StatelessWidget {
                 width: double.infinity,
                 decoration: const BoxDecoration(color: AppColors.surfaceMuted),
                 child: url != null
-                    ? Image.network(url, fit: BoxFit.cover)
+                    ? AppNetworkImage(url, fit: BoxFit.cover)
                     : const Center(
                         child: Icon(
                           Icons.storefront_rounded,

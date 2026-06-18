@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -25,26 +26,33 @@ class InformationStoreHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Row(
         children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceMuted,
-              borderRadius: BorderRadius.circular(14),
-              image: imageUrl != null
-                  ? DecorationImage(
-                      image: NetworkImage(imageUrl!),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: SizedBox(
+              width: 72,
+              height: 72,
+              child: imageUrl != null
+                  ? AppNetworkImage(
+                      imageUrl!,
                       fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => ColoredBox(
+                        color: AppColors.surfaceMuted,
+                        child: const Icon(
+                          Icons.storefront_rounded,
+                          size: 32,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
                     )
-                  : null,
+                  : ColoredBox(
+                      color: AppColors.surfaceMuted,
+                      child: const Icon(
+                        Icons.storefront_rounded,
+                        size: 32,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
             ),
-            child: imageUrl == null
-                ? const Icon(
-                    Icons.storefront_rounded,
-                    size: 32,
-                    color: AppColors.textSecondary,
-                  )
-                : null,
           ),
           const SizedBox(width: 16),
           Expanded(

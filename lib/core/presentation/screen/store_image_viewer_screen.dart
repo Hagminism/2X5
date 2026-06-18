@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:capstone_2026/core/presentation/component/network/app_cached_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -109,7 +109,7 @@ class _ZoomableStoreImage extends StatelessWidget {
       child: InteractiveViewer(
         minScale: 1,
         maxScale: 4,
-        child: CachedNetworkImage(
+        child: AppCachedNetworkImage(
           imageUrl: url,
           fit: BoxFit.contain,
           width: double.infinity,

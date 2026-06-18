@@ -1,4 +1,5 @@
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_action.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
@@ -92,19 +93,32 @@ class _DesignerCard extends StatelessWidget {
                     width: 2,
                   ),
                 ),
-                child: CircleAvatar(
-                  radius: 28,
-                  backgroundColor: AppColors.surfaceMuted,
-                  backgroundImage: designer.imageUrl.isEmpty
-                      ? null
-                      : NetworkImage(designer.imageUrl),
-                  child: designer.imageUrl.isEmpty
-                      ? const Icon(
-                          Icons.person,
-                          color: AppColors.textSecondary,
-                          size: 28,
-                        )
-                      : null,
+                child: ClipOval(
+                  child: SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: designer.imageUrl.isEmpty
+                        ? ColoredBox(
+                            color: AppColors.surfaceMuted,
+                            child: const Icon(
+                              Icons.person,
+                              color: AppColors.textSecondary,
+                              size: 28,
+                            ),
+                          )
+                        : AppNetworkImage(
+                            designer.imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => ColoredBox(
+                              color: AppColors.surfaceMuted,
+                              child: const Icon(
+                                Icons.person,
+                                color: AppColors.textSecondary,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

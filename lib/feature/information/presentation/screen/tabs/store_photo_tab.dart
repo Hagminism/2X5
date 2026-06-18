@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/core/presentation/screen/store_image_viewer_screen.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -60,7 +61,7 @@ class _StorePhotoTabState extends State<StorePhotoTab> {
                   alignment: Alignment.center,
                   child: const Icon(Icons.hide_image_outlined),
                 )
-              : Image.network(
+              : AppNetworkImage(
                   url,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => Container(

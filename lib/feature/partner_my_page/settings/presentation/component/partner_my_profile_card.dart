@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,7 @@ class PartnerMyProfileCard extends StatelessWidget {
             child: (photoUrl == null)
                 ? const Icon(Icons.person_outline_rounded)
                 : ClipOval(
-                    child: Image.network(
+                    child: AppNetworkImage(
                       photoUrl!,
                       errorBuilder: (context, error, stackTrace) {
                         // photoUrl 값이 존재는 하는데, 유효하지 않은 값일 경우 기본 아이콘 표시.

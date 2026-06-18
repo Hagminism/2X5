@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:math' as math;
 
 import 'package:capstone_2026/core/routing/routes.dart';
@@ -823,7 +824,7 @@ class _SearchResultCard extends StatelessWidget {
                       Icons.storefront_rounded,
                       color: AppColors.textPrimary,
                     )
-                  : Image.network(
+                  : AppNetworkImage(
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => const Icon(

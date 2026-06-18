@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:io';
 
 import 'package:capstone_2026/core/presentation/component/dialog/app_confirm_dialog.dart';
@@ -322,7 +323,7 @@ class _ReviewHistoryImageThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return Image.network(
+      return AppNetworkImage(
         imageUrl,
         fit: BoxFit.cover,
         width: double.infinity,
