@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/core/domain/model/enum/reservation_congestion_level.dart';
 import 'package:capstone_2026/core/domain/model/enum/store_category.dart';
 import 'package:capstone_2026/core/domain/model/reservation/restaurant_time_slot.dart';
@@ -309,7 +310,7 @@ class _SalonDesignerCard extends StatelessWidget {
                     width: 72,
                     height: 72,
                     child: imageUrl.isNotEmpty
-                        ? Image.network(
+                        ? AppNetworkImage(
                             imageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {

@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/feature/store_detail/domain/model/internal_review.dart';
 import 'package:capstone_2026/feature/store_detail/presentation/component/review_write_bottom_sheet.dart';
 import 'package:capstone_2026/feature/stamp/domain/model/store_stamp_status.dart';
@@ -189,7 +190,7 @@ class _StoreDetailTabSectionState extends State<StoreDetailTabSection> {
                   if (imageUrl.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
+                      child: AppNetworkImage(
                         imageUrl,
                         width: 80,
                         height: 80,

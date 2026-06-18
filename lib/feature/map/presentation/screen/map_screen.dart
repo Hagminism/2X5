@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -22,7 +23,8 @@ import 'package:naver_maps_sdk_flutter/model/html_icon.dart';
 import 'package:naver_maps_sdk_flutter/model/map_options.dart';
 import 'package:naver_maps_sdk_flutter/model/marker_options.dart';
 import 'package:naver_maps_sdk_flutter/model/n_lat_lng.dart';
-import 'package:naver_maps_sdk_flutter/sdk_app/naver_maps_sdk_flutter_app.dart';
+import 'package:naver_maps_sdk_flutter/sdk_app/naver_maps_sdk_flutter_app.dart'
+    if (dart.library.js_interop) 'package:naver_maps_sdk_flutter/sdk_web/naver_maps_sdk_flutter_web.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MapScreen extends StatefulWidget {
@@ -58,6 +60,7 @@ class _MapScreenState extends State<MapScreen> {
   bool _isSearchCooldownActive = false;
   int _currentZoom = 15;
   bool _mapReady = false;
+  bool _mapLoadConfigured = false;
   List<Map<String, dynamic>> _stores = [];
   String? _selectedCategory;
   Map<String, dynamic>? _selectedStore;
@@ -72,13 +75,9 @@ class _MapScreenState extends State<MapScreen> {
     super.initState();
     _naverMapManager = NaverMapManager.createNaverMapManager();
     _mapStatusSubscription = _naverMapManager.onMapLoadStatus.listen((status) {
-      if (status is MapLoadSuccess) {
-        _naverMapManager.addMapCenterChangedEventListener();
-        _naverMapManager.addMapClickEventListener();
-        _naverMapManager.addMapZoomChangedEventListener();
-        _naverMapManager.addMapZoomEndEventListener();
-        _mapReady = true;
-        _setupInitialLocation();
+      if (status is MapLoadSuccess && !_mapLoadConfigured) {
+        _mapLoadConfigured = true;
+        unawaited(_configureMapAfterFirstLoad());
       }
     });
     _markerEventSubscription = _naverMapManager.onMarkerEvent.listen((event) {
@@ -139,8 +138,39 @@ class _MapScreenState extends State<MapScreen> {
         _addStoreMarkers();
       } else if (event is MapCenterChanged) {
         _currentCenter = event.latLng;
+      } else if (event is MapIdle && mounted && _mapReady) {
+        unawaited(_syncCurrentCenterFromMap());
       }
     });
+  }
+
+  Future<void> _configureMapAfterFirstLoad() async {
+    await _naverMapManager.addMapCenterChangedEventListener();
+    await _naverMapManager.addMapClickEventListener();
+    await _naverMapManager.addMapIdleEventListener();
+    await _naverMapManager.addMapZoomChangedEventListener();
+    await _naverMapManager.addMapZoomEndEventListener();
+    _mapReady = true;
+    await _setupInitialLocation();
+  }
+
+  Future<NLatLng> _resolveSearchCenter() async {
+    if (!_mapReady) {
+      return _currentCenter;
+    }
+    try {
+      final center = await _naverMapManager.getCenter(shouldReturnLatLng: true);
+      if (center is NLatLng) {
+        return center;
+      }
+    } catch (e) {
+      debugPrint('[MapSearch] getCenter failed: $e');
+    }
+    return _currentCenter;
+  }
+
+  Future<void> _syncCurrentCenterFromMap() async {
+    _currentCenter = await _resolveSearchCenter();
   }
 
   Future<void> _fetchCoverImage(String storeId) async {
@@ -913,7 +943,12 @@ class _MapScreenState extends State<MapScreen> {
     if (mounted) setState(() {});
 
     try {
-      final center = _currentCenter;
+      final center = await _resolveSearchCenter();
+      _currentCenter = center;
+      debugPrint(
+        '[MapSearch] center=(${center.lat.toStringAsFixed(5)}, '
+        '${center.lng.toStringAsFixed(5)})',
+      );
       final newBounds = mapAreaBoundsFromCenter(
         lat: center.lat,
         lng: center.lng,
@@ -1030,20 +1065,13 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mapOptions = MapOptions(
-      center: _fixedCenter,
-      zoom: _currentZoom,
-      zoomControl: false,
-      mapTypeId: NaverMapMapTypeId.normal,
-    );
-
     return Scaffold(
       body: Stack(
         children: [
-          NaverMapWidget(
+          _StableNaverMapView(
             naverMapManager: _naverMapManager,
-            mapOptions: mapOptions,
-            showLoading: true,
+            initialCenter: _fixedCenter,
+            initialZoom: _currentZoom,
           ),
           SafeArea(
             child: Column(
@@ -1396,7 +1424,7 @@ class _StoreBottomSheet extends StatelessWidget {
                     width: 64,
                     height: 64,
                     child: coverImageUrl != null
-                        ? Image.network(coverImageUrl!, fit: BoxFit.cover)
+                        ? AppNetworkImage(coverImageUrl!, fit: BoxFit.cover)
                         : Container(
                             color: AppColors.signUpWithEmailButton,
                             child: const Icon(
@@ -1570,5 +1598,44 @@ class _MapButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _StableNaverMapView extends StatefulWidget {
+  const _StableNaverMapView({
+    required this.naverMapManager,
+    required this.initialCenter,
+    required this.initialZoom,
+  });
+
+  final NaverMapManager naverMapManager;
+  final NLatLng initialCenter;
+  final int initialZoom;
+
+  @override
+  State<_StableNaverMapView> createState() => _StableNaverMapViewState();
+}
+
+class _StableNaverMapViewState extends State<_StableNaverMapView> {
+  late final Widget _mapView;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapView = NaverMapWidget(
+      naverMapManager: widget.naverMapManager,
+      mapOptions: MapOptions(
+        center: widget.initialCenter,
+        zoom: widget.initialZoom,
+        zoomControl: false,
+        mapTypeId: NaverMapMapTypeId.normal,
+      ),
+      showLoading: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _mapView;
   }
 }

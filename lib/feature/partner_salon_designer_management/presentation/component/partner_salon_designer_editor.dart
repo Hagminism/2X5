@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:io';
 
 import 'package:capstone_2026/core/domain/model/salon/salon_designer.dart';
@@ -125,7 +126,7 @@ class PartnerSalonDesignerEditor extends StatelessWidget {
                           width: 120,
                           fit: BoxFit.cover,
                         )
-                      : Image.network(
+                      : AppNetworkImage(
                           designer.imageUrl,
                           height: 120,
                           width: 120,

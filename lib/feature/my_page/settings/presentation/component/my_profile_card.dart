@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class MyProfileCard extends StatelessWidget {
               ),
               child: photoUrl != null
                   ? ClipOval(
-                      child: Image.network(
+                      child: AppNetworkImage(
                         photoUrl!,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => Center(

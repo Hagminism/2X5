@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 
@@ -61,7 +62,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
 
   Widget _buildImage(String path) {
     if (path.startsWith('http')) {
-      return Image.network(
+      return AppNetworkImage(
         path,
         fit: BoxFit.contain,
         loadingBuilder: (context, child, loadingProgress) {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:capstone_2026/core/domain/repository/auth/auth_repository.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
@@ -23,6 +24,11 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signInWithGoogle() async {
+    if (kIsWeb) {
+      await _firebaseAuth.signInWithPopup(GoogleAuthProvider());
+      return;
+    }
+
     final googleUser = await _googleSignIn.authenticate();
 
     // Obtain the auth details from the request

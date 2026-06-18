@@ -4,6 +4,7 @@ import 'package:capstone_2026/feature/salon_reservation/presentation/component/s
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_slot_grid.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/component/salon_reservation_submit_bar.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_action.dart';
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/feature/salon_reservation/presentation/screen/salon_reservation_state.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:capstone_2026/ui/app_text_styles.dart';
@@ -128,18 +129,30 @@ class SalonReservationScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: AppColors.white,
-                    backgroundImage: selectedDesigner.imageUrl.isEmpty
-                        ? null
-                        : NetworkImage(selectedDesigner.imageUrl),
-                    child: selectedDesigner.imageUrl.isEmpty
-                        ? const Icon(
-                            Icons.person,
-                            color: AppColors.textSecondary,
-                          )
-                        : null,
+                  ClipOval(
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: selectedDesigner.imageUrl.isEmpty
+                          ? ColoredBox(
+                              color: AppColors.white,
+                              child: const Icon(
+                                Icons.person,
+                                color: AppColors.textSecondary,
+                              ),
+                            )
+                          : AppNetworkImage(
+                              selectedDesigner.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => ColoredBox(
+                                color: AppColors.white,
+                                child: const Icon(
+                                  Icons.person,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(

@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/util/parse_integer_price.dart';
 import 'package:capstone_2026/core/presentation/screen/store_image_viewer_screen.dart';
@@ -159,7 +160,7 @@ class _MenuImageTile extends StatelessWidget {
                   ),
                 ),
               )
-            : Image.network(
+            : AppNetworkImage(
                 imageUrl,
                 fit: BoxFit.cover,
                 color: muted ? Colors.white : null,

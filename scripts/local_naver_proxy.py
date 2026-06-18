@@ -1,10 +1,29 @@
 import re
 import json
 import httpx
-from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Naver Place Local Proxy API")
+COMMON_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
+    "Accept": "*/*",
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    redirect_client = httpx.AsyncClient(follow_redirects=True, timeout=30.0)
+    http2_client = httpx.AsyncClient(http2=True, timeout=30.0)
+    app.state.redirect_client = redirect_client
+    app.state.http2_client = http2_client
+    yield
+    await redirect_client.aclose()
+    await http2_client.aclose()
+
+
+app = FastAPI(title="Naver Place Local Proxy API", lifespan=lifespan)
 
 # Flutter 앱이 웹이나 시뮬레이터에서 연동되도록 CORS 허용
 app.add_middleware(
@@ -15,14 +34,98 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-COMMON_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1",
-    "Accept": "*/*",
-    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-}
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
+@app.get("/api/mobile-search")
+async def mobile_search(query: str, request: Request):
+    """
+    네이버 모바일 통합검색 HTML에서 placeId·전화번호를 추출합니다.
+    Flutter 웹은 브라우저 CORS로 m.search.naver.com 직접 호출이 불가합니다.
+    """
+    encoded_query = httpx.QueryParams({"query": query})
+    url = f"https://m.search.naver.com/search.naver?{encoded_query}"
+
+    headers = {
+        **COMMON_HEADERS,
+        "Referer": "https://m.search.naver.com/",
+    }
+
+    client = request.app.state.redirect_client
+    try:
+        res = await client.get(url, headers=headers, timeout=8.0)
+        if res.status_code != 200:
+            raise HTTPException(
+                status_code=res.status_code,
+                detail="Failed to fetch mobile search page from Naver",
+            )
+
+        html = res.text
+
+        place_id = None
+        id_match = re.search(r"id[=:](\d{8,})", html)
+        if id_match:
+            place_id = id_match.group(1)
+
+        phone = None
+        tel_match = re.search(r'href="tel:([^"]+)"', html)
+        if tel_match:
+            phone = tel_match.group(1)
+        else:
+            phone_match = re.search(r'"phone"\s*:\s*"([^"]+)"', html)
+            if phone_match:
+                phone = phone_match.group(1)
+
+        return {"placeId": place_id, "phone": phone}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Mobile search proxy error: {str(e)}"
+        )
+
+
+@app.get("/api/place/{place_id}/summary")
+async def get_place_summary(place_id: str, request: Request):
+    """
+    map.naver.com place summary API를 프록시합니다.
+    """
+    url = f"https://map.naver.com/p/api/place/summary/{place_id}"
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        ),
+        "Referer": "https://map.naver.com/",
+    }
+
+    client = request.app.state.redirect_client
+    try:
+        res = await client.get(url, headers=headers, timeout=5.0)
+        if res.status_code != 200:
+            raise HTTPException(
+                status_code=res.status_code,
+                detail="Failed to fetch place summary from Naver",
+            )
+
+        decoded = res.json()
+        place_detail = (decoded.get("data") or {}).get("placeDetail")
+        if not isinstance(place_detail, dict):
+            return None
+        return place_detail
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Place summary proxy error: {str(e)}"
+        )
+
 
 @app.get("/api/place/{place_id}/menu")
-async def get_menu(place_id: str):
+async def get_menu(place_id: str, request: Request):
     """
     네이버 모바일 플레이스 메뉴 리스트를 긁어서 파싱 후 JSON으로 반환합니다.
     """
@@ -33,45 +136,45 @@ async def get_menu(place_id: str):
         "Referer": f"https://m.place.naver.com/restaurant/{place_id}/home"
     }
     
-    async with httpx.AsyncClient(http2=True) as client:
-        try:
-            res = await client.get(url, headers=headers)
-            if res.status_code != 200:
-                raise HTTPException(status_code=res.status_code, detail="Failed to fetch menu page from Naver")
-            
-            html = res.text
-            match = re.search(r'window\.__APOLLO_STATE__\s*=\s*(\{.*?\});', html, re.DOTALL)
-            if not match:
-                # 404 혹은 상세 메뉴 데이터가 아예 없는 경우
-                return {"menus": []}
-            
-            apollo_json = json.loads(match.group(1))
-            menus = []
-            
-            for key, val in apollo_json.items():
-                if isinstance(val, dict) and val.get("__typename") == "Menu":
-                    images = val.get("images")
-                    img_url = ""
-                    if images and isinstance(images, list) and len(images) > 0:
-                        img_url = images[0]
-                    else:
-                        img_url = val.get("imageUrl") or ""
+    client = request.app.state.http2_client
+    try:
+        res = await client.get(url, headers=headers)
+        if res.status_code != 200:
+            raise HTTPException(status_code=res.status_code, detail="Failed to fetch menu page from Naver")
+        
+        html = res.text
+        match = re.search(r'window\.__APOLLO_STATE__\s*=\s*(\{.*?\});', html, re.DOTALL)
+        if not match:
+            # 404 혹은 상세 메뉴 데이터가 아예 없는 경우
+            return {"menus": []}
+        
+        apollo_json = json.loads(match.group(1))
+        menus = []
+        
+        for key, val in apollo_json.items():
+            if isinstance(val, dict) and val.get("__typename") == "Menu":
+                images = val.get("images")
+                img_url = ""
+                if images and isinstance(images, list) and len(images) > 0:
+                    img_url = images[0]
+                else:
+                    img_url = val.get("imageUrl") or ""
 
-                    menus.append({
-                        "id": key,
-                        "name": val.get("name"),
-                        "price": val.get("price"),
-                        "description": val.get("desc") or val.get("description") or "",
-                        "imageUrl": img_url
-                    })
-                    
-            return {"menus": menus}
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Scraping error: {str(e)}")
+                menus.append({
+                    "id": key,
+                    "name": val.get("name"),
+                    "price": val.get("price"),
+                    "description": val.get("desc") or val.get("description") or "",
+                    "imageUrl": img_url
+                })
+                
+        return {"menus": menus}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Scraping error: {str(e)}")
 
 @app.get("/api/place/{place_id}/review")
-async def get_review(place_id: str, page: int = 1, size: int = 15, after: str = None, business_type: str = "restaurant"):
+async def get_review(place_id: str, request: Request, page: int = 1, size: int = 15, after: str = None, business_type: str = "restaurant"):
     """
     네이버 플레이스 내부 GraphQL API를 연동하여 방문자 리뷰 데이터를 긁어와 반환합니다.
     """
@@ -129,59 +232,59 @@ async def get_review(place_id: str, page: int = 1, size: int = 15, after: str = 
         }
     ]
     
-    async with httpx.AsyncClient(http2=True) as client:
-        try:
-            print(f"[DEBUG] Requesting Naver GraphQL for page: {page}, display(size): {size}")
-            print(f"[DEBUG] Variables sent: {payload[0]['variables']}")
-            res = await client.post(url, json=payload, headers=headers)
-            print(f"[DEBUG] Naver Response Status: {res.status_code}")
-            if res.status_code != 200:
-                raise HTTPException(status_code=res.status_code, detail="Failed to fetch reviews from Naver GraphQL")
+    client = request.app.state.http2_client
+    try:
+        print(f"[DEBUG] Requesting Naver GraphQL for page: {page}, display(size): {size}")
+        print(f"[DEBUG] Variables sent: {payload[0]['variables']}")
+        res = await client.post(url, json=payload, headers=headers)
+        print(f"[DEBUG] Naver Response Status: {res.status_code}")
+        if res.status_code != 200:
+            raise HTTPException(status_code=res.status_code, detail="Failed to fetch reviews from Naver GraphQL")
+        
+        data = res.json()
+        if not data or "errors" in data[0]:
+            errors = data[0].get("errors") if data else "Unknown GraphQL error"
+            print(f"[DEBUG] GraphQL Errors inside response: {errors}")
+            raise HTTPException(status_code=400, detail=f"GraphQL Error: {errors}")
+        
+        visitor_reviews_data = data[0]['data']['visitorReviews']
+        items = visitor_reviews_data.get('items', [])
+        total = visitor_reviews_data.get('total', 0)
+        
+        reviews = []
+        for item in items:
+            author_info = item.get("author", {})
+            media_info = []
+            if item.get("media"):
+                for m in item.get("media", []):
+                    if m:
+                        media_info.append({
+                            "type": m.get("type"),
+                            "thumbnail": m.get("thumbnail")
+                        })
+            reviews.append({
+              "id": item.get("id"),
+              "cursor": item.get("cursor"),
+              "rating": item.get("rating"),
+              "body": item.get("body", ""),
+              "created": item.get("created", ""),
+              "author": {
+                  "id": author_info.get("id"),
+                  "nickname": author_info.get("nickname") or "익명",
+                  "imageUrl": author_info.get("imageUrl") or ""
+              },
+              "media": media_info
+            })
             
-            data = res.json()
-            if not data or "errors" in data[0]:
-                errors = data[0].get("errors") if data else "Unknown GraphQL error"
-                print(f"[DEBUG] GraphQL Errors inside response: {errors}")
-                raise HTTPException(status_code=400, detail=f"GraphQL Error: {errors}")
-            
-            visitor_reviews_data = data[0]['data']['visitorReviews']
-            items = visitor_reviews_data.get('items', [])
-            total = visitor_reviews_data.get('total', 0)
-            
-            reviews = []
-            for item in items:
-                author_info = item.get("author", {})
-                media_info = []
-                if item.get("media"):
-                    for m in item.get("media", []):
-                        if m:
-                            media_info.append({
-                                "type": m.get("type"),
-                                "thumbnail": m.get("thumbnail")
-                            })
-                reviews.append({
-                  "id": item.get("id"),
-                  "cursor": item.get("cursor"),
-                  "rating": item.get("rating"),
-                  "body": item.get("body", ""),
-                  "created": item.get("created", ""),
-                  "author": {
-                      "id": author_info.get("id"),
-                      "nickname": author_info.get("nickname") or "익명",
-                      "imageUrl": author_info.get("imageUrl") or ""
-                  },
-                  "media": media_info
-                })
-                
-            return {
-                "total": total,
-                "page": page,
-                "size": len(reviews),
-                "reviews": reviews
-            }
-            
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"GraphQL proxy request error: {str(e)}")
+        return {
+            "total": total,
+            "page": page,
+            "size": len(reviews),
+            "reviews": reviews
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"GraphQL proxy request error: {str(e)}")
 
 
 PLACE_DETAIL_HOURS_QUERY = """
@@ -201,7 +304,7 @@ query getPlaceDetail($input: PlaceDetailInput!) {
 
 
 @app.get("/api/place/{place_id}/hours")
-async def get_hours(place_id: str, business_type: str = "restaurant"):
+async def get_hours(place_id: str, request: Request, business_type: str = "restaurant"):
     """
     네이버 플레이스 GraphQL에서 요일별 영업시간을 조회합니다.
     Flutter 앱에서 stores.operating_hours 구조로 매핑할 수 있도록 weeklyHours를 반환합니다.
@@ -223,86 +326,86 @@ async def get_hours(place_id: str, business_type: str = "restaurant"):
         }
     ]
 
-    async with httpx.AsyncClient(http2=True) as client:
-        try:
-            res = await client.post(url, json=payload, headers=headers)
-            if res.status_code != 200:
-                raise HTTPException(
-                    status_code=res.status_code,
-                    detail="Failed to fetch business hours from Naver GraphQL",
-                )
+    client = request.app.state.http2_client
+    try:
+        res = await client.post(url, json=payload, headers=headers)
+        if res.status_code != 200:
+            raise HTTPException(
+                status_code=res.status_code,
+                detail="Failed to fetch business hours from Naver GraphQL",
+            )
 
-            data = res.json()
-            if not data or not isinstance(data, list):
-                return {"statusDescription": "", "weeklyHours": []}
+        data = res.json()
+        if not data or not isinstance(data, list):
+            return {"statusDescription": "", "weeklyHours": []}
 
-            first = data[0]
-            if first.get("errors"):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"GraphQL Error: {first.get('errors')}",
-                )
+        first = data[0]
+        if first.get("errors"):
+            raise HTTPException(
+                status_code=400,
+                detail=f"GraphQL Error: {first.get('errors')}",
+            )
 
-            place_detail = (first.get("data") or {}).get("placeDetail") or {}
-            blocks = place_detail.get("newBusinessHours") or []
+        place_detail = (first.get("data") or {}).get("placeDetail") or {}
+        blocks = place_detail.get("newBusinessHours") or []
 
-            status_description = ""
-            weekly_hours = []
+        status_description = ""
+        weekly_hours = []
 
-            for block in blocks:
-                if not isinstance(block, dict):
+        for block in blocks:
+            if not isinstance(block, dict):
+                continue
+
+            status = block.get("businessStatusDescription") or {}
+            if isinstance(status, dict):
+                desc = (status.get("description") or "").strip()
+                if desc and not status_description:
+                    status_description = desc
+
+            block_hours = []
+            for item in block.get("businessHours") or []:
+                if not isinstance(item, dict):
                     continue
 
-                status = block.get("businessStatusDescription") or {}
-                if isinstance(status, dict):
-                    desc = (status.get("description") or "").strip()
-                    if desc and not status_description:
-                        status_description = desc
+                day = (item.get("day") or "").strip()
+                business_hours = item.get("businessHours")
+                break_hours = item.get("breakHours")
+                start = None
+                end = None
+                break_start = None
+                break_end = None
+                if isinstance(business_hours, dict):
+                    start = business_hours.get("start")
+                    end = business_hours.get("end")
+                if isinstance(break_hours, dict):
+                    break_start = break_hours.get("start")
+                    break_end = break_hours.get("end")
 
-                block_hours = []
-                for item in block.get("businessHours") or []:
-                    if not isinstance(item, dict):
-                        continue
+                block_hours.append(
+                    {
+                        "day": day,
+                        "start": start,
+                        "end": end,
+                        "breakStart": break_start,
+                        "breakEnd": break_end,
+                    }
+                )
 
-                    day = (item.get("day") or "").strip()
-                    business_hours = item.get("businessHours")
-                    break_hours = item.get("breakHours")
-                    start = None
-                    end = None
-                    break_start = None
-                    break_end = None
-                    if isinstance(business_hours, dict):
-                        start = business_hours.get("start")
-                        end = business_hours.get("end")
-                    if isinstance(break_hours, dict):
-                        break_start = break_hours.get("start")
-                        break_end = break_hours.get("end")
+            if block_hours:
+                weekly_hours = block_hours[:7]
+                break
 
-                    block_hours.append(
-                        {
-                            "day": day,
-                            "start": start,
-                            "end": end,
-                            "breakStart": break_start,
-                            "breakEnd": break_end,
-                        }
-                    )
+        return {
+            "statusDescription": status_description,
+            "weeklyHours": weekly_hours,
+        }
 
-                if block_hours:
-                    weekly_hours = block_hours[:7]
-                    break
-
-            return {
-                "statusDescription": status_description,
-                "weeklyHours": weekly_hours,
-            }
-
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=500, detail=f"GraphQL hours proxy error: {str(e)}"
-            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"GraphQL hours proxy error: {str(e)}"
+        )
 
 
 if __name__ == "__main__":

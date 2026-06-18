@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:io';
 
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
@@ -124,7 +125,7 @@ class PartnerStoreMenuEditor extends StatelessWidget {
                           width: 120,
                           fit: BoxFit.cover,
                         )
-                      : Image.network(
+                      : AppNetworkImage(
                           menu.imageUrl,
                           height: 120,
                           width: 120,

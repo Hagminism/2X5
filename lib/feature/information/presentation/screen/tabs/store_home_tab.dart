@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'package:capstone_2026/core/domain/model/store/store_menu.dart';
 import 'package:capstone_2026/core/domain/util/store_operating_hours_display.dart';
 import 'package:capstone_2026/core/presentation/screen/store_image_viewer_screen.dart';
@@ -557,7 +558,7 @@ class _HomeMenuImage extends StatelessWidget {
                   size: 40,
                 ),
               )
-            : Image.network(
+            : AppNetworkImage(
                 imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => const ColoredBox(

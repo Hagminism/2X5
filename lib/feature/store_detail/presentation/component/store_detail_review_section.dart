@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:io';
 
 import 'package:capstone_2026/core/presentation/component/full_screen_image_viewer.dart';
@@ -763,7 +764,7 @@ class _ReviewImageThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return Image.network(
+      return AppNetworkImage(
         imagePath,
         width: 80,
         height: 80,
@@ -828,15 +829,32 @@ class _NaverReviewItem extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: const Color(0xFFF3F4F6),
-              backgroundImage: imageUrl.isNotEmpty
-                  ? NetworkImage(imageUrl)
-                  : null,
-              child: imageUrl.isEmpty
-                  ? const Icon(Icons.person, color: Color(0xFF9CA3AF), size: 20)
-                  : null,
+            ClipOval(
+              child: SizedBox(
+                width: 36,
+                height: 36,
+                child: imageUrl.isEmpty
+                    ? const ColoredBox(
+                        color: Color(0xFFF3F4F6),
+                        child: Icon(
+                          Icons.person,
+                          color: Color(0xFF9CA3AF),
+                          size: 20,
+                        ),
+                      )
+                    : AppNetworkImage(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const ColoredBox(
+                          color: Color(0xFFF3F4F6),
+                          child: Icon(
+                            Icons.person,
+                            color: Color(0xFF9CA3AF),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -917,7 +935,7 @@ class _NaverReviewItem extends StatelessWidget {
                     },
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
+                      child: AppNetworkImage(
                         thumbnailUrl,
                         width: 100,
                         height: 100,

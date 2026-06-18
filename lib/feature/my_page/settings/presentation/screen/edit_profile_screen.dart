@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:io';
 import 'package:capstone_2026/core/routing/routes.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
@@ -196,7 +197,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: _pickedImage != null
                             ? Image.file(_pickedImage!, fit: BoxFit.cover)
                             : _imageUrl != null
-                            ? Image.network(
+                            ? AppNetworkImage(
                                 _imageUrl!,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, e, st) => const Icon(

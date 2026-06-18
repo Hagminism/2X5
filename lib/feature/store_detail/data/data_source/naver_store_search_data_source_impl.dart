@@ -181,6 +181,10 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
   Future<Map<String, String?>?> fetchPlaceInfoFromMobileSearch({
     required String storeName,
   }) async {
+    if (kIsWeb) {
+      return _fetchPlaceInfoFromMobileSearchViaProxy(storeName: storeName);
+    }
+
     final encodedQuery = Uri.encodeComponent(storeName);
     final url = Uri.parse(
       'https://m.search.naver.com/search.naver?query=$encodedQuery',
@@ -201,40 +205,75 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
       debugPrint('[MobileSearch] HTTP Status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
-        final html = response.body;
-
-        // place ID 추출 (8자리 이상)
-        String? placeId;
-        final idMatches = RegExp(r'id[=:](\d{8,})').allMatches(html);
-        if (idMatches.isNotEmpty) {
-          placeId = idMatches.first.group(1);
-        }
-
-        // 전화번호 추출 (href="tel:..." 패턴 우선, 그 다음 "phone":"..." 패턴)
-        String? phone;
-        final telHrefMatch = RegExp(r'href="tel:([^"]+)"').firstMatch(html);
-        if (telHrefMatch != null) {
-          phone = telHrefMatch.group(1);
-        } else {
-          final phoneJsonMatch = RegExp(
-            r'"phone"\s*:\s*"([^"]+)"',
-          ).firstMatch(html);
-          if (phoneJsonMatch != null) {
-            phone = phoneJsonMatch.group(1);
-          }
-        }
-
-        debugPrint('[MobileSearch] 추출 결과 - placeId: $placeId, phone: $phone');
-
-        if (placeId != null || phone != null) {
-          return {'placeId': placeId, 'phone': phone};
-        } else {
-          debugPrint('[MobileSearch] placeId/phone 모두 찾을 수 없습니다.');
-        }
+        return _parseMobileSearchHtml(response.body);
       }
     } catch (e) {
       debugPrint('[MobileSearch] Exception: $e');
     }
+    return null;
+  }
+
+  Future<Map<String, String?>?> _fetchPlaceInfoFromMobileSearchViaProxy({
+    required String storeName,
+  }) async {
+    final url = Uri.parse('$_proxyUrl/api/mobile-search').replace(
+      queryParameters: {'query': storeName},
+    );
+    debugPrint('[MobileSearch] Proxy 요청 URL: $url');
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 8));
+      debugPrint('[MobileSearch] Proxy HTTP Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          final placeId = decoded['placeId']?.toString();
+          final phone = decoded['phone']?.toString();
+          debugPrint(
+            '[MobileSearch] Proxy 추출 결과 - placeId: $placeId, phone: $phone',
+          );
+          if ((placeId != null && placeId.isNotEmpty) ||
+              (phone != null && phone.isNotEmpty)) {
+            return {'placeId': placeId, 'phone': phone};
+          }
+          debugPrint('[MobileSearch] placeId/phone 모두 찾을 수 없습니다.');
+        }
+      } else {
+        debugPrint('[MobileSearch] Proxy 비정상 응답: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('[MobileSearch] Proxy Exception: $e');
+    }
+    return null;
+  }
+
+  Map<String, String?>? _parseMobileSearchHtml(String html) {
+    String? placeId;
+    final idMatches = RegExp(r'id[=:](\d{8,})').allMatches(html);
+    if (idMatches.isNotEmpty) {
+      placeId = idMatches.first.group(1);
+    }
+
+    String? phone;
+    final telHrefMatch = RegExp(r'href="tel:([^"]+)"').firstMatch(html);
+    if (telHrefMatch != null) {
+      phone = telHrefMatch.group(1);
+    } else {
+      final phoneJsonMatch = RegExp(
+        r'"phone"\s*:\s*"([^"]+)"',
+      ).firstMatch(html);
+      if (phoneJsonMatch != null) {
+        phone = phoneJsonMatch.group(1);
+      }
+    }
+
+    debugPrint('[MobileSearch] 추출 결과 - placeId: $placeId, phone: $phone');
+
+    if (placeId != null || phone != null) {
+      return {'placeId': placeId, 'phone': phone};
+    }
+    debugPrint('[MobileSearch] placeId/phone 모두 찾을 수 없습니다.');
     return null;
   }
 
@@ -243,6 +282,10 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
     required String placeId,
   }) async {
     if (placeId.isEmpty) return null;
+
+    if (kIsWeb) {
+      return _fetchPlaceSummaryViaProxy(placeId: placeId);
+    }
 
     final url = Uri.https('map.naver.com', '/p/api/place/summary/$placeId');
     debugPrint('[NaverSummary] 요청 URL: $url');
@@ -263,27 +306,7 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
 
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body) as Map<String, dynamic>;
-        final placeDetail =
-            decoded['data']?['placeDetail'] as Map<String, dynamic>?;
-        if (placeDetail != null) {
-          debugPrint(
-            '[NaverSummary] placeDetail 키: ${placeDetail.keys.toList()}',
-          );
-          debugPrint(
-            '[NaverSummary] name=${placeDetail['name']}, phone=${placeDetail['phone']}',
-          );
-          debugPrint(
-            '[NaverSummary] businessHours=${placeDetail['businessHours']}',
-          );
-          debugPrint(
-            '[NaverSummary] images keys=${placeDetail['images']?.keys?.toList()}',
-          );
-        } else {
-          debugPrint(
-            '[NaverSummary] placeDetail이 null입니다. decoded keys: ${decoded.keys.toList()}',
-          );
-        }
-        return placeDetail;
+        return _extractPlaceDetailFromSummaryResponse(decoded);
       } else {
         debugPrint(
           '[NaverSummary] 비정상 응답 body: ${response.body.substring(0, response.body.length > 300 ? 300 : response.body.length)}',
@@ -293,6 +316,66 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
       debugPrint('[NaverSummary] Exception: $e');
     }
     return null;
+  }
+
+  Future<Map<String, dynamic>?> _fetchPlaceSummaryViaProxy({
+    required String placeId,
+  }) async {
+    final url = Uri.parse('$_proxyUrl/api/place/$placeId/summary');
+    debugPrint('[NaverSummary] Proxy 요청 URL: $url');
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      debugPrint('[NaverSummary] Proxy HTTP Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded == null) {
+          debugPrint('[NaverSummary] Proxy placeDetail이 null입니다.');
+          return null;
+        }
+        if (decoded is Map<String, dynamic>) {
+          return _logPlaceDetail(decoded);
+        }
+        if (decoded is Map) {
+          return _logPlaceDetail(Map<String, dynamic>.from(decoded));
+        }
+      } else {
+        debugPrint(
+          '[NaverSummary] Proxy 비정상 응답 body: ${response.body.substring(0, response.body.length > 300 ? 300 : response.body.length)}',
+        );
+      }
+    } catch (e) {
+      debugPrint('[NaverSummary] Proxy Exception: $e');
+    }
+    return null;
+  }
+
+  Map<String, dynamic>? _extractPlaceDetailFromSummaryResponse(
+    Map<String, dynamic> decoded,
+  ) {
+    final placeDetail = decoded['data']?['placeDetail'] as Map<String, dynamic>?;
+    if (placeDetail != null) {
+      return _logPlaceDetail(placeDetail);
+    }
+    debugPrint(
+      '[NaverSummary] placeDetail이 null입니다. decoded keys: ${decoded.keys.toList()}',
+    );
+    return null;
+  }
+
+  Map<String, dynamic> _logPlaceDetail(Map<String, dynamic> placeDetail) {
+    debugPrint('[NaverSummary] placeDetail 키: ${placeDetail.keys.toList()}');
+    debugPrint(
+      '[NaverSummary] name=${placeDetail['name']}, phone=${placeDetail['phone']}',
+    );
+    debugPrint(
+      '[NaverSummary] businessHours=${placeDetail['businessHours']}',
+    );
+    debugPrint(
+      '[NaverSummary] images keys=${placeDetail['images']?.keys?.toList()}',
+    );
+    return placeDetail;
   }
 
   @override

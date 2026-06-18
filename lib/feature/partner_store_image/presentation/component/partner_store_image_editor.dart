@@ -1,3 +1,4 @@
+import 'package:capstone_2026/core/presentation/component/network/app_network_image.dart';
 import 'dart:io';
 
 import 'package:capstone_2026/core/domain/model/store/store_image.dart';
@@ -66,7 +67,7 @@ class PartnerStoreImageEditor extends StatelessWidget {
                       width: double.infinity,
                       fit: BoxFit.cover,
                     )
-                  : Image.network(
+                  : AppNetworkImage(
                       image.imageUrl,
                       height: 200,
                       width: double.infinity,

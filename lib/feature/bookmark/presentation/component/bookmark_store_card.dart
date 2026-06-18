@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:capstone_2026/core/presentation/component/network/app_cached_network_image.dart';
 import 'package:capstone_2026/ui/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -212,7 +212,7 @@ class BookmarkStoreCard extends StatelessWidget {
       );
     }
 
-    return CachedNetworkImage(
+    return AppCachedNetworkImage(
       imageUrl: url,
       fit: BoxFit.cover,
       fadeInDuration: Duration.zero,
