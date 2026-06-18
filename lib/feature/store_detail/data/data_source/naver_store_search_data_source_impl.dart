@@ -228,8 +228,8 @@ class NaverStoreSearchDataSourceImpl implements NaverStoreSearchDataSource {
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
         if (decoded is Map<String, dynamic>) {
-          final placeId = decoded['placeId'] as String?;
-          final phone = decoded['phone'] as String?;
+          final placeId = decoded['placeId']?.toString();
+          final phone = decoded['phone']?.toString();
           debugPrint(
             '[MobileSearch] Proxy 추출 결과 - placeId: $placeId, phone: $phone',
           );

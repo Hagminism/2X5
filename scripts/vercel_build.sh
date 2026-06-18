@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 # Google 로그인 + 지도/검색 1차 배포에 필요한 값만 필수.
-# 네이버·카카오 로그인용 secret은 placeholder로 채워 웹 번들 노출을 피한다.
+# 네이버·카카오 OAuth secret은 create_web_env.sh에서 placeholder 처리.
 required_vars=(
   SUPABASE_URL
   SUPABASE_PUBLISHABLE_KEY
@@ -33,7 +33,7 @@ restore_firebase_options() {
   if [ -z "${FIREBASE_OPTIONS_DART_B64:-}" ]; then
     echo "[vercel_build] lib/firebase_options.dart not found."
     echo "[vercel_build] Set Vercel env FIREBASE_OPTIONS_DART_B64 (base64 of firebase_options.dart)."
-    echo "[vercel_build] Local: base64 < lib/firebase_options.dart | pbcopy"
+    echo "[vercel_build] Prefer GitHub Actions deploy_web_vercel workflow for cached Flutter builds."
     exit 1
   fi
 
@@ -42,54 +42,27 @@ restore_firebase_options() {
 }
 
 restore_firebase_options
+bash scripts/create_web_env.sh
 
-resolve_redirect_uri() {
-  if [ -n "${REDIRECT_URI:-}" ]; then
-    echo "${REDIRECT_URI}"
+ensure_flutter() {
+  if command -v flutter >/dev/null 2>&1; then
+    echo "[vercel_build] Using Flutter from PATH: $(command -v flutter)"
     return
   fi
-  if [ -n "${VERCEL_URL:-}" ]; then
-    echo "https://${VERCEL_URL}"
-    return
+
+  FLUTTER_DIR="${ROOT_DIR}/.vercel-cache/flutter"
+  if [ ! -x "${FLUTTER_DIR}/bin/flutter" ]; then
+    echo "[vercel_build] Installing Flutter SDK (stable) to ${FLUTTER_DIR}..."
+    mkdir -p "$(dirname "${FLUTTER_DIR}")"
+    git clone https://github.com/flutter/flutter.git -b stable "${FLUTTER_DIR}" --depth 1
+    "${FLUTTER_DIR}/bin/flutter" precache --web
   fi
-  echo "https://placeholder.invalid"
+
+  export PATH="${FLUTTER_DIR}/bin:${PATH}"
+  echo "[vercel_build] Using Flutter from ${FLUTTER_DIR}"
 }
 
-KAKAO_NATIVE_APP_KEY_VALUE="${KAKAO_NATIVE_APP_KEY:-unused-web-google-only}"
-NAVER_CLIENT_ID_VALUE="${NAVER_CLIENT_ID:-unused-web-google-only}"
-NAVER_CLIENT_SECRET_VALUE="${NAVER_CLIENT_SECRET:-unused-web-google-only}"
-REDIRECT_URI_VALUE="$(resolve_redirect_uri)"
-
-if [ -z "${KAKAO_NATIVE_APP_KEY:-}" ] ||
-  [ -z "${NAVER_CLIENT_ID:-}" ] ||
-  [ -z "${NAVER_CLIENT_SECRET:-}" ] ||
-  [ -z "${REDIRECT_URI:-}" ]; then
-  echo "[vercel_build] OAuth placeholders applied (Google-only web deploy)."
-  echo "[vercel_build] Set NAVER_* / REDIRECT_URI in Vercel when enabling Naver login."
-fi
-
-cat > .env <<EOF
-SUPABASE_URL=${SUPABASE_URL}
-SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY}
-KAKAO_NATIVE_APP_KEY=${KAKAO_NATIVE_APP_KEY_VALUE}
-KAKAO_REST_API_KEY=${KAKAO_REST_API_KEY}
-NAVER_MAP_CLIENT_ID=${NAVER_MAP_CLIENT_ID}
-NAVER_CLIENT_ID=${NAVER_CLIENT_ID_VALUE}
-NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET_VALUE}
-NAVER_PROXY_URL=${NAVER_PROXY_URL}
-REDIRECT_URI=${REDIRECT_URI_VALUE}
-GOOGLE_WEB_CLIENT_ID=${GOOGLE_WEB_CLIENT_ID}
-GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY:-}
-EOF
-
-echo "[vercel_build] .env generated from Vercel environment variables"
-
-if [ ! -d ".flutter" ]; then
-  echo "[vercel_build] Installing Flutter SDK (stable)..."
-  git clone https://github.com/flutter/flutter.git -b stable .flutter --depth 1
-fi
-
-export PATH="$ROOT_DIR/.flutter/bin:$PATH"
+ensure_flutter
 export CI=true
 
 flutter --version
@@ -98,3 +71,4 @@ flutter pub get
 flutter build web --release
 
 echo "[vercel_build] Done. Output: build/web"
+echo "[vercel_build] Tip: use .github/workflows/deploy_web_vercel.yml for faster cached builds."
