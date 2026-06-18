@@ -33,7 +33,6 @@ restore_firebase_options() {
   if [ -z "${FIREBASE_OPTIONS_DART_B64:-}" ]; then
     echo "[vercel_build] lib/firebase_options.dart not found."
     echo "[vercel_build] Set Vercel env FIREBASE_OPTIONS_DART_B64 (base64 of firebase_options.dart)."
-    echo "[vercel_build] Prefer GitHub Actions deploy_web_vercel workflow for cached Flutter builds."
     exit 1
   fi
 
@@ -68,7 +67,7 @@ export CI=true
 flutter --version
 flutter config --enable-web
 flutter pub get
+dart run build_runner build --delete-conflicting-outputs
 flutter build web --release
 
 echo "[vercel_build] Done. Output: build/web"
-echo "[vercel_build] Tip: use .github/workflows/deploy_web_vercel.yml for faster cached builds."
