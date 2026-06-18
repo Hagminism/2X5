@@ -8,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk_common.dart';
 import 'package:naver_maps_sdk_flutter/naver_maps_sdk_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 
 import 'core/routing/router.dart';
 import 'ui/app_colors.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
 
   // GoogleSignIn 객체는 전역 싱글톤이므로, getIt에서 가리키는 대상과 같음
   await GoogleSignIn.instance.initialize(
+    clientId: kIsWeb ? dotenv.env['GOOGLE_WEB_CLIENT_ID'] : null,
     serverClientId: DefaultFirebaseOptions.currentPlatform.androidClientId,
   );
 
